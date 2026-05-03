@@ -1706,6 +1706,7 @@ function closeOpenSourceView() {
 }
 
 function openSheet() {
+  if (appShell.classList.contains("has-sidebar")) closeSidebar();
   sheetPanel.hidden = false;
   sheetPanel.setAttribute("aria-hidden", "false");
   requestAnimationFrame(() => {
@@ -1728,9 +1729,19 @@ function closeSheet() {
 }
 
 function openSidebar() {
+  if (!sheetPanel.hidden) closeSheet();
   appShell.classList.add("has-sidebar");
   sidebarShell.setAttribute("aria-hidden", "false");
   updateSidebarWorkspaceMode();
+}
+
+function toggleSidebar() {
+  if (appShell.classList.contains("has-sidebar")) {
+    closeSidebar();
+    return;
+  }
+
+  openSidebar();
 }
 
 function closeSidebar() {
@@ -1795,7 +1806,7 @@ document.addEventListener("click", (event) => {
   if (target.closest("[data-copy-content]")) copyContent();
   if (target.closest("[data-history-toggle]")) toggleHistory(target.closest("[data-history-toggle]"));
   if (target.closest("[data-open-sheet]")) openSheet();
-  if (target.closest("[data-open-sidebar]")) openSidebar();
+  if (target.closest("[data-open-sidebar]")) toggleSidebar();
   if (target.closest("[data-close-sheet]")) closeSheet();
   if (closeButton) closeOwningPanel(closeButton);
 
