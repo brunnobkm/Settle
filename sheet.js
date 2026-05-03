@@ -1,0 +1,1983 @@
+const appShell = document.querySelector("[data-app-shell]");
+const sheetPanel = document.querySelector('[data-panel="sheet"]');
+const sidebarPanel = document.querySelector('[data-panel="sidebar"]');
+const sidebarShell = document.querySelector("[data-sidebar-shell]");
+const sidebarResizeHandle = document.querySelector("[data-sidebar-resize]");
+const backdrop = document.querySelector(".sheet-backdrop");
+const template = document.querySelector("#summary-panel-template");
+const toast = document.querySelector("#toast");
+const tooltip = document.createElement("div");
+tooltip.className = "floating-tooltip";
+tooltip.setAttribute("role", "tooltip");
+document.body.append(tooltip);
+
+const sourceSelectionTooltip = document.createElement("button");
+sourceSelectionTooltip.className = "source-selection-tooltip";
+sourceSelectionTooltip.type = "button";
+sourceSelectionTooltip.textContent = "Adicionar como fonte";
+document.body.append(sourceSelectionTooltip);
+
+const sourceCursorTooltip = document.createElement("div");
+sourceCursorTooltip.className = "source-cursor-tooltip";
+sourceCursorTooltip.textContent = "Selecione um trecho";
+document.body.append(sourceCursorTooltip);
+
+let sourceSelectionRange = null;
+let activeSourceRow = null;
+let activeSourceView = null;
+let activeManualSourceEditor = null;
+let sourceClickStartedWithSelection = false;
+let sidebarResizeMode = null;
+const scrollHideTimers = new WeakMap();
+const sidebarWidth = {
+  summary: 39,
+  source: 70,
+};
+
+const sourceDocuments = {
+  edital: {
+    label: "Edital 15/2023",
+    pages: [
+      [
+        "PODER JUDICIÁRIO. TRIBUNAL REGIONAL FEDERAL DA 6ª REGIÃO. EDITAL DO PREGÃO ELETRÔNICO Nº 15/2023.",
+        "Objeto: aquisição de licenças de software JetBrains All Products Pack, incluindo atualização e serviço de suporte técnico por 36 meses, conforme condições do Edital, do Termo de Referência e de seus anexos.",
+        "O certame será realizado em ambiente eletrônico, por meio do portal Compras.gov.br, observadas as regras da Lei nº 14.133/2021 e os princípios da legalidade, impessoalidade, publicidade, eficiência e julgamento objetivo.",
+      ],
+      [
+        "A sessão pública observará a fase de apresentação de propostas, a etapa competitiva de lances, a verificação de conformidade, o julgamento, a habilitação e os procedimentos recursais previstos neste instrumento.",
+        "As propostas deverão conter descrição clara do objeto, marca ou fabricante, prazo de entrega, valor unitário, valor total e declaração de que todos os custos diretos e indiretos estão incluídos no preço ofertado.",
+        "O licitante é responsável por acompanhar as operações no sistema eletrônico durante todo o processo licitatório, respondendo pelos ônus decorrentes da perda de negócios diante da inobservância de mensagens emitidas pela Administração.",
+      ],
+      [
+        "O critério de julgamento adotado será o menor preço global, considerando o valor total estimado para a contratação das licenças e serviços correlatos.",
+        "A Administração poderá negociar condições mais vantajosas após o encerramento da etapa de lances, preservada a ordem de classificação e a compatibilidade da proposta com as especificações técnicas.",
+        "A proposta vencedora deverá atender integralmente às exigências de compatibilidade, quantidade, vigência, atualização e suporte técnico estabelecidas no Termo de Referência.",
+      ],
+      [
+        "A habilitação exigirá documentação jurídica, fiscal, social, trabalhista, econômico-financeira e técnica, nos termos do edital e da legislação aplicável.",
+        "A ausência de documento obrigatório poderá ser saneada apenas nas hipóteses admitidas pela legislação e pelo entendimento vigente do órgão responsável pela condução do certame.",
+        "A Administração consultará cadastros oficiais de sanções e impedimentos para verificar a regularidade da licitante antes da adjudicação.",
+      ],
+      [
+        "Integram o edital, para todos os fins e efeitos, os seguintes anexos: Anexo I - Termo de Referência; Anexo II - Estudo Técnico Preliminar; Anexo III - Minuta de Contrato.",
+        "Em caso de divergência entre disposições do Edital e de seus anexos ou demais peças que compõem o processo, prevalecerão as disposições do Edital.",
+        "O edital e seus anexos ficam disponíveis no Portal Nacional de Contratações Públicas e no endereço eletrônico institucional do TRF6.",
+      ],
+      [
+        "Os pedidos de esclarecimento e impugnação deverão ser enviados nos prazos previstos, por meio eletrônico, com identificação do interessado e indicação objetiva do ponto questionado.",
+        "As respostas a esclarecimentos e impugnações serão divulgadas no sistema eletrônico e passarão a integrar o edital, vinculando Administração e licitantes.",
+        "A participação na licitação implica aceitação plena das condições estabelecidas no edital e em seus anexos.",
+      ],
+      [
+        "A adjudicação e a homologação do resultado não implicam direito automático à contratação, ficando a convocação condicionada ao interesse público e à disponibilidade orçamentária.",
+        "O contrato observará a vigência, os prazos, as condições de recebimento, a forma de pagamento, as obrigações das partes e as sanções previstas nos anexos do edital.",
+        "Os casos omissos serão resolvidos pela Administração com base na Lei nº 14.133/2021 e nas normas federais aplicáveis às contratações públicas.",
+      ],
+      [
+        "O valor estimado da contratação considera pesquisa de preços e o custo total de propriedade do software, incluindo atualização, suporte técnico e continuidade da licença durante o período contratado.",
+        "Os preços apresentados deverão permanecer válidos pelo prazo indicado no edital e serão de exclusiva responsabilidade da licitante.",
+        "Não será admitida proposta com preço manifestamente inexequível ou incompatível com os valores praticados no mercado, salvo demonstração objetiva de exequibilidade.",
+      ],
+      [
+        "A licitante vencedora deverá assinar o contrato ou retirar instrumento equivalente no prazo definido pela Administração, sob pena de aplicação das penalidades cabíveis.",
+        "A recusa injustificada em assinar o contrato, a inexecução total ou parcial e o descumprimento das obrigações assumidas sujeitarão a contratada às sanções previstas no edital.",
+        "O foro competente para dirimir controvérsias será o da Justiça Federal de Minas Gerais, conforme minuta contratual.",
+      ],
+      [
+        "Documento assinado eletronicamente por autoridade competente do Tribunal Regional Federal da 6ª Região, com código verificador e código CRC disponíveis para conferência no sistema SEI.",
+        "Endereço institucional: Avenida Álvares Cabral, Belo Horizonte, Minas Gerais. Informações complementares poderão ser obtidas no portal oficial do TRF6.",
+        "Fim do Edital do Pregão Eletrônico nº 15/2023.",
+      ],
+    ],
+  },
+  termo: {
+    label: "Termo de Referência",
+    pages: [
+      [
+        "TERMO DE REFERÊNCIA. 1. OBJETO E CONDIÇÕES GERAIS DA CONTRATAÇÃO.",
+        "Aquisição de licenças de software JetBrains All Products Pack - subscrição de 36 meses, incluindo atualização e serviço de suporte técnico pelo mesmo período.",
+        "O prazo de vigência da contratação é de 3 anos contados do termo de recebimento definitivo das licenças, prorrogável na forma dos artigos 106 e 107 da Lei nº 14.133/2021.",
+      ],
+      [
+        "Item 1: Software All Products Pack - subscrição de 36 meses. CATMAT 27502. Unidade de medida: unidade. Quantidade: 20.",
+        "Valor unitário estimado: R$ 13.084,90. Valor total estimado: R$ 261.698,13.",
+        "O serviço é caracterizado como comum por possuir padrões de desempenho e qualidade objetivamente definidos por especificações usuais de mercado.",
+      ],
+      [
+        "2. FUNDAMENTAÇÃO E DESCRIÇÃO DA NECESSIDADE DA CONTRATAÇÃO.",
+        "A fundamentação encontra-se detalhada no Estudo Técnico Preliminar, com indicação da necessidade de continuidade das ferramentas utilizadas pelas equipes de desenvolvimento.",
+        "A solução busca preservar produtividade, padronização do ambiente de desenvolvimento e suporte às aplicações mantidas pela Secretaria de Tecnologia da Informação.",
+      ],
+      [
+        "4. REQUISITOS DA CONTRATAÇÃO. A contratada deverá observar as diretrizes de sustentabilidade, quando aplicáveis, e fornecer as condições necessárias à execução do objeto.",
+        "As licenças terão garantia de atualização pela contratada durante o período de 36 meses, contados a partir do recebimento definitivo.",
+        "A contratada deverá reparar, corrigir, remover, reconstruir ou substituir, às suas expensas, serviços em que forem verificados vícios, defeitos ou incorreções.",
+      ],
+      [
+        "5. MODELO DE EXECUÇÃO DO OBJETO. Local de prestação: Secretaria de Tecnologia da Informação do TRF6, em Belo Horizonte, Minas Gerais.",
+        "Regime de execução: empreitada por preço global, com contratação da execução do serviço por preço certo e total.",
+        "Características gerais: 20 licenças de direito de uso de programa de computador JetBrains All Products Pack, contemplando IntelliJ IDEA, WebStorm, Rider, PyCharm, CLion, PhpStorm, DataGrip, AppCode, GoLand, RubyMine e demais ferramentas do pacote.",
+      ],
+      [
+        "Prazo máximo para entrega e conclusão dos serviços de instalação e configuração: até 30 dias corridos, contados a partir do primeiro dia útil subsequente à data de recebimento da ordem de fornecimento ou serviço.",
+        "Caso não seja possível cumprir a data assinalada, a contratada deverá comunicar as razões com antecedência mínima de 15 dias, para análise de eventual prorrogação.",
+        "Os métodos e horários de trabalho deverão ser previamente autorizados pelo TRF6.",
+      ],
+      [
+        "6. CRITÉRIOS DE MEDIÇÃO E PAGAMENTO. O recebimento provisório ocorrerá em até 5 dias corridos, contados da conclusão dos serviços.",
+        "O recebimento definitivo ocorrerá em até 10 dias corridos após o recebimento provisório, desde que atendidas as exigências do Termo de Referência.",
+        "O objeto poderá ser rejeitado, no todo ou em parte, quando estiver em desacordo com as especificações constantes do Termo de Referência e da proposta.",
+      ],
+      [
+        "7. OBRIGAÇÕES DA CONTRATANTE. A Administração deverá acompanhar e fiscalizar a execução contratual, receber o objeto e efetuar os pagamentos devidos após a liquidação da despesa.",
+        "8. OBRIGAÇÕES DA CONTRATADA. A contratada deverá entregar as licenças, manter suporte técnico, cumprir prazos e prestar informações necessárias à fiscalização.",
+        "A contratada deverá manter, durante a execução contratual, as condições de habilitação e qualificação exigidas na licitação.",
+      ],
+      [
+        "11. SANÇÕES. O descumprimento injustificado das obrigações poderá sujeitar a contratada a advertência, multa, impedimento de licitar e contratar, declaração de inidoneidade e demais sanções previstas na legislação.",
+        "12. PROTEÇÃO DE DADOS. A contratada deverá observar as normas aplicáveis à proteção de dados e à segurança da informação no relacionamento com a Administração.",
+        "As disposições do Termo de Referência vinculam a proposta, o contrato e os atos de execução.",
+      ],
+      [
+        "Termo de Referência assinado eletronicamente por representantes da área demandante e da área técnica.",
+        "A autenticidade do documento pode ser conferida no sistema SEI, mediante código verificador e código CRC.",
+        "Fim do Termo de Referência.",
+      ],
+    ],
+  },
+  etp: {
+    label: "Estudo Técnico Preliminar",
+    pages: [
+      [
+        "ESTUDO TÉCNICO PRELIMINAR. Contratação de licenças JetBrains All Products Pack para atendimento das equipes de desenvolvimento do TRF6.",
+        "O estudo identifica a necessidade de ferramentas integradas para desenvolvimento em PHP, Java, bancos de dados e demais tecnologias utilizadas nas aplicações institucionais.",
+        "A solução considera produtividade, continuidade tecnológica, suporte oficial, atualização de versões e redução de riscos operacionais.",
+      ],
+      [
+        "A estimativa de demanda foi definida a partir da quantidade de profissionais que utilizam ferramentas de desenvolvimento e sustentação de sistemas.",
+        "Foram avaliadas alternativas de aquisição separada de licenças e a subscrição do pacote All Products Pack.",
+        "A análise indicou melhor aderência do pacote completo, pois reúne IDEs e ferramentas utilizadas pelas equipes sem necessidade de contratações adicionais.",
+      ],
+      [
+        "O All Products Pack contempla ferramentas como IntelliJ IDEA, PhpStorm, WebStorm, DataGrip, PyCharm, CLion, GoLand, Rider, RubyMine e complementos de produtividade.",
+        "A solução suporta Java, PHP, Python, HTML, XML, JSON, JavaScript, TypeScript, SQL, CSS, Sass e diversos frameworks.",
+        "Também há suporte a bancos de dados utilizados na sustentação dos sistemas institucionais.",
+      ],
+      [
+        "A pesquisa de preços considerou fornecedores especializados, valores de mercado e histórico de contratações similares.",
+        "A estimativa total da contratação é de R$ 261.698,13 para 36 meses.",
+        "O custo total contempla subscrição, atualizações e suporte técnico durante toda a vigência.",
+      ],
+      [
+        "A equipe de planejamento recomenda a contratação por pregão eletrônico, com julgamento pelo menor preço global e especificação objetiva do objeto.",
+        "A contratação deverá seguir as diretrizes da Resolução CNJ aplicável às soluções de tecnologia da informação e comunicação.",
+        "O estudo foi aprovado pelos integrantes técnico e demandante e pela autoridade da área de TIC.",
+      ],
+    ],
+  },
+  contrato: {
+    label: "Minuta de Contrato",
+    pages: [
+      [
+        "CONTRATO MINUTA 0522044. Processo SEI nº 0008259-31.2023.4.06.8000. Pregão Eletrônico 15/2023.",
+        "Contrato de aquisição de licenças de software All Products Pack, incluindo atualização e suporte técnico, celebrado entre o Tribunal Regional Federal da 6ª Região e a empresa vencedora.",
+        "O instrumento vincula o Termo de Referência, o Edital da Licitação, a proposta da contratada e eventuais anexos.",
+      ],
+      [
+        "CLÁUSULA PRIMEIRA - DO OBJETO. Aquisição de licenças JetBrains All Products Pack - subscrição de 36 meses, incluindo atualização e serviço de suporte técnico.",
+        "CLÁUSULA SEGUNDA - DA FINALIDADE. Proporcionar ganho de tempo e maior agilidade no desenvolvimento de aplicações, com recursos que reduzem esforços de codificação e facilitam controle de versões.",
+        "A ferramenta dará sustentação às equipes responsáveis por aplicações institucionais, incluindo sistemas mantidos pelo TRF6.",
+      ],
+      [
+        "CLÁUSULA TERCEIRA - MODELOS DE EXECUÇÃO E GESTÃO CONTRATUAIS. A contratada deverá observar o Termo de Referência quanto ao objeto, requisitos, execução, medição e pagamento.",
+        "CLÁUSULA QUARTA - SUBCONTRATAÇÃO. Não será admitida a subcontratação do objeto contratual.",
+        "CLÁUSULA QUINTA - OBRIGAÇÕES DA CONTRATADA. As obrigações são aquelas previstas no Termo de Referência, especialmente no item próprio de obrigações.",
+      ],
+      [
+        "CLÁUSULA SÉTIMA - PREÇO. A contratada receberá o valor definido na proposta adjudicada, observadas as condições do edital e do Termo de Referência.",
+        "CLÁUSULA OITAVA - RECEBIMENTO, LIQUIDAÇÃO E PAGAMENTO. A emissão da nota fiscal será precedida do recebimento definitivo do objeto.",
+        "CLÁUSULA DÉCIMA PRIMEIRA - REAJUSTE. Os preços serão reajustáveis com periodicidade anual, observada a legislação vigente e o índice previsto no instrumento.",
+      ],
+      [
+        "CLÁUSULA DÉCIMA QUINTA - VIGÊNCIA E PRORROGAÇÃO. O prazo de vigência da contratação é de 36 meses, contado da assinatura do contrato.",
+        "CLÁUSULA DÉCIMA SÉTIMA - PUBLICAÇÃO. O instrumento e seus aditivos serão divulgados no Portal Nacional de Contratações Públicas e no sítio oficial.",
+        "CLÁUSULA DÉCIMA OITAVA - FORO. Fica eleito o foro da Justiça Federal em Minas Gerais para dirimir dúvidas decorrentes do contrato.",
+      ],
+    ],
+  },
+  proposta: {
+    label: "Proposta da contratada",
+    pages: [
+      [
+        "PROPOSTA COMERCIAL. Pregão Eletrônico nº 15/2023. Objeto: licenças JetBrains All Products Pack com suporte técnico e atualização por 36 meses.",
+        "Item 1: 20 unidades. Unidade de medida: licença/subscrição. Prazo de entrega: até 30 dias corridos após o recebimento da ordem de fornecimento.",
+        "A proposta declara que todos os custos, tributos, encargos, despesas operacionais e demais valores necessários ao cumprimento integral do objeto estão incluídos no preço ofertado.",
+      ],
+      [
+        "Condições: validade da proposta conforme edital, garantia de atualização durante a vigência da subscrição e suporte técnico oficial.",
+        "A licitante declara ciência das condições do edital, do Termo de Referência e da minuta contratual.",
+        "A proposta fica vinculada à adjudicação e à assinatura do contrato, observadas as verificações de habilitação e regularidade.",
+      ],
+    ],
+  },
+};
+
+const sourceFillers = {
+  edital: [
+    "A condução do procedimento observará a vinculação ao instrumento convocatório, cabendo às licitantes examinar cuidadosamente todas as condições de participação, os prazos, as exigências de habilitação, as regras de julgamento e os anexos que integram a contratação.",
+    "Os documentos apresentados no sistema eletrônico deverão refletir fielmente as condições ofertadas, sendo de responsabilidade exclusiva da licitante a veracidade das informações, a regularidade dos arquivos enviados e a compatibilidade da proposta com o objeto descrito.",
+    "Durante a sessão pública, a Administração poderá solicitar esclarecimentos, promover diligências e registrar em ata os atos relevantes, sempre com o objetivo de preservar a competitividade, a transparência e a seleção da proposta mais vantajosa para o interesse público.",
+    "As comunicações oficiais do certame ocorrerão preferencialmente pelo sistema eletrônico, e a ausência de acompanhamento pela licitante não afastará sua responsabilidade por prazos, convocações, mensagens, solicitações de ajuste ou decisões disponibilizadas no ambiente da disputa.",
+    "A proposta classificada em primeiro lugar será analisada quanto à aderência técnica, ao preço ofertado e às condições de execução, podendo ser desclassificada quando apresentar inconsistência insanável, preço inexequível ou incompatibilidade com os requisitos do Termo de Referência.",
+    "Os recursos administrativos deverão observar os prazos e a forma previstos neste edital, com manifestação motivada, indicação objetiva dos pontos contestados e apresentação das razões no ambiente eletrônico, sob pena de preclusão.",
+    "A homologação do resultado dependerá da regularidade dos atos praticados, da inexistência de impedimentos legais e da conveniência administrativa, não gerando à licitante direito subjetivo à contratação antes da convocação formal pelo órgão competente.",
+  ],
+  termo: [
+    "A execução do objeto deverá assegurar a disponibilização regular das licenças, o acesso às atualizações do fabricante e a manutenção das condições de suporte técnico, sem prejuízo das obrigações de correção de falhas relacionadas à entrega ou à ativação das subscrições.",
+    "A contratada deverá manter comunicação clara com a fiscalização do contrato, informando prazos, dados de ativação, evidências de fornecimento, eventuais impedimentos e providências necessárias para que a Administração possa validar o recebimento do objeto.",
+    "O recebimento provisório não importará aceite definitivo, podendo a Administração verificar posteriormente a conformidade das licenças, a quantidade fornecida, o prazo de vigência, os direitos de atualização e as condições de suporte vinculadas ao fabricante.",
+    "Caso sejam identificadas inconsistências, a contratada deverá promover a correção no prazo indicado pela fiscalização, sem ônus adicional para a Administração e sem prejuízo da aplicação das sanções cabíveis em caso de atraso ou descumprimento injustificado.",
+    "As obrigações de suporte e atualização permanecerão vigentes durante todo o período contratado, devendo a contratada assegurar que a Administração tenha acesso aos benefícios da subscrição conforme as práticas comerciais e técnicas do fabricante.",
+    "A liquidação da despesa dependerá da conferência documental, do aceite do objeto e da regularidade fiscal e trabalhista exigida para pagamentos no âmbito da contratação pública.",
+    "A contratada deverá preservar, durante a execução, as condições de habilitação e qualificação demonstradas na licitação, comunicando qualquer fato superveniente que possa comprometer o cumprimento das obrigações assumidas.",
+  ],
+  etp: [
+    "A necessidade da contratação decorre da manutenção de ambiente técnico compatível com as linguagens, bancos de dados e frameworks utilizados pelas equipes de desenvolvimento e sustentação dos sistemas institucionais.",
+    "A avaliação das alternativas considerou custo total, abrangência funcional, continuidade operacional, curva de adaptação, suporte do fabricante e impacto de eventual substituição das ferramentas atualmente utilizadas.",
+    "A contratação do pacote integrado reduz a necessidade de múltiplos processos de aquisição, concentra o gerenciamento de licenças e amplia a cobertura tecnológica para diferentes perfis de desenvolvedores.",
+    "A estimativa de quantidades foi dimensionada a partir da demanda informada pela área técnica, considerando usuários que atuam diretamente em desenvolvimento, manutenção, testes, análise de banco de dados e sustentação de aplicações.",
+    "Os riscos identificados envolvem atraso na disponibilização das licenças, incompatibilidade de plano contratado, falhas de ativação, divergência de vigência e ausência de suporte adequado durante o período de utilização.",
+    "Como medida de mitigação, recomenda-se especificação clara da subscrição, validação do prazo de 36 meses, conferência da quantidade fornecida e acompanhamento formal pela fiscalização desde a emissão da ordem de fornecimento.",
+    "A solução escolhida apresenta aderência ao interesse público por preservar produtividade, reduzir fragmentação de ferramentas e oferecer suporte a tecnologias já adotadas pela área de tecnologia da informação.",
+  ],
+  contrato: [
+    "A contratada obriga-se a executar o objeto em conformidade com o Termo de Referência, a proposta aceita e as demais peças do processo, respondendo pela qualidade, regularidade e tempestividade do fornecimento.",
+    "A fiscalização do contrato poderá solicitar documentos, registros, evidências de ativação e quaisquer informações necessárias à verificação do cumprimento das obrigações contratuais, sem que isso exclua a responsabilidade integral da contratada.",
+    "Os pagamentos observarão os procedimentos de recebimento, liquidação e atesto definidos no instrumento convocatório, ficando condicionados à efetiva entrega do objeto e à manutenção da regularidade exigida.",
+    "A inexecução total ou parcial do contrato poderá ensejar aplicação de advertência, multa, impedimento de licitar e contratar ou outras penalidades previstas na legislação, observados o contraditório e a ampla defesa.",
+    "O reajuste, quando cabível, dependerá de solicitação formal, demonstração do índice aplicável e observância da periodicidade prevista, não sendo automático nem devido antes do atendimento das condições contratuais.",
+    "As partes deverão observar as regras de proteção de dados, confidencialidade e segurança da informação naquilo que for aplicável à execução do objeto e ao relacionamento institucional.",
+    "A extinção contratual poderá ocorrer pelo término da vigência, por acordo entre as partes ou pelas hipóteses legais, com apuração de obrigações pendentes, pagamentos devidos e eventuais responsabilidades.",
+  ],
+  proposta: [
+    "A proponente declara que examinou todas as condições do edital e dos anexos, assumindo integral responsabilidade pela composição dos preços, prazos, tributos, encargos e demais custos necessários ao fornecimento do objeto.",
+    "Os valores apresentados contemplam a disponibilização das licenças, o direito de atualização pelo período contratado, o suporte técnico vinculado à subscrição e os procedimentos necessários à ativação junto ao fabricante.",
+    "A proposta comercial permanecerá válida pelo prazo estabelecido no edital, vinculando a licitante às condições ofertadas e permitindo a convocação para assinatura contratual ou instrumento equivalente.",
+    "A aceitação da proposta fica condicionada à análise de conformidade, à habilitação da licitante e à inexistência de impedimentos para contratar com a Administração Pública.",
+    "Eventuais ajustes solicitados pela Administração deverão preservar o preço final ofertado, a descrição do objeto, a quantidade de licenças, a vigência da subscrição e as condições mínimas definidas no Termo de Referência.",
+    "A licitante compromete-se a fornecer informações complementares quando solicitada, especialmente aquelas necessárias à comprovação de compatibilidade do plano ofertado com o produto JetBrains All Products Pack.",
+    "A assinatura do contrato formalizará as obrigações assumidas na proposta, incluindo prazo de entrega, condições de suporte, validade da subscrição e responsabilidade pelo atendimento ao objeto contratado.",
+  ],
+};
+
+function buildSourcePageParagraphs(documentKey, paragraphs, pageIndex) {
+  const fillers = sourceFillers[documentKey] || sourceFillers.edital;
+  const expanded = [...paragraphs];
+  let cursor = pageIndex % fillers.length;
+  let characterCount = expanded.reduce((total, paragraph) => total + paragraph.replace(/<[^>]+>/g, "").length, 0);
+  const targetCharacters = 1750;
+  const maxCharacters = 2100;
+
+  while (characterCount < targetCharacters && expanded.length < 8) {
+    const nextParagraph = fillers[cursor];
+    const nextLength = nextParagraph.length;
+
+    if (characterCount + nextLength > maxCharacters && expanded.length > paragraphs.length) break;
+
+    expanded.push(nextParagraph);
+    characterCount += nextLength;
+    cursor = (cursor + 1) % fillers.length;
+  }
+
+  return expanded;
+}
+
+const sourceHighlightTargets = [
+  {
+    label: "Regime de Execução",
+    documentKey: "termo",
+    text: "Regime de execução: empreitada por preço global, com contratação da execução do serviço por preço certo e total.",
+  },
+  {
+    label: "Critério de Julgamento",
+    documentKey: "edital",
+    text: "O critério de julgamento adotado será o menor preço global",
+  },
+  {
+    label: "Escopo principal",
+    documentKey: "edital",
+    text: "aquisição de licenças de software JetBrains All Products Pack, incluindo atualização e serviço de suporte técnico por 36 meses",
+  },
+  {
+    label: "Quantidade de licenças",
+    documentKey: "termo",
+    text: "Quantidade: 20",
+  },
+  {
+    label: "Vigência",
+    documentKey: "termo",
+    text: "O prazo de vigência da contratação é de 3 anos contados do termo de recebimento definitivo das licenças",
+  },
+  {
+    label: "Tipo de solução",
+    documentKey: "etp",
+    text: "subscrição do pacote All Products Pack",
+  },
+  {
+    label: "Ferramentas incluídas",
+    documentKey: "termo",
+    text: "IntelliJ IDEA, WebStorm, Rider, PyCharm, CLion, PhpStorm, DataGrip, AppCode, GoLand, RubyMine",
+  },
+  {
+    label: "Finalidade",
+    documentKey: "contrato",
+    text: "Proporcionar ganho de tempo e maior agilidade no desenvolvimento de aplicações",
+  },
+  {
+    label: "Entrega",
+    documentKey: "termo",
+    text: "Prazo máximo para entrega e conclusão dos serviços de instalação e configuração: até 30 dias corridos",
+  },
+  {
+    label: "Prazo de entrega",
+    documentKey: "termo",
+    text: "Prazo máximo para entrega e conclusão dos serviços de instalação e configuração: até 30 dias corridos",
+  },
+  {
+    label: "Atualização",
+    documentKey: "termo",
+    text: "garantia de atualização pela contratada durante o período de 36 meses",
+  },
+  {
+    label: "Suporte técnico",
+    documentKey: "termo",
+    text: "serviço de suporte técnico pelo mesmo período",
+  },
+  {
+    label: "Valor estimado",
+    documentKey: "termo",
+    text: "R$ 261.698,13",
+  },
+  {
+    label: "Pagamento",
+    documentKey: "contrato",
+    text: "A emissão da nota fiscal será precedida do recebimento definitivo do objeto",
+  },
+  {
+    label: "Recebimento provisório",
+    documentKey: "termo",
+    text: "O recebimento provisório ocorrerá em até 5 dias corridos",
+  },
+  {
+    label: "Recebimento definitivo",
+    documentKey: "termo",
+    text: "O recebimento definitivo ocorrerá em até 10 dias corridos após o recebimento provisório",
+  },
+];
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function scrollSourceHighlightIntoView(sourceView, highlight) {
+  const sourceBody = sourceView?.querySelector(".source-body");
+  if (!sourceBody || !highlight) return;
+
+  const bodyRect = sourceBody.getBoundingClientRect();
+  const highlightRect = highlight.getBoundingClientRect();
+  const centeredTop = (
+    sourceBody.scrollTop
+    + highlightRect.top
+    - bodyRect.top
+    - (sourceBody.clientHeight / 2)
+    + (highlightRect.height / 2)
+  );
+
+  sourceBody.scrollTo({
+    top: Math.max(0, centeredTop),
+    behavior: "auto",
+  });
+}
+
+function applySourceHighlight(sourceView, text) {
+  if (!sourceView || !text) return false;
+
+  clearSourceHighlight(sourceView);
+  const paragraphs = sourceView.querySelectorAll(".source-page p");
+  const pattern = new RegExp(escapeRegExp(text), "i");
+
+  for (const paragraph of paragraphs) {
+    if (!pattern.test(paragraph.textContent)) continue;
+
+    paragraph.innerHTML = paragraph.innerHTML.replace(pattern, (match) => `<mark class="source-highlight">${match}</mark>`);
+    scrollSourceHighlightIntoView(sourceView, paragraph.querySelector(".source-highlight"));
+    hideSourceCursorTooltip();
+    return true;
+  }
+
+  return false;
+}
+
+function clearSourceHighlight(sourceView) {
+  sourceView?.querySelectorAll(".source-highlight").forEach((mark) => {
+    mark.replaceWith(document.createTextNode(mark.textContent));
+  });
+}
+
+function getSourceSearchText(text) {
+  const firstUsefulLine = text
+    .split(/\n+/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .find((line) => line.length > 24);
+
+  return (firstUsefulLine || text.replace(/\s+/g, " ").trim()).slice(0, 140);
+}
+
+function clearActiveSourceContext({ clearHighlight = true } = {}) {
+  if (activeSourceRow) {
+    activeSourceRow.classList.remove("is-source-active", "is-hovered");
+    activeSourceRow.querySelector('[data-row-action="link"]')?.classList.remove("is-active");
+    activeSourceRow = null;
+  }
+  activeSourceView = null;
+  activeManualSourceEditor = null;
+
+  if (clearHighlight) {
+    document.querySelectorAll("[data-source-view]").forEach((sourceView) => {
+      delete sourceView.dataset.highlightText;
+      clearSourceHighlight(sourceView);
+    });
+  }
+  sourceSelectionRange = null;
+  hideSourceSelectionTooltip();
+  hideSourceCursorTooltip();
+}
+
+function setActiveSourceRow(row, sourceView) {
+  if (!row) return;
+
+  clearActiveSourceContext({ clearHighlight: false });
+  activeSourceRow = row;
+  activeSourceView = sourceView || null;
+  row.classList.add("is-source-active", "is-hovered");
+  row.querySelector('[data-row-action="link"]')?.classList.add("is-active");
+}
+
+function findSourceHighlightTarget(row) {
+  const label = row?.querySelector(".row-label")?.textContent.trim();
+  const value = row?.querySelector(".row-value")?.textContent.trim();
+
+  if (row?.dataset.noSource === "true") {
+    return {
+      documentKey: row.dataset.sourceDocument || "edital",
+      text: "",
+      fallbackText: value,
+    };
+  }
+
+  if (row?.dataset.sourceText) {
+    return {
+      documentKey: row.dataset.sourceDocument || "edital",
+      text: row.dataset.sourceSearchText || row.dataset.sourceText,
+      isCustom: true,
+    };
+  }
+
+  const byLabel = sourceHighlightTargets.find((target) => target.label === label);
+  if (byLabel) return byLabel;
+
+  return {
+    documentKey: "edital",
+    text: "",
+    fallbackText: value,
+  };
+}
+
+const copyText = [
+  "Resumo",
+  "",
+  "Objeto: Aquisição de licenças de software JetBrains All Products Pack, incluindo atualização e suporte técnico por 36 meses.",
+  "",
+  "Prazos e implantação",
+  "  Prazo de entrega: 30 dias corridos | recebimento definitivo em até 10 dias corridos",
+  "  Regime de Execução: Empreitada por preço global.",
+  "  Critério de Julgamento: Menor preço global.",
+  "  Escopo principal: Licenças JetBrains, atualização e suporte técnico por 36 meses.",
+  "",
+  "Licenças e vigência",
+  "  Quantidade de licenças: 20 licenças de direito de uso | 20 unidades de subscrição por 36 meses",
+  "  Regime de Execução: Fornecimento de licenças com suporte técnico oficial.",
+  "  Critério de Julgamento: Menor preço global.",
+  "  Vigência: 36 meses, contados do recebimento definitivo das licenças.",
+  "",
+  "Objeto e escopo",
+  "  Tipo de solução: Subscrição de software para desenvolvimento, banco de dados e produtividade técnica.",
+  "  Ferramentas incluídas: IntelliJ IDEA, WebStorm, Rider, PyCharm, CLion, PhpStorm, DataGrip e GoLand.",
+  "  Finalidade: Apoiar equipes de desenvolvimento em Java, PHP, bancos de dados e aplicações institucionais.",
+  "",
+  "Requisitos técnicos",
+  "  Entrega: Disponibilização das licenças e ativação da subscrição em até 30 dias corridos.",
+  "  Atualização: Atualizações do fabricante durante todo o período de vigência da subscrição.",
+  "  Suporte técnico: Suporte técnico oficial pelo período de 36 meses.",
+  "",
+  "Segurança e conformidade",
+  "  Dados pessoais: Baixo tratamento de dados pessoais, restrito à relação contratual e à gestão das licenças.",
+  "  Conformidade: Observância às normas de proteção de dados e segurança da informação aplicáveis ao contrato.",
+  "  Sustentabilidade: Aplicação das diretrizes de sustentabilidade quando compatíveis com o fornecimento de software.",
+  "",
+  "Suporte e SLA",
+  "  Atendimento: Suporte técnico oficial do fabricante durante a vigência da subscrição.",
+  "  Atualizações: Direito a atualizações do software pelo período de 36 meses.",
+  "  Garantia: Correção de vícios, defeitos ou incorreções nos serviços de instalação, quando aplicável.",
+  "",
+  "Condições comerciais",
+  "  Vigência: 36 meses, prorrogável nos termos da Lei nº 14.133/2021.",
+  "  Pagamento: Após recebimento definitivo, liquidação da despesa e emissão da nota fiscal.",
+  "  Valor estimado: R$ 261.698,13 para a subscrição de 36 meses.",
+  "",
+  "Critérios de julgamento",
+  "  Modelo de disputa: Pregão eletrônico, com etapa de lances no Compras.gov.br.",
+  "  Julgamento: Menor preço global, observada a conformidade da proposta com o edital.",
+  "  Negociação: Possibilidade de negociação com a licitante melhor classificada.",
+  "",
+  "Documentos de habilitação",
+  "  Qualificação técnica: Comprovação compatível com fornecimento de licenças e suporte técnico de software.",
+  "  Regularidade fiscal: Certidões fiscais federais, estaduais, municipais, FGTS e trabalhista.",
+  "  Declarações: Inexistência de impedimentos para licitar e cumprimento das exigências legais.",
+  "",
+  "Entregáveis e aceite",
+  "  Ordem de fornecimento: Entrega contada a partir do recebimento da ordem de fornecimento ou serviço.",
+  "  Recebimento provisório: Até 5 dias corridos após a conclusão dos serviços.",
+  "  Recebimento definitivo: Até 10 dias corridos após o recebimento provisório.",
+].join("\n");
+
+function renderPanel(panel) {
+  panel.append(template.content.cloneNode(true));
+  const historyPopover = document.createElement("div");
+  historyPopover.className = "history-popover";
+  historyPopover.dataset.historyPopover = "";
+  historyPopover.hidden = true;
+  panel.querySelector(".review-header")?.append(historyPopover);
+  panel.querySelectorAll(".info-icon").forEach((icon) => {
+    icon.setAttribute("aria-label", "Revise as informações divergentes");
+  });
+  panel.querySelectorAll(".sub-body").forEach((body, index) => {
+    const groupName = `${panel.dataset.panel}-review-${index}`;
+    body.querySelectorAll("[data-review-radio]").forEach((radio) => {
+      radio.name = groupName;
+    });
+
+    if (body.classList.contains("is-open")) {
+      const header = body.previousElementSibling;
+      const chevron = header?.querySelector(".sub-chevron");
+      header?.classList.add("is-open");
+      chevron?.classList.add("is-open");
+      header?.querySelectorAll("[data-sub-toggle]").forEach((toggle) => {
+        toggle.setAttribute("aria-expanded", "true");
+      });
+    }
+  });
+  panel.querySelectorAll(".accordion-row").forEach(addRowActions);
+  panel.querySelectorAll(".source-option").forEach(addReviewOptionSourceAction);
+  renderHistory(panel);
+}
+
+function actionIcon(name) {
+  const icons = {
+    copy: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>',
+    edit: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>',
+    link: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>',
+  };
+  return icons[name];
+}
+
+function addRowActions(row) {
+  if (row.querySelector(".row-actions")) return;
+
+  const actions = document.createElement("div");
+  actions.className = "row-actions";
+  actions.innerHTML = `
+    <button class="row-action-btn" type="button" data-row-action="copy" aria-label="Copiar informação">${actionIcon("copy")}</button>
+    <button class="row-action-btn" type="button" data-row-action="edit" aria-label="Editar informação">${actionIcon("edit")}</button>
+    <button class="row-action-btn" type="button" data-row-action="link" aria-label="Abrir trecho do edital">${actionIcon("link")}</button>
+  `;
+  row.append(actions);
+  updateRowSourceState(row);
+}
+
+function addReviewOptionSourceAction(option) {
+  if (option.querySelector("[data-review-source]")) return;
+
+  const button = document.createElement("button");
+  button.className = "review-source-btn";
+  button.type = "button";
+  button.dataset.reviewSource = "";
+  button.setAttribute("aria-label", "Abrir trecho do edital");
+  button.innerHTML = actionIcon("link");
+  option.append(button);
+}
+
+function escapeHTML(value) {
+  return value.replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[char]));
+}
+
+function getDivergenceOptions(body) {
+  return [...(body?.querySelectorAll(".source-option strong") || [])]
+    .map((item) => item.textContent.trim())
+    .filter(Boolean);
+}
+
+const sampleHistoryItems = [
+  {
+    label: "Prazo de entrega",
+    kind: "selected",
+    choice: "Entrega e conclusão dos serviços em até 30 dias corridos.",
+    source: true,
+    options: [
+      "Entrega e conclusão dos serviços em até 30 dias corridos.",
+      "Recebimento definitivo em até 10 dias corridos após o recebimento provisório.",
+    ],
+  },
+  {
+    label: "Quantidade de licenças",
+    kind: "selected",
+    choice: "20 licenças de direito de uso do JetBrains All Products Pack.",
+    source: true,
+    options: [
+      "20 licenças de direito de uso do JetBrains All Products Pack.",
+      "20 unidades de subscrição por 36 meses.",
+    ],
+  },
+  {
+    label: "Critério de julgamento",
+    kind: "selected",
+    choice: "Menor preço global.",
+    source: true,
+    options: [
+      "Menor preço global.",
+      "Menor preço por item.",
+    ],
+  },
+  {
+    label: "Vigência da contratação",
+    kind: "manual",
+    choice: "36 meses contados do recebimento definitivo das licenças.",
+    source: true,
+    options: [
+      "36 meses contados da assinatura do contrato.",
+      "3 anos contados do recebimento definitivo das licenças.",
+    ],
+  },
+  {
+    label: "Suporte técnico",
+    kind: "manual",
+    choice: "Suporte técnico oficial durante todo o período da subscrição.",
+    source: false,
+    options: [
+      "Suporte técnico pelo período de 36 meses.",
+      "Suporte técnico conforme disponibilidade do fabricante.",
+    ],
+  },
+];
+
+function renderHistoryDecisionIcon(selected) {
+  const icon = selected
+    ? `<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>`
+    : `<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>`;
+
+  return `
+    <svg class="history-decision-icon" aria-hidden="true" viewBox="0 0 24 24">
+      ${icon}
+    </svg>
+  `;
+}
+
+function renderHistoryItem({ label, choice, source, kind, options = [] }) {
+  const normalizedOptions = options.includes(choice) ? options : [choice, ...options];
+  const helperText = kind === "manual" ? "Informação adicionada" : "Opção escolhida";
+
+  return `
+    <article class="history-item">
+      <div class="history-item-header">
+        <strong>${escapeHTML(label)}</strong>
+        <span class="history-status is-resolved">Resolvida</span>
+      </div>
+      <div class="history-options" aria-label="${escapeHTML(helperText)}">
+        ${normalizedOptions.map((option) => {
+          const selected = option === choice;
+          return `
+            <div class="history-option ${selected ? "is-selected" : "is-rejected"}">
+              ${renderHistoryDecisionIcon(selected)}
+              <div>
+                <span>${selected ? helperText : "Opção descartada"}</span>
+                <p>${escapeHTML(option)}</p>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderHistory(panel) {
+  const popover = panel.querySelector("[data-history-popover]");
+  if (!popover) return;
+
+  const savedItems = [...panel.querySelectorAll(".sub-accordion-header[data-history-status='resolved']")]
+    .map((header) => {
+      const label = header.querySelector(".sub-label")?.textContent.trim() || "Informação";
+      const choice = header.dataset.historyChoice || "";
+      const source = header.dataset.historySource === "true";
+      const kind = header.dataset.historyKind || "selected";
+      const options = getDivergenceOptions(header.nextElementSibling);
+
+      return { label, choice, source, kind, options };
+    });
+
+  const items = [...savedItems, ...sampleHistoryItems].slice(0, 5).map(renderHistoryItem).join("");
+
+  popover.innerHTML = `
+    <div class="history-title">Histórico de divergências</div>
+    ${items}
+  `;
+}
+
+function toggleHistory(button) {
+  const panel = button.closest("[data-panel]");
+  const popover = panel?.querySelector("[data-history-popover]");
+  if (!popover) return;
+
+  const willOpen = popover.hidden;
+  document.querySelectorAll("[data-history-popover]").forEach((item) => {
+    item.hidden = true;
+  });
+  if (willOpen) {
+    renderHistory(panel);
+    popover.hidden = false;
+  }
+}
+
+function rowHasSource(row) {
+  if (!row || row.dataset.noSource === "true") return false;
+  if (row.dataset.sourceText) return true;
+
+  const label = row.querySelector(".row-label")?.textContent.trim();
+  return sourceHighlightTargets.some((target) => target.label === label);
+}
+
+function updateRowSourceState(row) {
+  const linkButton = row?.querySelector('[data-row-action="link"]');
+  if (!linkButton) return;
+
+  const hasSource = rowHasSource(row);
+  row.dataset.sourceStatus = hasSource ? "linked" : "none";
+  linkButton.classList.toggle("is-missing-source", !hasSource);
+  linkButton.classList.toggle("has-source", hasSource);
+  linkButton.setAttribute(
+    "aria-label",
+    hasSource ? "Abrir trecho do edital" : "Sem trecho vinculado"
+  );
+}
+
+function createResolvedRow(label, value, options = {}) {
+  const row = document.createElement("div");
+  row.className = "accordion-row";
+  if (options.noSource) row.dataset.noSource = "true";
+  if (options.sourceText) row.dataset.sourceText = options.sourceText;
+  if (options.sourceSearchText) row.dataset.sourceSearchText = options.sourceSearchText;
+  if (options.sourceDocument) row.dataset.sourceDocument = options.sourceDocument;
+  row.innerHTML = `<dt class="row-label">${label}</dt><dd class="row-value">${value}</dd>`;
+  addRowActions(row);
+  return row;
+}
+
+function setExpanded(button, isOpen) {
+  const header = button.closest(".sub-accordion-header") || button;
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector(".chevron, .sub-chevron");
+
+  header.querySelectorAll("[data-sub-toggle]").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
+  if (button.matches("[data-accordion-toggle]")) {
+    button.setAttribute("aria-expanded", String(isOpen));
+  }
+  header.classList.toggle("is-open", isOpen);
+  body.classList.toggle("is-open", isOpen);
+  chevron?.classList.toggle("is-open", isOpen);
+}
+
+function togglePanel(button) {
+  const header = button.closest(".sub-accordion-header") || button;
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains("is-open");
+
+  setExpanded(button, !isOpen);
+}
+
+function openReview(button) {
+  const header = button.closest(".sub-accordion-header");
+  const body = header?.nextElementSibling;
+  const toggle = header?.querySelector("[data-sub-toggle]");
+  if (!header || !body || !toggle) return;
+
+  if (button.classList.contains("is-resolved")) return;
+
+  if (body.classList.contains("is-reviewing")) {
+    cancelReview(button);
+    return;
+  }
+
+  if (!body.classList.contains("is-open")) {
+    setExpanded(toggle, true);
+  }
+
+  header.classList.add("is-reviewing");
+  body.classList.add("is-reviewing");
+  const radios = body.querySelectorAll(".source-option [data-review-radio]");
+  if (radios.length && ![...radios].some((radio) => radio.checked)) {
+    radios[0].checked = true;
+  }
+  button.textContent = "Cancelar";
+}
+
+function showNewOption(button) {
+  const body = button.closest(".sub-body");
+  const editor = body?.querySelector(".review-editor");
+  if (!editor) return;
+
+  clearActiveSourceContext();
+  editor.hidden = false;
+  button.hidden = true;
+  button.closest(".review-footer").hidden = true;
+  const radioName = body.querySelector("[data-review-radio]")?.name || `review-${Date.now()}`;
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.name = radioName;
+  radio.checked = true;
+  radio.dataset.reviewRadio = "";
+  editor.prepend(radio);
+  editor.classList.add("has-radio");
+  editor.querySelector("textarea")?.focus();
+}
+
+function resetNewOption(body) {
+  const editor = body?.querySelector(".review-editor");
+  if (!editor) return;
+
+  editor.querySelector("[data-review-radio]")?.remove();
+  editor.hidden = true;
+  editor.classList.remove("has-radio");
+
+  const textarea = editor.querySelector("textarea");
+  if (textarea) {
+    textarea.value = "";
+    textarea.removeAttribute("aria-invalid");
+  }
+  editor.querySelector(".review-editor-error")?.remove();
+  delete editor.dataset.sourceText;
+  delete editor.dataset.sourceSearchText;
+  delete editor.dataset.sourceDocument;
+
+  const linkButton = editor.querySelector("[data-link-source]");
+  if (linkButton) {
+    linkButton.classList.remove("is-linked", "is-selecting");
+    linkButton.textContent = "Vincular trecho do edital (opcional)";
+    linkButton.setAttribute("aria-label", "Vincular trecho do edital");
+  }
+
+  const addButton = body.querySelector("[data-add-option]");
+  if (addButton) {
+    addButton.hidden = false;
+    addButton.disabled = false;
+    addButton.closest(".review-footer").hidden = false;
+  }
+}
+
+function linkSource(button) {
+  const panel = button.closest("[data-panel]");
+  const editor = button.closest(".review-editor");
+  const sourceView = panel?.querySelector("[data-source-view]");
+  if (!panel || !sourceView || !editor) return;
+
+  if (editor.dataset.sourceText) {
+    openSourceTarget(panel, {
+      documentKey: editor.dataset.sourceDocument || "edital",
+      text: editor.dataset.sourceSearchText || editor.dataset.sourceText,
+    });
+    activeManualSourceEditor = editor;
+    activeSourceView = sourceView;
+    button.classList.add("is-linked");
+    button.textContent = "Trecho vinculado";
+    button.setAttribute("aria-label", "Abrir trecho vinculado");
+    return;
+  }
+
+  clearActiveSourceContext();
+  activeManualSourceEditor = editor;
+  activeSourceView = sourceView;
+  sourceView.dataset.highlightText = "";
+  renderSourceDocument(sourceView, "edital");
+  panel.classList.add("is-source-open");
+  panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
+  appShell.classList.toggle("source-sidebar-open", panel.dataset.panel === "sidebar");
+  sourceView.hidden = false;
+  sourceView.querySelector("[data-source-document]").value = "edital";
+  sourceView.querySelector(".source-body")?.scrollTo({ top: 0, behavior: "auto" });
+  updateSidebarWorkspaceMode();
+  if (panel.dataset.panel === "sidebar" && panel.classList.contains("is-compact-workspace")) {
+    setWorkspaceTab(panel, "source");
+  }
+
+  button.classList.remove("is-linked");
+  button.classList.add("is-selecting");
+  button.textContent = "Selecione um trecho no edital";
+  button.setAttribute("aria-label", "Selecionar trecho do edital");
+}
+
+function setManualInfoError(editor, message) {
+  const textarea = editor?.querySelector("textarea");
+  if (!editor || !textarea) return;
+
+  textarea.setAttribute("aria-invalid", "true");
+  let error = editor.querySelector(".review-editor-error");
+  if (!error) {
+    error = document.createElement("span");
+    error.className = "review-editor-error";
+    textarea.after(error);
+  }
+  error.textContent = message;
+  textarea.focus();
+}
+
+function clearManualInfoError(editor) {
+  editor?.querySelector("textarea")?.removeAttribute("aria-invalid");
+  editor?.querySelector(".review-editor-error")?.remove();
+}
+
+function cancelReview(button) {
+  const header = button.closest(".sub-accordion-header") || button.closest(".sub-body")?.previousElementSibling;
+  const body = header?.nextElementSibling;
+  if (!body || !header) return;
+
+  body.classList.remove("is-reviewing");
+  header.classList.remove("is-reviewing");
+
+  resetNewOption(body);
+
+  body.querySelectorAll(".source-option [data-review-radio]").forEach((radio, index) => {
+    radio.checked = index === 0;
+  });
+
+  const reviewButton = header.querySelector(".review-btn");
+  if (reviewButton) reviewButton.textContent = "Revisar";
+}
+
+function confirmReview(button) {
+  const header = button.closest(".sub-accordion-header") || button.closest(".sub-body")?.previousElementSibling;
+  const body = header?.nextElementSibling;
+  if (!body || !header) return;
+
+  const selected = body.querySelector("[data-review-radio]:checked");
+  const editor = body.querySelector(".review-editor");
+  const manualText = editor?.querySelector("textarea")?.value.trim();
+  const isManualSelected = Boolean(selected?.closest(".review-editor"));
+  if (isManualSelected && !manualText) {
+    setManualInfoError(editor, "Preencha a nova informação.");
+    return;
+  }
+  clearManualInfoError(editor);
+
+  const selectedOption = selected?.closest(".source-option");
+  const selectedText = manualText || selectedOption?.querySelector("strong")?.textContent || "Informação resolvida";
+  const resolvedLabel = header.querySelector(".sub-label")?.textContent || "Informação";
+  const isManualInformation = Boolean(manualText);
+  const manualSourceOptions = isManualInformation && editor?.dataset.sourceText
+    ? {
+        sourceText: editor.dataset.sourceText,
+        sourceSearchText: editor.dataset.sourceSearchText,
+        sourceDocument: editor.dataset.sourceDocument,
+      }
+    : { noSource: isManualInformation };
+
+  const list = body.nextElementSibling;
+  if (list?.classList.contains("accordion-list")) {
+    list.prepend(createResolvedRow(resolvedLabel, selectedText, manualSourceOptions));
+  }
+
+  header.dataset.historyStatus = "resolved";
+  header.dataset.historyChoice = selectedText;
+  header.dataset.historySource = String(Boolean(selectedOption || manualSourceOptions.sourceText));
+  header.dataset.historyKind = isManualInformation ? "manual" : "selected";
+  renderHistory(header.closest("[data-panel]"));
+  header.hidden = true;
+  body.hidden = true;
+  body.classList.remove("is-open", "is-reviewing");
+  header.classList.remove("is-open", "is-reviewing");
+  showToast("Divergência resolvida!");
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+
+  window.clearTimeout(showToast.timeout);
+  showToast.timeout = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 2000);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function setSidebarWidth(mode, value) {
+  const nextValue = mode === "source"
+    ? clamp(value, 64, 78)
+    : clamp(value, 34, 45);
+
+  sidebarWidth[mode] = nextValue;
+  appShell.style.setProperty(
+    mode === "source" ? "--sidebar-source-width" : "--sidebar-width",
+    `${nextValue}vw`
+  );
+  updateSidebarWorkspaceMode();
+}
+
+function setWorkspaceTab(panel, tab) {
+  if (!panel) return;
+
+  const showSource = tab === "source";
+  panel.classList.toggle("show-source-tab", showSource);
+  panel.querySelectorAll("[data-workspace-tab]").forEach((button) => {
+    const isActive = button.dataset.workspaceTab === tab;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+}
+
+function updateSidebarWorkspaceMode() {
+  const wasCompact = sidebarPanel.classList.contains("is-compact-workspace");
+  if (!sidebarPanel.classList.contains("is-source-open")) {
+    sidebarPanel.classList.remove("is-compact-workspace", "show-source-tab");
+    setWorkspaceTab(sidebarPanel, "summary");
+    return;
+  }
+
+  const isCompact = sidebarShell.getBoundingClientRect().width < 760;
+  sidebarPanel.classList.toggle("is-compact-workspace", isCompact);
+  if (isCompact && !wasCompact) {
+    setWorkspaceTab(sidebarPanel, activeSourceView ? "source" : "summary");
+  }
+  if (!isCompact) {
+    sidebarPanel.classList.remove("show-source-tab");
+    setWorkspaceTab(sidebarPanel, "summary");
+  }
+}
+
+function resizeSidebarFromPointer(event) {
+  if (!appShell.classList.contains("has-sidebar")) return;
+
+  const widthPercent = ((window.innerWidth - event.clientX) / window.innerWidth) * 100;
+  setSidebarWidth(sidebarResizeMode || (appShell.classList.contains("source-sidebar-open") ? "source" : "summary"), widthPercent);
+}
+
+function startSidebarResize(event) {
+  event.preventDefault();
+  sidebarResizeMode = appShell.classList.contains("source-sidebar-open") ? "source" : "summary";
+  appShell.classList.add("is-resizing-sidebar");
+  sidebarResizeHandle?.setPointerCapture?.(event.pointerId);
+  resizeSidebarFromPointer(event);
+}
+
+function stopSidebarResize(event) {
+  appShell.classList.remove("is-resizing-sidebar");
+  sidebarResizeMode = null;
+  sidebarResizeHandle?.releasePointerCapture?.(event.pointerId);
+}
+
+function positionTooltip(anchor) {
+  const spacing = 8;
+  const viewportPadding = 8;
+  const anchorRect = anchor.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+
+  let left = anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2;
+  left = Math.max(viewportPadding, Math.min(left, window.innerWidth - tooltipRect.width - viewportPadding));
+
+  let top = anchorRect.top - tooltipRect.height - spacing;
+  if (top < viewportPadding) {
+    top = anchorRect.bottom + spacing;
+  }
+  top = Math.max(viewportPadding, Math.min(top, window.innerHeight - tooltipRect.height - viewportPadding));
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+function showTooltip(anchor) {
+  const label = anchor.getAttribute("aria-label");
+  if (!label) return;
+
+  tooltip.textContent = label;
+  tooltip.classList.add("is-visible");
+  positionTooltip(anchor);
+}
+
+function hideTooltip() {
+  tooltip.classList.remove("is-visible");
+}
+
+function renderSourceDocument(sourceView, documentKey = "edital") {
+  const card = sourceView.querySelector("[data-source-card]");
+  const document = sourceDocuments[documentKey] || sourceDocuments.edital;
+  if (!card) return;
+
+  card.innerHTML = document.pages
+    .map((paragraphs, index) => `
+      <section class="source-page" aria-label="Página ${index + 1}">
+        ${buildSourcePageParagraphs(documentKey, paragraphs, index).map((paragraph) => `<p>${paragraph}</p>`).join("")}
+      </section>
+    `)
+    .join("");
+  card.dataset.documentKey = documentKey;
+}
+
+function hideSourceSelectionTooltip() {
+  sourceSelectionTooltip.classList.remove("is-visible");
+}
+
+function markScrollContainerActive(container) {
+  if (!container?.matches?.(".review-body, .source-body")) return;
+
+  container.classList.add("is-scrolling");
+  window.clearTimeout(scrollHideTimers.get(container));
+  scrollHideTimers.set(
+    container,
+    window.setTimeout(() => container.classList.remove("is-scrolling"), 700)
+  );
+}
+
+function clearSourceSelection() {
+  sourceSelectionRange = null;
+  hideSourceSelectionTooltip();
+  window.getSelection()?.removeAllRanges();
+}
+
+function hideSourceCursorTooltip() {
+  sourceCursorTooltip.classList.remove("is-visible");
+}
+
+function findSelectedManualSourceEditor(panel) {
+  if (!panel) return null;
+
+  return [...panel.querySelectorAll(".review-editor.has-radio")].find((editor) => {
+    const radio = editor.querySelector("[data-review-radio]");
+    return !editor.hidden && radio?.checked;
+  }) || null;
+}
+
+function ensureManualSourceContext(sourceView) {
+  if (activeSourceRow || activeManualSourceEditor) return;
+
+  const panel = sourceView?.closest("[data-panel]");
+  const editor = findSelectedManualSourceEditor(panel);
+  if (!editor) return;
+
+  activeManualSourceEditor = editor;
+  activeSourceView = sourceView;
+}
+
+function getCaretRangeFromPoint(x, y) {
+  if (document.caretRangeFromPoint) {
+    return document.caretRangeFromPoint(x, y);
+  }
+
+  if (document.caretPositionFromPoint) {
+    const position = document.caretPositionFromPoint(x, y);
+    if (!position) return null;
+
+    const range = document.createRange();
+    range.setStart(position.offsetNode, position.offset);
+    range.collapse(true);
+    return range;
+  }
+
+  return null;
+}
+
+function findTextNodeNearCaret(range) {
+  const container = range?.startContainer;
+  if (!container) return null;
+  if (container.nodeType === Node.TEXT_NODE) return container;
+
+  const child = container.childNodes[range.startOffset];
+  if (child?.nodeType === Node.TEXT_NODE) return child;
+
+  const previousChild = container.childNodes[range.startOffset - 1];
+  if (previousChild?.nodeType === Node.TEXT_NODE) return previousChild;
+
+  return null;
+}
+
+function pointerHitsTextRange(textNode, start, end, x, y) {
+  if (start < 0 || end > textNode.length || start === end) return false;
+
+  const range = document.createRange();
+  range.setStart(textNode, start);
+  range.setEnd(textNode, end);
+  const rects = [...range.getClientRects()];
+  range.detach?.();
+
+  return rects.some((rect) => {
+    const tolerance = 2;
+    return (
+      x >= rect.left - tolerance
+      && x <= rect.right + tolerance
+      && y >= rect.top - tolerance
+      && y <= rect.bottom + tolerance
+    );
+  });
+}
+
+function pointerIsOverSourceText(event) {
+  if (!event.target.closest(".source-card p")) return false;
+
+  const range = getCaretRangeFromPoint(event.clientX, event.clientY);
+  const textNode = findTextNodeNearCaret(range);
+  if (!textNode || !textNode.parentElement?.closest(".source-card p")) return false;
+
+  const offset = range.startContainer === textNode ? range.startOffset : textNode.length;
+  return (
+    pointerHitsTextRange(textNode, offset - 1, offset, event.clientX, event.clientY)
+    || pointerHitsTextRange(textNode, offset, offset + 1, event.clientX, event.clientY)
+  );
+}
+
+function showSourceCursorTooltip(event) {
+  ensureManualSourceContext(event.target.closest("[data-source-view]"));
+
+  if ((!activeSourceRow && !activeManualSourceEditor) || !pointerIsOverSourceText(event)) {
+    hideSourceCursorTooltip();
+    return;
+  }
+
+  const selection = window.getSelection();
+  if (selectionIsInsideSource(selection) || sourceSelectionTooltip.classList.contains("is-visible")) {
+    hideSourceCursorTooltip();
+    return;
+  }
+
+  const spacing = 8;
+  sourceCursorTooltip.textContent = (
+    (activeSourceRow && rowHasSource(activeSourceRow))
+    || activeManualSourceEditor?.dataset.sourceText
+  )
+    ? "Selecione um novo trecho"
+    : "Selecione um trecho";
+  sourceCursorTooltip.style.left = `${Math.min(event.clientX + spacing, window.innerWidth - sourceCursorTooltip.offsetWidth - 8)}px`;
+  sourceCursorTooltip.style.top = `${Math.min(event.clientY + spacing, window.innerHeight - sourceCursorTooltip.offsetHeight - 8)}px`;
+  sourceCursorTooltip.classList.add("is-visible");
+}
+
+function positionSourceSelectionTooltip(range) {
+  const rect = range.getBoundingClientRect();
+  const tooltipRect = sourceSelectionTooltip.getBoundingClientRect();
+  const viewportPadding = 8;
+  const spacing = 8;
+
+  let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+  left = Math.max(viewportPadding, Math.min(left, window.innerWidth - tooltipRect.width - viewportPadding));
+
+  let top = rect.bottom + spacing;
+  if (top + tooltipRect.height > window.innerHeight - viewportPadding) {
+    top = rect.top - tooltipRect.height - spacing;
+  }
+  top = Math.max(viewportPadding, Math.min(top, window.innerHeight - tooltipRect.height - viewportPadding));
+
+  sourceSelectionTooltip.style.left = `${left}px`;
+  sourceSelectionTooltip.style.top = `${top}px`;
+}
+
+function showSourceSelectionTooltip(range) {
+  sourceSelectionRange = range.cloneRange();
+  sourceSelectionTooltip.textContent = activeSourceRow || activeManualSourceEditor
+    ? "Usar este trecho"
+    : "Adicionar como fonte";
+  hideSourceCursorTooltip();
+  sourceSelectionTooltip.classList.add("is-visible");
+  positionSourceSelectionTooltip(range);
+}
+
+function selectionIsInsideSource(selection) {
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return false;
+  const range = selection.getRangeAt(0);
+  const sourceCard = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+    ? range.commonAncestorContainer.closest?.("[data-source-card]")
+    : range.commonAncestorContainer.parentElement?.closest("[data-source-card]");
+  return Boolean(sourceCard);
+}
+
+function nodeIsInsideRange(range, node) {
+  if (range.intersectsNode) return range.intersectsNode(node);
+
+  const nodeRange = document.createRange();
+  nodeRange.selectNodeContents(node);
+  const startsBeforeNodeEnd = range.compareBoundaryPoints(Range.START_TO_END, nodeRange) < 0;
+  const endsAfterNodeStart = range.compareBoundaryPoints(Range.END_TO_START, nodeRange) > 0;
+  nodeRange.detach?.();
+  return startsBeforeNodeEnd && endsAfterNodeStart;
+}
+
+function highlightSelectionRange(sourceView, range) {
+  const sourceCard = sourceView?.querySelector("[data-source-card]");
+  if (!sourceCard || !range) return false;
+
+  const textNodes = [];
+  const walker = document.createTreeWalker(sourceCard, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.textContent.trim() && nodeIsInsideRange(range, node)) {
+      textNodes.push(node);
+    }
+  }
+
+  textNodes.reverse().forEach((node) => {
+    const start = node === range.startContainer ? range.startOffset : 0;
+    const end = node === range.endContainer ? range.endOffset : node.length;
+    if (start >= end) return;
+
+    const after = node.splitText(end);
+    const highlighted = node.splitText(start);
+    const mark = document.createElement("mark");
+    mark.className = "source-highlight";
+    highlighted.parentNode.insertBefore(mark, after);
+    mark.append(highlighted);
+  });
+
+  return textNodes.length > 0;
+}
+
+function addSelectionAsSource() {
+  const selection = window.getSelection();
+  const range = sourceSelectionRange;
+  if (!range) return;
+  const selectedText = range.toString().trim();
+  const sourceView = activeSourceView || (
+    range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+      ? range.commonAncestorContainer.closest?.("[data-source-view]")
+      : range.commonAncestorContainer.parentElement?.closest("[data-source-view]")
+  );
+  ensureManualSourceContext(sourceView);
+  const sourceSearchText = getSourceSearchText(selectedText);
+
+  try {
+    clearSourceHighlight(sourceView);
+    const highlightedSelection = highlightSelectionRange(sourceView, range);
+    const highlight = sourceView?.querySelector(".source-highlight");
+    if (highlightedSelection && highlight) {
+      scrollSourceHighlightIntoView(sourceView, highlight);
+    } else if (sourceSearchText) {
+      applySourceHighlight(sourceView, sourceSearchText);
+    }
+  } catch {
+    if (sourceSearchText) applySourceHighlight(sourceView, sourceSearchText);
+  }
+
+  if (activeSourceRow && selectedText) {
+    const select = sourceView?.querySelector("[data-source-document]");
+    activeSourceRow.dataset.sourceText = selectedText;
+    activeSourceRow.dataset.sourceSearchText = sourceSearchText;
+    activeSourceRow.dataset.sourceDocument = select?.value || "edital";
+    delete activeSourceRow.dataset.noSource;
+    sourceView.dataset.highlightText = sourceSearchText;
+    updateRowSourceState(activeSourceRow);
+  }
+
+  if (activeManualSourceEditor && selectedText) {
+    const select = sourceView?.querySelector("[data-source-document]");
+    const linkButton = activeManualSourceEditor.querySelector("[data-link-source]");
+    activeManualSourceEditor.dataset.sourceText = selectedText;
+    activeManualSourceEditor.dataset.sourceSearchText = sourceSearchText;
+    activeManualSourceEditor.dataset.sourceDocument = select?.value || "edital";
+    sourceView.dataset.highlightText = sourceSearchText;
+    if (linkButton) {
+      linkButton.classList.remove("is-selecting");
+      linkButton.classList.add("is-linked");
+      linkButton.textContent = "Trecho vinculado";
+      linkButton.setAttribute("aria-label", "Abrir trecho vinculado");
+    }
+  }
+
+  selection?.removeAllRanges();
+  sourceSelectionRange = null;
+  hideSourceSelectionTooltip();
+  showToast(activeSourceRow || activeManualSourceEditor ? "Trecho vinculado!" : "Trecho adicionado como fonte!");
+}
+
+async function writeClipboard(text) {
+  const fallbackCopy = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-9999px";
+    document.body.append(textarea);
+    textarea.select();
+
+    try {
+      return document.execCommand("copy");
+    } finally {
+      textarea.remove();
+    }
+  };
+
+  if (window.location.protocol === "file:") {
+    return fallbackCopy();
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return fallbackCopy();
+  }
+}
+
+async function copyContent() {
+  if (await writeClipboard(copyText)) {
+    showToast("Conteúdo copiado!");
+  } else {
+    showToast("Não foi possível copiar.");
+  }
+}
+
+function startRowEdit(row) {
+  if (!row || row.classList.contains("is-editing")) return;
+
+  const valueElement = row.querySelector(".row-value");
+  const currentValue = valueElement?.textContent.trim() || "";
+  row.dataset.originalValue = currentValue;
+  row.classList.add("is-editing");
+
+  const textarea = document.createElement("textarea");
+  textarea.className = "row-edit-input";
+  textarea.rows = 3;
+  textarea.value = currentValue;
+  valueElement.hidden = true;
+  valueElement.after(textarea);
+
+  const controls = document.createElement("div");
+  controls.className = "row-edit-actions";
+  controls.innerHTML = `
+    <button class="row-edit-btn row-edit-btn--ghost" type="button" data-cancel-edit>Cancelar</button>
+    <button class="row-edit-btn" type="button" data-save-edit>Salvar</button>
+  `;
+  row.append(controls);
+  textarea.focus();
+  textarea.select();
+}
+
+function setRowEditError(row, message) {
+  const textarea = row?.querySelector(".row-edit-input");
+  if (!row || !textarea) return;
+
+  textarea.setAttribute("aria-invalid", "true");
+  let error = row.querySelector(".row-edit-error");
+  if (!error) {
+    error = document.createElement("span");
+    error.className = "row-edit-error";
+    textarea.after(error);
+  }
+  error.textContent = message;
+  textarea.focus();
+}
+
+function clearRowEditError(row) {
+  row?.querySelector(".row-edit-input")?.removeAttribute("aria-invalid");
+  row?.querySelector(".row-edit-error")?.remove();
+}
+
+function closeRowEdit(row, shouldSave) {
+  if (!row) return;
+
+  const valueElement = row.querySelector(".row-value");
+  const textarea = row.querySelector(".row-edit-input");
+  const nextValue = textarea?.value.trim();
+  const hadSource = rowHasSource(row);
+
+  if (shouldSave && !nextValue) {
+    setRowEditError(row, "Preencha a informação.");
+    return;
+  }
+
+  if (shouldSave && nextValue && valueElement) {
+    valueElement.textContent = nextValue;
+    showToast(hadSource ? "Informação atualizada. Fonte mantida!" : "Informação atualizada!");
+  }
+
+  clearRowEditError(row);
+  valueElement.hidden = false;
+  textarea?.remove();
+  row.querySelector(".row-edit-actions")?.remove();
+  row.classList.remove("is-editing");
+  delete row.dataset.originalValue;
+}
+
+function cancelActiveInlineState() {
+  if (sourceSelectionRange || sourceSelectionTooltip.classList.contains("is-visible")) {
+    clearSourceSelection();
+    return true;
+  }
+
+  const editingRow = document.querySelector(".accordion-row.is-editing");
+  if (editingRow) {
+    closeRowEdit(editingRow, false);
+    return true;
+  }
+
+  const reviewingBody = document.querySelector(".sub-body.is-reviewing");
+  if (reviewingBody) {
+    cancelReview(reviewingBody);
+    return true;
+  }
+
+  if (activeSourceRow) {
+    clearActiveSourceContext();
+    return true;
+  }
+
+  return false;
+}
+
+async function handleRowAction(button) {
+  const row = button.closest(".accordion-row");
+  const value = row?.querySelector(".row-value")?.textContent.trim();
+  const action = button.dataset.rowAction;
+
+  if (action === "copy") {
+    if (await writeClipboard(value || "")) {
+      showToast("Valor copiado!");
+    } else {
+      showToast("Não foi possível copiar.");
+    }
+  }
+
+  if (action === "edit") startRowEdit(row);
+  if (action === "link") {
+    openSourceView(button);
+    return;
+  }
+
+  clearActiveSourceContext();
+}
+
+function findReviewOptionSourceTarget(option) {
+  const text = option?.querySelector("strong")?.textContent.trim() || "";
+  const sourceLabel = option?.querySelector("small")?.textContent || "";
+  const documentKey = sourceLabel.includes("Termo") ? "termo" : "edital";
+
+  if (text.includes("Entrega e conclusão")) {
+    return {
+      documentKey: "termo",
+      text: "Prazo máximo para entrega e conclusão dos serviços de instalação e configuração: até 30 dias corridos",
+    };
+  }
+
+  if (text.includes("Recebimento definitivo")) {
+    return {
+      documentKey: "termo",
+      text: "O recebimento definitivo ocorrerá em até 10 dias corridos após o recebimento provisório",
+    };
+  }
+
+  if (text.includes("20 licenças de direito")) {
+    return {
+      documentKey: "termo",
+      text: "20 licenças de direito de uso de programa de computador JetBrains All Products Pack",
+    };
+  }
+
+  if (text.includes("20 unidades de subscrição")) {
+    return {
+      documentKey: "termo",
+      text: "Item 1: Software All Products Pack - subscrição de 36 meses. CATMAT 27502. Unidade de medida: unidade. Quantidade: 20.",
+    };
+  }
+
+  return {
+    documentKey,
+    text: getSourceSearchText(text),
+  };
+}
+
+function scrollToSourceHighlight(sourceView) {
+  const sourceBody = sourceView.querySelector(".source-body");
+  sourceBody?.scrollTo({ top: 0, behavior: "auto" });
+  const scrollToHighlight = () => applySourceHighlight(sourceView, sourceView.dataset.highlightText);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(scrollToHighlight);
+  });
+  window.setTimeout(scrollToHighlight, 380);
+}
+
+function openSourceTarget(panel, target) {
+  const sourceView = panel?.querySelector("[data-source-view]");
+  if (!panel || !sourceView) return;
+
+  const select = sourceView.querySelector("[data-source-document]");
+  if (select) select.value = target.documentKey || "edital";
+  clearActiveSourceContext({ clearHighlight: false });
+  sourceView.dataset.highlightText = target.text || "";
+  renderSourceDocument(sourceView, select?.value || target.documentKey || "edital");
+  panel.classList.add("is-source-open");
+  panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
+  appShell.classList.toggle("source-sidebar-open", panel.dataset.panel === "sidebar");
+  sourceView.hidden = false;
+  updateSidebarWorkspaceMode();
+  if (panel.dataset.panel === "sidebar" && panel.classList.contains("is-compact-workspace")) {
+    setWorkspaceTab(panel, "source");
+  }
+  scrollToSourceHighlight(sourceView);
+}
+
+function openReviewOptionSource(button) {
+  const option = button.closest(".source-option");
+  const panel = button.closest("[data-panel]");
+  openSourceTarget(panel, findReviewOptionSourceTarget(option));
+}
+
+function openSourceView(button) {
+  const panel = button.closest("[data-panel]");
+  const row = button.closest(".accordion-row");
+  const sourceView = panel?.querySelector("[data-source-view]");
+  if (!panel || !sourceView) return;
+
+  const target = findSourceHighlightTarget(row);
+  const select = sourceView.querySelector("[data-source-document]");
+  if (select) select.value = target.documentKey || "edital";
+  sourceView.dataset.highlightText = target.text || "";
+  setActiveSourceRow(row, sourceView);
+  renderSourceDocument(sourceView, select?.value || target.documentKey || "edital");
+  panel.classList.add("is-source-open");
+  panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
+  appShell.classList.toggle("source-sidebar-open", panel.dataset.panel === "sidebar");
+  sourceView.hidden = false;
+  updateSidebarWorkspaceMode();
+  if (panel.dataset.panel === "sidebar" && panel.classList.contains("is-compact-workspace")) {
+    setWorkspaceTab(panel, "source");
+  }
+
+  scrollToSourceHighlight(sourceView);
+}
+
+function closeSourceView(button) {
+  const panel = button.closest("[data-panel]");
+  const sourceView = panel?.querySelector("[data-source-view]");
+  if (!panel || !sourceView) return;
+
+  panel.classList.remove("is-source-open");
+  panel.parentElement?.classList.remove("is-source-open");
+  if (panel.dataset.panel === "sidebar") appShell.classList.remove("source-sidebar-open");
+  updateSidebarWorkspaceMode();
+  clearActiveSourceContext();
+  sourceView.hidden = true;
+}
+
+function closeOpenSourceView() {
+  const panel = document.querySelector(".review-panel.is-source-open");
+  const sourceView = panel?.querySelector("[data-source-view]");
+  if (!panel || !sourceView) return false;
+
+  panel.classList.remove("is-source-open");
+  panel.parentElement?.classList.remove("is-source-open");
+  if (panel.dataset.panel === "sidebar") appShell.classList.remove("source-sidebar-open");
+  updateSidebarWorkspaceMode();
+  clearActiveSourceContext();
+  sourceView.hidden = true;
+  return true;
+}
+
+function openSheet() {
+  sheetPanel.hidden = false;
+  sheetPanel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    sheetPanel.classList.remove("is-closed");
+    backdrop.classList.remove("is-hidden");
+  });
+}
+
+function closeSheet() {
+  sheetPanel.classList.add("is-closed");
+  backdrop.classList.add("is-hidden");
+  sheetPanel.classList.remove("is-source-open");
+  sheetPanel.parentElement?.classList.remove("is-source-open");
+  clearActiveSourceContext();
+
+  window.setTimeout(() => {
+    sheetPanel.hidden = true;
+    sheetPanel.setAttribute("aria-hidden", "true");
+  }, 350);
+}
+
+function openSidebar() {
+  appShell.classList.add("has-sidebar");
+  sidebarShell.setAttribute("aria-hidden", "false");
+  updateSidebarWorkspaceMode();
+}
+
+function closeSidebar() {
+  appShell.classList.remove("has-sidebar");
+  appShell.classList.remove("source-sidebar-open");
+  sidebarPanel.classList.remove("is-source-open");
+  updateSidebarWorkspaceMode();
+  clearActiveSourceContext();
+  sidebarShell.setAttribute("aria-hidden", "true");
+}
+
+function closeOwningPanel(button) {
+  const panel = button.closest("[data-panel]");
+  if (panel?.dataset.panel === "sidebar") {
+    closeSidebar();
+  } else {
+    closeSheet();
+  }
+}
+
+renderPanel(sheetPanel);
+renderPanel(sidebarPanel);
+setSidebarWidth("summary", sidebarWidth.summary);
+setSidebarWidth("source", sidebarWidth.source);
+
+sidebarResizeHandle?.addEventListener("pointerdown", startSidebarResize);
+sidebarResizeHandle?.addEventListener("pointermove", (event) => {
+  if (appShell.classList.contains("is-resizing-sidebar")) resizeSidebarFromPointer(event);
+});
+sidebarResizeHandle?.addEventListener("pointerup", stopSidebarResize);
+sidebarResizeHandle?.addEventListener("pointercancel", stopSidebarResize);
+
+new ResizeObserver(updateSidebarWorkspaceMode).observe(sidebarShell);
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  const accordionToggle = target.closest("[data-accordion-toggle]");
+  const subToggle = target.closest("[data-sub-toggle]");
+  const closeButton = target.closest("[data-close-panel]");
+
+  if (accordionToggle) togglePanel(accordionToggle);
+  if (subToggle) togglePanel(subToggle);
+  if (target.closest(".review-btn")) openReview(target.closest(".review-btn"));
+  if (target.closest("[data-add-option]")) showNewOption(target.closest("[data-add-option]"));
+  if (target.closest("[data-link-source]")) linkSource(target.closest("[data-link-source]"));
+  if (target.closest("[data-confirm-review]")) confirmReview(target.closest("[data-confirm-review]"));
+  if (target.closest("[data-save-edit]")) closeRowEdit(target.closest(".accordion-row"), true);
+  if (target.closest("[data-cancel-edit]")) closeRowEdit(target.closest(".accordion-row"), false);
+  if (target.closest("[data-review-source]")) {
+    event.preventDefault();
+    event.stopPropagation();
+    openReviewOptionSource(target.closest("[data-review-source]"));
+    return;
+  }
+  if (target.closest("[data-row-action]")) handleRowAction(target.closest("[data-row-action]"));
+  if (target.closest("[data-workspace-tab]")) {
+    const tabButton = target.closest("[data-workspace-tab]");
+    setWorkspaceTab(tabButton.closest("[data-panel]"), tabButton.dataset.workspaceTab);
+  }
+  if (target.closest("[data-close-source]")) closeSourceView(target.closest("[data-close-source]"));
+  if (target.closest("[data-download-source]")) showToast("Download do edital iniciado!");
+  if (target.closest("[data-copy-content]")) copyContent();
+  if (target.closest("[data-history-toggle]")) toggleHistory(target.closest("[data-history-toggle]"));
+  if (target.closest("[data-open-sheet]")) openSheet();
+  if (target.closest("[data-open-sidebar]")) openSidebar();
+  if (target.closest("[data-close-sheet]")) closeSheet();
+  if (closeButton) closeOwningPanel(closeButton);
+
+  if (
+    (activeSourceRow || activeManualSourceEditor)
+    && !target.closest(".accordion-row.is-source-active")
+    && !target.closest(".review-editor")
+    && !target.closest(".source-selection-tooltip")
+    && !target.closest(".source-body")
+  ) {
+    clearActiveSourceContext();
+  }
+
+  if (!target.closest("[data-history-toggle]") && !target.closest("[data-history-popover]")) {
+    document.querySelectorAll("[data-history-popover]").forEach((item) => {
+      item.hidden = true;
+    });
+  }
+});
+
+document.addEventListener("change", (event) => {
+  const sourceDocument = event.target.closest("[data-source-document]");
+  if (sourceDocument) {
+    const sourceView = sourceDocument.closest("[data-source-view]");
+    renderSourceDocument(sourceView, sourceDocument.value);
+    const activeTarget = activeSourceRow ? findSourceHighlightTarget(activeSourceRow) : null;
+    const highlightText = activeTarget?.documentKey === sourceDocument.value
+      ? activeTarget.text
+      : sourceView.dataset.highlightText || "";
+    sourceView.dataset.highlightText = highlightText || "";
+    if (!highlightText || !applySourceHighlight(sourceView, highlightText)) {
+      clearSourceHighlight(sourceView);
+      sourceView?.querySelector(".source-body")?.scrollTo({ top: 0 });
+    }
+    return;
+  }
+
+  const radio = event.target.closest(".source-option [data-review-radio]");
+  const editorField = event.target.closest(".review-editor textarea");
+  if (editorField) clearManualInfoError(editorField.closest(".review-editor"));
+  if (!radio) return;
+
+  resetNewOption(radio.closest(".sub-body"));
+});
+
+document.addEventListener("input", (event) => {
+  const editorField = event.target.closest(".review-editor textarea");
+  if (editorField) clearManualInfoError(editorField.closest(".review-editor"));
+
+  const rowEditField = event.target.closest(".row-edit-input");
+  if (rowEditField) clearRowEditError(rowEditField.closest(".accordion-row"));
+});
+
+document.addEventListener("pointerover", (event) => {
+  event.target.closest(".review-footer")?.classList.add("is-hovered");
+  event.target.closest(".accordion-row")?.classList.add("is-hovered");
+});
+
+document.addEventListener("pointerout", (event) => {
+  const footer = event.target.closest(".review-footer");
+  if (footer && !footer.contains(event.relatedTarget)) footer.classList.remove("is-hovered");
+
+  const row = event.target.closest(".accordion-row");
+  if (row && !row.contains(event.relatedTarget)) row.classList.remove("is-hovered");
+
+  const sourceBody = event.target.closest(".source-body");
+  if (sourceBody && !sourceBody.contains(event.relatedTarget)) hideSourceCursorTooltip();
+});
+
+document.addEventListener("pointermove", (event) => {
+  if (event.target.closest(".source-body")) {
+    showSourceCursorTooltip(event);
+  } else {
+    hideSourceCursorTooltip();
+  }
+});
+
+document.addEventListener("mouseover", (event) => {
+  event.target.closest(".review-footer")?.classList.add("is-hovered");
+  event.target.closest(".accordion-row")?.classList.add("is-hovered");
+  const actionButton = event.target.closest(".row-action-btn, .review-source-btn, .info-icon");
+  if (actionButton) showTooltip(actionButton);
+});
+
+document.addEventListener("mouseout", (event) => {
+  const footer = event.target.closest(".review-footer");
+  if (footer && !footer.contains(event.relatedTarget)) {
+    footer.classList.remove("is-hovered");
+  }
+
+  const actionButton = event.target.closest(".row-action-btn, .review-source-btn, .info-icon");
+  if (actionButton && !actionButton.contains(event.relatedTarget)) hideTooltip();
+
+  const row = event.target.closest(".accordion-row");
+  if (row && !row.contains(event.relatedTarget)) row.classList.remove("is-hovered");
+});
+
+document.addEventListener("focusin", (event) => {
+  const actionButton = event.target.closest(".row-action-btn, .review-source-btn, .info-icon");
+  if (actionButton) showTooltip(actionButton);
+});
+
+document.addEventListener("focusout", (event) => {
+  if (event.target.closest(".row-action-btn, .review-source-btn, .info-icon")) hideTooltip();
+});
+
+document.addEventListener("mouseup", () => {
+  window.setTimeout(() => {
+    const selection = window.getSelection();
+    if (!selectionIsInsideSource(selection)) {
+      hideSourceSelectionTooltip();
+      return;
+    }
+    showSourceSelectionTooltip(selection.getRangeAt(0));
+  });
+});
+
+document.addEventListener("pointerdown", (event) => {
+  sourceClickStartedWithSelection = Boolean(
+    (activeSourceRow || activeManualSourceEditor)
+    && event.target.closest(".source-body")
+    && (sourceSelectionRange || sourceSelectionTooltip.classList.contains("is-visible"))
+  );
+});
+
+document.addEventListener("click", (event) => {
+  if ((!activeSourceRow && !activeManualSourceEditor) || !event.target.closest(".source-body")) return;
+
+  window.setTimeout(() => {
+    const selection = window.getSelection();
+    if (selectionIsInsideSource(selection)) return;
+
+    if (sourceClickStartedWithSelection) {
+      clearSourceSelection();
+      sourceClickStartedWithSelection = false;
+      return;
+    }
+
+    if (!selectionIsInsideSource(selection)) {
+      clearActiveSourceContext();
+    }
+  });
+});
+
+sourceSelectionTooltip.addEventListener("click", addSelectionAsSource);
+
+document.addEventListener("selectionchange", () => {
+  const selection = window.getSelection();
+  if (!selectionIsInsideSource(selection)) hideSourceSelectionTooltip();
+  if (selectionIsInsideSource(selection)) hideSourceCursorTooltip();
+});
+
+document.addEventListener("scroll", () => {
+  hideTooltip();
+  hideSourceSelectionTooltip();
+  hideSourceCursorTooltip();
+}, true);
+
+document.addEventListener("scroll", (event) => {
+  markScrollContainerActive(event.target);
+}, true);
+
+window.addEventListener("resize", () => {
+  hideTooltip();
+  hideSourceSelectionTooltip();
+  hideSourceCursorTooltip();
+  updateSidebarWorkspaceMode();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+
+  hideTooltip();
+  hideSourceCursorTooltip();
+
+  if (cancelActiveInlineState()) return;
+
+  if (closeOpenSourceView()) return;
+
+  if (!sheetPanel.hidden) {
+    closeSheet();
+  } else if (appShell.classList.contains("has-sidebar")) {
+    closeSidebar();
+  }
+});
