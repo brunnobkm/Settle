@@ -225,6 +225,58 @@
               </div>
             </div>
 
+            <div class="sub-accordion-header">
+              <button class="sub-toggle" type="button" data-sub-toggle aria-expanded="false">
+                <span class="sub-label-row">
+                  <span class="info-icon" aria-hidden="true">
+                    <svg class="lucide-icon" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4" />
+                      <path d="M12 8h.01" />
+                    </svg>
+                  </span>
+                  <span class="sub-label">Vigência da subscrição</span>
+                </span>
+              </button>
+
+              <button class="review-btn" type="button">Revisar</button>
+              <button class="confirm-review-btn" type="button" data-confirm-review>Confirmar</button>
+              <button class="sub-chevron-button" type="button" data-sub-toggle aria-label="Expandir divergência">
+                <span class="sub-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 14 14">
+                    <path d="m3.5 5.5 3.5 3.5 3.5-3.5" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            <div class="sub-body">
+              <label class="source-option">
+                <input type="radio" data-review-radio checked />
+                <span>
+                  <strong>36 meses contados do recebimento definitivo das licenças.</strong>
+                  <small>Fonte: Termo de Referência, item 1.2</small>
+                </span>
+              </label>
+              <label class="source-option">
+                <input type="radio" data-review-radio />
+                <span>
+                  <strong>36 meses contados da assinatura do contrato.</strong>
+                  <small>Fonte: Minuta de Contrato, cláusula décima quinta</small>
+                </span>
+              </label>
+              <div class="review-editor" hidden>
+                <label>
+                  Nova informação
+                  <textarea rows="3" placeholder="Digite a informação correta"></textarea>
+                </label>
+                <button class="link-source-btn" type="button" data-link-source>Vincular trecho do edital (opcional)</button>
+              </div>
+              <div class="review-footer">
+                <button class="add-option-btn" type="button" data-add-option><span>Adicionar nova informação</span></button>
+              </div>
+            </div>
+
             <dl class="accordion-list">
               <div class="accordion-row">
                 <dt class="row-label">Regime de Execução</dt>

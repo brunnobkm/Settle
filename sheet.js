@@ -686,36 +686,44 @@ const sampleHistoryItems = [
   },
 ];
 
-function renderHistoryDecisionIcon(selected) {
-  const icon = selected
-    ? `<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>`
-    : `<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>`;
+function renderHistoryDecisionIcon(state) {
+  const icons = {
+    selected: `<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>`,
+    rejected: `<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>`,
+    pending: `<circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path>`,
+  };
 
   return `
     <svg class="history-decision-icon" aria-hidden="true" viewBox="0 0 24 24">
-      ${icon}
+      ${icons[state] || icons.pending}
     </svg>
   `;
 }
 
-function renderHistoryItem({ label, choice, source, kind, options = [] }) {
-  const normalizedOptions = options.includes(choice) ? options : [choice, ...options];
+function renderHistoryItem({ label, choice = "", status = "resolved", kind, options = [] }) {
+  const isResolved = status === "resolved";
+  const normalizedOptions = isResolved
+    ? (options.includes(choice) ? options : [choice, ...options])
+    : options;
   const helperText = kind === "manual" ? "Informação adicionada" : "Opção escolhida";
 
   return `
     <article class="history-item">
       <div class="history-item-header">
         <strong>${escapeHTML(label)}</strong>
-        <span class="history-status is-resolved">Resolvida</span>
+        <span class="history-status ${isResolved ? "is-resolved" : "is-pending"}">
+          ${isResolved ? "Resolvida" : "Pendente"}
+        </span>
       </div>
       <div class="history-options" aria-label="${escapeHTML(helperText)}">
         ${normalizedOptions.map((option) => {
-          const selected = option === choice;
+          const selected = isResolved && option === choice;
+          const state = selected ? "selected" : (isResolved ? "rejected" : "pending");
           return `
-            <div class="history-option ${selected ? "is-selected" : "is-rejected"}">
-              ${renderHistoryDecisionIcon(selected)}
+            <div class="history-option is-${state}">
+              ${renderHistoryDecisionIcon(state)}
               <div>
-                <span>${selected ? helperText : "Opção descartada"}</span>
+                <span>${isResolved ? (selected ? helperText : "Opção descartada") : "Opção aguardando revisão"}</span>
                 <p>${escapeHTML(option)}</p>
               </div>
             </div>
@@ -741,7 +749,20 @@ function renderHistory(panel) {
       return { label, choice, source, kind, options };
     });
 
-  const items = [...savedItems, ...sampleHistoryItems].slice(0, 5).map(renderHistoryItem).join("");
+  const pendingItems = [...panel.querySelectorAll(".sub-accordion-header:not([data-history-status='resolved'])")]
+    .filter((header) => !header.hidden)
+    .map((header) => {
+      const label = header.querySelector(".sub-label")?.textContent.trim() || "Informação";
+      const options = getDivergenceOptions(header.nextElementSibling);
+
+      return { label, status: "pending", options };
+    })
+    .filter((item) => item.options.length);
+
+  const items = [...pendingItems, ...savedItems, ...sampleHistoryItems]
+    .slice(0, 7)
+    .map(renderHistoryItem)
+    .join("");
 
   popover.innerHTML = `
     <div class="history-title">Histórico de divergências</div>
@@ -1474,13 +1495,24 @@ function startRowEdit(row) {
   valueElement.hidden = true;
   valueElement.after(textarea);
 
+  const sourceLink = document.createElement(rowHasSource(row) ? "button" : "span");
+  sourceLink.className = "row-edit-source-link";
+  sourceLink.textContent = rowHasSource(row) ? "Trecho vinculado" : "Sem trecho vinculado";
+  if (sourceLink.tagName === "BUTTON") {
+    sourceLink.type = "button";
+    sourceLink.dataset.rowEditSource = "";
+    sourceLink.setAttribute("aria-label", "Abrir trecho do edital");
+  }
   const controls = document.createElement("div");
   controls.className = "row-edit-actions";
   controls.innerHTML = `
     <button class="row-edit-btn row-edit-btn--ghost" type="button" data-cancel-edit>Cancelar</button>
     <button class="row-edit-btn" type="button" data-save-edit>Salvar</button>
   `;
-  row.append(controls);
+  const footer = document.createElement("div");
+  footer.className = "row-edit-footer";
+  footer.append(sourceLink, controls);
+  row.append(footer);
   textarea.focus();
   textarea.select();
 }
@@ -1526,7 +1558,7 @@ function closeRowEdit(row, shouldSave) {
   clearRowEditError(row);
   valueElement.hidden = false;
   textarea?.remove();
-  row.querySelector(".row-edit-actions")?.remove();
+  row.querySelector(".row-edit-footer")?.remove();
   row.classList.remove("is-editing");
   delete row.dataset.originalValue;
 }
@@ -1790,6 +1822,10 @@ document.addEventListener("click", (event) => {
   if (target.closest("[data-confirm-review]")) confirmReview(target.closest("[data-confirm-review]"));
   if (target.closest("[data-save-edit]")) closeRowEdit(target.closest(".accordion-row"), true);
   if (target.closest("[data-cancel-edit]")) closeRowEdit(target.closest(".accordion-row"), false);
+  if (target.closest("[data-row-edit-source]")) {
+    openSourceView(target.closest("[data-row-edit-source]"));
+    return;
+  }
   if (target.closest("[data-review-source]")) {
     event.preventDefault();
     event.stopPropagation();
