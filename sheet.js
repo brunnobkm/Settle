@@ -555,6 +555,29 @@ function vivoIcon(name) {
   return icons[name] || "";
 }
 
+function renderVivoScoreModal(titleId = "vivo-score-dialog-title") {
+  return `
+    <div class="vivo-score-modal" data-vivo-score-modal hidden>
+      <div class="vivo-score-modal-backdrop" data-close-vivo-score-modal></div>
+      <section class="vivo-score-dialog" role="dialog" aria-modal="true" aria-labelledby="${titleId}">
+        <header class="vivo-score-dialog-header">
+          <h2 id="${titleId}">Como o score é calculado?</h2>
+          <button class="close-btn" type="button" data-close-vivo-score-modal aria-label="Fechar">${vivoIcon("close")}</button>
+        </header>
+        <div class="vivo-score-dialog-body">
+          <p>O score soma os pontos dos critérios definidos pela Vivo para classificar a oportunidade como Quente, Morno ou Frio.</p>
+          <dl>
+            <div><dt>Quente</dt><dd>${vivoPocData.thresholds.hot} pontos ou mais</dd></div>
+            <div><dt>Morno</dt><dd>${vivoPocData.thresholds.warm} a ${vivoPocData.thresholds.hot - 1} pontos</dd></div>
+            <div><dt>Frio</dt><dd>Abaixo de ${vivoPocData.thresholds.warm} pontos</dd></div>
+          </dl>
+          <p>Cada critério compara o que foi encontrado no edital com o esperado pela Vivo. Se houver ambiguidade, o score fica pendente de confirmação até a revisão.</p>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function renderVivoCriterion(criterion) {
   const impact = `${criterion.impact.value >= 0 ? "+" : ""}${criterion.impact.value}`;
   const evidence = criterion.evidence;
@@ -709,24 +732,7 @@ function renderVivoPanel() {
         <article class="source-card" data-source-card></article>
       </div>
     </section>
-    <div class="vivo-score-modal" data-vivo-score-modal hidden>
-      <div class="vivo-score-modal-backdrop" data-close-vivo-score-modal></div>
-      <section class="vivo-score-dialog" role="dialog" aria-modal="true" aria-labelledby="vivo-score-dialog-title">
-        <header class="vivo-score-dialog-header">
-          <h2 id="vivo-score-dialog-title">Como o score é calculado?</h2>
-          <button class="close-btn" type="button" data-close-vivo-score-modal aria-label="Fechar">${vivoIcon("close")}</button>
-        </header>
-        <div class="vivo-score-dialog-body">
-          <p>O score soma os pontos dos critérios definidos pela Vivo para classificar a oportunidade como Quente, Morno ou Frio.</p>
-          <dl>
-            <div><dt>Quente</dt><dd>${vivoPocData.thresholds.hot} pontos ou mais</dd></div>
-            <div><dt>Morno</dt><dd>${vivoPocData.thresholds.warm} a ${vivoPocData.thresholds.hot - 1} pontos</dd></div>
-            <div><dt>Frio</dt><dd>Abaixo de ${vivoPocData.thresholds.warm} pontos</dd></div>
-          </dl>
-          <p>Cada critério compara o que foi encontrado no edital com o esperado pela Vivo. Se houver ambiguidade, o score fica pendente de confirmação até a revisão.</p>
-        </div>
-      </section>
-    </div>
+    ${renderVivoScoreModal()}
   `;
 }
 
@@ -819,7 +825,9 @@ function setActiveSourceRow(row, sourceView) {
 }
 
 function findSourceHighlightTarget(row) {
-  const label = row?.querySelector(".row-label")?.textContent.trim();
+  const labelElement = row?.querySelector(".row-label");
+  const label = labelElement?.querySelector(":scope > span:first-child")?.textContent.trim()
+    || labelElement?.textContent.trim();
   const value = row?.querySelector(".row-value")?.textContent.trim();
 
   if (row?.dataset.noSource === "true") {
@@ -906,6 +914,22 @@ const copyText = [
   "  Recebimento definitivo: Até 10 dias corridos após o recebimento provisório.",
 ].join("\n");
 
+const scoreSheetCopyText = [
+  "Score: MORNO (82/100)",
+  "",
+  "Objeto: Aquisição de licenças de software JetBrains All Products Pack, incluindo atualização e suporte técnico por 36 meses.",
+  "Valor global: R$ 209.609,82",
+  "",
+  "Critérios",
+  "  Regime de Execução — Atende (+10)",
+  "  Critério de Julgamento — Atende (+12)",
+  "  Escopo principal — Atende (+10)",
+  "  Vigência — Atende (+8)",
+  "  Sustentabilidade — Não atende (+0)",
+  "  Negociação — Não atende (+0)",
+  "  Recebimento definitivo — Não atende (+0)",
+].join("\n");
+
 function renderPanel(panel) {
   panel.append(template.content.cloneNode(true));
   const historyPopover = document.createElement("div");
@@ -935,6 +959,77 @@ function renderPanel(panel) {
   panel.querySelectorAll(".accordion-row").forEach(addRowActions);
   panel.querySelectorAll(".source-option").forEach(addReviewOptionSourceAction);
   renderHistory(panel);
+}
+
+const scoreSheetStatusByLabel = new Map([
+  ["Sustentabilidade", "Não atende"],
+  ["Negociação", "Não atende"],
+  ["Recebimento definitivo", "Não atende"],
+]);
+
+const scoreSheetPointsByLabel = new Map([
+  ["Regime de Execução", "+10"],
+  ["Critério de Julgamento", "+12"],
+  ["Escopo principal", "+10"],
+  ["Vigência", "+8"],
+  ["Sustentabilidade", "+0"],
+  ["Negociação", "+0"],
+  ["Recebimento definitivo", "+0"],
+]);
+
+function renderSheetPanelVariant(variant = "summary") {
+  if (sheetPanel.dataset.variant === variant && sheetPanel.childElementCount) return;
+
+  sheetPanel.innerHTML = "";
+  sheetPanel.dataset.variant = variant;
+  sheetPanel.classList.toggle("review-panel--score", variant === "score");
+  renderPanel(sheetPanel);
+
+  if (variant !== "score") return;
+
+  sheetPanel.setAttribute("aria-label", "Score");
+  sheetPanel.querySelector(".review-title").textContent = "Score";
+  sheetPanel.querySelector("[data-workspace-tab='summary']").textContent = "Score";
+
+  const body = sheetPanel.querySelector(".review-body");
+  const scoreCard = document.createElement("article");
+  scoreCard.className = "objeto-card score-summary-card";
+  scoreCard.innerHTML = `
+    <div class="vivo-score-card">
+      <div class="vivo-score-info">
+        <span class="vivo-temperature vivo-temperature--morno">Morno</span>
+        <strong>82/100</strong>
+        <button class="vivo-score-help" type="button" data-vivo-score-help>Como isso é calculado?</button>
+        <div class="score-warning-card">
+          Itens em revisão não entram no cálculo. Revise todos para atualizar o score.
+        </div>
+      </div>
+    </div>
+  `;
+  body.prepend(scoreCard);
+  sheetPanel.insertAdjacentHTML("beforeend", renderVivoScoreModal("score-sheet-dialog-title"));
+
+  const objectCard = body.querySelector(".objeto-card:not(.score-summary-card)");
+  const valueCard = document.createElement("article");
+  valueCard.className = "objeto-card";
+  valueCard.innerHTML = `
+    <h2 class="objeto-label">Valor global</h2>
+    <p class="objeto-value">R$ 209.609,82</p>
+  `;
+  objectCard?.insertAdjacentElement("afterend", valueCard);
+
+  sheetPanel.querySelectorAll(".accordion-row > .row-label").forEach((label) => {
+    const labelText = label.textContent.trim();
+    const status = scoreSheetStatusByLabel.get(labelText) || "Atende";
+    const points = scoreSheetPointsByLabel.get(labelText) || "+10";
+    label.innerHTML = `
+      <span>${escapeHTML(labelText)}</span>
+      <span class="score-row-meta">
+        <span class="score-status-tag score-status-tag--${status === "Atende" ? "match" : "miss"}">${status}</span>
+        <span class="score-points">${points}</span>
+      </span>
+    `;
+  });
 }
 
 function actionIcon(name) {
@@ -1815,20 +1910,22 @@ async function writeClipboard(text) {
     }
   };
 
-  if (window.location.protocol === "file:") {
-    return fallbackCopy();
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fall back below for file:// and browsers that block the async clipboard API.
   }
 
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return fallbackCopy();
-  }
+  return fallbackCopy();
 }
 
 async function copyContent() {
-  if (await writeClipboard(copyText)) {
+  const text = !sheetPanel.hidden && sheetPanel.dataset.variant === "score" ? scoreSheetCopyText : copyText;
+
+  if (await writeClipboard(text)) {
     showToast("Conteúdo copiado!");
   } else {
     showToast("Não foi possível copiar.");
@@ -2092,9 +2189,10 @@ function closeOpenSourceView() {
   return true;
 }
 
-function openSheet() {
+function openSheet(variant = "summary") {
   if (appShell.classList.contains("has-sidebar")) closeSidebar();
   if (!vivoPanel.hidden) closeVivoPanel();
+  renderSheetPanelVariant(variant);
   sheetPanel.hidden = false;
   sheetPanel.setAttribute("aria-hidden", "false");
   requestAnimationFrame(() => {
@@ -2268,15 +2366,17 @@ document.addEventListener("click", (event) => {
   if (target.closest("[data-copy-content]")) copyContent();
   if (target.closest("[data-history-toggle]")) toggleHistory(target.closest("[data-history-toggle]"));
   if (target.closest("[data-open-sheet]")) openSheet();
+  if (target.closest("[data-open-vivo-new]")) openSheet("score");
   if (target.closest("[data-open-sidebar]")) toggleSidebar();
   if (target.closest("[data-close-sheet]")) closeSheet();
   if (target.closest("[data-open-vivo]")) openVivoPanel();
   if (target.closest("[data-close-vivo]")) closeVivoPanel();
   if (target.closest("[data-vivo-score-help]")) {
-    vivoPanel.querySelector("[data-vivo-score-modal]").hidden = false;
+    const scoreHost = target.closest(".review-panel, .vivo-panel") || vivoPanel;
+    scoreHost.querySelector("[data-vivo-score-modal]").hidden = false;
   }
   if (target.closest("[data-close-vivo-score-modal]")) {
-    vivoPanel.querySelector("[data-vivo-score-modal]").hidden = true;
+    target.closest("[data-vivo-score-modal]").hidden = true;
   }
   if (target.closest("[data-vivo-use-option]")) selectVivoOption(target.closest("[data-vivo-use-option]"));
   if (target.closest("[data-close-vivo-source]")) closeVivoSource();
@@ -2465,7 +2565,7 @@ document.addEventListener("keydown", (event) => {
 
   if (cancelActiveInlineState()) return;
 
-  const vivoScoreModal = vivoPanel.querySelector("[data-vivo-score-modal]:not([hidden])");
+  const vivoScoreModal = document.querySelector("[data-vivo-score-modal]:not([hidden])");
   if (vivoScoreModal) {
     vivoScoreModal.hidden = true;
     return;

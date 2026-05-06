@@ -1338,9 +1338,78 @@ button {
 }
 
 .row-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: #1a1a1a;
   font-size: 13px;
   font-weight: 600;
+}
+
+.score-summary-card {
+  display: block;
+}
+
+.score-summary-card .vivo-score-info {
+  width: 100%;
+}
+
+.score-warning-card {
+  width: 100%;
+  border: 0.5px solid #b86e0a;
+  border-radius: 8px;
+  background: #fef3e2;
+  color: #b86e0a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.score-status-tag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.score-status-tag--match {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.score-status-tag--miss {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.review-panel--score .row-label {
+  align-items: center;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.score-row-meta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.score-points {
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .row-value {
