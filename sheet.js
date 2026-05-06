@@ -4,6 +4,9 @@ const sidebarPanel = document.querySelector('[data-panel="sidebar"]');
 const sidebarShell = document.querySelector("[data-sidebar-shell]");
 const sidebarResizeHandle = document.querySelector("[data-sidebar-resize]");
 const backdrop = document.querySelector(".sheet-backdrop");
+const vivoBackdrop = document.querySelector(".vivo-backdrop");
+const vivoPanel = document.querySelector("[data-vivo-panel]");
+const vivoRoot = document.querySelector("[data-vivo-root]");
 const template = document.querySelector("#summary-panel-template");
 const toast = document.querySelector("#toast");
 const tooltip = document.createElement("div");
@@ -111,6 +114,7 @@ const sourceDocuments = {
       [
         "4. REQUISITOS DA CONTRATAÇÃO. A contratada deverá observar as diretrizes de sustentabilidade, quando aplicáveis, e fornecer as condições necessárias à execução do objeto.",
         "As licenças terão garantia de atualização pela contratada durante o período de 36 meses, contados a partir do recebimento definitivo.",
+        "A Administração poderá solicitar demonstração da solução, quando necessário.",
         "A contratada deverá reparar, corrigir, remover, reconstruir ou substituir, às suas expensas, serviços em que forem verificados vícios, defeitos ou incorreções.",
       ],
       [
@@ -374,6 +378,357 @@ const sourceHighlightTargets = [
     text: "O recebimento definitivo ocorrerá em até 10 dias corridos após o recebimento provisório",
   },
 ];
+
+const vivoPocData = {
+  opportunityId: "edital-123",
+  title: "Aquisição de equipamentos de informática e serviços correlatos",
+  temperature: "MORNO",
+  score: 82,
+  scoreMax: 100,
+  thresholds: { hot: 90, warm: 70 },
+  topReasons: [
+    "Objeto aderente à Torre de Soluções",
+    "Critério de julgamento favorável",
+    "Prazo operacional viável",
+    "Ambiguidade em Modalidade",
+  ],
+  scope: {
+    tower: "Torre de Soluções",
+    segment: "Segmento atual (Vivo)",
+    dataSource: "Captura Settle",
+    calculatedAt: "2026-05-04T16:30:00-03:00",
+  },
+  criteria: [
+    {
+      id: "crit-1",
+      section: "Licenças e vigência",
+      name: "Regime de execução",
+      status: "ATENDE",
+      impact: { type: "points", value: 12 },
+      selectedValue: "Empreitada Integral",
+      expectedValue: "Execução integral ou preço global",
+      evidence: {
+        snippet: "Regime de execução: empreitada por preço global, com contratação da execução do serviço por preço certo e total.",
+        sourceLabel: "Termo de Referência",
+        documentKey: "termo",
+      },
+    },
+    {
+      id: "crit-2",
+      section: "Licenças e vigência",
+      name: "Modalidade",
+      status: "REQUER_REVISAO",
+      impact: { type: "points", value: 0 },
+      selectedValue: null,
+      expectedValue: "Pregão eletrônico",
+      evidence: null,
+      ambiguity: {
+        optionsFound: 2,
+        options: [
+          {
+            value: "Pregão Eletrônico",
+            evidence: {
+              snippet: "A equipe de planejamento recomenda a contratação por pregão eletrônico, com julgamento pelo menor preço global e especificação objetiva do objeto.",
+              sourceLabel: "Estudo Técnico Preliminar",
+              documentKey: "etp",
+            },
+          },
+          {
+            value: "Concorrência",
+            evidence: {
+              snippet: "Modalidade: Concorrência.",
+              sourceLabel: "Edital 15/2023",
+              documentKey: "edital",
+            },
+          },
+        ],
+      },
+    },
+    {
+      id: "crit-3",
+      section: "Critérios de julgamento",
+      name: "Critério de julgamento",
+      status: "ATENDE",
+      impact: { type: "points", value: 15 },
+      selectedValue: "Menor preço global",
+      expectedValue: "Menor preço",
+      evidence: {
+        snippet: "O critério de julgamento adotado será o menor preço global",
+        sourceLabel: "Edital 15/2023",
+        documentKey: "edital",
+      },
+    },
+    {
+      id: "crit-4",
+      section: "Requisitos técnicos",
+      name: "Exigência de POC",
+      status: "NAO_ATENDE",
+      impact: { type: "points", value: 0 },
+      selectedValue: "Prova de conceito prevista apenas para habilitação técnica.",
+      expectedValue: "POC objetiva com roteiro e aceite definidos",
+      evidence: {
+        snippet: "A Administração poderá solicitar demonstração da solução, quando necessário.",
+        sourceLabel: "Termo de Referência",
+        documentKey: "termo",
+      },
+    },
+  ],
+};
+
+const vivoCriterionSections = [
+  "Prazos e implantação",
+  "Licenças e vigência",
+  "Objeto e escopo",
+  "Requisitos técnicos",
+  "Segurança e conformidade",
+  "Suporte e SLA",
+  "Condições comerciais",
+  "Critérios de julgamento",
+  "Documentos de habilitação",
+  "Entregáveis e aceite",
+];
+
+function formatVivoDate(value) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getVivoPendingCriteria() {
+  return vivoPocData.criteria.filter((criterion) => criterion.status === "REQUER_REVISAO" && criterion.ambiguity);
+}
+
+function isVivoScoreProvisional() {
+  return getVivoPendingCriteria().length > 0;
+}
+
+function getVivoStatusLabel(status) {
+  return ({
+    ATENDE: "Atende",
+    NAO_ATENDE: "Não atende",
+    REQUER_REVISAO: "Requer revisão",
+  })[status] || status;
+}
+
+function buildVivoCopyText({ scoreOnly = false } = {}) {
+  const pending = getVivoPendingCriteria();
+  const scoreStatus = isVivoScoreProvisional() ? "provisório" : "confirmado";
+  const criteria = vivoPocData.criteria
+    .map((criterion) => {
+      const impact = `${criterion.impact.value >= 0 ? "+" : ""}${criterion.impact.value}`;
+      const evidence = criterion.evidence?.snippet || "Sem evidência selecionada";
+      return `${criterion.name} - ${getVivoStatusLabel(criterion.status)} (${impact}) - ${evidence}`;
+    })
+    .join("\n");
+
+  const scoreText = `Temperatura: ${vivoPocData.temperature} ${scoreStatus} (${vivoPocData.score}/${vivoPocData.scoreMax})`;
+  if (scoreOnly) return scoreText;
+
+  return [
+    scoreText,
+    `Top motivos: ${vivoPocData.topReasons.join("; ")}`,
+    `Pendências: ${pending.length} (${pending.map((item) => item.name).join(", ") || "nenhuma"})`,
+    "Critérios (resumo):",
+    criteria,
+    `Escopo: ${vivoPocData.scope.tower} / ${vivoPocData.scope.segment} / ${vivoPocData.scope.dataSource}`,
+  ].join("\n");
+}
+
+function getVivoEvidenceTarget(evidence) {
+  if (!evidence?.snippet) return null;
+  return {
+    documentKey: evidence.documentKey || "edital",
+    text: evidence.snippet,
+  };
+}
+
+function vivoIcon(name) {
+  const icons = {
+    copy: actionIcon("copy"),
+    edit: actionIcon("edit"),
+    link: actionIcon("link"),
+    download: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></svg>',
+    alert: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.7 20h18.6L12 3Z" /><path d="M12 9v5" /><path d="M12 17.2h.01" /></svg>',
+    close: '<svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>',
+  };
+  return icons[name] || "";
+}
+
+function renderVivoCriterion(criterion) {
+  const impact = `${criterion.impact.value >= 0 ? "+" : ""}${criterion.impact.value}`;
+  const evidence = criterion.evidence;
+  const statusClass = criterion.status.toLowerCase().replaceAll("_", "-");
+  const ambiguity = criterion.ambiguity;
+  const showComparison = criterion.status !== "ATENDE";
+  const evidenceTarget = getVivoEvidenceTarget(evidence);
+
+  return `
+    <div class="accordion-row vivo-criterion-row" data-vivo-criterion="${criterion.id}">
+      <div class="vivo-row-heading">
+        <dt class="row-label">${escapeHTML(criterion.name)}</dt>
+        <span class="vivo-status vivo-status--${statusClass}">${getVivoStatusLabel(criterion.status)}</span>
+        <strong class="vivo-impact">${impact}</strong>
+      </div>
+      ${showComparison ? `
+        <dl class="vivo-criterion-values">
+          <div>
+            <dt>Esperado:</dt>
+            <dd>${escapeHTML(criterion.expectedValue || "Não definido")}</dd>
+          </div>
+          <div>
+            <dt>Encontrado:</dt>
+            <dd>${escapeHTML(criterion.selectedValue || "Aguardando revisão")}</dd>
+          </div>
+        </dl>
+      ` : `<dd class="row-value">${escapeHTML(criterion.selectedValue || "Aguardando revisão")}</dd>`}
+      <div class="row-actions">
+        <button class="row-action-btn" type="button" data-vivo-copy="${escapeHTML(criterion.selectedValue || "")}" aria-label="Copiar informação">${vivoIcon("copy")}</button>
+        <button
+          class="row-action-btn"
+          type="button"
+          data-vivo-source
+          data-vivo-document="${escapeHTML(evidenceTarget?.documentKey || "")}"
+          data-vivo-text="${escapeHTML(evidenceTarget?.text || "")}"
+          aria-label="Abrir origem"
+        >${vivoIcon("link")}</button>
+      </div>
+      ${ambiguity ? `
+        <div class="vivo-criterion-review">
+          <div class="vivo-criterion-review-header">
+            <span class="info-icon" aria-hidden="true">
+              <svg class="lucide-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+            </span>
+            <strong>Revise as informações divergentes</strong>
+          </div>
+          <div class="vivo-criterion-options">
+            ${ambiguity.options.map((option) => `
+              <label class="source-option vivo-option-card">
+                <span>
+                  <strong>${escapeHTML(option.value)}</strong>
+                  <small>${escapeHTML(option.evidence.sourceLabel)} · ${escapeHTML(option.evidence.snippet)}</small>
+                </span>
+                <div class="vivo-option-actions">
+                  <button type="button" data-vivo-use-option="${criterion.id}" data-vivo-option-value="${escapeHTML(option.value)}">Usar esta</button>
+                  <button type="button" data-vivo-copy="${escapeHTML(option.value)}">Copiar informação</button>
+                </div>
+              </label>
+            `).join("")}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function renderVivoCriterionSection(sectionName) {
+  const criteria = vivoPocData.criteria.filter((criterion) => criterion.section === sectionName);
+  const isOpen = criteria.length > 0;
+
+  return `
+    <section class="accordion">
+      <button class="accordion-header${isOpen ? " is-open" : ""}" type="button" data-accordion-toggle aria-expanded="${isOpen}">
+        <span class="accordion-header-label">${escapeHTML(sectionName)}</span>
+        <span class="chevron${isOpen ? " is-open" : ""}" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="m3.5 5.5 3.5 3.5 3.5-3.5" /></svg></span>
+      </button>
+      <dl class="accordion-body accordion-list${isOpen ? " is-open" : ""}">
+        ${criteria.length ? criteria.map(renderVivoCriterion).join("") : `
+          <div class="accordion-row">
+            <dt class="row-label">Sem critério avaliado</dt>
+            <dd class="row-value">Nenhum critério deste tema foi considerado nesta simulação.</dd>
+          </div>
+        `}
+      </dl>
+    </section>
+  `;
+}
+
+function renderVivoPanel() {
+  vivoRoot.innerHTML = `
+    <header class="review-header vivo-header">
+      <div class="review-title-row">
+        <h1 class="review-title">Score</h1>
+        <span class="beta-badge">Beta</span>
+      </div>
+      <div class="review-actions">
+        <button class="close-btn" type="button" data-close-vivo aria-label="Fechar">${vivoIcon("close")}</button>
+      </div>
+    </header>
+    <div class="review-body vivo-body">
+      <section class="objeto-card vivo-hero">
+        <div class="vivo-score-card" title="Quente >= ${vivoPocData.thresholds.hot}; Morno >= ${vivoPocData.thresholds.warm}; Frio < ${vivoPocData.thresholds.warm}">
+          <div class="vivo-gauge" aria-hidden="true" style="--score-progress: ${vivoPocData.score}; --score-angle: ${-180 + (vivoPocData.score * 1.8)}deg;">
+            <svg class="vivo-gauge-track" viewBox="0 0 160 92">
+              <path class="vivo-gauge-segment vivo-gauge-segment--cold" d="M16 80 A64 64 0 0 1 54 23" />
+              <path class="vivo-gauge-segment vivo-gauge-segment--warm" d="M66 17 A64 64 0 0 1 94 17" />
+              <path class="vivo-gauge-segment vivo-gauge-segment--hot" d="M111 25 A64 64 0 0 1 144 80" />
+            </svg>
+            <div class="vivo-gauge-needle"></div>
+            <div class="vivo-gauge-marker vivo-gauge-marker--${vivoPocData.temperature.toLowerCase()}"></div>
+          </div>
+          <div class="vivo-score-info">
+            <span class="vivo-temperature vivo-temperature--${vivoPocData.temperature.toLowerCase()}">${vivoPocData.temperature}</span>
+            <strong>${vivoPocData.score}/${vivoPocData.scoreMax}</strong>
+            <button class="vivo-score-help" type="button" data-vivo-score-help>Como isso é calculado?</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="objeto-card">
+        <h2 class="objeto-label">Objeto</h2>
+        <p class="objeto-value">${escapeHTML(vivoPocData.title)}</p>
+      </section>
+
+      ${vivoCriterionSections.map(renderVivoCriterionSection).join("")}
+
+    </div>
+    <section class="source-view vivo-source-view" data-source-view hidden aria-label="Trecho do edital">
+      <header class="source-header">
+        <label class="source-select-wrap" aria-label="Documento aberto">
+          <select class="source-document-select" data-source-document>
+            <option value="edital">Edital 15/2023</option>
+            <option value="termo">Termo de Referência</option>
+            <option value="etp">Estudo Técnico Preliminar</option>
+            <option value="contrato">Minuta de Contrato</option>
+            <option value="proposta">Proposta da contratada</option>
+          </select>
+          <svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </label>
+        <div class="source-actions">
+          <button class="source-icon-btn" type="button" data-download-source aria-label="Baixar edital">${vivoIcon("download")}</button>
+          <button class="source-icon-btn" type="button" data-close-vivo-source aria-label="Fechar trecho">${vivoIcon("close")}</button>
+        </div>
+      </header>
+      <div class="source-body">
+        <article class="source-card" data-source-card></article>
+      </div>
+    </section>
+    <div class="vivo-score-modal" data-vivo-score-modal hidden>
+      <div class="vivo-score-modal-backdrop" data-close-vivo-score-modal></div>
+      <section class="vivo-score-dialog" role="dialog" aria-modal="true" aria-labelledby="vivo-score-dialog-title">
+        <header class="vivo-score-dialog-header">
+          <h2 id="vivo-score-dialog-title">Como o score é calculado?</h2>
+          <button class="close-btn" type="button" data-close-vivo-score-modal aria-label="Fechar">${vivoIcon("close")}</button>
+        </header>
+        <div class="vivo-score-dialog-body">
+          <p>O score soma os pontos dos critérios definidos pela Vivo para classificar a oportunidade como Quente, Morno ou Frio.</p>
+          <dl>
+            <div><dt>Quente</dt><dd>${vivoPocData.thresholds.hot} pontos ou mais</dd></div>
+            <div><dt>Morno</dt><dd>${vivoPocData.thresholds.warm} a ${vivoPocData.thresholds.hot - 1} pontos</dd></div>
+            <div><dt>Frio</dt><dd>Abaixo de ${vivoPocData.thresholds.warm} pontos</dd></div>
+          </dl>
+          <p>Cada critério compara o que foi encontrado no edital com o esperado pela Vivo. Se houver ambiguidade, o score fica pendente de confirmação até a revisão.</p>
+        </div>
+      </section>
+    </div>
+  `;
+}
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1739,6 +2094,7 @@ function closeOpenSourceView() {
 
 function openSheet() {
   if (appShell.classList.contains("has-sidebar")) closeSidebar();
+  if (!vivoPanel.hidden) closeVivoPanel();
   sheetPanel.hidden = false;
   sheetPanel.setAttribute("aria-hidden", "false");
   requestAnimationFrame(() => {
@@ -1762,6 +2118,7 @@ function closeSheet() {
 
 function openSidebar() {
   if (!sheetPanel.hidden) closeSheet();
+  if (!vivoPanel.hidden) closeVivoPanel();
   appShell.classList.add("has-sidebar");
   sidebarShell.setAttribute("aria-hidden", "false");
   updateSidebarWorkspaceMode();
@@ -1794,6 +2151,75 @@ function closeOwningPanel(button) {
   }
 }
 
+function openVivoPanel() {
+  if (appShell.classList.contains("has-sidebar")) closeSidebar();
+  if (!sheetPanel.hidden) closeSheet();
+
+  renderVivoPanel();
+  vivoPanel.hidden = false;
+  vivoPanel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    vivoPanel.classList.remove("is-closed");
+    vivoBackdrop.classList.remove("is-hidden");
+  });
+}
+
+function closeVivoPanel() {
+  vivoPanel.classList.add("is-closed");
+  vivoBackdrop.classList.add("is-hidden");
+  vivoPanel.classList.remove("is-source-open");
+
+  window.setTimeout(() => {
+    vivoPanel.hidden = true;
+    vivoPanel.setAttribute("aria-hidden", "true");
+  }, 350);
+}
+
+function openVivoSource(button) {
+  const sourceView = vivoPanel.querySelector("[data-source-view]");
+  const row = button.closest(".vivo-criterion-row");
+  const documentKey = button.dataset.vivoDocument || "edital";
+  const text = button.dataset.vivoText || "";
+  if (!sourceView || !text) {
+    showToast("Sem trecho vinculado.");
+    return;
+  }
+
+  const select = sourceView.querySelector("[data-source-document]");
+  if (select) select.value = documentKey;
+  sourceView.dataset.highlightText = text;
+  setActiveSourceRow(row, sourceView);
+  renderSourceDocument(sourceView, documentKey);
+  vivoPanel.classList.add("is-source-open");
+  sourceView.hidden = false;
+  scrollToSourceHighlight(sourceView);
+}
+
+function closeVivoSource() {
+  const sourceView = vivoPanel.querySelector("[data-source-view]");
+  vivoPanel.classList.remove("is-source-open");
+  if (sourceView) sourceView.hidden = true;
+  clearActiveSourceContext();
+}
+
+function selectVivoOption(button) {
+  const criterion = vivoPocData.criteria.find((item) => item.id === button.dataset.vivoUseOption);
+  const option = criterion?.ambiguity?.options.find((item) => item.value === button.dataset.vivoOptionValue);
+  if (!criterion || !option) return;
+
+  const matchesExpected = option.value.toLowerCase().includes("pregão");
+  criterion.status = matchesExpected ? "ATENDE" : "NAO_ATENDE";
+  criterion.selectedValue = option.value;
+  criterion.evidence = option.evidence;
+  criterion.ambiguity = null;
+  criterion.impact.value = matchesExpected ? 10 : 0;
+  vivoPocData.topReasons = vivoPocData.topReasons.map((reason) => (
+    reason === "Ambiguidade em Modalidade" ? `Modalidade revisada: ${option.value}` : reason
+  ));
+  renderVivoPanel();
+  showToast("Critério atualizado!");
+}
+
 renderPanel(sheetPanel);
 renderPanel(sidebarPanel);
 setSidebarWidth("summary", sidebarWidth.summary);
@@ -1816,7 +2242,7 @@ document.addEventListener("click", (event) => {
 
   if (accordionToggle) togglePanel(accordionToggle);
   if (subToggle) togglePanel(subToggle);
-  if (target.closest(".review-btn")) openReview(target.closest(".review-btn"));
+  if (target.closest(".review-btn") && !target.closest("[data-vivo-panel]")) openReview(target.closest(".review-btn"));
   if (target.closest("[data-add-option]")) showNewOption(target.closest("[data-add-option]"));
   if (target.closest("[data-link-source]")) linkSource(target.closest("[data-link-source]"));
   if (target.closest("[data-confirm-review]")) confirmReview(target.closest("[data-confirm-review]"));
@@ -1844,6 +2270,25 @@ document.addEventListener("click", (event) => {
   if (target.closest("[data-open-sheet]")) openSheet();
   if (target.closest("[data-open-sidebar]")) toggleSidebar();
   if (target.closest("[data-close-sheet]")) closeSheet();
+  if (target.closest("[data-open-vivo]")) openVivoPanel();
+  if (target.closest("[data-close-vivo]")) closeVivoPanel();
+  if (target.closest("[data-vivo-score-help]")) {
+    vivoPanel.querySelector("[data-vivo-score-modal]").hidden = false;
+  }
+  if (target.closest("[data-close-vivo-score-modal]")) {
+    vivoPanel.querySelector("[data-vivo-score-modal]").hidden = true;
+  }
+  if (target.closest("[data-vivo-use-option]")) selectVivoOption(target.closest("[data-vivo-use-option]"));
+  if (target.closest("[data-close-vivo-source]")) closeVivoSource();
+  if (target.closest("[data-vivo-scroll]")) {
+    vivoPanel.querySelector(target.closest("[data-vivo-scroll]").dataset.vivoScroll)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  if (target.closest("[data-vivo-copy]")) {
+    writeClipboard(target.closest("[data-vivo-copy]").dataset.vivoCopy || "").then((success) => showToast(success ? "Valor copiado!" : "Não foi possível copiar."));
+  }
+  if (target.closest("[data-vivo-source]")) {
+    openVivoSource(target.closest("[data-vivo-source]"));
+  }
   if (closeButton) closeOwningPanel(closeButton);
 
   if (
@@ -2020,10 +2465,23 @@ document.addEventListener("keydown", (event) => {
 
   if (cancelActiveInlineState()) return;
 
+  const vivoScoreModal = vivoPanel.querySelector("[data-vivo-score-modal]:not([hidden])");
+  if (vivoScoreModal) {
+    vivoScoreModal.hidden = true;
+    return;
+  }
+
+  if (vivoPanel.classList.contains("is-source-open")) {
+    closeVivoSource();
+    return;
+  }
+
   if (closeOpenSourceView()) return;
 
   if (!sheetPanel.hidden) {
     closeSheet();
+  } else if (!vivoPanel.hidden) {
+    closeVivoPanel();
   } else if (appShell.classList.contains("has-sidebar")) {
     closeSidebar();
   }

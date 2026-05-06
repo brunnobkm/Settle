@@ -103,7 +103,7 @@ button {
   min-height: 100dvh;
   flex: 0 0 0;
   overflow: hidden;
-  background: #f5f5f5;
+  background: #fff;
   transition:
     flex-basis 350ms cubic-bezier(0.4, 0, 0.2, 1),
     width 350ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -195,7 +195,7 @@ button {
   border-block: 0;
   border-right: 0;
   border-radius: 0;
-  background: #f5f5f5;
+  background: #fff;
   box-shadow: -12px 0 32px rgba(0, 0, 0, 0.12);
   pointer-events: auto;
   transform: translateX(0);
@@ -210,7 +210,7 @@ button {
   min-width: 0;
   width: 100%;
   border-left: 0.5px solid #d6d6d6;
-  background: #f5f5f5;
+  background: #fff;
 }
 
 .review-panel--sidebar.is-source-open {
@@ -302,7 +302,7 @@ button {
   display: grid;
   grid-template-rows: auto 1fr;
   border-left: 0.5px solid #d6d6d6;
-  background: #f5f5f5;
+  background: #fff;
 }
 
 .review-panel.is-source-open .source-view {
@@ -1578,6 +1578,644 @@ button.row-edit-source-link:focus-visible {
 .source-body.is-scrolling::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.36);
   background-clip: padding-box;
+}
+
+.vivo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(26, 26, 26, 0.18);
+  opacity: 1;
+  transition: opacity 250ms ease;
+}
+
+.vivo-backdrop.is-hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.vivo-panel {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  right: 0;
+  width: min(500px, 100vw);
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-left: 1px solid #d6d6d6;
+  background: #fff;
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.14);
+  transform: translateX(0);
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vivo-panel.is-source-open {
+  width: min(var(--sheet-source-width), 100vw);
+}
+
+.vivo-panel.is-closed {
+  transform: translateX(110%);
+}
+
+.vivo-panel [data-vivo-root] {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transition: grid-template-columns 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vivo-panel.is-source-open [data-vivo-root] {
+  grid-template-columns: minmax(360px, 1fr) minmax(360px, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
+.vivo-panel.is-source-open .vivo-header,
+.vivo-panel.is-source-open .vivo-body {
+  grid-column: 1;
+}
+
+.vivo-panel.is-source-open .vivo-source-view {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.vivo-source-view {
+  min-height: 0;
+}
+
+.vivo-header {
+  background: #fff;
+}
+
+.vivo-header-actions,
+.vivo-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vivo-body {
+  padding-bottom: 12px;
+}
+
+.vivo-hero,
+.vivo-section,
+.vivo-criterion {
+  border: 0.5px solid #d6d6d6;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.vivo-score-card {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  padding-top: 2px;
+}
+
+.vivo-score-info {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.vivo-temperature {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.vivo-temperature--quente {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.vivo-temperature--morno {
+  background: #fef3e2;
+  color: #b86e0a;
+}
+
+.vivo-temperature--frio {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.vivo-score-info strong {
+  display: block;
+  color: #1a1a1a;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.vivo-score-help {
+  width: fit-content;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #3aa5a5;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 0;
+  text-align: left;
+}
+
+.vivo-score-help:hover,
+.vivo-score-help:focus-visible {
+  color: #2f8f8f;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.vivo-gauge {
+  position: relative;
+  width: 150px;
+  height: 88px;
+  flex: 0 0 150px;
+  overflow: hidden;
+}
+
+.vivo-gauge-track {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.vivo-gauge-segment {
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: round;
+}
+
+.vivo-gauge-segment--cold {
+  stroke: #ef4444;
+}
+
+.vivo-gauge-segment--warm {
+  stroke: #f59e0b;
+}
+
+.vivo-gauge-segment--hot {
+  stroke: #22c55e;
+}
+
+.vivo-gauge-needle {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 58px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d4d4d4, #a3a3a3);
+  transform: rotate(var(--score-angle));
+  transform-origin: left center;
+  animation: vivoGaugeNeedle 1250ms cubic-bezier(0.25, 0.85, 0.28, 1.2) both;
+}
+
+.vivo-gauge-needle::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 4px solid #d4d4d4;
+  background: #fff;
+}
+
+.vivo-gauge-marker {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 17px;
+  height: 17px;
+  border: 4px solid #f59e0b;
+  border-radius: 50%;
+  background: #fff;
+  transform: rotate(var(--score-angle)) translateX(66px) rotate(calc(var(--score-angle) * -1)) translate(-50%, -50%);
+  transform-origin: 0 50%;
+  animation: vivoGaugeMarker 1250ms cubic-bezier(0.25, 0.85, 0.28, 1.2) both;
+}
+
+.vivo-gauge-marker--quente {
+  border-color: #22c55e;
+}
+
+.vivo-gauge-marker--morno {
+  border-color: #f59e0b;
+}
+
+.vivo-gauge-marker--frio {
+  border-color: #ef4444;
+}
+
+.vivo-score-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.vivo-score-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.24);
+}
+
+.vivo-score-dialog {
+  position: relative;
+  width: min(420px, 100%);
+  overflow: hidden;
+  border: 0.5px solid #d6d6d6;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.vivo-score-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 0.5px solid #d6d6d6;
+  padding: 14px 16px;
+}
+
+.vivo-score-dialog-header h2 {
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vivo-score-dialog-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.vivo-score-dialog-body p {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vivo-score-dialog-body dl {
+  display: grid;
+  overflow: hidden;
+  border: 0.5px solid #d6d6d6;
+  border-radius: 10px;
+}
+
+.vivo-score-dialog-body dl div {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.vivo-score-dialog-body dl div + div {
+  border-top: 0.5px solid #d6d6d6;
+}
+
+.vivo-score-dialog-body dt {
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vivo-score-dialog-body dd {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+@keyframes vivoGaugeNeedle {
+  0% {
+    transform: rotate(-180deg);
+  }
+
+  72% {
+    transform: rotate(calc(var(--score-angle) + 9deg));
+  }
+
+  100% {
+    transform: rotate(var(--score-angle));
+  }
+}
+
+@keyframes vivoGaugeMarker {
+  0% {
+    transform: rotate(-180deg) translateX(66px) rotate(180deg) translate(-50%, -50%);
+  }
+
+  72% {
+    transform: rotate(calc(var(--score-angle) + 9deg)) translateX(66px) rotate(calc((var(--score-angle) + 9deg) * -1)) translate(-50%, -50%);
+  }
+
+  100% {
+    transform: rotate(var(--score-angle)) translateX(66px) rotate(calc(var(--score-angle) * -1)) translate(-50%, -50%);
+  }
+}
+
+.vivo-option-card button {
+  border: 0;
+  border-radius: 8px;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+}
+
+.vivo-option-card button + button {
+  background: transparent;
+  color: #1a1a1a;
+}
+
+.vivo-option-card button + button:hover {
+  background: #f0f0f0;
+}
+
+.vivo-section {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.vivo-section h2,
+.vivo-details summary {
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.vivo-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vivo-scope-grid div,
+.vivo-field-row,
+.vivo-option-card {
+  border-top: 1px solid var(--info-separator-color);
+  padding-top: 10px;
+}
+
+.vivo-scope-grid dt,
+.vivo-field-row span,
+.vivo-criterion-value span,
+.vivo-criterion-header span,
+.vivo-evidence-row span,
+.vivo-option-card span {
+  display: block;
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.vivo-scope-grid dd,
+.vivo-field-row strong,
+.vivo-criterion-value strong {
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.vivo-criteria-list {
+  margin: 0;
+}
+
+.vivo-criterion {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.vivo-criterion-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vivo-criterion-header h3 {
+  margin-bottom: 6px;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vivo-status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.vivo-status--atende {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.vivo-status--requer-revisao {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+}
+
+.vivo-status--nao-atende {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.vivo-impact {
+  color: #1a1a1a;
+  font-size: 13px;
+}
+
+.vivo-row-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.vivo-row-heading .row-label {
+  margin-right: auto;
+}
+
+.vivo-criterion-review {
+  display: grid;
+  gap: 10px;
+  margin-top: 2px;
+  border-top: var(--info-separator-size) solid var(--info-separator-color);
+  padding-top: 12px;
+}
+
+.vivo-criterion-review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vivo-criterion-options {
+  display: grid;
+  overflow: hidden;
+  border: 0.5px solid #d6d6d6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.vivo-criterion-options .vivo-option-card {
+  border-top: 0;
+  padding: 12px;
+}
+
+.vivo-criterion-options .vivo-option-card + .vivo-option-card {
+  border-top: var(--info-separator-size) solid var(--info-separator-color);
+}
+
+.vivo-criterion-values {
+  display: grid;
+}
+
+.vivo-criterion-values div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px;
+}
+
+.vivo-criterion-values div + div {
+  margin-top: 10px;
+  border-top: var(--info-separator-size) solid var(--info-separator-color);
+  padding-top: 10px;
+}
+
+.vivo-criterion-values dt {
+  color: #777;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vivo-criterion-values dd {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.vivo-snippet p,
+.vivo-option-card p {
+  color: #666;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.vivo-evidence-row,
+.vivo-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vivo-inline-actions button {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.vivo-inline-actions button:hover,
+.vivo-inline-actions button:focus-visible {
+  background: #f0f0f0;
+}
+
+.vivo-snippet {
+  border-top: 1px solid var(--info-separator-color);
+  padding-top: 10px;
+}
+
+.vivo-snippet summary,
+.vivo-details summary {
+  cursor: pointer;
+}
+
+.vivo-section-title-row {
+  gap: 10px;
+}
+
+.vivo-section-title-row span {
+  color: #777;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vivo-option-card {
+  display: grid;
+  gap: 6px;
+}
+
+.vivo-option-card small {
+  display: block;
+}
+
+.vivo-option-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.vivo-option-card:first-child,
+.vivo-scope-grid div:nth-child(-n + 2) {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.vivo-field-list {
+  display: grid;
+}
+
+.vivo-field-row {
+  padding: 10px 0;
+}
+
+.vivo-field-row:first-child {
+  border-top: 0;
+}
+
+.vivo-empty {
+  color: #777;
+  font-size: 13px;
 }
 
 .toast {
