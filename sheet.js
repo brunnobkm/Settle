@@ -31,6 +31,7 @@ let activeSourceView = null;
 let activeManualSourceEditor = null;
 let sourceClickStartedWithSelection = false;
 let sidebarResizeMode = null;
+let flatGroupCounter = 0;
 const scrollHideTimers = new WeakMap();
 const sidebarWidth = {
   summary: 39,
@@ -914,6 +915,45 @@ const copyText = [
   "  Recebimento definitivo: Até 10 dias corridos após o recebimento provisório.",
 ].join("\n");
 
+const flatCopyText = [
+  "Resumo",
+  "",
+  "Objeto: Aquisição de licenças de software JetBrains All Products Pack, incluindo atualização e suporte técnico por 36 meses.",
+  "Prazo de entrega: Entrega e conclusão dos serviços em até 30 dias corridos. | Recebimento definitivo em até 10 dias corridos após o recebimento provisório.",
+  "Regime de Execução: Empreitada por preço global, com execução por preço certo e total.",
+  "Critério de Julgamento: Menor preço global.",
+  "Escopo principal: Licenças JetBrains, atualização e suporte técnico por 36 meses.",
+  "Quantidade de licenças: 20 licenças de direito de uso do JetBrains All Products Pack. | 20 unidades de subscrição por 36 meses.",
+  "Vigência da subscrição: 36 meses contados do recebimento definitivo das licenças. | 36 meses contados da assinatura do contrato.",
+  "Regime de Execução: Fornecimento de licenças com suporte técnico oficial.",
+  "Critério de Julgamento: Menor preço global.",
+  "Vigência: 36 meses, contados do recebimento definitivo das licenças.",
+  "Tipo de solução: Subscrição de software para desenvolvimento, banco de dados e produtividade técnica.",
+  "Ferramentas incluídas: IntelliJ IDEA, WebStorm, Rider, PyCharm, CLion, PhpStorm, DataGrip e GoLand.",
+  "Finalidade: Apoiar equipes de desenvolvimento em Java, PHP, bancos de dados e aplicações institucionais.",
+  "Entrega: Disponibilização das licenças e ativação da subscrição em até 30 dias corridos.",
+  "Atualização: Atualizações do fabricante durante todo o período de vigência da subscrição.",
+  "Suporte técnico: Suporte técnico oficial pelo período de 36 meses.",
+  "Dados pessoais: Baixo tratamento de dados pessoais, restrito à relação contratual e à gestão das licenças.",
+  "Conformidade: Observância às normas de proteção de dados e segurança da informação aplicáveis ao contrato.",
+  "Sustentabilidade: Aplicação das diretrizes de sustentabilidade quando compatíveis com o fornecimento de software.",
+  "Atendimento: Suporte técnico oficial do fabricante durante a vigência da subscrição.",
+  "Atualizações: Direito a atualizações do software pelo período de 36 meses.",
+  "Garantia: Correção de vícios, defeitos ou incorreções nos serviços de instalação, quando aplicável.",
+  "Vigência: 36 meses, prorrogável nos termos da Lei nº 14.133/2021.",
+  "Pagamento: Após recebimento definitivo, liquidação da despesa e emissão da nota fiscal.",
+  "Valor estimado: R$ 261.698,13 para a subscrição de 36 meses.",
+  "Modelo de disputa: Pregão eletrônico, com etapa de lances no Compras.gov.br.",
+  "Julgamento: Menor preço global, observada a conformidade da proposta com o edital.",
+  "Negociação: Possibilidade de negociação com a licitante melhor classificada.",
+  "Qualificação técnica: Comprovação compatível com fornecimento de licenças e suporte técnico de software.",
+  "Regularidade fiscal: Certidões fiscais federais, estaduais, municipais, FGTS e trabalhista.",
+  "Declarações: Inexistência de impedimentos para licitar e cumprimento das exigências legais.",
+  "Ordem de fornecimento: Entrega contada a partir do recebimento da ordem de fornecimento ou serviço.",
+  "Recebimento provisório: Até 5 dias corridos após a conclusão dos serviços.",
+  "Recebimento definitivo: Até 10 dias corridos após o recebimento provisório.",
+].join("\n");
+
 const scoreSheetCopyText = [
   "Score: MORNO (82/100)",
   "",
@@ -977,13 +1017,248 @@ const scoreSheetPointsByLabel = new Map([
   ["Recebimento definitivo", "+0"],
 ]);
 
+function normalizeText(element) {
+  return element?.textContent.replace(/\s+/g, " ").trim() || "";
+}
+
+function getFlatPanel(element) {
+  const panel = element?.closest?.(".review-panel--flat");
+  return panel?.dataset.variant === "flat" ? panel : null;
+}
+
+function getSelectedFlatCards(panel) {
+  return [...panel.querySelectorAll("[data-flat-card].is-selected")];
+}
+
+function clearFlatSelection(panel) {
+  panel.querySelectorAll("[data-flat-select]").forEach((input) => {
+    input.checked = false;
+  });
+  panel.querySelectorAll("[data-flat-card].is-selected").forEach((card) => {
+    card.classList.remove("is-selected");
+  });
+  updateFlatBatchBar(panel);
+}
+
+function updateFlatBatchBar(panel) {
+  if (!panel) return;
+  const bar = panel.querySelector("[data-flat-batch-bar]");
+  if (!bar) return;
+
+  panel.querySelectorAll("[data-flat-group]").forEach((group) => {
+    const groupCards = [...group.querySelectorAll("[data-flat-card]")];
+    const selectedCount = groupCards.filter((card) => card.classList.contains("is-selected")).length;
+    const isFullySelected = groupCards.length > 0 && selectedCount === groupCards.length;
+    const input = group.querySelector("[data-flat-group-select]");
+    group.classList.toggle("is-selected", isFullySelected);
+    if (input) {
+      input.checked = isFullySelected;
+      input.indeterminate = selectedCount > 0 && !isFullySelected;
+    }
+  });
+
+  const selectedCards = getSelectedFlatCards(panel);
+  const count = selectedCards.length;
+  bar.hidden = count === 0;
+  bar.querySelector("[data-flat-selection-count]").textContent = `${count} ${count === 1 ? "item selecionado" : "itens selecionados"}`;
+  if (!count) return;
+
+  const selectedGroups = selectedCards.map((card) => card.closest("[data-flat-group]")).filter(Boolean);
+  const uniqueGroups = [...new Set(selectedGroups)];
+  const allInsideOneGroup = uniqueGroups.length === 1 && selectedGroups.length === selectedCards.length;
+  const allGroupCardsSelected = allInsideOneGroup
+    && uniqueGroups[0].querySelectorAll("[data-flat-card]").length === selectedCards.length;
+  const action = bar.querySelector("[data-flat-batch-action]");
+
+  const hasGroupedCards = selectedGroups.length > 0;
+  action.dataset.flatBatchAction = hasGroupedCards ? (allGroupCardsSelected ? "ungroup" : "remove") : "group";
+  action.textContent = hasGroupedCards ? (allGroupCardsSelected ? "Desagrupar" : "Remover do grupo") : "Agrupar";
+}
+
+function setFlatCardSelected(card, isSelected) {
+  const input = card.querySelector("[data-flat-select]");
+  card.classList.toggle("is-selected", isSelected);
+  if (input) input.checked = isSelected;
+  updateFlatBatchBar(card.closest(".review-panel--flat"));
+}
+
+function setFlatGroupSelected(group, isSelected) {
+  group.querySelectorAll("[data-flat-card]").forEach((card) => {
+    const input = card.querySelector("[data-flat-select]");
+    card.classList.toggle("is-selected", isSelected);
+    if (input) input.checked = isSelected;
+  });
+  updateFlatBatchBar(group.closest(".review-panel--flat"));
+}
+
+function createFlatBatchBar(panel) {
+  const bar = document.createElement("div");
+  bar.className = "flat-batch-bar";
+  bar.dataset.flatBatchBar = "";
+  bar.hidden = true;
+  bar.innerHTML = `
+    <span data-flat-selection-count>0 itens selecionados</span>
+    <button type="button" data-flat-batch-action="group">Agrupar</button>
+    <button class="flat-batch-close" type="button" data-flat-clear-selection aria-label="Limpar seleção">×</button>
+  `;
+  panel.append(bar);
+}
+
+function createFlatGroup(panel, cards) {
+  if (!cards.length) return;
+
+  const group = document.createElement("article");
+  group.className = "flat-summary-group";
+  group.dataset.flatGroup = `flat-group-${++flatGroupCounter}`;
+  group.innerHTML = `
+    <header class="flat-group-header">
+      <label class="flat-card-check flat-group-check" aria-label="Selecionar grupo">
+        <input type="checkbox" data-flat-group-select />
+        <span aria-hidden="true"></span>
+      </label>
+      <input class="flat-group-name" type="text" placeholder="Escolha um nome para esse grupo" aria-label="Nome do grupo" aria-keyshortcuts="Enter Escape" enterkeyhint="done" />
+      <button class="flat-group-icon-btn" type="button" data-flat-group-toggle aria-label="Recolher grupo">
+        <svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+      </button>
+      <button class="flat-group-icon-btn" type="button" data-flat-group-menu aria-label="Mais ações do grupo">
+        <svg class="lucide-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8h.01" /><path d="M12 12h.01" /><path d="M12 16h.01" /></svg>
+      </button>
+      <div class="flat-group-menu" data-flat-group-menu-popover hidden>
+        <button type="button" data-flat-ungroup>Desagrupar</button>
+        <button class="is-danger" type="button" data-flat-delete-group>Excluir grupo</button>
+      </div>
+    </header>
+    <div class="flat-group-body"></div>
+  `;
+
+  cards[0].insertAdjacentElement("beforebegin", group);
+  const body = group.querySelector(".flat-group-body");
+  cards.forEach((card) => {
+    setFlatCardSelected(card, false);
+    body.append(card);
+  });
+  updateFlatBatchBar(panel);
+  requestAnimationFrame(() => {
+    group.querySelector(".flat-group-name")?.focus();
+  });
+}
+
+function ungroupFlatGroup(group) {
+  const panel = group.closest(".review-panel--flat");
+  const cards = [...group.querySelectorAll("[data-flat-card]")];
+  cards.forEach((card) => {
+    setFlatCardSelected(card, false);
+    group.insertAdjacentElement("beforebegin", card);
+  });
+  group.remove();
+  updateFlatBatchBar(panel);
+}
+
+function removeSelectedCardsFromGroups(panel, selectedCards) {
+  const affectedGroups = [...new Set(selectedCards.map((card) => card.closest("[data-flat-group]")).filter(Boolean))];
+  affectedGroups.forEach((group) => {
+    selectedCards
+      .filter((card) => card.closest("[data-flat-group]") === group)
+      .reverse()
+      .forEach((card) => {
+        setFlatCardSelected(card, false);
+        group.insertAdjacentElement("afterend", card);
+      });
+
+    if (!group.querySelector("[data-flat-card]")) group.remove();
+  });
+  updateFlatBatchBar(panel);
+}
+
+function runFlatBatchAction(panel) {
+  const selectedCards = getSelectedFlatCards(panel);
+  if (!selectedCards.length) return;
+
+  const action = panel.querySelector("[data-flat-batch-action]")?.dataset.flatBatchAction || "group";
+  if (action === "group") {
+    createFlatGroup(panel, selectedCards);
+    return;
+  }
+
+  if (action === "ungroup") {
+    const group = selectedCards[0].closest("[data-flat-group]");
+    if (group) ungroupFlatGroup(group);
+    return;
+  }
+
+  removeSelectedCardsFromGroups(panel, selectedCards);
+}
+
+function createFlatSummary(panel) {
+  panel.setAttribute("aria-label", "Resumo");
+  panel.querySelector(".review-title").textContent = "Resumo";
+  panel.querySelector("[data-workspace-tab='summary']").textContent = "Resumo";
+
+  const body = panel.querySelector(".review-body");
+  const objectCard = body.querySelector(".objeto-card");
+  const rows = [{
+    label: normalizeText(objectCard?.querySelector(".objeto-label")),
+    value: normalizeText(objectCard?.querySelector(".objeto-value")),
+  }].filter(({ label, value }) => label && value);
+
+  body.querySelectorAll(".accordion").forEach((accordion) => {
+    accordion.querySelectorAll(".sub-accordion-header").forEach((header) => {
+      const subBody = header.nextElementSibling;
+      if (!subBody?.classList.contains("sub-body")) return;
+
+      const label = normalizeText(header.querySelector(".sub-label"));
+      const value = [...subBody.querySelectorAll(".source-option strong")]
+        .map((option) => normalizeText(option))
+        .filter(Boolean)
+        .join(" | ");
+
+      if (label && value) rows.push({ label, value });
+    });
+
+    accordion.querySelectorAll(".accordion-row").forEach((row) => {
+      const label = normalizeText(row.querySelector(".row-label"));
+      const value = normalizeText(row.querySelector(".row-value"));
+      if (label && value) rows.push({ label, value });
+    });
+  });
+
+  body.querySelectorAll(".accordion").forEach((accordion) => accordion.remove());
+  objectCard?.remove();
+
+  const flatList = document.createElement("dl");
+  flatList.className = "flat-summary-list";
+  flatList.setAttribute("aria-label", "Informações do resumo");
+  flatList.innerHTML = rows.map(({ label, value }, index) => `
+    <div class="accordion-row flat-summary-row" data-flat-card data-flat-card-id="flat-card-${index}">
+      <label class="flat-card-check" aria-label="Selecionar ${escapeHTML(label)}">
+        <input type="checkbox" data-flat-select />
+        <span aria-hidden="true"></span>
+      </label>
+      <div class="flat-card-content">
+        <dt class="row-label">${escapeHTML(label)}</dt>
+        <dd class="row-value">${escapeHTML(value)}</dd>
+      </div>
+    </div>
+  `).join("");
+
+  body.append(flatList);
+  flatList.querySelectorAll(".accordion-row").forEach(addRowActions);
+  createFlatBatchBar(panel);
+}
+
 function renderSheetPanelVariant(variant = "summary") {
   if (sheetPanel.dataset.variant === variant && sheetPanel.childElementCount) return;
 
   sheetPanel.innerHTML = "";
   sheetPanel.dataset.variant = variant;
   sheetPanel.classList.toggle("review-panel--score", variant === "score");
+  sheetPanel.classList.toggle("review-panel--flat", variant === "flat");
   renderPanel(sheetPanel);
+
+  if (variant === "flat") {
+    createFlatSummary(sheetPanel);
+    return;
+  }
 
   if (variant !== "score") return;
 
@@ -1923,7 +2198,9 @@ async function writeClipboard(text) {
 }
 
 async function copyContent() {
-  const text = !sheetPanel.hidden && sheetPanel.dataset.variant === "score" ? scoreSheetCopyText : copyText;
+  const text = !sheetPanel.hidden && sheetPanel.dataset.variant === "score"
+    ? scoreSheetCopyText
+    : (!sheetPanel.hidden && sheetPanel.dataset.variant === "flat" ? flatCopyText : copyText);
 
   if (await writeClipboard(text)) {
     showToast("Conteúdo copiado!");
@@ -2337,6 +2614,70 @@ document.addEventListener("click", (event) => {
   const accordionToggle = target.closest("[data-accordion-toggle]");
   const subToggle = target.closest("[data-sub-toggle]");
   const closeButton = target.closest("[data-close-panel]");
+  const flatPanel = getFlatPanel(target);
+
+  if (flatPanel && target.closest("[data-flat-clear-selection]")) {
+    clearFlatSelection(flatPanel);
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-batch-action]")) {
+    runFlatBatchAction(flatPanel);
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-group-toggle]")) {
+    const group = target.closest("[data-flat-group]");
+    group?.classList.toggle("is-collapsed");
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-group-menu]")) {
+    const group = target.closest("[data-flat-group]");
+    const popover = group?.querySelector("[data-flat-group-menu-popover]");
+    flatPanel.querySelectorAll("[data-flat-group-menu-popover]").forEach((menu) => {
+      if (menu !== popover) menu.hidden = true;
+    });
+    if (popover) popover.hidden = !popover.hidden;
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-group-select]")) {
+    const group = target.closest("[data-flat-group]");
+    if (group) setFlatGroupSelected(group, target.closest("[data-flat-group-select]").checked);
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-ungroup]")) {
+    const group = target.closest("[data-flat-group]");
+    if (group) ungroupFlatGroup(group);
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-delete-group]")) {
+    const group = target.closest("[data-flat-group]");
+    group?.remove();
+    updateFlatBatchBar(flatPanel);
+    return;
+  }
+
+  if (flatPanel && target.closest("[data-flat-card]") && !target.closest("button, input, textarea, select, a")) {
+    const card = target.closest("[data-flat-card]");
+    setFlatCardSelected(card, !card.classList.contains("is-selected"));
+    return;
+  }
+
+  if (flatPanel && target.closest(".flat-group-header") && !target.closest("button, input, textarea, select, a")) {
+    const group = target.closest("[data-flat-group]");
+    if (group) setFlatGroupSelected(group, !group.classList.contains("is-selected"));
+    return;
+  }
+
+  if (flatPanel && !target.closest("[data-flat-group-menu], [data-flat-group-menu-popover]")) {
+    flatPanel.querySelectorAll("[data-flat-group-menu-popover]").forEach((menu) => {
+      menu.hidden = true;
+    });
+  }
 
   if (accordionToggle) togglePanel(accordionToggle);
   if (subToggle) togglePanel(subToggle);
@@ -2366,6 +2707,7 @@ document.addEventListener("click", (event) => {
   if (target.closest("[data-copy-content]")) copyContent();
   if (target.closest("[data-history-toggle]")) toggleHistory(target.closest("[data-history-toggle]"));
   if (target.closest("[data-open-sheet]")) openSheet();
+  if (target.closest("[data-open-flat-summary]")) openSheet("flat");
   if (target.closest("[data-open-vivo-new]")) openSheet("score");
   if (target.closest("[data-open-sidebar]")) toggleSidebar();
   if (target.closest("[data-close-sheet]")) closeSheet();
@@ -2409,6 +2751,12 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  const flatSelect = event.target.closest("[data-flat-select]");
+  if (flatSelect) {
+    setFlatCardSelected(flatSelect.closest("[data-flat-card]"), flatSelect.checked);
+    return;
+  }
+
   const sourceDocument = event.target.closest("[data-source-document]");
   if (sourceDocument) {
     const sourceView = sourceDocument.closest("[data-source-view]");
@@ -2486,11 +2834,23 @@ document.addEventListener("mouseout", (event) => {
 });
 
 document.addEventListener("focusin", (event) => {
+  const flatGroupName = event.target.closest(".flat-group-name");
+  if (flatGroupName) {
+    flatGroupName.dataset.previousValue = flatGroupName.value;
+    flatGroupName.closest("[data-flat-group]")?.classList.add("is-editing-name");
+  }
+
   const actionButton = event.target.closest(".row-action-btn, .review-source-btn, .info-icon");
   if (actionButton) showTooltip(actionButton);
 });
 
 document.addEventListener("focusout", (event) => {
+  const flatGroupName = event.target.closest(".flat-group-name");
+  if (flatGroupName) {
+    flatGroupName.dataset.previousValue = flatGroupName.value;
+    flatGroupName.closest("[data-flat-group]")?.classList.remove("is-editing-name");
+  }
+
   if (event.target.closest(".row-action-btn, .review-source-btn, .info-icon")) hideTooltip();
 });
 
@@ -2558,6 +2918,22 @@ window.addEventListener("resize", () => {
 });
 
 document.addEventListener("keydown", (event) => {
+  const flatGroupName = event.target.closest(".flat-group-name");
+  if (flatGroupName) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      flatGroupName.blur();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      flatGroupName.value = flatGroupName.dataset.previousValue || "";
+      flatGroupName.blur();
+      return;
+    }
+  }
+
   if (event.key !== "Escape") return;
 
   hideTooltip();
