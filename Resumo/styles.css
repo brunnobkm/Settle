@@ -1071,6 +1071,97 @@ button {
   line-height: 1.4;
 }
 
+/* --- Múltiplos trechos por informação (1:N) --- */
+.trechos {
+  display: block;
+  margin-top: 10px;
+}
+.trechos-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.trechos-title {
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
+}
+.trechos-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2d8a8a;
+  background: #e6f4f4;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.trecho-add {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #3aa5a5;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.trecho-list {
+  display: block;
+  border: 0.5px solid #e2e2e2;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.trecho-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.trecho-item + .trecho-item {
+  border-top: 1px solid var(--info-separator-color);
+}
+.trecho-ico {
+  display: inline-flex;
+  color: #3aa5a5;
+  margin-top: 1px;
+}
+.trecho-ico svg {
+  width: 14px;
+  height: 14px;
+}
+.trecho-loc {
+  display: block;
+  font-size: 12px;
+  color: #444;
+  font-weight: 600;
+}
+.trecho-principal {
+  font-size: 10px;
+  font-weight: 600;
+  color: #2d8a8a;
+  background: #e6f4f4;
+  padding: 0 6px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+.trecho-snippet {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.trecho-view {
+  border: 0;
+  background: transparent;
+  color: #3aa5a5;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: center;
+}
+
 .sub-body.is-reviewing .source-option {
   grid-template-columns: 18px 1fr;
   align-items: start;
@@ -1766,8 +1857,7 @@ button {
   color: #3aa5a5;
 }
 
-.row-action-btn.is-active,
-.accordion-row.is-source-active [data-row-action="link"] {
+.row-action-btn.is-active {
   background: #f5f5f5;
   color: #3aa5a5;
 }
@@ -1776,7 +1866,6 @@ button {
   color: #000;
 }
 
-.accordion-row.is-source-active .row-action-btn.is-missing-source,
 .row-action-btn.is-missing-source.is-active {
   background: #f5f5f5;
   color: #000;

@@ -798,7 +798,7 @@ function getSourceSearchText(text) {
 function clearActiveSourceContext({ clearHighlight = true } = {}) {
   if (activeSourceRow) {
     activeSourceRow.classList.remove("is-source-active", "is-hovered");
-    activeSourceRow.querySelector('[data-row-action="link"]')?.classList.remove("is-active");
+    activeSourceRow.querySelectorAll('[data-row-action="link"]').forEach((btn) => btn.classList.remove("is-active"));
     activeSourceRow = null;
   }
   activeSourceView = null;
@@ -815,14 +815,14 @@ function clearActiveSourceContext({ clearHighlight = true } = {}) {
   hideSourceCursorTooltip();
 }
 
-function setActiveSourceRow(row, sourceView) {
+function setActiveSourceRow(row, sourceView, activeButton) {
   if (!row) return;
 
   clearActiveSourceContext({ clearHighlight: false });
   activeSourceRow = row;
   activeSourceView = sourceView || null;
   row.classList.add("is-source-active", "is-hovered");
-  row.querySelector('[data-row-action="link"]')?.classList.add("is-active");
+  (activeButton || row.querySelector('[data-row-action="link"]'))?.classList.add("is-active");
 }
 
 function findSourceHighlightTarget(row) {
@@ -1316,15 +1316,35 @@ function actionIcon(name) {
   return icons[name];
 }
 
+function parseRowTrechos(row) {
+  if (!row) return [];
+  const raw = row.dataset.trechos;
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    console.warn("data-trechos inválido", err);
+    return [];
+  }
+}
+
 function addRowActions(row) {
   if (row.querySelector(".row-actions")) return;
+
+  const trechos = parseRowTrechos(row);
+  const linkButtons = trechos.length > 0
+    ? trechos.map((trecho, i) =>
+        `<button class="row-action-btn" type="button" data-row-action="link" data-trecho-index="${i}" aria-label="${escapeHTML(trecho.label || "Trecho do edital")}">${actionIcon("link")}</button>`
+      ).join("")
+    : `<button class="row-action-btn" type="button" data-row-action="link" aria-label="Abrir trecho do edital">${actionIcon("link")}</button>`;
 
   const actions = document.createElement("div");
   actions.className = "row-actions";
   actions.innerHTML = `
     <button class="row-action-btn" type="button" data-row-action="copy" aria-label="Copiar informação">${actionIcon("copy")}</button>
     <button class="row-action-btn" type="button" data-row-action="edit" aria-label="Editar informação">${actionIcon("edit")}</button>
-    <button class="row-action-btn" type="button" data-row-action="link" aria-label="Abrir trecho do edital">${actionIcon("link")}</button>
+    ${linkButtons}
   `;
   row.append(actions);
   updateRowSourceState(row);
@@ -1512,6 +1532,7 @@ function toggleHistory(button) {
 
 function rowHasSource(row) {
   if (!row || row.dataset.noSource === "true") return false;
+  if (parseRowTrechos(row).length > 0) return true;
   if (row.dataset.sourceText) return true;
 
   const label = row.querySelector(".row-label")?.textContent.trim();
@@ -1519,17 +1540,24 @@ function rowHasSource(row) {
 }
 
 function updateRowSourceState(row) {
-  const linkButton = row?.querySelector('[data-row-action="link"]');
-  if (!linkButton) return;
+  const linkButtons = row?.querySelectorAll('[data-row-action="link"]');
+  if (!linkButtons?.length) return;
 
-  const hasSource = rowHasSource(row);
+  const trechos = parseRowTrechos(row);
+  const hasMultipleTrechos = trechos.length > 0;
+  const hasSource = hasMultipleTrechos || rowHasSource(row);
   row.dataset.sourceStatus = hasSource ? "linked" : "none";
-  linkButton.classList.toggle("is-missing-source", !hasSource);
-  linkButton.classList.toggle("has-source", hasSource);
-  linkButton.setAttribute(
-    "aria-label",
-    hasSource ? "Abrir trecho do edital" : "Sem trecho vinculado"
-  );
+
+  linkButtons.forEach((linkButton) => {
+    linkButton.classList.toggle("is-missing-source", !hasSource);
+    linkButton.classList.toggle("has-source", hasSource);
+    if (!hasMultipleTrechos) {
+      linkButton.setAttribute(
+        "aria-label",
+        hasSource ? "Abrir trecho do edital" : "Sem trecho vinculado"
+      );
+    }
+  });
 }
 
 function createResolvedRow(label, value, options = {}) {
@@ -2421,11 +2449,24 @@ function openSourceView(button) {
   const sourceView = panel?.querySelector("[data-source-view]");
   if (!panel || !sourceView) return;
 
-  const target = findSourceHighlightTarget(row);
+  let target;
+  const trechoIndex = button.dataset.trechoIndex;
+  if (trechoIndex !== undefined) {
+    const trechos = parseRowTrechos(row);
+    const trecho = trechos[Number(trechoIndex)];
+    if (trecho) {
+      target = {
+        documentKey: trecho.document || "edital",
+        text: trecho.searchText || trecho.text || "",
+      };
+    }
+  }
+  if (!target) target = findSourceHighlightTarget(row);
+
   const select = sourceView.querySelector("[data-source-document]");
   if (select) select.value = target.documentKey || "edital";
   sourceView.dataset.highlightText = target.text || "";
-  setActiveSourceRow(row, sourceView);
+  setActiveSourceRow(row, sourceView, button);
   renderSourceDocument(sourceView, select?.value || target.documentKey || "edital");
   panel.classList.add("is-source-open");
   panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
