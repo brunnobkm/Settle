@@ -165,7 +165,7 @@ function cardHtml(item) {
   }
 
   // Data de captura (quando exibimos pro cliente) — data principal; a lista ordena por ela.
-  const capturado = `<div class="card-captured">Capturado em ${formatTimestamp(item.dateAtualizacao || item.date)}</div>`;
+  const capturado = `<div class="card-captured"><span class="cap-hi">Capturado</span> em <span class="cap-hi">${formatTimestamp(item.dateAtualizacao || item.date)}</span></div>`;
 
   // Cada bloco numa caixa com borda, com sua própria data. Mensagem (origem) primeiro.
   const box = (date, label, texto) => `
