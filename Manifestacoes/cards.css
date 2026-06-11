@@ -149,6 +149,7 @@ body.aux-open .aux { transform: translateX(0); }
 .badge--impugnacao     { background: rgba(162,96,83,.12);  color: #A26053; } /* category-red */
 .badge--recurso        { background: rgba(131,91,142,.12); color: #835B8E; } /* category-purple */
 .badge--resposta       { background: rgba(227,146,25,.1);  color: #D97706; } /* warning (Figma 8478-14674) */
+.badge--aguardando     { background: rgba(23,23,23,.06);   color: #71717A; } /* neutro — aguardando resposta */
 
 .chip {
   display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 6px;
@@ -164,7 +165,9 @@ body.aux-open .aux { transform: translateX(0); }
 .card.is-clickable:hover { transform: scale(1.005); box-shadow: rgba(0,0,0,0.1) 0px 10px 35px; }
 
 .card-meta { font-size: 12.5px; color: var(--text-mute); margin-bottom: 4px; }
-/* No formato com resposta, a 2ª data (acima da Mensagem) respira do bloco anterior */
+/* Data de atualização: data principal do card (mais destacada que as datas de conteúdo) */
+.card-updated { color: var(--text); font-weight: 500; }
+/* No formato com resposta, a 2ª data (acima da Resposta) respira do bloco anterior */
 .card-msg + .card-meta { margin-top: 14px; }
 .meta-clip { display: inline-flex; align-items: center; gap: 3px; }
 

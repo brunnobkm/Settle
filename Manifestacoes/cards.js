@@ -154,36 +154,39 @@ function cardHtml(item) {
   const cat = NCData.CATEGORIAS[item.categoria];
   const isAviso = item.categoria === 'aviso';
   const isUnread = !item.lida && !isAviso;
-  const autorPrefix = (temAutor(item.categoria) && item.autor) ? escapeHtml(item.autor) + ' · ' : '';
   const dot = novos.has(item.id) ? '<span class="new-dot" title="Novo"></span>' : '';
 
-  // Com resposta → formato e-mail (Figma 8526-34300): resposta em cima, mensagem
-  // embaixo, cada uma com sua data. Sem resposta → data + texto único.
+  // Badge "Aguardando resposta": questionamento/impugnação ainda sem resposta.
+  const aguardando = (item.categoria === 'esclarecimento' || item.categoria === 'impugnacao') && !item.resposta;
+  const badgeAguard = aguardando ? '<span class="badge badge--aguardando">Aguardando resposta</span>' : '';
+
+  // Data de atualização (quando exibimos pro cliente) — é a data principal do card.
+  const atualizado = `<div class="card-meta card-updated">Atualizado em ${formatTimestamp(item.dateAtualizacao || item.date)}</div>`;
+
+  // Ordem: mensagem (origem) primeiro, resposta/atualização depois.
   let corpo;
   if (item.etapas) {
-    // Recurso: mesma lógica de e-mail — última etapa (atualização) em cima, origem embaixo.
-    const ult = item.ultimaEtapa || item.etapas[item.etapas.length - 1];
     const pri = item.etapas[0];
+    const ult = item.ultimaEtapa || item.etapas[item.etapas.length - 1];
     corpo = `
-      <div class="card-meta">${formatTimestamp(ult.date)}</div>
-      <p class="card-msg"><strong>${escapeHtml(ult.etapa)}:</strong> ${escapeHtml(truncar(ult.texto))}</p>
       <div class="card-meta">${formatTimestamp(pri.date)}</div>
-      <p class="card-msg"><strong>${escapeHtml(pri.etapa)}:</strong> ${escapeHtml(truncar(pri.texto))}</p>`;
+      <p class="card-msg"><strong>${escapeHtml(pri.etapa)}:</strong> ${escapeHtml(truncar(pri.texto))}</p>
+      <div class="card-meta">${formatTimestamp(ult.date)}</div>
+      <p class="card-msg"><strong>${escapeHtml(ult.etapa)}:</strong> ${escapeHtml(truncar(ult.texto))}</p>`;
   } else if (item.resposta) {
     corpo = `
-      <div class="card-meta">${formatTimestamp(item.date)}</div>
-      <p class="card-msg"><strong>Resposta:</strong> ${escapeHtml(truncar(item.resposta.texto))}</p>
       <div class="card-meta">${formatTimestamp(item.dateMensagem || item.date)}</div>
-      <p class="card-msg"><strong>Mensagem:</strong> ${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>`;
+      <p class="card-msg"><strong>Mensagem:</strong> ${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>
+      <div class="card-meta">${formatTimestamp(item.date)}</div>
+      <p class="card-msg"><strong>Resposta:</strong> ${escapeHtml(truncar(item.resposta.texto))}</p>`;
   } else {
-    corpo = `
-      <div class="card-meta">${autorPrefix}${formatTimestamp(item.date)}</div>
-      <p class="card-msg">${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>`;
+    corpo = `<p class="card-msg">${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>`;
   }
 
   return `
     <article class="card card--${item.categoria}${isUnread ? ' is-unread' : ''} is-clickable" data-id="${item.id}">
-      <div class="card-top">${dot}<span class="badge badge--${item.categoria}">${cat.label}</span></div>
+      <div class="card-top">${dot}<span class="badge badge--${item.categoria}">${cat.label}</span>${badgeAguard}</div>
+      ${atualizado}
       ${corpo}
       ${cardAnexosHtml(item)}
     </article>`;
@@ -329,8 +332,8 @@ function openPreviewModal(files, startIdx) {
 
 /* Corpo do modal de recurso: cada etapa como um bloco de campo (estilo mensagem/resposta). */
 function recursoFieldsHtml(item) {
-  // Ordem de e-mail: etapa mais recente em cima (Julgamento → … → Intenção e razões).
-  return [...item.etapas].reverse().map((e) => `
+  // Ordem cronológica: origem em cima (Intenção e razões → Contrarrazões → Julgamento).
+  return item.etapas.map((e) => `
     <div class="field">
       <div class="field-label">${escapeHtml(e.etapa)} <span class="field-date">· ${formatTimestamp(e.date)}</span></div>
       <div class="field-sub">${escapeHtml(e.autor)}${e.documento ? ' · ' + escapeHtml(e.documento) : ''}</div>
@@ -390,15 +393,15 @@ function openModal(id) {
   const body = isRecurso
     ? recursoFieldsHtml(item)
     : `
+        <div class="field">
+          <div class="field-label">Mensagem <span class="field-date">· ${formatTimestamp(item.dateMensagem || item.date)}</span></div>
+          <div class="field-text">${escapeHtml(full)}</div>
+        </div>
         ${item.resposta ? `
           <div class="field">
             <div class="field-label">Resposta <span class="field-date">· ${formatTimestamp(item.date)}</span></div>
             <div class="field-text">${escapeHtml(item.resposta.texto)}</div>
           </div>` : ''}
-        <div class="field">
-          <div class="field-label">Mensagem <span class="field-date">· ${formatTimestamp(item.dateMensagem || item.date)}</span></div>
-          <div class="field-text">${escapeHtml(full)}</div>
-        </div>
         ${anexosHtml(item)}`;
 
   const backdrop = document.createElement('div');
