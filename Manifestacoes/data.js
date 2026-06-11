@@ -123,12 +123,15 @@ const RAW_EVENTS = [
   },
   {
     id: 'e03', type: 'OBJECTION_REQUEST', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Licitante — Alfa Tecnologia LTDA', minAtras: 47, minAtrasAtualizacao: 25,
+    autor: 'Licitante — Alfa Tecnologia LTDA', minAtras: 47, minAtrasMensagem: 60 * 24 * 2, minAtrasAtualizacao: 25, // impugnação 2 dias; resposta há 47min
     lida: false,
     mensagem: 'Pedido de impugnação ao instrumento editalício quanto à exigência de comprovação de capital social mínimo, por suposta restrição à competitividade nos termos da Lei 14.133/2021.',
     resumo: 'Impugnação ao item 7.5 do edital: a exigência de capital social mínimo de 10% restringiria a competitividade e prejudicaria micro e pequenas empresas. Pede a exclusão da exigência e a republicação do edital.',
     resumoAuto: 'A empresa impugna o item 7.5 do edital: a exigência de capital social mínimo de 10% restringe a competitividade e prejudica micro e pequenas empresas. Pede a exclusão da exigência (ou sua troca por garantia de proposta) e a republicação do edital com reabertura de prazo.',
     mensagemCompleta: 'Trata-se de pedido de impugnação ao instrumento convocatório do Pregão Eletrônico nº 12/2026, especificamente quanto à exigência de comprovação de capital social mínimo equivalente a 10% (dez por cento) do valor estimado da contratação, prevista no item 7.5 do edital.\n\nA exigência, da forma como redigida, configura restrição indevida à competitividade e afronta os princípios da isonomia e da ampla participação consagrados na Lei nº 14.133/2021. O percentual estabelecido extrapola o limite necessário à aferição da qualificação econômico-financeira e, na prática, inviabiliza a participação de microempresas e empresas de pequeno porte plenamente aptas à execução do objeto.\n\nRessalte-se que a Administração dispõe de meios menos gravosos para assegurar a qualificação econômico-financeira dos licitantes, tais como a exigência de índices contábeis (liquidez geral, solvência geral e liquidez corrente) ou a apresentação de garantia de proposta, nos termos do art. 58 da referida lei.\n\nDiante do exposto, requer-se: (i) o conhecimento e provimento da presente impugnação; (ii) a revisão do item 7.5 do edital, com a exclusão da exigência de capital social mínimo ou sua substituição por garantia de proposta; e (iii) a republicação do edital, com a consequente reabertura do prazo legal, de modo a preservar a competitividade e a legalidade do certame.\n\nAcrescenta-se que a manutenção da exigência impugnada, nos termos em que redigida, poderá ensejar a redução do universo de licitantes aptos e, por conseguinte, prejuízo à obtenção da proposta mais vantajosa para a Administração. Protesta-se, desde já, pela juntada posterior de documentos e pareceres técnicos que corroborem as alegações ora deduzidas, requerendo-se o recebimento e a apreciação da presente impugnação em todos os seus termos.',
+    resposta: {
+      texto: 'Impugnação conhecida e, no mérito, INDEFERIDA. A exigência de capital social mínimo de 10% está em conformidade com o art. 69 da Lei nº 14.133/2021, observando estritamente o limite legal de qualificação econômico-financeira. Mantêm-se inalteradas as condições do edital e a data designada para a realização da sessão pública.',
+    },
     anexos: [
       { nome: 'Impugnacao_capital_social.pdf', tamanho: '318 KB' },
       { nome: 'Procuracao.pdf', tamanho: '96 KB' },
@@ -141,32 +144,14 @@ const RAW_EVENTS = [
       { nome: 'Demonstrativo_indices_contabeis.pdf', tamanho: '201 KB' },
     ],
   },
-  // Duplicatas da mesma manifestação (enviada por lote) -> deduplicar/agrupar
+  // Segunda impugnação — ainda SEM resposta (demonstra "Aguardando resposta").
   {
-    id: 'e04a', type: 'OBJECTION_RESPONSE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Procuradoria', minAtras: 130, minAtrasMensagem: 60 * 24 * 3, minAtrasAtualizacao: 90, grupoId: 'resp-impug-7', // resp ~2h; impugnação 3 dias; exibido há 1h30
+    id: 'e04', type: 'OBJECTION_REQUEST', portal: 'PNCP', licitacao: 'pe12',
+    autor: 'Licitante — Sigma Sistemas', minAtras: 60 * 5, minAtrasAtualizacao: 200, // impugnação há 5h; exibido há ~3h
     lida: true,
-    mensagem: 'Resposta à impugnação ao instrumento editalício (lote 1).',
-    resumo: 'Resposta à impugnação do capital social mínimo (item 7.5): conhecida e, no mérito, indeferida. A exigência está conforme o art. 69 da Lei 14.133/2021; mantida a data da sessão.',
-    mensagemCompleta: 'Trata-se de resposta à impugnação apresentada em face do instrumento convocatório do Pregão Eletrônico nº 12/2026, na qual a impugnante sustenta a suposta ilegalidade da exigência de capital social mínimo prevista no item 7.5 do edital.\n\nPreliminarmente, registra-se que a impugnação foi apresentada tempestivamente, razão pela qual dela se conhece. No mérito, contudo, não assiste razão à impugnante, pelas razões a seguir expostas.\n\nA exigência de capital social mínimo equivalente a 10% do valor estimado da contratação encontra amparo expresso no art. 69 da Lei nº 14.133/2021, que faculta à Administração exigir, para fins de qualificação econômico-financeira, capital social ou patrimônio líquido mínimo de até 10% do valor estimado da contratação. Trata-se, portanto, de exigência que observa estritamente o limite legal, não havendo que se falar em restrição indevida à competitividade.\n\nNão prospera o argumento de que a exigência inviabilizaria a participação de microempresas e empresas de pequeno porte. A uma, porque o tratamento favorecido conferido a tais empresas pela Lei Complementar nº 123/2006 não as exime da comprovação de qualificação econômico-financeira compatível com o vulto da contratação. A duas, porque a exigência se aplica isonomicamente a todos os licitantes, sem qualquer distinção que configure direcionamento.\n\nQuanto à alegação de existência de meios menos gravosos, esclarece-se que a escolha entre as alternativas legalmente admitidas para a aferição da qualificação econômico-financeira insere-se no âmbito da discricionariedade técnica da Administração, desde que devidamente motivada, como se verifica no presente caso, em que o elevado valor e a complexidade do objeto justificam a cautela adotada.\n\nDiante do exposto, e considerando a plena conformidade da exigência impugnada com o ordenamento jurídico vigente, conhece-se da impugnação para, no mérito, NEGAR-LHE PROVIMENTO, mantendo-se inalteradas as condições do edital e a data designada para a realização da sessão pública. Publique-se a presente decisão no Portal Nacional de Contratações Públicas e no sítio eletrônico oficial do órgão, para conhecimento de todos os interessados.',
-    resposta: {
-      novaResposta: false,
-      texto: 'A exigência de capital social mínimo está em conformidade com o art. 69 da Lei 14.133/2021. Impugnação conhecida e, no mérito, INDEFERIDA. Mantém-se a data da sessão.',
-    },
-  },
-  {
-    id: 'e04b', type: 'OBJECTION_RESPONSE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Procuradoria', minAtras: 130, grupoId: 'resp-impug-7',
-    lida: true,
-    mensagem: 'Resposta à impugnação ao instrumento editalício (lote 2).',
-    resposta: { novaResposta: false, texto: 'Conteúdo idêntico ao envio do lote 1 (resposta replicada).' },
-  },
-  {
-    id: 'e04c', type: 'OBJECTION_RESPONSE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Procuradoria', minAtras: 132, grupoId: 'resp-impug-7',
-    lida: true,
-    mensagem: 'Resposta à impugnação ao instrumento editalício (lote 3).',
-    resposta: { novaResposta: false, texto: 'Conteúdo idêntico ao envio do lote 1 (resposta replicada).' },
+    mensagem: 'Pedido de impugnação quanto ao prazo de entrega previsto no item 9 do edital.',
+    mensagemCompleta: 'Pedido de impugnação ao instrumento convocatório do Pregão Eletrônico nº 12/2026 quanto ao prazo de entrega de 10 (dez) dias previsto no item 9 do edital, considerado exíguo e desproporcional à complexidade e ao volume do objeto licitado.\n\nO prazo estabelecido, da forma como redigido, inviabiliza a adequada execução do fornecimento por licitantes que não disponham de estoque imediato, configurando restrição injustificada à competitividade e afronta ao princípio da ampla participação previsto na Lei nº 14.133/2021.\n\nDiante do exposto, requer-se a dilação do prazo de entrega para, no mínimo, 30 (trinta) dias corridos, com a consequente republicação do edital e reabertura do prazo legal.',
+    anexos: [{ nome: 'Impugnacao_prazo_entrega.pdf', tamanho: '204 KB' }],
   },
   {
     id: 'e05', type: 'CLARIFICATION_REQUEST', portal: 'Compras.gov', licitacao: 'pe07',
