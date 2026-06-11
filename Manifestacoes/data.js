@@ -28,6 +28,7 @@ const CATEGORIAS = {
  * simples). Para evoluir a navegação depois, basta `MVP_RECURSOS_TAB = true`:
  * a aba dedicada aparece e o roteamento muda, sem redesenhar o item. */
 const MVP_RECURSOS_TAB = true;
+const MOSTRAR_RECURSO = false; // Recurso fora do escopo por enquanto — não exibir (tab + cards)
 
 const TABS_BASE = [
   { id: 'todas',          label: 'Todas' },
@@ -35,7 +36,7 @@ const TABS_BASE = [
   { id: 'esclarecimento', label: 'Questionamentos' },
   { id: 'impugnacao',     label: 'Impugnações' },
 ];
-const TABS = MVP_RECURSOS_TAB
+const TABS = MOSTRAR_RECURSO
   ? [...TABS_BASE, { id: 'recurso', label: 'Recursos' }]
   : TABS_BASE;
 
@@ -282,6 +283,7 @@ const NCData = (() => {
       // RECURSO encadeado: agrupa etapas que compartilham recursoId em UM item.
       // (mesmo APPEAL_REASON, que não vira card próprio, entra como etapa aqui.)
       if (ev.recursoId && m.categoria === 'recurso') {
+        if (!MOSTRAR_RECURSO) continue; // Recurso fora do escopo — não exibir por enquanto
         const meta = ETAPA_RECURSO[ev.type] || { etapa: ev.type, curto: ev.type };
         const etapa = {
           tipo: ev.type, etapa: ev.etapaLabel || meta.etapa, curto: ev.etapaCurto || meta.curto, foco: !!meta.foco,
