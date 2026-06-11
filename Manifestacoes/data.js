@@ -99,7 +99,7 @@ const LICITACOES = {
 const RAW_EVENTS = [
   {
     id: 'e01', type: 'NOTICE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Pregoeiro — Prefeitura SP', minAtras: 0,
+    autor: 'Pregoeiro — Prefeitura SP', minAtras: 0, minAtrasAtualizacao: 3,
     lida: false,
     mensagem: 'Comunicado de suspensão da sessão pública do Pregão Eletrônico nº 12/2026.',
     resumo: 'A sessão pública foi suspensa por tempo indeterminado para análise de questionamentos e impugnações. Nova data será publicada nos canais oficiais.',
@@ -107,7 +107,7 @@ const RAW_EVENTS = [
   },
   {
     id: 'e02', type: 'CLARIFICATION_RESPONSE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Equipe de Licitação', minAtras: 18, minAtrasMensagem: 60 * 24 * 2, // resposta há 18min; pergunta há 2 dias
+    autor: 'Equipe de Licitação', minAtras: 18, minAtrasMensagem: 60 * 24 * 2, minAtrasAtualizacao: 10, // resp há 18min; pergunta 2 dias; exibido há 10min
     lida: false,
     mensagem: 'Resposta ao pedido de esclarecimento nº 3 referente ao item 4.2 do Termo de Referência.',
     resumo: 'Esclarecimento sobre a comprovação de qualificação técnica (item 4.2): atestado pode ser da empresa ou do responsável técnico, com somatório admitido. Já respondido pela equipe.',
@@ -122,7 +122,7 @@ const RAW_EVENTS = [
   },
   {
     id: 'e03', type: 'OBJECTION_REQUEST', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Licitante — Alfa Tecnologia LTDA', minAtras: 47,
+    autor: 'Licitante — Alfa Tecnologia LTDA', minAtras: 47, minAtrasAtualizacao: 25,
     lida: false,
     mensagem: 'Pedido de impugnação ao instrumento editalício quanto à exigência de comprovação de capital social mínimo, por suposta restrição à competitividade nos termos da Lei 14.133/2021.',
     resumo: 'Impugnação ao item 7.5 do edital: a exigência de capital social mínimo de 10% restringiria a competitividade e prejudicaria micro e pequenas empresas. Pede a exclusão da exigência e a republicação do edital.',
@@ -143,7 +143,7 @@ const RAW_EVENTS = [
   // Duplicatas da mesma manifestação (enviada por lote) -> deduplicar/agrupar
   {
     id: 'e04a', type: 'OBJECTION_RESPONSE', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Procuradoria', minAtras: 130, minAtrasMensagem: 60 * 24 * 3, grupoId: 'resp-impug-7', // resposta há ~2h; impugnação há 3 dias
+    autor: 'Procuradoria', minAtras: 130, minAtrasMensagem: 60 * 24 * 3, minAtrasAtualizacao: 90, grupoId: 'resp-impug-7', // resp ~2h; impugnação 3 dias; exibido há 1h30
     lida: true,
     mensagem: 'Resposta à impugnação ao instrumento editalício (lote 1).',
     resumo: 'Resposta à impugnação do capital social mínimo (item 7.5): conhecida e, no mérito, indeferida. A exigência está conforme o art. 69 da Lei 14.133/2021; mantida a data da sessão.',
@@ -188,7 +188,7 @@ const RAW_EVENTS = [
   },
   {
     id: 'e08', type: 'APPEAL_JUDGMENT', portal: 'PNCP', licitacao: 'pe12',
-    autor: 'Autoridade Competente', minAtras: 60 * 26, // ~1 dia
+    autor: 'Autoridade Competente', minAtras: 60 * 26, minAtrasAtualizacao: 60 * 20, // ~1 dia; exibido há ~20h
     lida: true,
     mensagem: 'Registro administrativo de julgamento publicado no portal.',
     resumo: 'Registro administrativo de julgamento de recurso publicado no portal (PNCP). Conteúdo informativo, sem abertura de novo prazo recursal.',
@@ -308,6 +308,8 @@ const NCData = (() => {
         ...ev, categoria: m.categoria, licitacaoInfo: LICITACOES[ev.licitacao], date,
         // Data de envio da mensagem (quando difere da data do evento/resposta).
         dateMensagem: ev.minAtrasMensagem != null ? new Date(Date.now() - ev.minAtrasMensagem * 60000) : date,
+        // Data de atualização: quando exibimos o card pro cliente (a ORDENAÇÃO usa esta).
+        dateAtualizacao: ev.minAtrasAtualizacao != null ? new Date(Date.now() - ev.minAtrasAtualizacao * 60000) : date,
         copias: 1,
       });
     }
@@ -331,6 +333,7 @@ const NCData = (() => {
         ? (/improv/i.test(julg.resultado || julg.texto || '') ? 'improvido' : 'provido')
         : 'em_andamento';
       grupo.lida = !grupo.etapas.some((e) => e.lida === false);
+      grupo.dateAtualizacao = new Date(Date.now() - 60 * 3 * 60000); // exibido pro cliente há ~3h
     }
 
     // Deduplicação/agrupamento por grupoId: mantém o mais recente e conta cópias.
@@ -349,7 +352,7 @@ const NCData = (() => {
       }
     }
 
-    return resultado.sort((a, b) => b.date - a.date); // mais recentes primeiro
+    return resultado.sort((a, b) => b.dateAtualizacao - a.dateAtualizacao); // por data de atualização
   }
 
   return {
