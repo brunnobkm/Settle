@@ -245,11 +245,16 @@ function cardAnexosHtml(item) {
       </div>`
     : '';
 
+  // "Baixar todos" só faz sentido com mais de 1 anexo.
+  const baixarTodos = item.anexos.length > 1
+    ? `<button class="btn-baixar-todos" title="Baixar todos os anexos" ${stop}>Baixar todos</button>`
+    : '';
+
   return `
     <div class="anexos-sec">
       <div class="anexos-head">
         <span class="anexos-label">Anexos</span>
-        <button class="btn-baixar-todos" title="Baixar todos os anexos" ${stop}>Baixar todos</button>
+        ${baixarTodos}
       </div>
       <div class="anexos-row">${chips}${mais}</div>
     </div>`;
