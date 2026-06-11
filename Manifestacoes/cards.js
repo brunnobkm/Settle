@@ -34,6 +34,9 @@ const ICON_DL = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" str
 const ICON_FILE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M16 3H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8z"/></svg>';
 const ICON_EYE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_CHEVRON_DOWN = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+const ICON_INBOX = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>';
+const ICON_GLOBE = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+const ICON_EXTLINK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
 
 // Status do recurso -> reaproveita os chips existentes (.chip--*)
 const STATUS_RECURSO = {
@@ -69,24 +72,25 @@ function temAutor(categoria) { return categoria === 'recurso'; }
 /* ---------- Render ---------- */
 function render() {
   const tabsHtml = NCData.TABS.map((t) => {
-    const n = t.id === 'todas'
-      ? items.length
-      : items.filter((i) => NCData.tabDaCategoria(i.categoria) === t.id).length;
-    return `<button class="tab${t.id === activeTab ? ' is-active' : ''}" data-tab="${t.id}">${t.label}<span class="tab-count">${n}</span></button>`;
+    const count = t.demo ? '' : `<span class="tab-count">${t.id === 'todas' ? items.length : items.filter((i) => NCData.tabDaCategoria(i.categoria) === t.id).length}</span>`;
+    return `<button class="tab${t.id === activeTab ? ' is-active' : ''}" data-tab="${t.id}">${t.label}${count}</button>`;
   }).join('');
 
   const filtered = activeTab === 'todas'
     ? items
     : items.filter((i) => NCData.tabDaCategoria(i.categoria) === activeTab);
 
+  // Conteúdo do painel: cards OU um empty state (tabs de demonstração).
+  let panelInner;
+  if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
+  else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
+  else panelInner = `<div class="cards">${filtered.map(cardHtml).join('')}</div>`;
+
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
 
   const conteudo = wsActive === 'manifestacoes'
-    ? `<section class="panel">
-         <nav class="tabs">${tabsHtml}</nav>
-         <div class="cards">${filtered.map(cardHtml).join('')}</div>
-       </section>`
+    ? `<section class="panel"><nav class="tabs">${tabsHtml}</nav>${panelInner}</section>`
     : `<section class="panel panel--ph">Conteúdo de “${WS_TABS.find((t) => t.id === wsActive).label}” — fora do escopo deste protótipo.</section>`;
 
   app.innerHTML = `
@@ -150,17 +154,35 @@ function truncar(t) {
   return clean.length > TRUNCATE_LIMIT ? clean.slice(0, TRUNCATE_LIMIT).trimEnd() + '…' : clean;
 }
 
+/* Estados vazios (tabs de demonstração). */
+function emptyStateHtml(tipo) {
+  if (tipo === 'portal') {
+    return `
+      <div class="empty-state">
+        <span class="empty-ic">${ICON_GLOBE}</span>
+        <div class="empty-title">Captura automática indisponível</div>
+        <p class="empty-text">Este portal ainda não é capturado automaticamente pela Settle. Acompanhe as manifestações diretamente no portal oficial da licitação.</p>
+        <a class="btn-portal" href="https://www.gov.br/pncp" target="_blank" rel="noopener">Abrir no portal ${ICON_EXTLINK}</a>
+      </div>`;
+  }
+  return `
+    <div class="empty-state">
+      <span class="empty-ic">${ICON_INBOX}</span>
+      <div class="empty-title">Nenhuma manifestação ainda</div>
+      <p class="empty-text">Não há avisos, questionamentos ou impugnações registrados para esta licitação até o momento. Assim que algo for publicado, aparece aqui automaticamente.</p>
+    </div>`;
+}
+
 function cardHtml(item) {
   const cat = NCData.CATEGORIAS[item.categoria];
   const isAviso = item.categoria === 'aviso';
   const isUnread = !item.lida && !isAviso;
-  const dot = novos.has(item.id) ? '<span class="new-dot" title="Novo"></span>' : '';
 
-  // Status (questionamento/impugnação): Resposta (success) ou Aguardando resposta (warning).
+  // Status (questionamento/impugnação): Respondido (success) ou Aguardando resposta (warning).
   let statusBadge = '';
   if (item.categoria === 'esclarecimento' || item.categoria === 'impugnacao') {
     statusBadge = item.resposta
-      ? '<span class="badge badge--success">Resposta</span>'
+      ? '<span class="badge badge--success">Respondido</span>'
       : '<span class="badge badge--warning">Aguardando resposta</span>';
   }
 
@@ -189,7 +211,7 @@ function cardHtml(item) {
 
   return `
     <article class="card card--${item.categoria}${isUnread ? ' is-unread' : ''} is-clickable" data-id="${item.id}">
-      <div class="card-top">${dot}<span class="badge badge--${item.categoria}">${cat.label}</span>${statusBadge}</div>
+      <div class="card-top"><span class="badge badge--${item.categoria}">${cat.label}</span>${statusBadge}</div>
       ${capturado}
       ${boxes}
       ${cardAnexosHtml(item)}
@@ -385,12 +407,6 @@ function openModal(id) {
   if (!item) return;
 
   closeAux(); // abrir o modal fecha a sidebar de arquivos
-
-  // Abrir o card = visto: some a bolinha de "novo" daquele card na hora.
-  if (novos.delete(id)) {
-    const dot = app.querySelector(`.card[data-id="${id}"] .new-dot`);
-    if (dot) dot.remove();
-  }
 
   // Recurso: cabeçalho com status + corpo = timeline (intenção → ... → julgamento).
   const isRecurso = !!item.etapas;

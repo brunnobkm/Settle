@@ -36,9 +36,12 @@ const TABS_BASE = [
   { id: 'esclarecimento', label: 'Questionamentos' },
   { id: 'impugnacao',     label: 'Impugnações' },
 ];
-const TABS = MOSTRAR_RECURSO
-  ? [...TABS_BASE, { id: 'recurso', label: 'Recursos' }]
-  : TABS_BASE;
+const TABS = [
+  ...(MOSTRAR_RECURSO ? [...TABS_BASE, { id: 'recurso', label: 'Recursos' }] : TABS_BASE),
+  // Tabs de demonstração dos estados vazios (para apresentação)
+  { id: 'demo-vazio',  label: 'Sem itens',   demo: true },
+  { id: 'demo-portal', label: 'Sem captura', demo: true },
+];
 
 /* Em qual recorte (aba) cada categoria é contabilizada/filtrada.
  * No MVP, 'recurso' cai sob 'aviso'; o badge do item continua "Recurso". */
