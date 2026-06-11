@@ -171,7 +171,7 @@ body.aux-open .aux { transform: translateX(0); }
 .cap-hi { color: #0A0A0A; } /* "Capturado" e a data em destaque (Figma 8526-34300) */
 /* Caixa de conteúdo (mensagem/resposta/etapa): borda + sua própria data */
 .card-box { border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin-top: 8px; }
-.card-box-date { font-size: 14px; line-height: 20px; color: var(--text-mute); margin-bottom: 4px; }
+.card-box-date { font-size: 14px; line-height: 20px; color: #0A0A0A; margin-bottom: 4px; }
 .card-box-text { font-size: 14px; line-height: 20px; color: var(--text); white-space: pre-wrap; }
 .card-box-text strong { font-weight: 700; }
 .meta-clip { display: inline-flex; align-items: center; gap: 3px; }
