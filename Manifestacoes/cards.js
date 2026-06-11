@@ -9,7 +9,7 @@
 
 const app = document.getElementById('app');
 // Preview do card: texto original truncado por nº de caracteres (sem resumo).
-const TRUNCATE_LIMIT = 300; // limite x — ajustável
+const TRUNCATE_LIMIT = 745; // p50 (~745 chars): mediana cabe inteira; altura ok mesmo em telas menores
 let activeTab = 'todas';
 let items = [];
 
