@@ -184,7 +184,7 @@ function cardHtml(item) {
     boxes = box(item.dateMensagem || item.date, 'Mensagem:', item.mensagemCompleta || item.mensagem || '')
           + box(item.date, 'Resposta:', item.resposta.texto);
   } else {
-    boxes = box(item.dateMensagem || item.date, isAviso ? '' : 'Mensagem:', item.mensagemCompleta || item.mensagem || '');
+    boxes = box(item.dateMensagem || item.date, 'Mensagem:', item.mensagemCompleta || item.mensagem || '');
   }
 
   return `
