@@ -156,38 +156,42 @@ function cardHtml(item) {
   const isUnread = !item.lida && !isAviso;
   const dot = novos.has(item.id) ? '<span class="new-dot" title="Novo"></span>' : '';
 
-  // Badge "Aguardando resposta": questionamento/impugnação ainda sem resposta.
-  const aguardando = (item.categoria === 'esclarecimento' || item.categoria === 'impugnacao') && !item.resposta;
-  const badgeAguard = aguardando ? '<span class="badge badge--aguardando">Aguardando resposta</span>' : '';
+  // Status (questionamento/impugnação): Resposta (success) ou Aguardando resposta (warning).
+  let statusBadge = '';
+  if (item.categoria === 'esclarecimento' || item.categoria === 'impugnacao') {
+    statusBadge = item.resposta
+      ? '<span class="badge badge--success">Resposta</span>'
+      : '<span class="badge badge--warning">Aguardando resposta</span>';
+  }
 
-  // Data de atualização (quando exibimos pro cliente) — é a data principal do card.
-  const atualizado = `<div class="card-meta card-updated">Atualizado em ${formatTimestamp(item.dateAtualizacao || item.date)}</div>`;
+  // Data de captura (quando exibimos pro cliente) — data principal; a lista ordena por ela.
+  const capturado = `<div class="card-captured">Capturado em ${formatTimestamp(item.dateAtualizacao || item.date)}</div>`;
 
-  // Ordem: mensagem (origem) primeiro, resposta/atualização depois.
-  let corpo;
+  // Cada bloco numa caixa com borda, com sua própria data. Mensagem (origem) primeiro.
+  const box = (date, label, texto) => `
+    <div class="card-box">
+      <div class="card-box-date">${formatTimestamp(date)}</div>
+      <div class="card-box-text">${label ? `<strong>${label}</strong> ` : ''}${escapeHtml(truncar(texto))}</div>
+    </div>`;
+
+  let boxes;
   if (item.etapas) {
     const pri = item.etapas[0];
     const ult = item.ultimaEtapa || item.etapas[item.etapas.length - 1];
-    corpo = `
-      <div class="card-meta">${formatTimestamp(pri.date)}</div>
-      <p class="card-msg"><strong>${escapeHtml(pri.etapa)}:</strong> ${escapeHtml(truncar(pri.texto))}</p>
-      <div class="card-meta">${formatTimestamp(ult.date)}</div>
-      <p class="card-msg"><strong>${escapeHtml(ult.etapa)}:</strong> ${escapeHtml(truncar(ult.texto))}</p>`;
+    boxes = box(pri.date, escapeHtml(pri.etapa) + ':', pri.texto)
+          + box(ult.date, escapeHtml(ult.etapa) + ':', ult.texto);
   } else if (item.resposta) {
-    corpo = `
-      <div class="card-meta">${formatTimestamp(item.dateMensagem || item.date)}</div>
-      <p class="card-msg"><strong>Mensagem:</strong> ${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>
-      <div class="card-meta">${formatTimestamp(item.date)}</div>
-      <p class="card-msg"><strong>Resposta:</strong> ${escapeHtml(truncar(item.resposta.texto))}</p>`;
+    boxes = box(item.dateMensagem || item.date, 'Mensagem:', item.mensagemCompleta || item.mensagem || '')
+          + box(item.date, 'Resposta:', item.resposta.texto);
   } else {
-    corpo = `<p class="card-msg">${escapeHtml(truncar(item.mensagemCompleta || item.mensagem || ''))}</p>`;
+    boxes = box(item.dateMensagem || item.date, isAviso ? '' : 'Mensagem:', item.mensagemCompleta || item.mensagem || '');
   }
 
   return `
     <article class="card card--${item.categoria}${isUnread ? ' is-unread' : ''} is-clickable" data-id="${item.id}">
-      <div class="card-top">${dot}<span class="badge badge--${item.categoria}">${cat.label}</span>${badgeAguard}</div>
-      ${atualizado}
-      ${corpo}
+      <div class="card-top">${dot}<span class="badge badge--${item.categoria}">${cat.label}</span>${statusBadge}</div>
+      ${capturado}
+      ${boxes}
       ${cardAnexosHtml(item)}
     </article>`;
 }
@@ -242,9 +246,11 @@ function cardAnexosHtml(item) {
     : '';
 
   return `
-    <div class="card-sep"></div>
     <div class="anexos-sec">
-      <div class="anexos-label">Anexos</div>
+      <div class="anexos-head">
+        <span class="anexos-label">Anexos</span>
+        <button class="btn-baixar-todos" title="Baixar todos os anexos" ${stop}>Baixar todos</button>
+      </div>
       <div class="anexos-row">${chips}${mais}</div>
     </div>`;
 }
