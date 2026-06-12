@@ -13,6 +13,15 @@ const TRUNCATE_LIMIT = 745; // p50 (~745 chars): mediana cabe inteira; altura ok
 let activeTab = 'todas';
 let items = [];
 
+// Ordenação (botão "Ordenar"): traz o grupo escolhido ao topo, mantendo a ordem
+// por data dentro de cada grupo. 'nenhum' = ordem padrão (cronológica desc).
+let sortMode = 'nenhum';
+const SORT_OPTIONS = [
+  { id: 'nenhum', label: 'Nenhum' },
+  { id: 'com-resposta', label: 'Manifestações com resposta' },
+  { id: 'aguardando', label: 'Manifestações aguardando resposta' },
+];
+
 // Tabs primárias do workspace. Manifestações é a única "viva" no protótipo;
 // Itens/Análise servem para demonstrar a regra do indicador de "novo".
 const WS_TABS = [
@@ -37,6 +46,7 @@ const ICON_CHEVRON_DOWN = '<svg viewBox="0 0 24 24" width="20" height="20" fill=
 const ICON_INBOX = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>';
 const ICON_GLOBE = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
 const ICON_EXTLINK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+const ICON_CHECK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 
 // Status do recurso -> reaproveita os chips existentes (.chip--*)
 const STATUS_RECURSO = {
@@ -80,17 +90,35 @@ function render() {
     ? items
     : items.filter((i) => NCData.tabDaCategoria(i.categoria) === activeTab);
 
+  // "Ordenar": traz o grupo escolhido ao topo. Sort estável → mantém a ordem
+  // por data (já vinda do buildAll) dentro de cada grupo.
+  const ehDoGrupo = (i) => sortMode === 'com-resposta'
+    ? !!i.resposta
+    : (i.categoria === 'esclarecimento' || i.categoria === 'impugnacao') && !i.resposta;
+  const lista = sortMode === 'nenhum'
+    ? filtered
+    : [...filtered].sort((a, b) => (ehDoGrupo(b) ? 1 : 0) - (ehDoGrupo(a) ? 1 : 0));
+
+  const isDemo = activeTab === 'demo-vazio' || activeTab === 'demo-portal';
+  const sortWrap = isDemo ? '' : `
+    <div class="sort-wrap">
+      <button class="sort-btn" data-sort-toggle aria-haspopup="true">Ordenar</button>
+      <div class="sort-menu" hidden onclick="event.stopPropagation();">
+        ${SORT_OPTIONS.map((o) => `<button class="sort-item${o.id === sortMode ? ' is-active' : ''}" data-sort="${o.id}"><span class="sort-check">${o.id === sortMode ? ICON_CHECK : ''}</span>${o.label}</button>`).join('')}
+      </div>
+    </div>`;
+
   // Conteúdo do painel: cards OU um empty state (tabs de demonstração).
   let panelInner;
   if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
   else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
-  else panelInner = `<div class="cards">${filtered.map(cardHtml).join('')}</div>`;
+  else panelInner = `<div class="cards">${lista.map(cardHtml).join('')}</div>`;
 
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
 
   const conteudo = wsActive === 'manifestacoes'
-    ? `<section class="panel"><nav class="tabs">${tabsHtml}</nav>${panelInner}</section>`
+    ? `<section class="panel"><div class="tabs-row"><nav class="tabs">${tabsHtml}</nav>${sortWrap}</div>${panelInner}</section>`
     : `<section class="panel panel--ph">Conteúdo de “${WS_TABS.find((t) => t.id === wsActive).label}” — fora do escopo deste protótipo.</section>`;
 
   app.innerHTML = `
@@ -113,6 +141,20 @@ function render() {
 
   app.querySelectorAll('[data-tab]').forEach((b) =>
     b.addEventListener('click', () => { activeTab = b.dataset.tab; render(); }));
+
+  // Botão "Ordenar": abre/fecha o menu de seleção única.
+  const sortToggle = app.querySelector('[data-sort-toggle]');
+  if (sortToggle) {
+    sortToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const menu = sortToggle.parentElement.querySelector('.sort-menu');
+      const isOpen = !menu.hasAttribute('hidden');
+      closeAnexoMenus(); closeSortMenu();
+      if (!isOpen) menu.removeAttribute('hidden');
+    });
+  }
+  app.querySelectorAll('[data-sort]').forEach((b) =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); sortMode = b.dataset.sort; render(); }));
   // Card clicável, MAS permitindo selecionar texto: se houve arrasto (seleção)
   // ou existe texto selecionado, não abre o modal.
   app.querySelectorAll('.card.is-clickable').forEach((c) => {
@@ -139,8 +181,8 @@ function render() {
 }
 
 // Fecha dropdowns ao clicar fora ou apertar Esc (uma vez, no nível do documento).
-document.addEventListener('click', closeAnexoMenus);
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAnexoMenus(); closeAux(); } });
+document.addEventListener('click', () => { closeAnexoMenus(); closeSortMenu(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAnexoMenus(); closeSortMenu(); closeAux(); } });
 
 // Largura é dinâmica: ao redimensionar, o overflow muda, então re-renderiza.
 let _rzT;
@@ -186,8 +228,8 @@ function cardHtml(item) {
       : '<span class="badge badge--warning">Aguardando resposta</span>';
   }
 
-  // Data de captura (quando exibimos pro cliente) — data principal; a lista ordena por ela.
-  const capturado = `<div class="card-captured"><span class="cap-hi">Capturado</span> em <span class="cap-hi">${formatTimestamp(item.dateAtualizacao || item.date)}</span></div>`;
+  // Data da última atualização da thread (mensagem ou resposta mais recente); a lista ordena por ela.
+  const capturado = `<div class="card-captured"><span class="cap-hi">Atualizado</span> em <span class="cap-hi">${formatTimestamp(item.dateAtualizacao || item.date)}</span></div>`;
 
   // Cada bloco numa caixa com borda, com sua própria data. Mensagem (origem) primeiro.
   const box = (date, label, texto) => `
@@ -285,6 +327,11 @@ function cardAnexosHtml(item) {
 /* Fecha qualquer dropdown de anexos aberto. */
 function closeAnexoMenus() {
   document.querySelectorAll('.anexo-menu').forEach((m) => m.setAttribute('hidden', ''));
+}
+
+/* Fecha o menu do botão "Ordenar". */
+function closeSortMenu() {
+  document.querySelectorAll('.sort-menu').forEach((m) => m.setAttribute('hidden', ''));
 }
 
 /* ---------- Sidebar auxiliar: Arquivos da licitação (padrão Multitasking) ----------
