@@ -302,18 +302,17 @@
   /* ============ BADGES DE FILTRO DA TAB ============ */
   .filter-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-6px 0 18px;}
   .filter-badges:empty{display:none;}
+  /* Soft Badge (Figma 8802:36891): pílula cinza arredondada, texto Geist 12px */
   .fbadge{
-    position:relative;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
-    background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 9px;
-    font-size:13px;line-height:1;box-shadow:var(--shadow-xs);transition:background .12s,border-color .12s;
+    position:relative;display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+    background:rgba(23,23,23,.1);border:none;border-radius:9999px;padding:4px 11px;
+    font-size:12px;line-height:16px;font-family:inherit;transition:background .12s;
   }
-  .fbadge:hover{background:var(--muted);}
-  .fbadge.open{border-color:#cfcfcf;background:var(--muted);}
+  .fbadge:hover{background:rgba(23,23,23,.16);}
+  .fbadge.open{background:rgba(23,23,23,.2);}
   .fbadge .k{color:var(--muted-foreground);}
-  .fbadge .v{color:var(--foreground);font-weight:600;}
-  .fbadge .car{color:var(--muted-foreground);display:inline-flex;}
-  .fbadge-hint{display:inline-flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:13px;}
-  .fbadge-hint svg{opacity:.7;}
+  .fbadge .v{color:var(--primary);font-weight:600;}
+  .fbadge .car{color:var(--muted-foreground);display:inline-flex;margin-left:1px;}
 
   /* popover base */
   .fb-pop{
@@ -420,7 +419,6 @@
           <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">0</span></button>
           <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">0</span></button>
           <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">0</span></button>
-          <button class="tab" role="tab" data-tab="Descartadas">Descartadas <span class="cnt">0</span></button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
@@ -659,7 +657,6 @@ const TAB_BADGES = {
   'Ativas':            [{label:'Situação', type:'list', options:SITUACAO, value:['Ativas']}],
   'Chegou hoje':       [{label:'Data de adição', type:'date', mode:'past', value:{date:'19/06/2026'}}],
   'Vencendo em breve': [{label:'Envio da proposta', type:'date', mode:'future', value:{preset:'7d'}}],
-  'Descartadas':       [{label:'Situação', type:'list', options:SITUACAO, value:['Descartadas']}],
 };
 const DATE_PRESETS = {
   past:   [{key:'todos',label:'Todos'},{key:'24h',label:'Últimas 24h'},{key:'7d',label:'Últimos 7 dias'}],
@@ -693,12 +690,7 @@ function renderTabFilters(tab){
   const badges = TAB_BADGES[tab] || [];
   if(badges.length){ filtrarCount.hidden=false; filtrarCount.textContent=badges.length; }
   else filtrarCount.hidden=true;
-  if(!badges.length){
-    filterBadges.innerHTML = '<span class="fbadge-hint">'+
-      '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4h11l-4.2 5v4l-2.6 1.3V9z" stroke-linejoin="round"/></svg>'+
-      'Mostrando todas as licitações — sem filtros aplicados</span>';
-    return;
-  }
+  if(!badges.length){ filterBadges.innerHTML = ''; return; }  // sem filtros: nada aparece
   filterBadges.innerHTML = badges.map((b,i)=>{
     const val = b.type==='date' ? dateLabel(b) : listLabel(b);
     return `<button class="fbadge" data-bi="${i}"><span class="k">${b.label}:</span> <span class="v">${val}</span><span class="car">${SVG_CARET}</span></button>`;
