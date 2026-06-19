@@ -443,8 +443,9 @@
   .ia.bookmark[aria-pressed="true"]{color:#2f6df6;border-color:#cfe0ff;background:#eef4ff;}
   .ia.bookmark[aria-pressed="true"] svg path{fill:#2f6df6;}
 
-  /* sem anexo ainda não foi "atualizado": esconde a badge até o anexo chegar */
-  .card[data-semanexo="true"] .badge-updated{display:none;}
+  /* "Atualizado" não aparece em Recomendadas — só em Salvos, quando o anexo chega */
+  .badge-updated{display:none;}
+  body.view-salvos .card[data-updated="true"] .badge-updated{display:inline-flex;}
   /* pasta sem anexo: destaque âmbar p/ "bater o olho" */
   .ia.no-file{color:#d97706;border-color:#f3e3c8;}
   .ia.no-file:hover{background:#fdf6ec;color:#b8650a;}
@@ -639,7 +640,7 @@ function cardHTML(d){
   const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
     .join(' ').toLowerCase();
   return `
-  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="false">
     <div class="card-top">
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
@@ -1187,8 +1188,10 @@ document.addEventListener('keydown', e=>{
     if(sim){
       const card = sim.closest('.card');
       card.dataset.semanexo = 'false';                 // anexo chegou
+      card.dataset.updated = 'true';                   // marca como atualizado (mostra "Atualizado" em Salvos)
       const folder = card.querySelector('.ia.folder');
       if(folder){ folder.classList.remove('no-file'); folder.title = 'Abrir anexo'; folder.innerHTML = I.folder; }
+      const badge = card.querySelector('.badge-updated'); if(badge) badge.title = 'Atualizado: o anexo chegou';
       card.classList.add('card-new');                  // destaque de novidade
       setTimeout(()=> card.classList.remove('card-new'), 4000);
     }
