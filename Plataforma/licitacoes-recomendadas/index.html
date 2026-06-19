@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="pt-BR" data-preview="licitacoes-recomendadas">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Licitações — Recomendadas · Selecione quais deseja analisar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --foreground:#0a0a0a;
+    --muted-foreground:#737373;
+    --border:#e5e5e5;
+    --muted:#f5f5f5;
+    --background:#ffffff;
+    --primary:#171717;
+    --primary-foreground:#fafafa;
+    --warning:#d97706;
+    --warning-bg:#fdf6ec;
+    --accent:#3a9b9e;       /* slate-500 (teal) */
+    --accent-600:#2a787b;
+    --accent-100:#d4eef0;
+    --radius-field:8px;
+    --radius-box:10px;
+    --radius-selector:6px;
+    --shadow-xs:0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow-card:0 1px 2px 0 rgba(0,0,0,.05), 0 1px 3px 0 rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color:var(--foreground);
+    background:var(--background);
+    font-size:14px;
+    line-height:20px;
+  }
+  button{font-family:inherit; cursor:pointer;}
+  svg{display:block;}
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:52px;
+    background:var(--background);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center;
+    padding:12px 0; gap:4px; z-index:30;
+  }
+  .sb-logo{width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+  .sb-nav{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;}
+  .sb-btn{
+    width:34px;height:34px;border:none;background:transparent;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;color:#737373;
+    transition:background .12s,color .12s;
+  }
+  .sb-btn:hover{background:var(--muted);color:var(--foreground);}
+  .sb-btn.active{background:var(--muted);color:var(--foreground);}
+  .sb-divider{width:22px;height:1px;background:var(--border);margin:6px 0;}
+  .sb-bottom{margin-top:auto;}
+  .sb-avatar{
+    width:30px;height:30px;border-radius:50%;background:#1f2937;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;
+  }
+
+  /* ============ SHELL ============ */
+  .shell{margin-left:52px;}
+
+  /* ============ NAVBAR ============ */
+  .navbar{
+    height:64px;display:flex;align-items:center;gap:12px;
+    padding:0 24px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--background);z-index:20;
+  }
+  .navbar .icon-btn{
+    width:30px;height:30px;border:none;background:transparent;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;color:#737373;
+  }
+  .navbar .icon-btn:hover{background:var(--muted);color:var(--foreground);}
+  .navbar .sep{width:1px;height:22px;background:var(--border);}
+  .navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);}
+
+  /* ============ CONTENT ============ */
+  .content{max-width:1388px;margin:0 auto;padding:24px 24px 64px;}
+
+  /* header */
+  .page-head{margin-bottom:22px;}
+  .page-head .eyebrow{font-size:30px;line-height:36px;font-weight:400;color:var(--foreground);margin:0;}
+  .page-head .title{font-size:48px;line-height:1.04;font-weight:700;letter-spacing:-.5px;color:var(--foreground);margin:6px 0 0;}
+
+  /* ============ TAB + ACTION BAR ============ */
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .tabs{
+    display:inline-flex;align-items:center;gap:0;
+    background:rgba(23,23,23,.08);border-radius:10px;padding:3px;
+  }
+  .tab{
+    display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
+    padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--foreground);opacity:.6;
+  }
+  .tab:hover{opacity:1;}
+  .tab.active{background:#fff;opacity:1;}
+  .tab .cnt{
+    font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
+    background:rgba(23,23,23,.1);padding:1px 6px;border-radius:6px;
+  }
+
+  /* grupo segmentado de ações — barra cinza única */
+  .actions{display:inline-flex;align-items:center;gap:0;background:rgba(23,23,23,.1);border-radius:8px;overflow:hidden;}
+  .act{
+    display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
+    padding:6px 12px;border-radius:0;font-size:14px;font-weight:500;color:var(--primary);
+  }
+  .act:hover{background:rgba(0,0,0,.05);}
+  .act .pill-cnt{
+    min-width:0;height:18px;padding:0 6px;border-radius:9999px;background:var(--muted);
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:400;color:var(--foreground);
+  }
+
+  /* ============ CARD ============ */
+  .card-list{display:flex;flex-direction:column;gap:16px;}
+  .card{
+    background:var(--card,#fff);border:1px solid var(--border);border-radius:var(--radius-box);
+    box-shadow:var(--shadow-card);padding:16px 18px;
+  }
+
+  .card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .chk{
+    width:18px;height:18px;border:1.5px solid #d4d4d4;border-radius:5px;background:#fff;
+    flex:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#fff;
+    transition:background .12s,border-color .12s;
+  }
+  .chk.on{background:var(--primary);border-color:var(--primary);}
+  .chk svg{opacity:0;}
+  .chk.on svg{opacity:1;}
+
+  .edital{font-size:15px;font-weight:600;color:var(--foreground);white-space:nowrap;}
+  .edital b{font-weight:700;}
+
+  .badge-updated{
+    display:inline-flex;align-items:center;gap:5px;background:var(--warning);color:#fff;
+    font-size:12px;font-weight:600;padding:4px 9px;border-radius:7px;white-space:nowrap;
+  }
+
+  .card-top-right{margin-left:auto;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;border-radius:8px;font-size:14px;font-weight:500;
+    padding:8px 14px;border:1px solid transparent;white-space:nowrap;
+  }
+  .btn-outline{background:#fff;border-color:var(--border);color:var(--foreground);}
+  .btn-outline:hover{background:var(--muted);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-600);border-color:var(--accent-600);}
+  .btn-status{background:var(--warning-bg);border-color:#f3e3c8;color:var(--warning);}
+  .btn-status:hover{filter:brightness(.98);}
+
+  /* avatar stack */
+  .avatars{display:inline-flex;align-items:center;margin-left:2px;}
+  .av{
+    width:30px;height:30px;border-radius:50%;border:2px solid #fff;margin-left:-8px;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;background:#9ca3af;
+  }
+  .av:first-child{margin-left:0;}
+  .av.add{background:var(--muted);color:var(--muted-foreground);border:2px solid #fff;font-weight:700;}
+
+  .icon-actions{display:inline-flex;align-items:center;gap:6px;margin-left:4px;}
+  .ia{
+    width:34px;height:34px;border:1px solid var(--border);background:#fff;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;color:#525252;
+  }
+  .ia:hover{background:var(--muted);color:var(--foreground);}
+
+  /* segments */
+  .segments{display:flex;gap:6px;margin:14px 0 12px;flex-wrap:wrap;}
+  .seg{background:var(--primary);color:#fafafa;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;}
+  .seg.sm{padding:2px 7px;font-size:11px;}
+  .tag-light{background:var(--muted);color:var(--muted-foreground);font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;}
+
+  .field-line{font-size:14px;color:var(--foreground);margin:0 0 8px;line-height:21px;}
+  .field-line b{font-weight:600;}
+  .field-line .lbl{font-weight:600;}
+  .obj{color:var(--foreground);}
+  .valor{font-size:15px;font-weight:700;margin:10px 0 14px;}
+
+  /* field grid box */
+  .grid-box{display:flex;border:1px solid var(--border);border-radius:var(--radius-field);overflow:hidden;}
+  .grid-left{
+    flex:none;width:230px;padding:14px 16px;border-right:1px solid var(--border);
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .grid-main{flex:1;padding:14px 18px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px 18px;}
+  .fld{min-width:0;}
+  .fld .k{font-size:13px;font-weight:600;color:var(--foreground);margin-bottom:3px;}
+  .fld .v{font-size:14px;color:var(--muted-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fld .v.warn{color:var(--warning);font-weight:500;}
+  .pair{display:flex;gap:24px;}
+
+  /* items table */
+  .items-head{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
+  .items-title{font-size:16px;font-weight:600;}
+  .count-chip{
+    background:var(--muted);color:var(--muted-foreground);font-size:12px;font-weight:600;
+    padding:2px 9px;border-radius:9999px;
+  }
+  .items-total{margin-left:auto;font-size:13px;color:var(--muted-foreground);}
+  table.items{width:100%;border-collapse:collapse;font-size:14px;}
+  table.items thead th{
+    text-align:left;font-weight:600;color:var(--foreground);font-size:14px;
+    padding:10px 12px;border-bottom:1px solid var(--border);
+  }
+  table.items tbody td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--foreground);}
+  table.items tbody tr:hover{background:#fafafa;}
+  table.items .col-seg{display:flex;gap:6px;}
+  .num{color:var(--muted-foreground);}
+  .t-right{text-align:right;}
+
+  /* collapsed cards hide items */
+  .card .items-wrap{display:block;}
+  .card.collapsed .items-wrap{display:none;}
+
+  .expand-toggle{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;border:none;background:transparent;
+    color:var(--muted-foreground);font-size:13px;font-weight:500;padding:4px 0;
+  }
+  .expand-toggle:hover{color:var(--foreground);}
+  .card.collapsed .expand-toggle .chev{transform:rotate(-90deg);}
+  .expand-toggle .chev{transition:transform .15s;}
+
+  /* ============ BUSCA INLINE (componente) ============ */
+  .actions{transition:width .18s ease;}
+  .actions.searching{overflow:visible;}
+  .actions .search-field{display:none;align-items:center;gap:8px;padding:0 10px;flex:1;min-width:200px;position:relative;flex-wrap:wrap;}
+  .actions.searching #searchBtn{display:none;}
+  .actions.searching .search-field{display:flex;}
+
+  /* chips de escopo dentro do campo */
+  .s-chips{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .s-chips:empty{display:none;}
+  .s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fafafa;font-size:12px;font-weight:500;padding:3px 4px 3px 8px;border-radius:6px;white-space:nowrap;}
+  .s-chip button{border:none;background:transparent;color:#bdbdbd;cursor:pointer;padding:0;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;}
+  .s-chip button:hover{background:rgba(255,255,255,.22);color:#fff;}
+
+  /* botão de filtro de propriedade */
+  .s-filter{border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;flex:none;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;position:relative;}
+  .s-filter:hover{background:rgba(0,0,0,.07);color:var(--foreground);}
+  .s-filter.active{color:var(--accent);}
+  .s-filter .cnt-badge{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;border-radius:9999px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #fff;}
+
+  /* menu de propriedades */
+  .scope-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:246px;max-height:330px;overflow:auto;
+    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;}
+  .scope-menu .sm-head{font-size:11px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px 5px;}
+  .scope-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--foreground);}
+  .scope-item:hover{background:var(--muted);}
+  .scope-box{width:16px;height:16px;border:1.5px solid #d4d4d4;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;}
+  .scope-item.on .scope-box{background:var(--accent);border-color:var(--accent);}
+  .scope-item .scope-box svg{opacity:0;}
+  .scope-item.on .scope-box svg{opacity:1;}
+  .scope-sep{height:1px;background:var(--border);margin:4px 2px;}
+  /* telas estreitas: o campo assume a barra inteira e os outros botões somem p/ caber */
+  @media (max-width:1040px){
+    .actions.searching{flex:1 1 100%;}
+    .actions.searching .act{display:none;}
+  }
+  .search-field .s-ico{color:var(--muted-foreground);flex:none;}
+  .search-field input{
+    border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--foreground);
+    flex:1;min-width:0;height:34px;
+  }
+  .search-field input::placeholder{color:var(--muted-foreground);}
+  .search-clear{
+    border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;flex:none;
+    width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .search-clear:hover{background:rgba(0,0,0,.07);color:var(--foreground);}
+
+  .card.hidden{display:none;}
+
+  /* ===== skeleton de carregamento da busca ===== */
+  .skeleton{display:none;flex-direction:column;gap:16px;}
+  .card-list.loading > .card,
+  .card-list.loading > .empty-state{display:none !important;}
+  .card-list.loading > .skeleton{display:flex;}
+  .sk-card{border:1px solid var(--border);border-radius:var(--radius-box);background:#fff;
+    box-shadow:var(--shadow-card);padding:18px;display:flex;flex-direction:column;gap:14px;}
+  .sk-row{display:flex;gap:10px;align-items:center;}
+  .sk{display:block;background:#ececec;border-radius:6px;position:relative;overflow:hidden;flex:none;}
+  .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+    animation:sk-shimmer 1.15s infinite;}
+  @keyframes sk-shimmer{100%{transform:translateX(100%);}}
+  @media (prefers-reduced-motion:reduce){ .sk::after{animation:none;} }
+  .empty-state{
+    text-align:center;padding:56px 16px;color:var(--muted-foreground);font-size:14px;
+    border:1px dashed var(--border);border-radius:var(--radius-box);background:#fff;
+  }
+  .empty-state strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
+  .empty-state .q{color:var(--foreground);font-weight:600;}
+
+  @media (max-width:1100px){
+    .grid-main{grid-template-columns:repeat(3,1fr);}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" aria-label="Sidebar">
+    <div class="sb-logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="30" height="30">
+        <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+        <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+        <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <nav class="sb-nav">
+      <button class="sb-btn" title="Início"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10.5 10 4l7 6.5V16a1 1 0 0 1-1 1h-3v-4H8v4H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></button>
+      <button class="sb-btn" title="Assistente"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3l1.5 3.5L15 8l-3.5 1.5L10 13l-1.5-3.5L5 8l3.5-1.5z" stroke-linejoin="round"/><path d="M15 13l.7 1.6L17 15l-1.3.7L15 17l-.7-1.3L13 15l1.3-.7z" stroke-linejoin="round"/></svg></button>
+      <button class="sb-btn" title="Notificações"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 14V9a5 5 0 0 1 10 0v5l1 1H4z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0"/></svg></button>
+      <div class="sb-divider"></div>
+      <button class="sb-btn" title="Caixa de entrada"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12V5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7"/><path d="M3 12h4l1 2h4l1-2h4v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></button>
+      <button class="sb-btn active" title="Licitações" aria-current="page"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="5" height="14" rx="1.2"/><rect x="8.5" y="3" width="5" height="9" rx="1.2"/><rect x="14" y="3" width="3" height="6" rx="1.2"/></svg></button>
+      <button class="sb-btn" title="Editais"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M12 3v3h3"/></svg></button>
+      <button class="sb-btn" title="Documentos"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="5" width="9" height="11" rx="1"/><path d="M7 3h9v11"/></svg></button>
+      <button class="sb-btn" title="Itens"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="12" height="3" rx="1"/><rect x="4" y="9" width="12" height="3" rx="1"/><rect x="4" y="14" width="12" height="3" rx="1"/></svg></button>
+      <button class="sb-btn" title="Análises"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5V10l4.6 2.6"/></svg></button>
+    </nav>
+    <div class="sb-bottom"><div class="sb-avatar">BK</div></div>
+  </aside>
+
+  <div class="shell">
+
+    <!-- ============ NAVBAR ============ -->
+    <header class="navbar">
+      <button class="icon-btn" title="Recolher sidebar"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg></button>
+      <span class="sep"></span>
+      <span class="hello">Olá, Brunno</span>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ HEADER ============ -->
+      <div class="page-head">
+        <p class="eyebrow" id="eyebrow">Encontramos 300 licitações</p>
+        <h1 class="title">Selecione quais deseja analisar</h1>
+      </div>
+
+      <!-- ============ TOOLBAR ============ -->
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab" aria-selected="true">Todas <span class="cnt">0</span></button>
+          <button class="tab" role="tab">Ativas <span class="cnt">0</span></button>
+          <button class="tab" role="tab">Chegou hoje <span class="cnt">0</span></button>
+          <button class="tab" role="tab">Vencendo em breve <span class="cnt">0</span></button>
+          <button class="tab" role="tab">Descartadas <span class="cnt">0</span></button>
+        </div>
+        <div class="actions" id="actions">
+          <button class="act">Filtrar <span class="pill-cnt">1</span></button>
+          <button class="act">Ordenar</button>
+          <button class="act">Exportar</button>
+          <button class="act" id="searchBtn"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>Buscar</button>
+          <div class="search-field" id="searchField">
+            <svg class="s-ico" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
+            <span class="s-chips" id="searchChips"></span>
+            <input id="searchInput" type="text" placeholder="Buscar..." autocomplete="off" />
+            <button class="s-filter" id="scopeBtn" title="Filtrar por propriedade" aria-label="Filtrar por propriedade">
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="search-clear" id="searchClear" title="Fechar busca" aria-label="Fechar busca">
+              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+            <div class="scope-menu" id="scopeMenu" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CARD LIST ============ -->
+      <div class="card-list" id="cardList"></div>
+
+    </div>
+  </div>
+
+<script>
+/* ---- ícones reutilizados ---- */
+const I = {
+  refresh:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 8a5 5 0 1 1-1.5-3.6"/><path d="M13 3v2.5h-2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+  pencil:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z" stroke-linejoin="round"/></svg>',
+  bell:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 14V9a5 5 0 0 1 10 0v5l1 1H4z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0"/></svg>',
+  link:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 11a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M12 9a3 3 0 0 0-4.2 0l-2 2A3 3 0 0 0 10 15.2l1-1" stroke-linecap="round"/></svg>',
+  share:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="10" r="2.2"/><circle cx="14" cy="5" r="2.2"/><circle cx="14" cy="15" r="2.2"/><path d="M8 9l4-2.5M8 11l4 2.5"/></svg>',
+  file:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3h6l3 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M12 3v3h3M7.5 11h5M7.5 13.5h5"/></svg>',
+  folder:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a1 1 0 0 1 1-1h3l1.5 1.5H16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>',
+  check:'<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+const ITEMS = [
+  ['1','Microcomputador desktop básico + Monitor Full HD','94'],
+  ['1','Microcomputador desktop intermediário + Monitor Full HD','22'],
+  ['1','Microcomputador desktop básico + Monitor Full HD','94'],
+  ['2','Notebook 14" i5 / 8GB / 256GB SSD','48'],
+  ['2','Notebook 15" i7 / 16GB / 512GB SSD','12'],
+  ['3','Impressora multifuncional laser monocromática','30'],
+];
+
+function itemsRows(){
+  return ITEMS.map(([lote,nome,un])=>`
+    <tr>
+      <td class="num">${lote}</td>
+      <td>${nome}</td>
+      <td><div class="col-seg"><span class="seg sm">Segmento 1</span><span class="seg sm">Segmento 2</span></div></td>
+      <td class="num">${un}</td>
+      <td class="num">R$ 00.000,00</td>
+      <td class="num">R$ 0.000.000,00</td>
+    </tr>`).join('');
+}
+
+/* ---- dados das licitações (distintos para a busca ser real) ---- */
+const DATA = [
+  {
+    edital:'90001/2026', orgao:'EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ',
+    objeto:'Licitação para fornecimento de computadores desktop, notebooks, monitores e periféricos para atender a rede municipal de ensino. Inclui instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.',
+    valor:'47.284.499,63', id:'1078513', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por item',
+    estado:'PA', cidade:'Belém', habitantes:'1.303.403', portal:'compras.saobernado.sp…',
+    adicionada:'04/02/2026', atualizada:'12/02/2026', envio:'13/02/2026', itens:29, total:300, collapsed:false,
+  },
+  {
+    edital:'88234/2026', orgao:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
+    objeto:'Aquisição de equipamentos de rede, switches gerenciáveis, roteadores e infraestrutura de cabeamento estruturado para modernização do data center municipal, com suporte e garantia de 48 meses.',
+    valor:'12.640.310,00', id:'1099842', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por lote',
+    estado:'SP', cidade:'Campinas', habitantes:'1.223.237', portal:'compras.campinas.sp.gov…',
+    adicionada:'07/02/2026', atualizada:'14/02/2026', envio:'21/02/2026', itens:14, total:120, collapsed:false,
+  },
+  {
+    edital:'90455/2025', orgao:'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
+    objeto:'Registro de preços para aquisição de mobiliário hospitalar, macas, camas e equipamentos médico-hospitalares destinados às unidades de pronto atendimento do estado, com entrega parcelada.',
+    valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
+    estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
+    adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
+  },
+];
+
+function cardHTML(d){
+  const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
+    .join(' ').toLowerCase();
+  return `
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}">
+    <div class="card-top">
+      <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
+      <span class="edital">Edital <b>${d.edital}</b></span>
+      <span class="badge-updated">${I.refresh} Atualizado</span>
+      <div class="card-top-right">
+        <button class="btn btn-outline">Descartar</button>
+        <button class="btn btn-primary">Enviar para análise</button>
+        <button class="btn btn-status">${I.pencil} Em disputa ou Homologação</button>
+        <div class="avatars">
+          <span class="av" style="background:#6b7280">JS</span>
+          <span class="av" style="background:#0f766e">MR</span>
+          <span class="av" style="background:#9333ea">AL</span>
+          <span class="av add">+</span>
+        </div>
+        <div class="icon-actions">
+          <button class="ia" title="Notificar">${I.bell}</button>
+          <button class="ia" title="Copiar link">${I.link}</button>
+          <button class="ia" title="Compartilhar">${I.share}</button>
+          <button class="ia" title="Documentos">${I.file}</button>
+          <button class="ia" title="Pastas">${I.folder}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="segments">
+      <span class="seg">Segmento 1</span>
+      <span class="seg">Segmento 2</span>
+    </div>
+
+    <p class="field-line"><span class="lbl">Órgão:</span> ${d.orgao} <span class="tag-light">ME - EPP</span></p>
+    <p class="field-line obj"><span class="lbl">Objeto:</span> ${d.objeto}</p>
+    <p class="valor">Valor global: R$ ${d.valor}</p>
+
+    <div class="grid-box">
+      <div class="grid-left">
+        <div class="pair">
+          <div class="fld"><div class="k">Adicionada</div><div class="v">${d.adicionada}</div></div>
+          <div class="fld"><div class="k">Atualizada</div><div class="v">${d.atualizada}</div></div>
+        </div>
+        <div class="fld"><div class="k">Envio da proposta</div><div class="v warn">${d.envio}</div></div>
+      </div>
+      <div class="grid-main">
+        <div class="fld"><div class="k">ID</div><div class="v">${d.id}</div></div>
+        <div class="fld"><div class="k">UASG</div><div class="v">–</div></div>
+        <div class="fld"><div class="k">Modalidade</div><div class="v">${d.modalidade}</div></div>
+        <div class="fld"><div class="k">Julgamento</div><div class="v">${d.julgamento}</div></div>
+        <div class="fld"><div class="k">Estado</div><div class="v">${d.estado}</div></div>
+        <div class="fld"><div class="k">Cidade</div><div class="v">${d.cidade}</div></div>
+        <div class="fld"><div class="k">Habitantes</div><div class="v">${d.habitantes}</div></div>
+        <div class="fld"><div class="k">CAPAG Estadual</div><div class="v">–</div></div>
+        <div class="fld"><div class="k">CAPAG Municipal</div><div class="v">–</div></div>
+        <div class="fld"><div class="k">Portal de disputa</div><div class="v">${d.portal}</div></div>
+      </div>
+    </div>
+
+    <button class="expand-toggle">${I.chev}<span class="lbl-toggle">${d.collapsed?'Mostrar itens com correspondência':'Ocultar itens'}</span></button>
+
+    <div class="items-wrap">
+      <div class="items-head">
+        <span class="items-title">Itens com Correspondência</span>
+        <span class="count-chip">${d.itens}</span>
+        <span class="items-total">Total de itens: ${d.total}</span>
+      </div>
+      <table class="items">
+        <thead>
+          <tr>
+            <th style="width:48px">Lote</th>
+            <th>Nome</th>
+            <th style="width:200px">Segmento</th>
+            <th style="width:90px">Unidades</th>
+            <th style="width:140px">Valor Unitário</th>
+            <th style="width:150px">Valor Total</th>
+          </tr>
+        </thead>
+        <tbody>${itemsRows()}</tbody>
+      </table>
+    </div>
+  </article>`;
+}
+
+function skeletonCard(){
+  return `
+    <div class="sk-card">
+      <div class="sk-row">
+        <span class="sk" style="width:18px;height:18px"></span>
+        <span class="sk" style="width:150px;height:18px"></span>
+        <span class="sk" style="width:92px;height:24px;border-radius:7px"></span>
+        <span class="sk" style="width:96px;height:34px;border-radius:8px;margin-left:auto"></span>
+        <span class="sk" style="width:130px;height:34px;border-radius:8px"></span>
+        <span class="sk" style="width:170px;height:34px;border-radius:8px"></span>
+      </div>
+      <div class="sk-row">
+        <span class="sk" style="width:74px;height:22px"></span>
+        <span class="sk" style="width:74px;height:22px"></span>
+      </div>
+      <span class="sk" style="width:55%;height:14px"></span>
+      <span class="sk" style="width:92%;height:14px"></span>
+      <span class="sk" style="width:38%;height:14px"></span>
+      <span class="sk" style="width:230px;height:18px"></span>
+      <span class="sk" style="width:100%;height:130px;border-radius:8px"></span>
+    </div>`;
+}
+
+const list = document.getElementById('cardList');
+list.innerHTML = DATA.map(cardHTML).join('') +
+  '<div class="empty-state" id="emptyState" hidden>'+
+  '<strong>Nenhuma licitação encontrada</strong>'+
+  'Não há resultados para “<span class="q" id="emptyQuery"></span>”. Tente outro termo.'+
+  '</div>' +
+  `<div class="skeleton" id="skeleton">${skeletonCard()}${skeletonCard()}</div>`;
+
+/* ---- interatividade dos cards ---- */
+list.addEventListener('click', e=>{
+  const chk = e.target.closest('.chk');
+  if(chk){ chk.classList.toggle('on'); chk.setAttribute('aria-checked', chk.classList.contains('on')); return; }
+  const tog = e.target.closest('.expand-toggle');
+  if(tog){
+    const card = tog.closest('.card');
+    card.classList.toggle('collapsed');
+    const collapsed = card.classList.contains('collapsed');
+    tog.querySelector('.lbl-toggle').textContent = collapsed ? 'Mostrar itens com correspondência' : 'Ocultar itens';
+  }
+});
+
+/* ---- tabs ---- */
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const t = e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
+  t.classList.add('active'); t.setAttribute('aria-selected','true');
+});
+
+/* ============ BUSCA (componente) ============ */
+const actions   = document.getElementById('actions');
+const searchBtn = document.getElementById('searchBtn');
+const searchFld = document.getElementById('searchField');
+const searchInp = document.getElementById('searchInput');
+const searchClr = document.getElementById('searchClear');
+const searchChips = document.getElementById('searchChips');
+const scopeBtn  = document.getElementById('scopeBtn');
+const scopeMenu = document.getElementById('scopeMenu');
+const emptyState= document.getElementById('emptyState');
+const emptyQuery= document.getElementById('emptyQuery');
+const eyebrow   = document.getElementById('eyebrow');
+const todasCnt  = document.querySelector('.tab.active .cnt');
+const cards     = [...document.querySelectorAll('.card')];
+
+const baseEyebrow = eyebrow.textContent;
+const baseTodas   = todasCnt.textContent;
+
+// remove acentos p/ casar "belem" com "Belém"
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+// ---- propriedades pesquisáveis (escopos) ----
+const SCOPES = [
+  {key:'edital',     label:'Edital',            get:d=>d.edital},
+  {key:'orgao',      label:'Órgão',             get:d=>d.orgao},
+  {key:'objeto',     label:'Objeto',            get:d=>d.objeto},
+  {key:'valor',      label:'Valor global',      get:d=>'R$ '+d.valor},
+  {key:'id',         label:'ID',                get:d=>d.id},
+  {key:'uasg',       label:'UASG',              get:d=>'–'},
+  {key:'modalidade', label:'Modalidade',        get:d=>d.modalidade},
+  {key:'julgamento', label:'Julgamento',        get:d=>d.julgamento},
+  {key:'estado',     label:'Estado',            get:d=>d.estado},
+  {key:'cidade',     label:'Cidade',            get:d=>d.cidade},
+  {key:'habitantes', label:'Habitantes',        get:d=>d.habitantes},
+  {key:'segmento',   label:'Segmento',          get:d=>'Segmento 1 Segmento 2'},
+  {key:'adicionada', label:'Adicionada',        get:d=>d.adicionada},
+  {key:'atualizada', label:'Atualizada',        get:d=>d.atualizada},
+  {key:'envio',      label:'Envio da proposta', get:d=>d.envio},
+  {key:'capagE',     label:'CAPAG Estadual',    get:d=>'–'},
+  {key:'capagM',     label:'CAPAG Municipal',   get:d=>'–'},
+  {key:'portal',     label:'Portal de disputa', get:d=>d.portal},
+];
+const scopeLabel = k => (SCOPES.find(s=>s.key===k)||{}).label || k;
+const activeScopes = new Set();
+
+// indexa o texto de cada propriedade por card (cards[i] ↔ DATA[i])
+cards.forEach((card,i)=>{
+  card._fields = {};
+  SCOPES.forEach(s=> card._fields[s.key] = norm(String(s.get(DATA[i]) ?? '')));
+});
+
+// ---- menu de propriedades ----
+function buildMenu(){
+  scopeMenu.innerHTML =
+    '<div class="sm-head">Buscar em</div>' +
+    `<div class="scope-item" data-scope="__all__"><span class="scope-box">${I.check}</span>Todos os campos</div>` +
+    '<div class="scope-sep"></div>' +
+    SCOPES.map(s=>`<div class="scope-item" data-scope="${s.key}"><span class="scope-box">${I.check}</span>${s.label}</div>`).join('');
+  syncMenu();
+}
+function syncMenu(){
+  const allOn = activeScopes.size === 0;
+  scopeMenu.querySelectorAll('.scope-item').forEach(it=>{
+    const k = it.dataset.scope;
+    it.classList.toggle('on', k==='__all__' ? allOn : activeScopes.has(k));
+  });
+}
+function renderChips(){
+  searchChips.innerHTML = [...activeScopes].map(k=>
+    `<span class="s-chip" data-scope="${k}">${scopeLabel(k)}<button aria-label="Remover ${scopeLabel(k)}">`+
+    `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></span>`
+  ).join('');
+}
+function updateFilterBtn(){
+  scopeBtn.classList.toggle('active', activeScopes.size>0);
+  let b = scopeBtn.querySelector('.cnt-badge');
+  if(activeScopes.size>0){
+    if(!b){ b=document.createElement('span'); b.className='cnt-badge'; scopeBtn.appendChild(b); }
+    b.textContent = activeScopes.size;
+  }else if(b){ b.remove(); }
+}
+
+// ---- abrir / fechar / filtrar ----
+function openSearch(){ actions.classList.add('searching'); searchInp.focus(); }
+function closeSearch(){
+  actions.classList.remove('searching');
+  scopeMenu.hidden = true;
+  searchInp.value = '';
+  activeScopes.clear();
+  renderChips(); updateFilterBtn(); syncMenu();
+  clearTimeout(searchTimer); hideSkeleton(); applyFilter('');
+}
+let searchTimer = null;
+function showSkeleton(){ list.classList.add('loading'); }
+function hideSkeleton(){ list.classList.remove('loading'); }
+// simula a busca assíncrona: mostra skeleton e revela os resultados após ~450ms
+function scheduleSearch(q){
+  clearTimeout(searchTimer);
+  if(!q.trim()){ hideSkeleton(); applyFilter(''); return; }  // limpou: instantâneo
+  showSkeleton();
+  searchTimer = setTimeout(()=>{ hideSkeleton(); applyFilter(q); }, 450);
+}
+function applyFilter(q){
+  const query = norm(q.trim());
+  const scopeKeys = [...activeScopes];
+  let visible = 0;
+  cards.forEach(card=>{
+    let hit;
+    if(!query)               hit = true;
+    else if(!scopeKeys.length) hit = norm(card.dataset.search).includes(query);
+    else                     hit = scopeKeys.some(k => (card._fields[k]||'').includes(query));
+    card.classList.toggle('hidden', !hit);
+    if(hit) visible++;
+  });
+  const noResults = query && visible === 0;
+  emptyState.hidden = !noResults;
+  emptyQuery.textContent = q.trim();
+
+  if(query){
+    const palavra = visible === 1 ? 'licitação' : 'licitações';
+    eyebrow.textContent = `Encontramos ${visible} ${palavra} com seus filtros`;
+    todasCnt.textContent = visible;
+  }else{
+    eyebrow.textContent = baseEyebrow;
+    todasCnt.textContent = baseTodas;
+  }
+}
+
+// ---- eventos ----
+searchBtn.addEventListener('click', openSearch);
+searchInp.addEventListener('input', e=> scheduleSearch(e.target.value));
+searchClr.addEventListener('click', closeSearch);
+
+scopeBtn.addEventListener('click', e=>{ e.stopPropagation(); scopeMenu.hidden = !scopeMenu.hidden; });
+scopeMenu.addEventListener('click', e=>{
+  const it = e.target.closest('.scope-item'); if(!it) return;
+  const k = it.dataset.scope;
+  if(k==='__all__') activeScopes.clear();
+  else activeScopes.has(k) ? activeScopes.delete(k) : activeScopes.add(k);
+  syncMenu(); renderChips(); updateFilterBtn(); scheduleSearch(searchInp.value);
+  searchInp.focus();
+});
+searchChips.addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  activeScopes.delete(btn.closest('.s-chip').dataset.scope);
+  syncMenu(); renderChips(); updateFilterBtn(); scheduleSearch(searchInp.value);
+  searchInp.focus();
+});
+// clique fora fecha só o menu
+document.addEventListener('click', e=>{
+  if(!scopeMenu.hidden && !scopeMenu.contains(e.target) && !scopeBtn.contains(e.target)) scopeMenu.hidden = true;
+});
+searchInp.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ if(!scopeMenu.hidden) scopeMenu.hidden = true; else closeSearch(); }
+});
+// atalho "/" abre a busca
+document.addEventListener('keydown', e=>{
+  if(e.key==='/' && !actions.classList.contains('searching') &&
+     !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
+    e.preventDefault(); openSearch();
+  }
+});
+
+buildMenu();
+</script>
+</body>
+</html>
