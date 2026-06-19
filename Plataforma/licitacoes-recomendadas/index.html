@@ -227,19 +227,25 @@
   .card.collapsed .expand-toggle .chev{transform:rotate(-90deg);}
   .expand-toggle .chev{transition:transform .15s;}
 
-  /* ============ BUSCA INLINE (componente) ============ */
-  .actions{transition:width .18s ease;}
-  .actions.searching{overflow:visible;}
-  .actions .search-field{display:none;align-items:center;gap:8px;padding:0 10px;flex:1;min-width:200px;position:relative;flex-wrap:wrap;}
-  .actions.searching #searchBtn{display:none;}
-  .actions.searching .search-field{display:flex;}
+  /* ============ BUSCA (componente — linha própria, largura total) ============ */
+  .actions.searching #searchBtn{background:rgba(0,0,0,.06);color:var(--foreground);}
+  .search-row[hidden]{display:none;}
+  .search-row{margin-bottom:18px;}
+  .search-field{
+    display:flex;align-items:center;gap:8px;width:100%;flex-wrap:nowrap;position:relative;
+    background:rgba(23,23,23,.06);border:1px solid var(--border);border-radius:10px;
+    padding:8px 12px;height:46px;
+  }
 
   /* chips de escopo dentro do campo */
-  .s-chips{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .s-chips{display:inline-flex;gap:4px;align-items:center;flex-wrap:nowrap;flex:none;}
   .s-chips:empty{display:none;}
-  .s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fafafa;font-size:12px;font-weight:500;padding:3px 4px 3px 8px;border-radius:6px;white-space:nowrap;}
+  .s-chip{flex:none;display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fafafa;font-size:12px;font-weight:500;padding:3px 4px 3px 8px;border-radius:6px;white-space:nowrap;}
   .s-chip button{border:none;background:transparent;color:#bdbdbd;cursor:pointer;padding:0;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;}
   .s-chip button:hover{background:rgba(255,255,255,.22);color:#fff;}
+  /* chip "+N" que abre o menu com os escopos excedentes */
+  .s-chip.s-more{background:#e4e4e4;color:var(--muted-foreground);cursor:pointer;padding:3px 9px;font-weight:600;}
+  .s-chip.s-more:hover{background:#d8d8d8;color:var(--foreground);}
 
   /* botão de filtro de propriedade */
   .s-filter{border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;flex:none;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;position:relative;}
@@ -258,15 +264,10 @@
   .scope-item .scope-box svg{opacity:0;}
   .scope-item.on .scope-box svg{opacity:1;}
   .scope-sep{height:1px;background:var(--border);margin:4px 2px;}
-  /* telas estreitas: o campo assume a barra inteira e os outros botões somem p/ caber */
-  @media (max-width:1040px){
-    .actions.searching{flex:1 1 100%;}
-    .actions.searching .act{display:none;}
-  }
   .search-field .s-ico{color:var(--muted-foreground);flex:none;}
   .search-field input{
     border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--foreground);
-    flex:1;min-width:0;height:34px;
+    flex:1;min-width:160px;height:30px;
   }
   .search-field input::placeholder{color:var(--muted-foreground);}
   .search-clear{
@@ -360,18 +361,22 @@
           <button class="act">Ordenar</button>
           <button class="act">Exportar</button>
           <button class="act" id="searchBtn"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>Buscar</button>
-          <div class="search-field" id="searchField">
-            <svg class="s-ico" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
-            <span class="s-chips" id="searchChips"></span>
-            <input id="searchInput" type="text" placeholder="Buscar..." autocomplete="off" />
-            <button class="s-filter" id="scopeBtn" title="Filtrar por propriedade" aria-label="Filtrar por propriedade">
-              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
-            </button>
-            <button class="search-clear" id="searchClear" title="Fechar busca" aria-label="Fechar busca">
-              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-            </button>
-            <div class="scope-menu" id="scopeMenu" hidden></div>
-          </div>
+        </div>
+      </div>
+
+      <!-- ============ LINHA DE BUSCA (largura total) ============ -->
+      <div class="search-row" id="searchRow" hidden>
+        <div class="search-field" id="searchField">
+          <svg class="s-ico" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
+          <span class="s-chips" id="searchChips"></span>
+          <input id="searchInput" type="text" placeholder="Buscar..." autocomplete="off" />
+          <button class="s-filter" id="scopeBtn" title="Filtrar por propriedade" aria-label="Filtrar por propriedade">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="search-clear" id="searchClear" title="Fechar busca" aria-label="Fechar busca">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+          <div class="scope-menu" id="scopeMenu" hidden></div>
         </div>
       </div>
 
@@ -580,6 +585,7 @@ document.querySelector('.tabs').addEventListener('click', e=>{
 /* ============ BUSCA (componente) ============ */
 const actions   = document.getElementById('actions');
 const searchBtn = document.getElementById('searchBtn');
+const searchRow = document.getElementById('searchRow');
 const searchFld = document.getElementById('searchField');
 const searchInp = document.getElementById('searchInput');
 const searchClr = document.getElementById('searchClear');
@@ -644,11 +650,44 @@ function syncMenu(){
     it.classList.toggle('on', k==='__all__' ? allOn : activeScopes.has(k));
   });
 }
+function chipHTML(k){
+  const lbl = scopeLabel(k);
+  return `<span class="s-chip" data-scope="${k}">${lbl}<button aria-label="Remover ${lbl}">`+
+    `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></span>`;
+}
+// largura disponível p/ os chips = campo − (lupa + input mínimo + funil + limpar + gaps)
+function chipsAvail(){
+  const cs = getComputedStyle(searchFld);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const gap  = parseFloat(cs.columnGap || cs.gap) || 8;
+  const ico  = searchFld.querySelector('.s-ico');
+  const reservaInput = 160;
+  const icoW = ico ? ico.getBoundingClientRect().width : 15;  // SVG não tem offsetWidth
+  const others = icoW + scopeBtn.offsetWidth + searchClr.offsetWidth + reservaInput;
+  return searchFld.clientWidth - padX - others - gap*4;
+}
+// renderiza chips mantendo 1 linha: o excedente vira um chip "+N"
 function renderChips(){
-  searchChips.innerHTML = [...activeScopes].map(k=>
-    `<span class="s-chip" data-scope="${k}">${scopeLabel(k)}<button aria-label="Remover ${scopeLabel(k)}">`+
-    `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></span>`
-  ).join('');
+  const keys = [...activeScopes];
+  if(!keys.length){ searchChips.innerHTML = ''; return; }
+  searchChips.innerHTML = keys.map(chipHTML).join('');   // 1) todos, p/ medir
+  if(searchRow.hidden) return;                           // oculto: não dá p/ medir
+  const els = [...searchChips.children];
+  const gap = 4, plusW = 50;
+  const avail = chipsAvail();
+  // todos cabem? mantém
+  let total = 0; els.forEach((el,i)=> total += el.offsetWidth + (i>0?gap:0));
+  if(total <= avail) return;
+  // 2) colapsa: acumula até estourar, reservando espaço p/ o "+N"
+  let used = 0, fit = keys.length;
+  for(let i=0;i<els.length;i++){
+    const w = els[i].offsetWidth + (i>0?gap:0);
+    if(used + w > avail - (plusW + gap)){ fit = i; break; }
+    used += w;
+  }
+  const rest = keys.length - fit;
+  searchChips.innerHTML = keys.slice(0,fit).map(chipHTML).join('') +
+    `<span class="s-chip s-more" data-more role="button" tabindex="0" title="Ver todos os filtros (${keys.length})">+${rest}</span>`;
 }
 function updateFilterBtn(){
   scopeBtn.classList.toggle('active', activeScopes.size>0);
@@ -660,9 +699,10 @@ function updateFilterBtn(){
 }
 
 // ---- abrir / fechar / filtrar ----
-function openSearch(){ actions.classList.add('searching'); searchInp.focus(); }
+function openSearch(){ actions.classList.add('searching'); searchRow.hidden = false; renderChips(); searchInp.focus(); }
 function closeSearch(){
   actions.classList.remove('searching');
+  searchRow.hidden = true;
   scopeMenu.hidden = true;
   searchInp.value = '';
   activeScopes.clear();
@@ -706,7 +746,7 @@ function applyFilter(q){
 }
 
 // ---- eventos ----
-searchBtn.addEventListener('click', openSearch);
+searchBtn.addEventListener('click', ()=> actions.classList.contains('searching') ? closeSearch() : openSearch());
 searchInp.addEventListener('input', e=> scheduleSearch(e.target.value));
 searchClr.addEventListener('click', closeSearch);
 
@@ -720,11 +760,17 @@ scopeMenu.addEventListener('click', e=>{
   searchInp.focus();
 });
 searchChips.addEventListener('click', e=>{
+  const more = e.target.closest('.s-more');
+  if(more){ e.stopPropagation(); scopeMenu.hidden = false; return; }  // "+N" abre o menu
   const btn = e.target.closest('button'); if(!btn) return;
   activeScopes.delete(btn.closest('.s-chip').dataset.scope);
   syncMenu(); renderChips(); updateFilterBtn(); scheduleSearch(searchInp.value);
   searchInp.focus();
 });
+// recalcula o "+N" sempre que a largura do campo muda (resize, recolher sidebar, abrir busca)
+const relayoutChips = ()=>{ if(!searchRow.hidden) renderChips(); };
+window.addEventListener('resize', relayoutChips);
+if(window.ResizeObserver){ new ResizeObserver(relayoutChips).observe(searchFld); }
 // clique fora fecha só o menu
 document.addEventListener('click', e=>{
   if(!scopeMenu.hidden && !scopeMenu.contains(e.target) && !scopeBtn.contains(e.target)) scopeMenu.hidden = true;
