@@ -433,6 +433,37 @@
   .fb-opt .box svg{opacity:0;}
   .fb-opt.on .box svg{opacity:1;}
 
+  /* ============ SALVAR PARA DEPOIS / SEM ANEXO ============ */
+  /* alterna entre Recomendadas e a fila de Salvos pelo estado do bookmark */
+  body:not(.view-salvos) .card[data-saved="true"]{display:none !important;}
+  body.view-salvos .card[data-saved="false"]{display:none !important;}
+  body.view-salvos .tab:not([data-tab="Todas"]){display:none;}
+
+  /* bookmark estilo Slack: vazio = salvar, preenchido = salvo */
+  .ia.bookmark[aria-pressed="true"]{color:#2f6df6;border-color:#cfe0ff;background:#eef4ff;}
+  .ia.bookmark[aria-pressed="true"] svg path{fill:#2f6df6;}
+
+  /* sem anexo ainda não foi "atualizado": esconde a badge até o anexo chegar */
+  .card[data-semanexo="true"] .badge-updated{display:none;}
+  /* pasta sem anexo: destaque âmbar p/ "bater o olho" */
+  .ia.no-file{color:#d97706;border-color:#f3e3c8;}
+  .ia.no-file:hover{background:#fdf6ec;color:#b8650a;}
+
+  /* botão "simular anexo chegou" (demo) — só na fila de salvos, em cards sem anexo */
+  .sim-anexo{display:none;align-items:center;gap:5px;border:1px dashed var(--border);background:transparent;
+    color:var(--muted-foreground);font-family:inherit;font-size:12px;border-radius:7px;padding:4px 9px;cursor:pointer;}
+  .sim-anexo:hover{background:var(--muted);color:var(--foreground);}
+  .sim-anexo svg{width:13px;height:13px;}
+  body.view-salvos .card[data-semanexo="true"] .sim-anexo{display:inline-flex;}
+
+  /* destaque do card quando recebe anexo (novidade) */
+  .card.card-new{box-shadow:0 0 0 2px #2f6df6, var(--shadow-card);}
+
+  /* contador do item "Salvos para depois" na sidebar */
+  .sb-count{flex:none;background:rgba(0,0,0,.08);color:var(--sb-fg);font-size:12px;font-weight:500;line-height:16px;padding:0 6px;border-radius:9999px;}
+  .sb-count[data-zero="true"]{display:none;}
+  body:not(.sb-open) .sb-count{display:none;}
+
   @media (max-width:1100px){
     .grid-main{grid-template-columns:repeat(3,1fr);}
   }
@@ -462,7 +493,8 @@
     <nav class="sb-content">
       <div class="sb-section">Licitações</div>
       <div class="sb-group">
-        <a class="sb-item active" href="#" aria-current="page" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
+        <a class="sb-item active" href="#" data-view="recomendadas" aria-current="page" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
+        <a class="sb-item" href="#" data-view="salvos" title="Salvos para depois"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z" stroke-linejoin="round"/></svg></span><span class="sb-label">Salvos para depois</span><span class="sb-count" id="savedCount">1</span></a>
         <a class="sb-item" href="#" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
         <a class="sb-item" href="#" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
         <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
@@ -548,6 +580,8 @@ const I = {
   share:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="10" r="2.2"/><circle cx="14" cy="5" r="2.2"/><circle cx="14" cy="15" r="2.2"/><path d="M8 9l4-2.5M8 11l4 2.5"/></svg>',
   file:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3h6l3 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M12 3v3h3M7.5 11h5M7.5 13.5h5"/></svg>',
   folder:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a1 1 0 0 1 1-1h3l1.5 1.5H16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>',
+  folderOff:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a1 1 0 0 1 1-1h3l1.5 1.5H16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M3.2 3.2l13.6 13.6" stroke-linecap="round"/></svg>',
+  bookmark:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.5 3.5h9a1 1 0 0 1 1 1V17l-5.5-3.2L5.5 17V4.5a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>',
   check:'<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
   chev:'<svg class="chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
@@ -581,6 +615,7 @@ const DATA = [
     valor:'47.284.499,63', id:'1078513', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por item',
     estado:'PA', cidade:'Belém', habitantes:'1.303.403', portal:'compras.saobernado.sp…',
     adicionada:'04/02/2026', atualizada:'12/02/2026', envio:'13/02/2026', itens:29, total:300, collapsed:false,
+    semAnexo:true, saved:false,
   },
   {
     edital:'88234/2026', orgao:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
@@ -588,6 +623,7 @@ const DATA = [
     valor:'12.640.310,00', id:'1099842', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por lote',
     estado:'SP', cidade:'Campinas', habitantes:'1.223.237', portal:'compras.campinas.sp.gov…',
     adicionada:'07/02/2026', atualizada:'14/02/2026', envio:'21/02/2026', itens:14, total:120, collapsed:false,
+    semAnexo:false, saved:false,
   },
   {
     edital:'90455/2025', orgao:'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
@@ -595,6 +631,7 @@ const DATA = [
     valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
     estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
     adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
+    semAnexo:true, saved:true,
   },
 ];
 
@@ -602,11 +639,12 @@ function cardHTML(d){
   const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
     .join(' ').toLowerCase();
   return `
-  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}">
     <div class="card-top">
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
       <span class="badge-updated">${I.refresh} Atualizado</span>
+      <button class="sim-anexo" title="Demonstração: simular a chegada do anexo">${I.refresh} Simular anexo chegou</button>
       <div class="card-top-right">
         <button class="btn btn-outline">Descartar</button>
         <button class="btn btn-primary">Enviar para análise</button>
@@ -618,11 +656,12 @@ function cardHTML(d){
           <span class="av add">+</span>
         </div>
         <div class="icon-actions">
+          <button class="ia bookmark" title="${d.saved?'Remover de Salvos para depois':'Salvar para depois'}" aria-pressed="${d.saved?'true':'false'}">${I.bookmark}</button>
           <button class="ia" title="Notificar">${I.bell}</button>
           <button class="ia" title="Copiar link">${I.link}</button>
           <button class="ia" title="Compartilhar">${I.share}</button>
           <button class="ia" title="Documentos">${I.file}</button>
-          <button class="ia" title="Pastas">${I.folder}</button>
+          <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':'Abrir anexo'}">${d.semAnexo?I.folderOff:I.folder}</button>
         </div>
       </div>
     </div>
@@ -1111,6 +1150,72 @@ document.addEventListener('keydown', e=>{
     if(!document.body.classList.contains('sb-open')){ document.body.classList.add('sb-open'); return; }
     novas.classList.toggle('open');
   });
+})();
+
+/* ============ SALVAR PARA DEPOIS / SEM ANEXO ============ */
+(function(){
+  const cardList = document.getElementById('cardList');
+  const savedCountEl = document.getElementById('savedCount');
+  const eyebrowEl = document.getElementById('eyebrow');
+  let view = 'recomendadas';
+
+  const savedCards = () => [...cardList.querySelectorAll('.card')].filter(c=>c.dataset.saved==='true');
+
+  function updateSavedUI(){
+    const n = savedCards().length;
+    savedCountEl.textContent = n;
+    savedCountEl.dataset.zero = n===0 ? 'true' : 'false';
+    if(view==='salvos'){
+      eyebrowEl.textContent = n===1 ? '1 licitação salva para depois' : `${n} licitações salvas para depois`;
+      const todas = document.querySelector('.tab[data-tab="Todas"] .cnt'); if(todas) todas.textContent = n;
+    }
+  }
+
+  // bookmark (salvar/remover) + simular chegada do anexo
+  cardList.addEventListener('click', e=>{
+    const bm = e.target.closest('.ia.bookmark');
+    if(bm){
+      const card = bm.closest('.card');
+      const nowSaved = card.dataset.saved !== 'true';
+      card.dataset.saved = nowSaved ? 'true' : 'false';
+      bm.setAttribute('aria-pressed', nowSaved ? 'true' : 'false');
+      bm.title = nowSaved ? 'Remover de Salvos para depois' : 'Salvar para depois';
+      updateSavedUI();
+      return;
+    }
+    const sim = e.target.closest('.sim-anexo');
+    if(sim){
+      const card = sim.closest('.card');
+      card.dataset.semanexo = 'false';                 // anexo chegou
+      const folder = card.querySelector('.ia.folder');
+      if(folder){ folder.classList.remove('no-file'); folder.title = 'Abrir anexo'; folder.innerHTML = I.folder; }
+      card.classList.add('card-new');                  // destaque de novidade
+      setTimeout(()=> card.classList.remove('card-new'), 4000);
+    }
+  });
+
+  // troca de view pela sidebar (Recomendadas ↔ Salvos para depois)
+  document.querySelectorAll('.sb-item[data-view]').forEach(item=>{
+    item.addEventListener('click', e=>{
+      e.preventDefault();
+      view = item.dataset.view;
+      document.body.classList.toggle('view-salvos', view==='salvos');
+      document.querySelectorAll('.sb-item[data-view]').forEach(x=> x.classList.toggle('active', x===item));
+      // volta para a tab Todas ao trocar de view
+      document.querySelectorAll('.tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      const todasTab = document.querySelector('.tab[data-tab="Todas"]');
+      if(todasTab){ todasTab.classList.add('active'); todasTab.setAttribute('aria-selected','true'); }
+      if(typeof renderTabFilters === 'function') renderTabFilters('Todas');
+      if(view==='recomendadas'){
+        eyebrowEl.textContent = 'Encontramos 300 licitações';
+        const todas = document.querySelector('.tab[data-tab="Todas"] .cnt'); if(todas) todas.textContent = '300';
+      }
+      updateSavedUI();
+      window.scrollTo(0,0);
+    });
+  });
+
+  updateSavedUI();
 })();
 
 buildMenu();
