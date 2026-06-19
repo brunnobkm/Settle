@@ -102,9 +102,12 @@
      via transform (mesma timeline da navbar) p/ não abrir vão na transição */
   body.nav-hidden .sticky-toolbar{transform:translateY(-64px);}
   .sticky-toolbar .toolbar{margin-bottom:0;}
-  .sticky-toolbar .filter-badges{margin:12px 0 0;}
-  /* rolando p/ baixo (navbar escondida): a badge do filtro também some */
-  body.nav-hidden .filter-badges{display:none;}
+  .sticky-toolbar .filter-badges{
+    margin:12px 0 0; overflow:visible; max-height:200px;
+    transition:max-height .25s ease, opacity .2s ease, margin-top .25s ease;
+  }
+  /* rolando p/ baixo (navbar escondida): as badges colapsam suavemente (sem pulo brusco) */
+  body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:hidden; pointer-events:none;}
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
   .tabs{
     display:inline-flex;align-items:center;gap:0;
@@ -437,6 +440,7 @@
           <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">248</span></button>
           <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">12</span></button>
           <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">87</span></button>
+          <button class="tab" role="tab" data-tab="Exemplo">Exemplo <span class="cnt">3</span></button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
@@ -667,11 +671,26 @@ document.querySelector('.tabs').addEventListener('click', e=>{
 
 /* ============ FILTROS DA TAB (badges estilo Notion) ============ */
 const SITUACAO = ['Ativas','Em disputa','Homologação','Encerradas','Descartadas'];
+const SEGMENTOS = ['Produtos','Software'];
+const ESTADOS = ['SP','RJ','MG','PA','CE','BA','PR','RS'];
+const CIDADES = ['São Paulo','Campinas','Rio de Janeiro','Belém','Fortaleza'];
+const VALORES = ['Até R$ 100 mil','R$ 100 mil – 1 mi','R$ 1 mi – 10 mi','Acima de R$ 10 mi'];
 const TAB_BADGES = {
   'Todas': [],
   'Ativas':            [{label:'Situação', type:'list', options:SITUACAO, value:['Ativas']}],
   'Chegou hoje':       [{label:'Data de adição', type:'date', mode:'past', value:{date:'19/06/2026'}}],
   'Vencendo em breve': [{label:'Envio da proposta', type:'date', mode:'future', value:{preset:'7d'}}],
+  // tab de demonstração: TODOS os filtros aplicados de uma vez
+  'Exemplo': [
+    {label:'Situação',           type:'list', options:SITUACAO,  value:['Ativas']},
+    {label:'Segmento',           type:'list', options:SEGMENTOS, value:['Software']},
+    {label:'Estado',             type:'list', options:ESTADOS,   value:['SP']},
+    {label:'Cidade',             type:'list', options:CIDADES,   value:['Campinas']},
+    {label:'Valor global',       type:'list', options:VALORES,   value:['R$ 1 mi – 10 mi']},
+    {label:'Data de adição',     type:'date', mode:'past',   value:{preset:'7d'}},
+    {label:'Data de atualização',type:'date', mode:'past',   value:{date:'19/06/2026'}},
+    {label:'Envio da proposta',  type:'date', mode:'future', value:{preset:'7d'}},
+  ],
 };
 const DATE_PRESETS = {
   past:   [{key:'todos',label:'Todos'},{key:'24h',label:'Últimas 24h'},{key:'7d',label:'Últimos 7 dias'}],
