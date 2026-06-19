@@ -40,31 +40,78 @@
   svg{display:block;}
 
   /* ============ SIDEBAR ============ */
+  :root{ --sb-fg:#404040; }
   .sidebar{
     position:fixed; left:0; top:0; bottom:0; width:52px;
-    background:var(--background);
-    border-right:1px solid var(--border);
-    display:flex; flex-direction:column; align-items:center;
-    padding:12px 0; gap:4px; z-index:30;
+    background:#f5f5f5; border-right:1px solid var(--border);
+    display:flex; flex-direction:column; z-index:30;
+    overflow:hidden; transition:width .2s ease;
   }
-  .sb-logo{width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
-  .sb-nav{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;}
-  .sb-btn{
-    width:34px;height:34px;border:none;background:transparent;border-radius:8px;
-    display:flex;align-items:center;justify-content:center;color:#737373;
-    transition:background .12s,color .12s;
+  body.sb-open .sidebar{width:280px;}
+
+  /* header / workspace */
+  .sb-head{height:64px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;}
+  body:not(.sb-open) .sb-head{padding:0;justify-content:center;}
+  .sb-logo{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .sb-ws{flex:1;min-width:0;}
+  .sb-ws-name{font-size:14px;font-weight:500;color:var(--sb-fg);line-height:20px;white-space:nowrap;}
+  .sb-ws-sub{font-size:12px;color:rgba(63,64,77,.8);line-height:16px;white-space:nowrap;}
+  .sb-caret{flex:none;color:#8a8a8a;cursor:pointer;}
+  body:not(.sb-open) .sb-ws, body:not(.sb-open) .sb-caret{display:none;}
+
+  /* content */
+  .sb-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;padding:8px;}
+  body:not(.sb-open) .sb-content{align-items:center;padding:8px 0;}
+  .sb-group{display:flex;flex-direction:column;gap:4px;width:100%;padding:8px;}
+  body:not(.sb-open) .sb-group{align-items:center;padding:8px;}
+  .sb-section{font-size:12px;font-weight:500;color:var(--sb-fg);opacity:.7;padding:8px;height:32px;display:flex;align-items:center;white-space:nowrap;}
+  body:not(.sb-open) .sb-section{display:none;}
+  .sb-divider-h{height:1px;width:24px;background:var(--border);margin:8px auto;flex:none;}
+  body.sb-open .sb-divider-h{display:none;}
+
+  /* item */
+  .sb-item{
+    display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;
+    padding:8px;border-radius:8px;border:none;background:transparent;cursor:pointer;
+    color:var(--sb-fg);font-family:inherit;font-size:14px;line-height:20px;text-align:left;text-decoration:none;
+    transition:background .12s;position:relative;
   }
-  .sb-btn:hover{background:var(--muted);color:var(--foreground);}
-  .sb-btn.active{background:var(--muted);color:var(--foreground);}
-  .sb-divider{width:22px;height:1px;background:var(--border);margin:6px 0;}
-  .sb-bottom{margin-top:auto;}
-  .sb-avatar{
-    width:30px;height:30px;border-radius:50%;background:#1f2937;color:#fff;
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;
-  }
+  .sb-item:hover{background:rgba(0,0,0,.05);}
+  .sb-item.active{background:rgba(0,0,0,.07);font-weight:500;}
+  .sb-ico{width:16px;height:16px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--sb-fg);}
+  .sb-ico svg{width:16px;height:16px;}
+  .sb-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-badge{flex:none;background:#dc2626;color:#fff;font-size:12px;font-weight:500;line-height:16px;padding:0 6px;border-radius:6px;}
+  .sb-dot{display:none;position:absolute;top:6px;left:24px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1.5px solid #f5f5f5;}
+  .sb-chev{flex:none;color:#8a8a8a;transition:transform .15s;}
+  /* fechada: itens viram quadrados 36px, só ícone */
+  body:not(.sb-open) .sb-item{width:36px;height:36px;padding:0;justify-content:center;gap:0;}
+  body:not(.sb-open) .sb-label,
+  body:not(.sb-open) .sb-chev,
+  body:not(.sb-open) .sb-badge{display:none;}
+  body:not(.sb-open) .sb-dot{display:block;top:3px;left:23px;}
+
+  /* sub-itens de Novas */
+  .sb-sub{display:flex;flex-direction:column;gap:4px;margin:2px 0 2px 16px;padding-left:8px;border-left:1px solid var(--border);}
+  .sb-subitem{display:block;padding:8px 16px;border-radius:8px;color:var(--sb-fg);font-size:14px;text-decoration:none;white-space:nowrap;}
+  .sb-subitem:hover{background:rgba(0,0,0,.05);}
+  .sb-expandable:not(.open) ~ .sb-sub,
+  body:not(.sb-open) .sb-sub{display:none;}
+  .sb-expandable.open .sb-chev{transform:rotate(0deg);}
+  .sb-expandable:not(.open) .sb-chev{transform:rotate(-90deg);}
+
+  /* footer / user */
+  .sb-foot{flex:none;display:flex;align-items:center;gap:8px;padding:16px 8px;}
+  body:not(.sb-open) .sb-foot{justify-content:center;padding:16px 0;}
+  .sb-avatar{width:32px;height:32px;flex:none;border-radius:50%;background:rgba(23,23,23,.1);color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .sb-user{flex:1;min-width:0;}
+  .sb-user-name{font-size:14px;font-weight:500;color:var(--sb-fg);line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-user-email{font-size:12px;font-weight:300;color:var(--sb-fg);line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  body:not(.sb-open) .sb-user{display:none;}
 
   /* ============ SHELL ============ */
-  .shell{margin-left:52px;}
+  .shell{margin-left:52px;transition:margin-left .2s ease;}
+  body.sb-open .shell{margin-left:280px;}
 
   /* ============ NAVBAR ============ */
   .navbar{
@@ -394,27 +441,68 @@
 <body>
 
   <!-- ============ SIDEBAR ============ -->
-  <aside class="sidebar" aria-label="Sidebar">
-    <div class="sb-logo" aria-hidden="true">
-      <svg viewBox="0 0 32 32" width="30" height="30">
-        <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
-        <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
-        <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-      </svg>
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <!-- header / workspace -->
+    <div class="sb-head">
+      <div class="sb-logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+          <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+          <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="sb-ws">
+        <div class="sb-ws-name">Settle</div>
+        <div class="sb-ws-sub">Espaço de Trabalho</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
     </div>
-    <nav class="sb-nav">
-      <button class="sb-btn" title="Início"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10.5 10 4l7 6.5V16a1 1 0 0 1-1 1h-3v-4H8v4H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></button>
-      <button class="sb-btn" title="Assistente"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3l1.5 3.5L15 8l-3.5 1.5L10 13l-1.5-3.5L5 8l3.5-1.5z" stroke-linejoin="round"/><path d="M15 13l.7 1.6L17 15l-1.3.7L15 17l-.7-1.3L13 15l1.3-.7z" stroke-linejoin="round"/></svg></button>
-      <button class="sb-btn" title="Notificações"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 14V9a5 5 0 0 1 10 0v5l1 1H4z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0"/></svg></button>
-      <div class="sb-divider"></div>
-      <button class="sb-btn" title="Caixa de entrada"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12V5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7"/><path d="M3 12h4l1 2h4l1-2h4v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></button>
-      <button class="sb-btn active" title="Licitações" aria-current="page"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="5" height="14" rx="1.2"/><rect x="8.5" y="3" width="5" height="9" rx="1.2"/><rect x="14" y="3" width="3" height="6" rx="1.2"/></svg></button>
-      <button class="sb-btn" title="Editais"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M12 3v3h3"/></svg></button>
-      <button class="sb-btn" title="Documentos"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="5" width="9" height="11" rx="1"/><path d="M7 3h9v11"/></svg></button>
-      <button class="sb-btn" title="Itens"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="12" height="3" rx="1"/><rect x="4" y="9" width="12" height="3" rx="1"/><rect x="4" y="14" width="12" height="3" rx="1"/></svg></button>
-      <button class="sb-btn" title="Análises"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5V10l4.6 2.6"/></svg></button>
+
+    <!-- nav -->
+    <nav class="sb-content">
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Visão Geral"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 7 8 2.5 13.5 7v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M6.5 14V9.5h3V14"/></svg></span><span class="sb-label">Visão Geral</span></a>
+        <a class="sb-item" href="#" title="Settle AI"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7.5 2.5 8.8 5.4 11.5 6.5 8.8 7.6 7.5 10.5 6.2 7.6 3.5 6.5 6.2 5.4z" stroke-linejoin="round"/><path d="M12 10.3l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L10.2 12l1.3-.4z" stroke-linejoin="round"/></svg></span><span class="sb-label">Settle AI</span></a>
+        <a class="sb-item" href="#" title="Notificações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11V7a4 4 0 0 1 8 0v4l1 1H3z" stroke-linejoin="round"/><path d="M6.4 13.5a1.6 1.6 0 0 0 3.2 0"/></svg></span><span class="sb-label">Notificações</span><span class="sb-badge">3</span><span class="sb-dot"></span></a>
+      </div>
+
+      <div class="sb-divider-h"></div>
+      <div class="sb-section">Gestão de licitações</div>
+
+      <div class="sb-group">
+        <button class="sb-item sb-expandable open" id="novasItem" title="Novas">
+          <span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/></svg></span>
+          <span class="sb-label">Novas</span>
+          <svg class="sb-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5 8 9.5l3-3"/></svg>
+        </button>
+        <div class="sb-sub" id="novasSub">
+          <a class="sb-subitem" href="#">Ativas</a>
+          <a class="sb-subitem" href="#">Chegou hoje</a>
+          <a class="sb-subitem" href="#">Vencendo em breve</a>
+        </div>
+        <a class="sb-item active" href="#" aria-current="page" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2.5" width="3.4" height="11" rx="1"/><rect x="6.6" y="2.5" width="3.4" height="7.5" rx="1"/><rect x="10.7" y="2.5" width="2.8" height="5" rx="1"/></svg></span><span class="sb-label">Em andamento</span></a>
+        <a class="sb-item" href="#" title="Concluídas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.2 10l1.3 1.3 2.4-2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Concluídas</span></a>
+        <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
+        <a class="sb-item" href="#" title="Descontinuadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.2 10h3.6" stroke-linecap="round"/></svg></span><span class="sb-label">Descontinuadas</span></a>
+        <a class="sb-item" href="#" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10 10l3 3" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
+      </div>
+
+      <div class="sb-divider-h"></div>
+
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Relatórios"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 3.5V8l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Relatórios</span></a>
+      </div>
     </nav>
-    <div class="sb-bottom"><div class="sb-avatar">BK</div></div>
+
+    <!-- footer / user -->
+    <div class="sb-foot">
+      <div class="sb-avatar">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier Martins</div>
+        <div class="sb-user-email">brunno@settlegov.com</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
   </aside>
 
   <div class="shell">
@@ -1037,6 +1125,17 @@ document.addEventListener('keydown', e=>{
     else if(lastY - y > DELTA){ document.body.classList.remove('nav-hidden'); lastY = y; } // rolando p/ cima
     // movimentos pequenos NÃO atualizam lastY → acumulam até o DELTA (evita jitter/momentum)
   }, {passive:true});
+})();
+
+/* ============ SIDEBAR: abrir/fechar + expandir "Novas" ============ */
+(function(){
+  const toggle = document.querySelector('.navbar .icon-btn');
+  if(toggle) toggle.addEventListener('click', ()=> document.body.classList.toggle('sb-open'));
+  const novas = document.getElementById('novasItem');
+  if(novas) novas.addEventListener('click', ()=>{
+    if(!document.body.classList.contains('sb-open')){ document.body.classList.add('sb-open'); return; }
+    novas.classList.toggle('open');
+  });
 })();
 
 buildMenu();
