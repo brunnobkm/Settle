@@ -299,6 +299,72 @@
   .empty-state strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
   .empty-state .q{color:var(--foreground);font-weight:600;}
 
+  /* ============ BADGES DE FILTRO DA TAB ============ */
+  .filter-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-6px 0 18px;}
+  .filter-badges:empty{display:none;}
+  .fbadge{
+    position:relative;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 9px;
+    font-size:13px;line-height:1;box-shadow:var(--shadow-xs);transition:background .12s,border-color .12s;
+  }
+  .fbadge:hover{background:var(--muted);}
+  .fbadge.open{border-color:#cfcfcf;background:var(--muted);}
+  .fbadge .k{color:var(--muted-foreground);}
+  .fbadge .v{color:var(--foreground);font-weight:600;}
+  .fbadge .car{color:var(--muted-foreground);display:inline-flex;}
+  .fbadge-hint{display:inline-flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:13px;}
+  .fbadge-hint svg{opacity:.7;}
+
+  /* popover base */
+  .fb-pop{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:70;
+    background:#fff;border:1px solid var(--border);border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.14);padding:8px;
+  }
+  /* date picker */
+  .fb-pop-date{width:300px;}
+  .fb-presets{display:flex;gap:4px;background:var(--muted);border-radius:8px;padding:3px;margin-bottom:8px;}
+  .fb-presets button{
+    flex:1;border:none;background:transparent;border-radius:6px;padding:6px 4px;font-family:inherit;
+    font-size:12px;font-weight:500;color:var(--muted-foreground);cursor:pointer;white-space:nowrap;
+  }
+  .fb-presets button:hover{color:var(--foreground);}
+  .fb-presets button.on{background:#fff;color:var(--foreground);box-shadow:var(--shadow-xs);}
+  .fb-cal-head{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 8px;}
+  .fb-cal-title{font-size:14px;font-weight:600;}
+  .fb-cal-nav{width:26px;height:26px;border:none;background:transparent;border-radius:6px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;color:var(--muted-foreground);}
+  .fb-cal-nav:hover{background:var(--muted);color:var(--foreground);}
+  .fb-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .fb-cal-grid .dow{font-size:11px;color:var(--muted-foreground);text-align:center;padding:4px 0;font-weight:500;}
+  .fb-day{height:34px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-family:inherit;
+    font-size:13px;color:var(--foreground);display:flex;align-items:center;justify-content:center;}
+  .fb-day:hover{background:var(--muted);}
+  .fb-day.out{color:#c4c4c4;}
+  .fb-day.disabled{color:#d4d4d4;cursor:default;pointer-events:none;}
+  .fb-day.today{font-weight:700;box-shadow:inset 0 0 0 1px var(--border);}
+  .fb-day.sel{background:var(--accent);color:#fff;font-weight:600;}
+  .fb-day.sel:hover{background:var(--accent-600);}
+
+  /* lista multi-seleção */
+  .fb-pop-list{width:248px;}
+  .fb-list-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 6px;}
+  .fb-list-head span{font-size:11px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.04em;}
+  .fb-selall{border:none;background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;}
+  .fb-selall:hover{color:var(--accent-600);}
+  .fb-search{position:relative;margin-bottom:4px;}
+  .fb-search input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 30px 7px 10px;
+    font-family:inherit;font-size:13px;outline:none;}
+  .fb-search input:focus{border-color:#cfcfcf;}
+  .fb-search svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted-foreground);}
+  .fb-options{max-height:220px;overflow:auto;}
+  .fb-opt{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:14px;}
+  .fb-opt:hover{background:var(--muted);}
+  .fb-opt .box{width:16px;height:16px;border:1.5px solid #d4d4d4;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;}
+  .fb-opt.on .box{background:var(--accent);border-color:var(--accent);}
+  .fb-opt .box svg{opacity:0;}
+  .fb-opt.on .box svg{opacity:1;}
+
   @media (max-width:1100px){
     .grid-main{grid-template-columns:repeat(3,1fr);}
   }
@@ -350,19 +416,22 @@
       <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true">Todas <span class="cnt">0</span></button>
-          <button class="tab" role="tab">Ativas <span class="cnt">0</span></button>
-          <button class="tab" role="tab">Chegou hoje <span class="cnt">0</span></button>
-          <button class="tab" role="tab">Vencendo em breve <span class="cnt">0</span></button>
-          <button class="tab" role="tab">Descartadas <span class="cnt">0</span></button>
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">0</span></button>
+          <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">0</span></button>
+          <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">0</span></button>
+          <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">0</span></button>
+          <button class="tab" role="tab" data-tab="Descartadas">Descartadas <span class="cnt">0</span></button>
         </div>
         <div class="actions" id="actions">
-          <button class="act">Filtrar <span class="pill-cnt">1</span></button>
+          <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
           <button class="act">Ordenar</button>
           <button class="act">Exportar</button>
           <button class="act" id="searchBtn"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>Buscar</button>
         </div>
       </div>
+
+      <!-- ============ BADGES DE FILTRO DA TAB ============ -->
+      <div class="filter-badges" id="filterBadges"></div>
 
       <!-- ============ LINHA DE BUSCA (largura total) ============ -->
       <div class="search-row" id="searchRow" hidden>
@@ -580,7 +649,178 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   const t = e.target.closest('.tab'); if(!t) return;
   document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
   t.classList.add('active'); t.setAttribute('aria-selected','true');
+  renderTabFilters(t.dataset.tab);
 });
+
+/* ============ FILTROS DA TAB (badges estilo Notion) ============ */
+const SITUACAO = ['Ativas','Em disputa','Homologação','Encerradas','Descartadas'];
+const TAB_BADGES = {
+  'Todas': [],
+  'Ativas':            [{label:'Situação', type:'list', options:SITUACAO, value:['Ativas']}],
+  'Chegou hoje':       [{label:'Data de adição', type:'date', mode:'past', value:{date:'19/06/2026'}}],
+  'Vencendo em breve': [{label:'Envio da proposta', type:'date', mode:'future', value:{preset:'7d'}}],
+  'Descartadas':       [{label:'Situação', type:'list', options:SITUACAO, value:['Descartadas']}],
+};
+const DATE_PRESETS = {
+  past:   [{key:'todos',label:'Todos'},{key:'24h',label:'Últimas 24h'},{key:'7d',label:'Últimos 7 dias'}],
+  future: [{key:'7d',label:'Próximos 7 dias'},{key:'15d',label:'Próximos 15 dias'},{key:'30d',label:'Próximos 30 dias'}],
+};
+const MES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const TODAY = new Date(2026,5,19);                 // referência fixa p/ o protótipo
+const fmtD = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+const parseD = s => { const [d,m,y]=s.split('/').map(Number); return new Date(y,m-1,d); };
+const TODAY_STR = fmtD(TODAY);
+
+const filterBadges = document.getElementById('filterBadges');
+const filtrarCount = document.getElementById('filtrarCount');
+let currentTab = 'Todas', fbOpen = null, calView = null;
+
+const SVG_CARET = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function dateLabel(b){
+  const v=b.value;
+  if(v.preset){ const p=(DATE_PRESETS[b.mode]||[]).find(x=>x.key===v.preset); return p?p.label:v.preset; }
+  if(v.date) return v.date===TODAY_STR ? 'Hoje' : v.date;
+  return 'Qualquer data';
+}
+function listLabel(b){
+  if(!b.value.length) return 'Qualquer';
+  return b.value.length===1 ? b.value[0] : b.value.length+' selecionadas';
+}
+function renderTabFilters(tab){
+  currentTab = tab; closeFbPop();
+  const badges = TAB_BADGES[tab] || [];
+  if(badges.length){ filtrarCount.hidden=false; filtrarCount.textContent=badges.length; }
+  else filtrarCount.hidden=true;
+  if(!badges.length){
+    filterBadges.innerHTML = '<span class="fbadge-hint">'+
+      '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4h11l-4.2 5v4l-2.6 1.3V9z" stroke-linejoin="round"/></svg>'+
+      'Mostrando todas as licitações — sem filtros aplicados</span>';
+    return;
+  }
+  filterBadges.innerHTML = badges.map((b,i)=>{
+    const val = b.type==='date' ? dateLabel(b) : listLabel(b);
+    return `<button class="fbadge" data-bi="${i}"><span class="k">${b.label}:</span> <span class="v">${val}</span><span class="car">${SVG_CARET}</span></button>`;
+  }).join('');
+}
+function refreshBadges(){
+  const badges = TAB_BADGES[currentTab];
+  filterBadges.querySelectorAll('.fbadge').forEach((el,i)=>{
+    const b=badges[i]; el.querySelector('.v').textContent = b.type==='date'?dateLabel(b):listLabel(b);
+  });
+}
+
+/* ---- popover ---- */
+function closeFbPop(){
+  fbOpen=null;
+  document.querySelectorAll('.fb-pop').forEach(p=>p.remove());
+  document.querySelectorAll('.fbadge.open').forEach(b=>b.classList.remove('open'));
+}
+filterBadges.addEventListener('click', e=>{
+  const bd = e.target.closest('.fbadge'); if(!bd) return;
+  const i = +bd.dataset.bi;
+  if(fbOpen===i){ closeFbPop(); return; }
+  openFbPop(bd, i);
+});
+function openFbPop(badgeEl, i){
+  closeFbPop(); fbOpen=i; badgeEl.classList.add('open');
+  const b = TAB_BADGES[currentTab][i];
+  const pop = document.createElement('div');
+  pop.className = 'fb-pop ' + (b.type==='date'?'fb-pop-date':'fb-pop-list');
+  pop.innerHTML = b.type==='date' ? datePopHTML(b) : listPopHTML(b);
+  badgeEl.appendChild(pop);
+  const r = pop.getBoundingClientRect();
+  if(r.right > window.innerWidth-12){ pop.style.left='auto'; pop.style.right='0'; }
+  b.type==='date' ? wireDatePop(pop,b) : wireListPop(pop,b);
+}
+
+/* ---- date popover + calendário ---- */
+function datePopHTML(b){
+  calView = b.value.date ? (d=>({year:d.getFullYear(),month:d.getMonth()}))(parseD(b.value.date))
+                         : {year:TODAY.getFullYear(), month:TODAY.getMonth()};
+  const presets = (DATE_PRESETS[b.mode]||[]).map(p=>
+    `<button data-preset="${p.key}" class="${b.value.preset===p.key?'on':''}">${p.label}</button>`).join('');
+  return `<div class="fb-presets">${presets}</div><div class="fb-cal">${calHTML(b)}</div>`;
+}
+function calHTML(b){
+  const {year,month}=calView;
+  const startDow = new Date(year,month,1).getDay();
+  const days = new Date(year,month+1,0).getDate();
+  const prev = new Date(year,month,0).getDate();
+  const sel = b.value.date || null;
+  let cells='';
+  for(let i=startDow-1;i>=0;i--) cells+=`<div class="fb-day out">${prev-i}</div>`;
+  for(let d=1; d<=days; d++){
+    const date=new Date(year,month,d), ds=fmtD(date), cls=['fb-day'];
+    if(ds===TODAY_STR) cls.push('today');
+    if(ds===sel) cls.push('sel');
+    if(b.mode==='past' && date>TODAY) cls.push('disabled');
+    if(b.mode==='future' && date<TODAY) cls.push('disabled');
+    cells+=`<button class="${cls.join(' ')}" data-day="${ds}">${d}</button>`;
+  }
+  const trail = (7 - ((startDow+days)%7))%7;
+  for(let d=1; d<=trail; d++) cells+=`<div class="fb-day out">${d}</div>`;
+  const nav = dir => `<button class="fb-cal-nav" data-nav="${dir}"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M${dir<0?'10 4 6 8l4 4':'6 4l4 4-4 4'}" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+  return `<div class="fb-cal-head">${nav(-1)}<span class="fb-cal-title">${MES[month]} de ${year}</span>${nav(1)}</div>`+
+    `<div class="fb-cal-grid">${DOW.map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div>`;
+}
+function wireDatePop(pop,b){
+  pop.querySelector('.fb-presets').addEventListener('click', e=>{
+    const btn=e.target.closest('button[data-preset]'); if(!btn) return;
+    b.value={preset:btn.dataset.preset}; refreshBadges(); closeFbPop();
+  });
+  pop.querySelector('.fb-cal').addEventListener('click', e=>{
+    const nav=e.target.closest('[data-nav]');
+    if(nav){ calView.month+=+nav.dataset.nav;
+      if(calView.month<0){calView.month=11;calView.year--;}
+      if(calView.month>11){calView.month=0;calView.year++;}
+      pop.querySelector('.fb-cal').innerHTML=calHTML(b); return; }
+    const day=e.target.closest('.fb-day[data-day]');
+    if(!day || day.classList.contains('disabled')) return;
+    b.value={date:day.dataset.day}; refreshBadges(); closeFbPop();
+  });
+}
+
+/* ---- list popover ---- */
+function listPopHTML(b){
+  const opts=b.options.map(o=>
+    `<label class="fb-opt ${b.value.includes(o)?'on':''}" data-opt="${o}"><span class="box">${I.check}</span>${o}</label>`).join('');
+  return `<div class="fb-list-head"><span>Lista de opções</span><button class="fb-selall">${b.value.length===b.options.length?'Limpar':'Selecionar tudo'}</button></div>`+
+    `<div class="fb-search"><input type="text" placeholder="Buscar" /><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg></div>`+
+    `<div class="fb-options">${opts}</div>`;
+}
+function wireListPop(pop,b){
+  const opts=pop.querySelector('.fb-options');
+  const selall=pop.querySelector('.fb-selall');
+  opts.addEventListener('click', e=>{
+    const opt=e.target.closest('.fb-opt'); if(!opt) return;
+    e.preventDefault();
+    const v=opt.dataset.opt, idx=b.value.indexOf(v);
+    idx>=0 ? b.value.splice(idx,1) : b.value.push(v);
+    opt.classList.toggle('on');
+    selall.textContent = b.value.length===b.options.length ? 'Limpar' : 'Selecionar tudo';
+    refreshBadges();
+  });
+  selall.addEventListener('click', ()=>{
+    const all = b.value.length===b.options.length;
+    b.value = all ? [] : [...b.options];
+    opts.querySelectorAll('.fb-opt').forEach(o=> o.classList.toggle('on', b.value.includes(o.dataset.opt)));
+    selall.textContent = all ? 'Selecionar tudo' : 'Limpar';
+    refreshBadges();
+  });
+  const s=pop.querySelector('.fb-search input');
+  s.addEventListener('input', ()=>{ const q=norm(s.value);
+    opts.querySelectorAll('.fb-opt').forEach(o=> o.style.display = norm(o.dataset.opt).includes(q)?'':'none'); });
+  s.focus();
+}
+
+// clique fora fecha o popover
+document.addEventListener('click', e=>{
+  if(fbOpen!==null && !e.target.closest('.fbadge') && !e.target.closest('.fb-pop')) closeFbPop();
+});
+// Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
+renderTabFilters('Todas');
 
 /* ============ BUSCA (componente) ============ */
 const actions   = document.getElementById('actions');
