@@ -102,6 +102,8 @@
   body.nav-hidden .sticky-toolbar{top:0;}
   .sticky-toolbar .toolbar{margin-bottom:0;}
   .sticky-toolbar .filter-badges{margin:12px 0 0;}
+  /* rolando p/ baixo (navbar escondida): a badge do filtro também some */
+  body.nav-hidden .filter-badges{display:none;}
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
   .tabs{
     display:inline-flex;align-items:center;gap:0;
@@ -993,16 +995,15 @@ document.addEventListener('keydown', e=>{
 
 /* ============ NAVBAR: esconde ao rolar p/ baixo, mostra ao rolar p/ cima ============ */
 (function(){
-  let lastY = window.scrollY || 0, ticking = false;
-  const TH = 80; // só começa a esconder depois de rolar um pouco
-  function update(){
+  let lastY = window.scrollY || 0;
+  const TH = 80, DELTA = 8;  // TH: zona segura no topo; DELTA: movimento mínimo p/ trocar de estado
+  window.addEventListener('scroll', function(){
     const y = window.scrollY;
-    if(y < TH)               document.body.classList.remove('nav-hidden');   // perto do topo: sempre visível
-    else if(y > lastY + 4)   document.body.classList.add('nav-hidden');      // rolando p/ baixo
-    else if(y < lastY - 4)   document.body.classList.remove('nav-hidden');   // rolando p/ cima
-    lastY = y; ticking = false;
-  }
-  window.addEventListener('scroll', ()=>{ if(!ticking){ requestAnimationFrame(update); ticking = true; } }, {passive:true});
+    if(y < TH){ document.body.classList.remove('nav-hidden'); lastY = y; }       // perto do topo: sempre visível
+    else if(y - lastY > DELTA){ document.body.classList.add('nav-hidden'); lastY = y; }    // rolando p/ baixo
+    else if(lastY - y > DELTA){ document.body.classList.remove('nav-hidden'); lastY = y; } // rolando p/ cima
+    // movimentos pequenos NÃO atualizam lastY → acumulam até o DELTA (evita jitter/momentum)
+  }, {passive:true});
 })();
 
 buildMenu();
