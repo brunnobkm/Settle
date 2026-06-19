@@ -116,6 +116,7 @@
     min-width:0;height:18px;padding:0 6px;border-radius:9999px;background:var(--muted);
     display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:400;color:var(--foreground);
   }
+  .act .pill-cnt[hidden]{display:none;}
 
   /* ============ CARD ============ */
   .card-list{display:flex;flex-direction:column;gap:16px;}
@@ -415,10 +416,10 @@
       <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">0</span></button>
-          <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">0</span></button>
-          <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">0</span></button>
-          <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">0</span></button>
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">300</span></button>
+          <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">248</span></button>
+          <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">12</span></button>
+          <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">87</span></button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
