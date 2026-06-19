@@ -96,10 +96,11 @@
   .sticky-toolbar{
     position:sticky; top:64px; z-index:15;
     background:#ffffff; padding:14px 0; margin-bottom:8px;
-    transition:top .25s ease;
+    transition:transform .25s ease;
   }
-  /* navbar escondida (rolando p/ baixo): a barra de tabs sobe p/ o topo */
-  body.nav-hidden .sticky-toolbar{top:0;}
+  /* navbar escondida (rolando p/ baixo): a barra de tabs sobe p/ o topo —
+     via transform (mesma timeline da navbar) p/ não abrir vão na transição */
+  body.nav-hidden .sticky-toolbar{transform:translateY(-64px);}
   .sticky-toolbar .toolbar{margin-bottom:0;}
   .sticky-toolbar .filter-badges{margin:12px 0 0;}
   /* rolando p/ baixo (navbar escondida): a badge do filtro também some */
