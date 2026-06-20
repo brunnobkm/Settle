@@ -450,16 +450,6 @@
   .ia.no-file{color:#d97706;border-color:#f3e3c8;}
   .ia.no-file:hover{background:#fdf6ec;color:#b8650a;}
 
-  /* botão "simular anexo chegou" (demo) — só na fila de salvos, em cards sem anexo */
-  .sim-anexo{display:none;align-items:center;gap:5px;border:1px dashed var(--border);background:transparent;
-    color:var(--muted-foreground);font-family:inherit;font-size:12px;border-radius:7px;padding:4px 9px;cursor:pointer;}
-  .sim-anexo:hover{background:var(--muted);color:var(--foreground);}
-  .sim-anexo svg{width:13px;height:13px;}
-  body.view-salvos .card[data-semanexo="true"] .sim-anexo{display:inline-flex;}
-
-  /* destaque do card quando recebe anexo (novidade) */
-  .card.card-new{box-shadow:0 0 0 2px #2f6df6, var(--shadow-card);}
-
   /* card saindo (salvar/remover): fade + slide + colapso */
   .card.card-leaving{
     opacity:0; transform:translateX(40px) scale(.98); overflow:hidden; pointer-events:none;
@@ -657,7 +647,7 @@ const DATA = [
     valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
     estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
     adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
-    semAnexo:true, saved:true,
+    semAnexo:false, saved:true, updated:true,   // salvo que já recebeu o anexo → mostra "Atualizado" na fila
   },
 ];
 
@@ -665,12 +655,11 @@ function cardHTML(d){
   const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
     .join(' ').toLowerCase();
   return `
-  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="false">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
     <div class="card-top">
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
-      <span class="badge-updated">${I.refresh} Atualizado</span>
-      <button class="sim-anexo" title="Demonstração: simular a chegada do anexo">${I.refresh} Simular anexo chegou</button>
+      <span class="badge-updated" title="Atualizado: o anexo chegou">${I.refresh} Atualizado</span>
       <div class="card-top-right">
         <button class="btn btn-outline">Descartar</button>
         <button class="btn btn-primary">Enviar para análise</button>
@@ -1241,21 +1230,10 @@ document.addEventListener('keydown', e=>{
     });
   }
 
-  // bookmark (salvar/remover) + simular chegada do anexo
+  // bookmark (salvar/remover)
   cardList.addEventListener('click', e=>{
     const bm = e.target.closest('.ia.bookmark');
-    if(bm){ snoozeToggle(bm.closest('.card')); return; }
-    const sim = e.target.closest('.sim-anexo');
-    if(sim){
-      const card = sim.closest('.card');
-      card.dataset.semanexo = 'false';                 // anexo chegou
-      card.dataset.updated = 'true';                   // marca como atualizado (mostra "Atualizado" em Salvos)
-      const folder = card.querySelector('.ia.folder');
-      if(folder){ folder.classList.remove('no-file'); folder.title = 'Abrir anexo'; folder.innerHTML = I.folder; }
-      const badge = card.querySelector('.badge-updated'); if(badge) badge.title = 'Atualizado: o anexo chegou';
-      card.classList.add('card-new');                  // destaque de novidade
-      setTimeout(()=> card.classList.remove('card-new'), 4000);
-    }
+    if(bm){ snoozeToggle(bm.closest('.card')); }
   });
 
   // troca de view pela sidebar (Recomendadas ↔ Salvos para depois)
