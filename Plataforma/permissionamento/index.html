@@ -1051,27 +1051,67 @@ function updateBulk(t){
   const noun=t==='users'?(n===1?'pessoa selecionada':'pessoas selecionadas'):(n===1?'registro selecionado':'registros selecionados');
   document.getElementById('bbCount').textContent=`${n} ${noun}`;
   document.getElementById('bbActions').innerHTML = t==='users'
-    ? `<button onclick="bulkUsers('funcao')">Mudar função</button><button onclick="bulkUsers('senha')">Resetar senha</button><button onclick="bulkUsers('remover')">Remover</button>`
+    ? `<button onclick="bulkChangeRole(event)">Mudar função</button><button onclick="bulkResetPwd()">Resetar senha</button><button onclick="bulkRemove()">Remover</button>`
     : `<button onclick="bulkAudit()">Exportar</button>`;
   bar.classList.add('show');
 }
 function bulkCount(t){return rowCbs(t).filter(c=>c.checked).length;}
-function bulkUsers(a){
-  const n=bulkCount('users'), pl=n===1?'pessoa':'pessoas';
-  if(a==='senha'){toast(`Link de redefinição enviado para ${n} ${pl}`);clearBulk();}
-  else if(a==='funcao'){toast(`Função atualizada para ${n} ${pl}`);clearBulk();}
-  else if(a==='remover'){
-    confirmAction({
-      icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-      title:'Remover acesso', danger:true, okLabel:'Remover',
-      msg:`Remover <b>${n}</b> ${pl} do workspace? Elas perdem o acesso imediatamente.`,
-      onOk:()=>{
-        const idxs=rowCbs('users').filter(c=>c.checked).map(c=>+c.dataset.idx).sort((x,y)=>y-x);
-        idxs.forEach(i=>users.splice(i,1));
-        renderUsers();toast(`${n} ${pl} ${n===1?'removida':'removidas'}`);
-      }
-    });
-  }
+function selectedIdxs(){return rowCbs('users').filter(c=>c.checked).map(c=>+c.dataset.idx);}
+
+/* Mudar função em lote — abre o mesmo seletor de papéis, aplica a todos os selecionados */
+function bulkChangeRole(e){
+  e.stopPropagation();
+  const idxs=selectedIdxs(); if(!idxs.length)return;
+  const m=document.getElementById('rowMenu');
+  m.innerHTML=Object.entries(ROLES).map(([k,v])=>
+    `<button onclick="applyBulkRole('${k}')" style="align-items:flex-start">
+       <div style="flex:1;min-width:0">
+         <div><span class="role-pill" style="pointer-events:none">${v.label}</span></div>
+         <div style="font-size:12px;color:var(--muted-foreground);margin-top:5px;line-height:1.4;white-space:normal">${ROLE_DESC[k]}</div>
+       </div></button>`
+  ).join('');
+  m.style.width='290px';
+  const rect=e.currentTarget.getBoundingClientRect();
+  m.style.left=(rect.left+window.scrollX)+'px';
+  m.style.top='auto';
+  m.style.bottom=(window.innerHeight-rect.top+8)+'px';
+  m.classList.add('open');
+}
+function applyBulkRole(role){
+  closeMenu();
+  const idxs=selectedIdxs(); if(!idxs.length)return;
+  idxs.forEach(i=>users[i].role=role);
+  const n=idxs.length;
+  renderUsers(); // re-render limpa a seleção e esconde a barra
+  toast(`${n} ${n===1?'pessoa agora é':'pessoas agora são'} ${ROLES[role].label}`);
+}
+
+/* Resetar senha em lote — dispara link de redefinição por e-mail para cada pessoa */
+function bulkResetPwd(){
+  const idxs=selectedIdxs(); if(!idxs.length)return;
+  const n=idxs.length, pl=n===1?'pessoa':'pessoas';
+  confirmAction({
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    title:'Resetar senha', okLabel:'Enviar links',
+    msg:`Vamos enviar um <b>link de redefinição</b> para ${n===1?'a pessoa selecionada':`as <b>${n}</b> ${pl} selecionadas`}. Cada uma cria a própria senha; as senhas atuais deixam de funcionar.`,
+    onOk:()=>{ clearBulk(); toast(`${n} ${n===1?'link enviado':'links enviados'} de redefinição`); }
+  });
+}
+
+/* Remover em lote */
+function bulkRemove(){
+  const idxs=selectedIdxs(); if(!idxs.length)return;
+  const n=idxs.length, pl=n===1?'pessoa':'pessoas';
+  confirmAction({
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    title:'Remover acesso', danger:true, okLabel:'Remover',
+    msg:`Remover <b>${n}</b> ${pl} do workspace? Elas perdem o acesso imediatamente.`,
+    onOk:()=>{
+      idxs.sort((x,y)=>y-x).forEach(i=>users.splice(i,1));
+      renderUsers();
+      toast(`${n} ${pl} ${n===1?'removida':'removidas'}`);
+    }
+  });
 }
 function bulkAudit(){
   const n=bulkCount('audit');
