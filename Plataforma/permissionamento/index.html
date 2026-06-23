@@ -183,6 +183,16 @@
   .u-email{color:var(--muted-foreground);font-size:13px;}
   .muted{color:var(--muted-foreground);}
   .cap{text-transform:capitalize;}
+  /* barra de ação em lote */
+  .bulkbar{position:fixed;left:calc(50% + 30px);bottom:16px;transform:translateX(-50%) translateY(10px);background:#3A9B9E;color:#fff;border-radius:10px;display:none;align-items:center;height:46px;padding:0 4px 0 16px;box-shadow:0 10px 28px rgba(0,0,0,.20);z-index:95;opacity:0;transition:opacity .18s,transform .18s;}
+  .bulkbar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0);}
+  .bb-count{font-size:14px;font-weight:500;white-space:nowrap;padding-right:16px;}
+  .bb-div{width:1px;height:22px;background:rgba(255,255,255,.32);flex:none;}
+  .bb-actions{display:flex;align-items:center;}
+  .bb-actions button{border:none;background:transparent;color:#fff;font-family:inherit;font-size:14px;padding:0 14px;height:46px;cursor:pointer;white-space:nowrap;}
+  .bb-actions button:hover{background:rgba(255,255,255,.14);}
+  .bb-x{border:none;background:transparent;color:#fff;width:40px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:0 8px 8px 0;}
+  .bb-x:hover{background:rgba(255,255,255,.14);}
   /* filtros por coluna */
   .th-f{display:inline-flex;align-items:center;gap:5px;}
   .fbtn{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:5px;color:#bdbdbd;cursor:pointer;transition:color .12s,background .12s;}
@@ -372,7 +382,7 @@
           <table>
             <thead>
               <tr>
-                <th style="width:40px"><input type="checkbox" disabled></th>
+                <th style="width:40px"><input type="checkbox" class="rowcb-all" onchange="toggleAll('users',this)"></th>
                 <th><span class="th-f">Pessoa <button class="fbtn" data-funnel="users:pessoa" onclick="openColFilter(event,'users','pessoa')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
                 <th><span class="th-f">Função <button class="fbtn" data-funnel="users:funcao" onclick="openColFilter(event,'users','funcao')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
                 <th><span class="th-f">Status <button class="fbtn" data-funnel="users:status" onclick="openColFilter(event,'users','status')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
@@ -397,7 +407,7 @@
           <table>
             <thead>
               <tr>
-                <th style="width:40px"><input type="checkbox" disabled></th>
+                <th style="width:40px"><input type="checkbox" class="rowcb-all" onchange="toggleAll('audit',this)"></th>
                 <th><span class="th-f">Pessoa <button class="fbtn" data-funnel="audit:pessoa" onclick="openColFilter(event,'audit','pessoa')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
                 <th><span class="th-f">Evento <button class="fbtn" data-funnel="audit:evento" onclick="openColFilter(event,'audit','evento')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
                 <th><span class="th-f">Data <button class="fbtn" data-funnel="audit:data" onclick="openColFilter(event,'audit','data')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
@@ -437,6 +447,15 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- =================== AÇÃO EM LOTE =================== -->
+<div class="bulkbar" id="bulkBar">
+  <span class="bb-count" id="bbCount">0 selecionados</span>
+  <span class="bb-div"></span>
+  <div class="bb-actions" id="bbActions"></div>
+  <span class="bb-div"></span>
+  <button class="bb-x" onclick="clearBulk()" title="Limpar seleção"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+</div>
 
 <script>
 /* ============ DATA ============ */
@@ -534,6 +553,7 @@ function go(view){
     : `<button class="btn" onclick="exportAudit()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar</button>
        <button class="btn" onclick="toggleAuditSearch()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar</button>`;
   closeUserMenu();closeMenu();
+  document.getElementById('bulkBar').classList.remove('show');
 }
 function prod(name){closeUserMenu();toast(`${name}: tela do produto (fora deste protótipo)`);}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('expanded');}
@@ -651,7 +671,7 @@ function renderUsers(){
     const idx=users.indexOf(u);
     const status=u.status==='invited'?`<span class="pill amber">Convite pendente</span>`:`<span class="pill green">Ativo</span>`;
     return `<tr>
-      <td><input type="checkbox"></td>
+      <td><input type="checkbox" class="rowcb" data-idx="${idx}" onchange="updateBulk('users')"></td>
       <td><div><div style="font-weight:600">${u.n}</div><div class="u-email">${u.e}</div></div></td>
       <td><button class="role-pill" onclick="openRoleMenu(event,${idx})" title="Trocar função">${ROLES[u.role].label}</button></td>
       <td>${status}</td>
@@ -662,6 +682,7 @@ function renderUsers(){
       </td>
     </tr>`;
   }).join('');
+  updateBulk('users');
 }
 
 /* ---- row menu ---- */
@@ -997,12 +1018,13 @@ function renderAudit(){
     const role=roleOf(a.u);
     const badge=role?`<span class="role-pill" style="cursor:default;pointer-events:none">${ROLES[role].label}</span>`:'';
     return `<tr>
-      <td><input type="checkbox"></td>
+      <td><input type="checkbox" class="rowcb" onchange="updateBulk('audit')"></td>
       <td><div><div style="display:flex;align-items:center;gap:7px"><span style="font-weight:600">${a.u}</span>${badge}</div>${email?`<div class="u-email">${email}</div>`:''}</div></td>
       <td class="audit-event">${cap1(auditEvent(a))}</td>
       <td class="audit-date">${fmtAuditDate(a.ts)}</td>
     </tr>`;
   }).join('');
+  updateBulk('audit');
 }
 
 /* ============ TOAST ============ */
@@ -1011,6 +1033,50 @@ function toast(msg){
   const t=document.getElementById('toast');
   t.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
   t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ============ AÇÃO EM LOTE ============ */
+let _bulkCtx='users';
+function bodyOf(t){return document.getElementById(t==='users'?'usersBody':'auditBody');}
+function rowCbs(t){return [...bodyOf(t).querySelectorAll('.rowcb')];}
+function toggleAll(t,el){rowCbs(t).forEach(c=>c.checked=el.checked);updateBulk(t);}
+function clearBulk(){rowCbs(_bulkCtx).forEach(c=>c.checked=false);updateBulk(_bulkCtx);}
+function updateBulk(t){
+  const cbs=rowCbs(t), n=cbs.filter(c=>c.checked).length;
+  const head=document.querySelector(`#view-${t} .rowcb-all`);
+  if(head){head.checked=n>0&&n===cbs.length;head.indeterminate=n>0&&n<cbs.length;}
+  const bar=document.getElementById('bulkBar');
+  if(n===0){bar.classList.remove('show');return;}
+  _bulkCtx=t;
+  const noun=t==='users'?(n===1?'pessoa selecionada':'pessoas selecionadas'):(n===1?'registro selecionado':'registros selecionados');
+  document.getElementById('bbCount').textContent=`${n} ${noun}`;
+  document.getElementById('bbActions').innerHTML = t==='users'
+    ? `<button onclick="bulkUsers('funcao')">Mudar função</button><button onclick="bulkUsers('senha')">Resetar senha</button><button onclick="bulkUsers('remover')">Remover</button>`
+    : `<button onclick="bulkAudit()">Exportar</button>`;
+  bar.classList.add('show');
+}
+function bulkCount(t){return rowCbs(t).filter(c=>c.checked).length;}
+function bulkUsers(a){
+  const n=bulkCount('users'), pl=n===1?'pessoa':'pessoas';
+  if(a==='senha'){toast(`Link de redefinição enviado para ${n} ${pl}`);clearBulk();}
+  else if(a==='funcao'){toast(`Função atualizada para ${n} ${pl}`);clearBulk();}
+  else if(a==='remover'){
+    confirmAction({
+      icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+      title:'Remover acesso', danger:true, okLabel:'Remover',
+      msg:`Remover <b>${n}</b> ${pl} do workspace? Elas perdem o acesso imediatamente.`,
+      onOk:()=>{
+        const idxs=rowCbs('users').filter(c=>c.checked).map(c=>+c.dataset.idx).sort((x,y)=>y-x);
+        idxs.forEach(i=>users.splice(i,1));
+        renderUsers();toast(`${n} ${pl} ${n===1?'removida':'removidas'}`);
+      }
+    });
+  }
+}
+function bulkAudit(){
+  const n=bulkCount('audit');
+  toast(`${n} ${n===1?'registro exportado':'registros exportados'} com sucesso!`);
+  clearBulk();
 }
 
 /* ============ INIT ============ */
