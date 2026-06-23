@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permissões · Settle</title>
+<style>
+  :root{
+    --foreground:#0a0a0a;
+    --muted-foreground:#737373;
+    --border:#e5e5e5;
+    --border-strong:#d4d4d4;
+    --muted:#f5f5f5;
+    --background:#ffffff;
+    --primary:#171717;
+    --primary-foreground:#fafafa;
+    --accent:#3a9b9e;
+    --accent-600:#2a787b;
+    --accent-100:#d4eef0;
+    /* scope semantics */
+    --all-fg:#15803d;     --all-bg:#f0fdf4;   --all-bd:#bbf7d0;
+    --resp-fg:#b45309;    --resp-bg:#fffbeb;  --resp-bd:#fde68a;
+    --none-fg:#a3a3a3;    --none-bg:#fafafa;  --none-bd:#e5e5e5;
+    --deny-fg:#b91c1c;    --deny-bg:#fef2f2;  --deny-bd:#fecaca;
+    --radius-field:8px;
+    --radius-box:10px;
+    --shadow-xs:0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow-card:0 1px 2px 0 rgba(0,0,0,.05), 0 1px 3px 0 rgba(0,0,0,.04);
+    --shadow-pop:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.05);
+    font-family:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--background);color:var(--foreground);-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+  code,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+
+  /* ---------- Layout shell ---------- */
+  .shell{display:flex;min-height:100vh;}
+  /* ---------- Sidebar (Settle, colapsada por padrão) ---------- */
+  .sidebar{width:60px;flex:none;background:#fafafa;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;position:sticky;top:0;height:100vh;gap:2px;transition:width .18s ease;z-index:40;}
+  .sidebar.expanded{width:232px;align-items:stretch;padding:12px 10px;}
+  .sb-logo{width:40px;height:40px;flex:none;border:none;background:transparent;display:flex;align-items:center;justify-content:center;margin-bottom:6px;cursor:pointer;border-radius:8px;}
+  .sb-logo:hover{background:rgba(0,0,0,.05);}
+  .logo-dot{width:26px;height:26px;border-radius:50%;background:#3A9B9E;flex:none;display:inline-block;}
+  /* diálogo de confirmação (centrado) */
+  .cf-overlay{position:fixed;inset:0;background:rgba(15,15,15,.32);backdrop-filter:blur(1px);display:none;align-items:center;justify-content:center;z-index:140;padding:20px;}
+  .cf-overlay.open{display:flex;}
+  .confirm{background:#fff;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.25);width:100%;max-width:430px;padding:24px;}
+  .confirm .cf-ic{width:42px;height:42px;border-radius:10px;background:var(--accent-100);color:var(--accent-600);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .confirm h3{margin:0 0 7px;font-size:17px;font-weight:700;}
+  .confirm p{margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.55;}
+  .cf-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+  .sidebar.expanded .sb-logo{display:none;}
+  .sb-ws{display:none;align-items:center;gap:9px;padding:4px 8px 10px;}
+  .sidebar.expanded .sb-ws{display:flex;}
+  .sb-ws .nm{font-size:14px;font-weight:600;color:#404040;line-height:1.15;}
+  .sb-ws .sub{font-size:11px;color:var(--muted-foreground);}
+  .sb-ws .chev{margin-left:auto;color:var(--muted-foreground);}
+  .sb-nav{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;flex:1;overflow-y:auto;}
+  .sidebar.expanded .sb-nav{align-items:stretch;}
+  .sb-ic{position:relative;width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;gap:11px;border:none;background:transparent;border-radius:8px;color:#404040;cursor:pointer;transition:background .12s;}
+  .sidebar.expanded .sb-ic{width:100%;height:auto;justify-content:flex-start;padding:8px 10px;}
+  .sb-ic:hover{background:rgba(0,0,0,.05);}
+  .sb-ic.active{background:rgba(0,0,0,.07);color:#0a0a0a;}
+  .sb-ic .lbl{display:none;font-size:14px;white-space:nowrap;}
+  .sidebar.expanded .sb-ic .lbl{display:inline;}
+  .sb-ic .chev{display:none;}
+  .sidebar.expanded .sb-ic .chev{display:block;margin-left:auto;color:var(--muted-foreground);}
+  .sb-sub{display:none;flex-direction:column;}
+  .sidebar.expanded .sb-sub{display:flex;}
+  .sb-sub a{padding:7px 10px 7px 40px;font-size:14px;color:#404040;text-decoration:none;border-radius:8px;}
+  .sb-sub a:hover{background:rgba(0,0,0,.05);}
+  .sb-badge{position:absolute;top:5px;right:6px;min-width:16px;height:16px;padding:0 4px;border-radius:9999px;background:var(--destructive);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .sidebar.expanded .sb-badge{position:static;margin-left:auto;}
+  .sb-sec{display:none;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-foreground);padding:14px 10px 4px;}
+  .sidebar.expanded .sb-sec{display:block;}
+  .sb-sep{width:24px;height:1px;background:var(--border);margin:7px auto;flex:none;}
+  .sidebar.expanded .sb-sep{width:auto;margin:7px 10px;}
+  .sb-bottom{margin-top:auto;width:100%;display:flex;justify-content:center;padding-top:8px;}
+  .sidebar.expanded .sb-bottom{padding:8px 0 0;border-top:1px solid var(--border);margin-top:8px;}
+  .sb-avatar{display:flex;align-items:center;gap:9px;border:none;background:transparent;cursor:pointer;border-radius:8px;padding:4px;}
+  .sb-avatar:hover{background:rgba(0,0,0,.05);}
+  .sidebar.expanded .sb-avatar{width:100%;}
+  .av{width:34px;height:34px;flex:none;border-radius:50%;background:var(--muted);color:#404040;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+  .sb-avatar .who{display:none;text-align:left;min-width:0;}
+  .sidebar.expanded .sb-avatar .who{display:block;}
+  .sb-avatar .who .nm{display:block;font-size:13.5px;font-weight:600;color:#404040;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-avatar .who .em{display:block;font-size:11.5px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-avatar .who{flex:1;}
+  .sb-avatar .chev{display:none;margin-left:auto;color:var(--muted-foreground);}
+  .sidebar.expanded .sb-avatar .chev{display:block;}
+
+  /* user popup menu (avatar) */
+  .usermenu{position:fixed;display:none;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-pop);width:272px;padding:6px;z-index:120;}
+  .usermenu.open{display:block;}
+  .um-head{display:flex;align-items:center;gap:11px;padding:10px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+  .um-head .nm{font-size:14px;font-weight:700;color:var(--foreground);}
+  .um-head .em{font-size:12.5px;color:var(--muted-foreground);}
+  .usermenu button{display:flex;align-items:center;gap:11px;width:100%;padding:9px 10px;border:none;background:transparent;border-radius:8px;font-size:14px;color:var(--foreground);text-align:left;cursor:pointer;}
+  .usermenu button:hover{background:var(--muted);}
+  .usermenu button svg{flex:none;color:var(--muted-foreground);}
+  .usermenu .um-sep{height:1px;background:var(--border);margin:6px 4px;}
+  .usermenu button.danger,.usermenu button.danger svg{color:var(--destructive);}
+  .usermenu button.danger:hover{background:var(--deny-bg);}
+
+  /* ---------- Main / topbar ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--border);padding:0 20px;height:53px;display:flex;align-items:center;gap:13px;}
+  .tb-toggle{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:7px;color:var(--muted-foreground);cursor:pointer;}
+  .tb-toggle:hover{background:var(--muted);color:var(--foreground);}
+  .tb-div{width:1px;height:20px;background:var(--border);}
+  .tb-title{font-size:15px;font-weight:600;color:var(--foreground);}
+  .topbar .spacer{flex:1;}
+  #tbActions{display:flex;align-items:center;gap:8px;}
+  .content{padding:18px 22px 48px;width:100%;}
+  /* tabs por função */
+  .ftabs{display:inline-flex;gap:2px;flex-wrap:wrap;}
+  .ftab{display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;padding:7px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted-foreground);cursor:pointer;}
+  .ftab:hover{background:var(--muted);}
+  .ftab.active{background:var(--muted);color:var(--foreground);}
+  .ftab .cnt{font-size:12px;color:var(--muted-foreground);background:rgba(0,0,0,.06);padding:0 6px;border-radius:9999px;line-height:18px;}
+  .ftab.active .cnt{background:rgba(0,0,0,.1);}
+  /* status/ações da tabela de equipe */
+  .row-act{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:7px;color:var(--muted-foreground);cursor:pointer;}
+  .row-act:hover{background:var(--muted);}
+  .row-act.del:hover{color:var(--destructive);background:var(--deny-bg);}
+  td.right .row-act:last-child{margin-right:-6px;}
+  .page-title{font-size:26px;font-weight:700;letter-spacing:-.4px;margin:0;}
+  .page-desc{font-size:14px;color:var(--muted-foreground);margin:6px 0 0;max-width:680px;line-height:1.5;}
+  .page-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px;}
+  .page-head .spacer{flex:1;}
+
+  /* ---------- Buttons ---------- */
+  .btn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:var(--radius-field);font-size:14px;font-weight:500;border:1px solid var(--border);background:#fff;color:var(--foreground);transition:background .12s,border-color .12s;white-space:nowrap;}
+  .btn:hover{background:var(--muted);}
+  .btn.primary{background:#3A9B9E;color:#fff;border-color:#3A9B9E;}
+  .btn.primary:hover{background:#33888b;}
+  .btn.brand{background:#3A9B9E;color:#fff;border-color:#3A9B9E;}
+  .btn.brand:hover{background:#33888b;}
+  .btn.sm{height:30px;padding:0 10px;font-size:13px;}
+  /* pill de função neutra (cinza) estilo Figma */
+  .role-pill{display:inline-flex;align-items:center;font-size:12.5px;font-weight:500;padding:3px 9px;border-radius:9999px;border:1px solid var(--border);background:var(--muted);color:#404040;white-space:nowrap;font-family:inherit;cursor:pointer;transition:background .12s;}
+  .role-pill:hover{background:#ececec;}
+  .btn.ghost{border-color:transparent;background:transparent;}
+  .btn.ghost:hover{background:var(--muted);}
+  .icon-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;border:none;background:transparent;color:var(--muted-foreground);}
+  .icon-btn:hover{background:var(--muted);color:var(--foreground);}
+
+  /* ---------- Badges ---------- */
+  .role-badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:3px 9px;border-radius:9999px;border:1px solid var(--border);background:#fff;white-space:nowrap;}
+  .role-badge .dot{width:7px;height:7px;border-radius:50%;}
+  button.role-badge{font-family:inherit;cursor:pointer;transition:filter .12s,box-shadow .12s;}
+  button.role-badge .chev{opacity:0;margin-left:-2px;transition:opacity .12s;}
+  button.role-badge:hover{filter:brightness(.96);box-shadow:0 0 0 3px rgba(0,0,0,.04);}
+  button.role-badge:hover .chev{opacity:.55;}
+  .role-somente .dot{background:#94a3b8;} .role-somente{border-color:#e2e8f0;background:#f8fafc;color:#475569;}
+  .role-seu .dot{background:#0ea5e9;} .role-seu{border-color:#bae6fd;background:#f0f9ff;color:#0369a1;}
+  .role-geral .dot{background:#8b5cf6;} .role-geral{border-color:#ddd6fe;background:#f5f3ff;color:#6d28d9;}
+  .role-admin .dot{background:#e11d48;} .role-admin{border-color:#fecdd3;background:#fff1f2;color:#be123c;}
+
+  .scope{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:6px;font-family:ui-monospace,Menlo,monospace;letter-spacing:-.01em;white-space:nowrap;}
+  .scope.all{color:var(--all-fg);background:var(--all-bg);border:1px solid var(--all-bd);}
+  .scope.resp{color:var(--resp-fg);background:var(--resp-bg);border:1px solid var(--resp-bd);}
+  .scope.none{color:var(--none-fg);background:var(--none-bg);border:1px solid var(--none-bd);}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:2px 9px;border-radius:9999px;background:var(--muted);color:var(--muted-foreground);}
+  .pill.green{background:var(--all-bg);color:var(--all-fg);}
+  .pill.amber{background:var(--resp-bg);color:var(--resp-fg);}
+  .pill.deny{background:var(--deny-bg);color:var(--deny-fg);}
+  .type-tag{font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;font-family:ui-monospace,monospace;}
+  .type-tag.view{background:#eff6ff;color:#1d4ed8;}
+  .type-tag.action{background:#fef3f2;color:#b42318;}
+
+  /* ---------- Tables ---------- */
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-card);overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{text-align:left;font-size:12px;font-weight:600;color:var(--muted-foreground);padding:11px 16px;border-bottom:1px solid var(--border);background:#fcfcfc;white-space:nowrap;}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fcfcfc;}
+  .u-name{font-weight:500;display:flex;align-items:center;gap:10px;}
+  .avatar{width:32px;height:32px;flex:none;border-radius:50%;background:var(--accent-100);color:var(--accent-600);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+  .u-email{color:var(--muted-foreground);font-size:13px;}
+  .muted{color:var(--muted-foreground);}
+  .cap{text-transform:capitalize;}
+  /* barra de ação em lote */
+  .bulkbar{position:fixed;left:calc(50% + 30px);bottom:16px;transform:translateX(-50%) translateY(10px);background:#3A9B9E;color:#fff;border-radius:10px;display:none;align-items:center;height:46px;padding:0 4px 0 16px;box-shadow:0 10px 28px rgba(0,0,0,.20);z-index:95;opacity:0;transition:opacity .18s,transform .18s;}
+  .bulkbar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0);}
+  .bb-count{font-size:14px;font-weight:500;white-space:nowrap;padding-right:16px;}
+  .bb-div{width:1px;height:22px;background:rgba(255,255,255,.32);flex:none;}
+  .bb-actions{display:flex;align-items:center;}
+  .bb-actions button{border:none;background:transparent;color:#fff;font-family:inherit;font-size:14px;padding:0 14px;height:46px;cursor:pointer;white-space:nowrap;}
+  .bb-actions button:hover{background:rgba(255,255,255,.14);}
+  .bb-x{border:none;background:transparent;color:#fff;width:40px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:0 8px 8px 0;}
+  .bb-x:hover{background:rgba(255,255,255,.14);}
+  /* filtros por coluna */
+  .th-f{display:inline-flex;align-items:center;gap:5px;}
+  .fbtn{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:5px;color:#bdbdbd;cursor:pointer;transition:color .12s,background .12s;}
+  .fbtn:hover{background:rgba(0,0,0,.05);color:var(--foreground);}
+  .fbtn.on{color:var(--accent-600);}
+  .cf-pop{position:absolute;display:none;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-pop);width:228px;padding:10px;z-index:125;}
+  .cf-pop.open{display:block;}
+  .cf-srch{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:8px;padding:0 10px;height:34px;}
+  .cf-srch input{border:none;outline:none;font-family:inherit;font-size:13.5px;width:100%;background:transparent;}
+  .cf-list{max-height:230px;overflow-y:auto;}
+  .cf-pop label{display:flex;align-items:center;gap:8px;padding:6px 4px;font-size:13.5px;cursor:pointer;}
+  .cf-pop .cf-list label input{width:15px;height:15px;accent-color:var(--accent);}
+  .cf-date{display:flex;flex-direction:column;gap:9px;}
+  .cf-date label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--muted-foreground);padding:0;}
+  .cf-date input[type=date]{border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-family:inherit;font-size:13px;color:var(--foreground);}
+  .cf-clear{width:100%;margin-top:6px;font-size:12.5px;color:var(--muted-foreground);background:transparent;border:none;text-align:left;padding:5px 4px;cursor:pointer;border-radius:6px;}
+  .cf-clear:hover{background:var(--muted);color:var(--foreground);}
+  .right{text-align:right;}
+  .nowrap{white-space:nowrap;}
+
+  /* ---------- Toolbar / filters ---------- */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .search{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-field);background:#fff;min-width:240px;}
+  .search input{border:none;outline:none;font-family:inherit;font-size:14px;width:100%;background:transparent;}
+  .select{height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-field);background:#fff;font-family:inherit;font-size:14px;color:var(--foreground);}
+  .seg{display:inline-flex;background:rgba(23,23,23,.06);border-radius:9px;padding:3px;gap:2px;}
+  .seg button{border:none;background:transparent;padding:6px 12px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted-foreground);}
+  .seg button.active{background:#fff;color:var(--foreground);box-shadow:var(--shadow-xs);}
+
+  /* ---------- FAQ (sheet "O que cada função faz") ---------- */
+  .faq-intro{font-size:13.5px;line-height:1.55;color:#404040;margin:0 0 6px;}
+  .faq-item{border-top:1px solid var(--border);}
+  .faq-item:last-of-type{border-bottom:1px solid var(--border);}
+  .faq-item summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:14px 2px;font-size:14.5px;font-weight:600;color:var(--foreground);}
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{content:'';margin-left:auto;width:8px;height:8px;border-right:2px solid var(--muted-foreground);border-bottom:2px solid var(--muted-foreground);transform:rotate(45deg);transition:transform .15s;}
+  .faq-item[open] summary::after{transform:rotate(-135deg);}
+  .faq-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .faq-body{padding:0 2px 16px;}
+  .faq-body p{margin:0 0 4px;font-size:13.5px;line-height:1.6;color:#404040;}
+  .faq-table{width:100%;border-collapse:collapse;margin-top:10px;}
+  .faq-table td{padding:8px 0;border-top:1px solid var(--border);font-size:13px;vertical-align:middle;color:#404040;}
+  .faq-table td.r{text-align:right;white-space:nowrap;width:1%;padding-left:10px;}
+  .faq-area td{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-foreground);padding:14px 0 5px;border-top:none;}
+  .faq-chip{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;white-space:nowrap;}
+  .faq-chip.all{color:var(--all-fg);background:var(--all-bg);border:1px solid var(--all-bd);}
+  .faq-chip.resp{color:var(--resp-fg);background:var(--resp-bg);border:1px solid var(--resp-bd);}
+
+  /* ---------- Audit ---------- */
+  /* ---------- Auditoria (feed) ---------- */
+  #view-audit td{vertical-align:middle;}
+  #view-audit th:nth-child(1),#view-audit td:nth-child(1){width:40px;}
+  #view-audit th:nth-child(2){width:300px;}
+  #view-audit th:nth-child(4){width:185px;}
+  .audit-event{font-size:14px;color:var(--foreground);min-width:280px;}
+  .audit-date{font-size:13px;color:var(--muted-foreground);white-space:nowrap;}
+  .sort-th{display:inline-flex;align-items:center;gap:4px;}
+  .audit-copy{width:28px;height:28px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:7px;color:var(--muted-foreground);opacity:0;transition:opacity .12s,background .12s;}
+  tbody tr:hover .audit-copy{opacity:1;}
+  .audit-copy:hover{background:var(--muted);color:var(--foreground);}
+
+  /* ---------- Empty state ---------- */
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 24px;color:var(--muted-foreground);}
+  .empty .ico{width:48px;height:48px;border-radius:12px;background:var(--muted);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .empty h4{margin:0 0 4px;font-size:15px;font-weight:600;color:var(--foreground);}
+  .empty p{margin:0;font-size:13.5px;max-width:340px;line-height:1.5;}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(15,15,15,.32);backdrop-filter:blur(1px);display:flex;align-items:stretch;justify-content:flex-end;z-index:100;opacity:0;visibility:hidden;transition:opacity .22s ease;}
+  .overlay.open{opacity:1;visibility:visible;}
+  .sheet{position:relative;background:#fff;width:100%;max-width:440px;height:100vh;display:flex;flex-direction:column;box-shadow:-14px 0 44px rgba(0,0,0,.18);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+  .overlay.open .sheet{transform:translateX(0);}
+  .sheet-x{position:absolute;top:16px;right:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:8px;color:var(--muted-foreground);}
+  .sheet-x:hover{background:var(--muted);color:var(--foreground);}
+  .modal-head{padding:22px 24px 16px;border-bottom:1px solid var(--border);}
+  .modal-head h3{margin:0;font-size:18px;font-weight:700;padding-right:36px;}
+  .modal-head p{margin:6px 0 0;font-size:13.5px;color:var(--muted-foreground);}
+  .modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1;}
+  .field>label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
+  .field input,.field select{width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-field);font-family:inherit;font-size:14px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-100);}
+  .field input:disabled{background:var(--muted);color:var(--muted-foreground);cursor:not-allowed;border-color:var(--border);}
+  .field .hint{display:flex;gap:6px;font-size:12px;line-height:1.45;color:var(--muted-foreground);margin-top:7px;}
+  .field .hint svg{flex:none;margin-top:1px;}
+  .role-pick{display:flex;flex-direction:column;gap:8px;}
+  .role-opt{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;transition:border-color .12s,background .12s;}
+  .role-opt:hover{background:var(--muted);}
+  .role-opt.sel{border-color:var(--accent);background:var(--accent-100);}
+  .role-opt input{width:16px;height:16px;flex:none;margin-top:2px;accent-color:var(--accent);}
+  .role-opt .rt{font-size:13.5px;font-weight:600;}
+  .role-opt .rd{font-size:12px;color:var(--muted-foreground);margin-top:1px;}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:#fcfcfc;}
+  @media(max-width:520px){.sheet{max-width:100%;}}
+
+  /* ---------- Menu ---------- */
+  .menu{position:absolute;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-pop);padding:5px;min-width:188px;z-index:90;display:none;}
+  .menu.open{display:block;}
+  .menu button{display:flex;align-items:center;gap:9px;width:100%;padding:8px 9px;border:none;background:transparent;border-radius:7px;font-size:13.5px;color:var(--foreground);text-align:left;}
+  .menu button:hover{background:var(--muted);}
+  .menu button.danger{color:#dc2626;}
+  .menu button.danger:hover{background:var(--deny-bg);}
+  .menu .sep{height:1px;background:var(--border);margin:5px 0;}
+
+  .callout{display:flex;gap:12px;padding:13px 15px;border:1px solid var(--resp-bd);background:var(--resp-bg);border-radius:10px;font-size:13px;color:#7c5310;line-height:1.5;margin-bottom:20px;}
+  .callout svg{flex:none;margin-top:1px;}
+  .callout b{color:#7c5310;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--primary);color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;box-shadow:var(--shadow-pop);opacity:0;pointer-events:none;transition:all .25s;z-index:200;display:flex;align-items:center;gap:9px;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <button class="sb-logo" title="Settle · Espaço de Trabalho"><span class="logo-dot"></span></button>
+    <div class="sb-ws">
+      <span class="logo-dot"></span>
+      <div><div class="nm">Settle</div><div class="sub">Espaço de Trabalho</div></div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <nav class="sb-nav">
+      <button class="sb-ic" title="Visão Geral" onclick="prod('Visão Geral')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="lbl">Visão Geral</span></button>
+      <button class="sb-ic" title="Settle AI" onclick="prod('Settle AI')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg><span class="lbl">Settle AI</span></button>
+      <button class="sb-ic" title="Notificações" onclick="prod('Notificações')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="lbl">Notificações</span><span class="sb-badge">3</span></button>
+
+      <div class="sb-sec">Gestão de licitações</div>
+      <button class="sb-ic" title="Novas" onclick="prod('Novas')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="lbl">Novas</span><svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="sb-sub"><a onclick="prod('Ativas')">Ativas</a><a onclick="prod('Chegou hoje')">Chegou hoje</a><a onclick="prod('Vencendo em breve')">Vencendo em breve</a></div>
+      <button class="sb-ic" title="Em andamento" onclick="prod('Em andamento')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg><span class="lbl">Em andamento</span></button>
+      <button class="sb-ic" title="Concluídas" onclick="prod('Concluídas')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg><span class="lbl">Concluídas</span></button>
+      <button class="sb-ic" title="Descartadas" onclick="prod('Descartadas')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg><span class="lbl">Descartadas</span></button>
+      <button class="sb-ic" title="Descontinuadas" onclick="prod('Descontinuadas')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6"/></svg><span class="lbl">Descontinuadas</span></button>
+      <button class="sb-ic" title="Explorar licitações" onclick="prod('Explorar licitações')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="11" cy="14" r="2.4"/><path d="M13 16l2 2"/></svg><span class="lbl">Explorar licitações</span></button>
+
+      <div class="sb-sep"></div>
+      <button class="sb-ic" title="Relatórios" onclick="prod('Relatórios')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span class="lbl">Relatórios</span></button>
+    </nav>
+
+    <div class="sb-bottom">
+      <button class="sb-avatar" onclick="toggleUserMenu(event)" title="Brunno Krier Martins">
+        <span class="av">BK</span>
+        <span class="who"><span class="nm">Brunno Krier Martins</span><span class="em">brunno@settlegov.com</span></span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Menu do avatar -->
+  <div class="usermenu" id="userMenu">
+    <div class="um-head">
+      <span class="av">BK</span>
+      <div><div class="nm">Brunno Krier Martins</div><div class="em">brunno@settlegov.com</div></div>
+    </div>
+    <button onclick="go('audit')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg> Auditoria</button>
+    <button onclick="go('users')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Gerenciar equipe</button>
+    <button onclick="toast('Atalhos do teclado')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h0M10 10h0M14 10h0M18 10h0M7 14h10"/></svg> Atalhos do teclado</button>
+    <div class="um-sep"></div>
+    <button class="danger" onclick="toast('Saindo…')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sair</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <button class="tb-toggle" onclick="toggleSidebar()" title="Expandir/recolher menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+      <div class="tb-div"></div>
+      <span class="tb-title" id="tbTitle">Gerenciar equipe</span>
+      <div class="spacer"></div>
+      <div id="tbActions"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- =================== GERENCIAR EQUIPE =================== -->
+      <section class="view active" id="view-users">
+        <div class="toolbar" style="justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div class="ftabs" id="roleTabs"></div>
+          <div class="search" style="min-width:180px;max-width:230px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="userSearch" placeholder="Buscar…" oninput="renderUsers()">
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" class="rowcb-all" onchange="toggleAll('users',this)"></th>
+                <th><span class="th-f">Pessoa <button class="fbtn" data-funnel="users:pessoa" onclick="openColFilter(event,'users','pessoa')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th><span class="th-f">Função <button class="fbtn" data-funnel="users:funcao" onclick="openColFilter(event,'users','funcao')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th><span class="th-f">Status <button class="fbtn" data-funnel="users:status" onclick="openColFilter(event,'users','status')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th><span class="th-f">Último acesso <button class="fbtn" data-funnel="users:ultimo" onclick="openColFilter(event,'users','ultimo')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th class="right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =================== AUDIT =================== -->
+      <section class="view" id="view-audit">
+        <div id="auditSearchRow" class="toolbar" style="display:none;justify-content:flex-end;margin-bottom:12px;">
+          <div class="search" style="min-width:260px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="auditSearch" placeholder="Buscar por usuário ou evento…" oninput="renderAudit()">
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" class="rowcb-all" onchange="toggleAll('audit',this)"></th>
+                <th><span class="th-f">Pessoa <button class="fbtn" data-funnel="audit:pessoa" onclick="openColFilter(event,'audit','pessoa')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th><span class="th-f">Evento <button class="fbtn" data-funnel="audit:evento" onclick="openColFilter(event,'audit','evento')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+                <th><span class="th-f">Data <button class="fbtn" data-funnel="audit:data" onclick="openColFilter(event,'audit','data')" title="Filtrar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button></span></th>
+              </tr>
+            </thead>
+            <tbody id="auditBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Invite / Change role modal -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="modal"></div>
+</div>
+
+<!-- Row menu -->
+<div class="menu" id="rowMenu"></div>
+
+<!-- Popover de filtro por coluna -->
+<div class="cf-pop" id="colFilterPop"></div>
+
+<!-- Diálogo de confirmação -->
+<div class="cf-overlay" id="confirmOverlay">
+  <div class="confirm">
+    <div class="cf-ic" id="cfIc"></div>
+    <h3 id="cfTitle"></h3>
+    <p id="cfMsg"></p>
+    <div class="cf-foot">
+      <button class="btn ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn primary" id="cfOk" onclick="runConfirm()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- =================== AÇÃO EM LOTE =================== -->
+<div class="bulkbar" id="bulkBar">
+  <span class="bb-count" id="bbCount">0 selecionados</span>
+  <span class="bb-div"></span>
+  <div class="bb-actions" id="bbActions"></div>
+  <span class="bb-div"></span>
+  <button class="bb-x" onclick="clearBulk()" title="Limpar seleção"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const ROLES = {
+  'somente-ver':   {label:'Visualizador',   cls:'role-somente'},
+  'editar-o-seu':  {label:'Editor restrito',  cls:'role-seu'},
+  'editar-geral':  {label:'Editor completo',  cls:'role-geral'},
+  'administrador': {label:'Administrador', cls:'role-admin'},
+};
+const ROLE_DESC={
+  'somente-ver':'Apenas visualiza licitações e dados. Não pode editar, comentar nem mover nada.',
+  'editar-o-seu':'Vê e edita somente as licitações em que é responsável; as demais nem aparecem para ela.',
+  'editar-geral':'Vê e edita todas as licitações da organização, incluindo ações em lote.',
+  'administrador':'Pode realizar todas as ações na plataforma, sem restrições.',
+};
+
+let users = [
+  {n:'Brunno Krier Martins', e:'brunno@acme.com.br', role:'administrador', status:'active',  last:'agora há pouco', lastDate:'2026-06-22'},
+  {n:'Carla Mendes',    e:'carla@acme.com.br',   role:'editar-o-seu',  status:'active',  last:'há 2 h',           lastDate:'2026-06-22'},
+  {n:'Diego Souza',     e:'diego@acme.com.br',   role:'editar-o-seu',  status:'active',  last:'ontem',            lastDate:'2026-06-21'},
+  {n:'Alice Iglesias',  e:'alice@acme.com.br',   role:'editar-geral',  status:'active',  last:'há 3 h',           lastDate:'2026-06-22'},
+  {n:'Gabriel Faria',   e:'gabriel@acme.com.br', role:'editar-geral',  status:'active',  last:'há 1 dia',         lastDate:'2026-06-21'},
+  {n:'Renata Lima',     e:'renata@acme.com.br',  role:'somente-ver',   status:'active',  last:'há 5 dias',        lastDate:'2026-06-17'},
+  {n:'Paulo Costa',     e:'paulo@acme.com.br',   role:'somente-ver',   status:'invited', last:'Ainda não acessou', lastDate:null},
+];
+
+// Mock cobrindo todo o catálogo (Seção 6) + os 4 cenários: concedido all, concedido responsible_only,
+// negado por pertinência (scope=null) e negado por ownership (scope=responsible_only).
+const AUDIT = [
+  // ---- Hoje (22/06) - administração e requisitos ----
+  {ts:'2026-06-22 16:42:10', u:'Brunno Krier Martins', r:'org.audit_log.view',                 scope:'all',              granted:true,  meta:{filterRange:'2026-06'}},
+  {ts:'2026-06-22 16:38:51', u:'Brunno Krier Martins', r:'org.settings.manage',                scope:'all',              granted:true,  meta:{key:'retention_days'}},
+  {ts:'2026-06-22 16:30:22', u:'Brunno Krier Martins', r:'org.agencies.manage',                scope:'all',              granted:true,  meta:{agencyId:12}},
+  {ts:'2026-06-22 16:22:05', u:'Brunno Krier Martins', r:'org.segments.manage',                scope:'all',              granted:true,  meta:{segmentId:4}},
+  {ts:'2026-06-22 16:15:40', u:'Brunno Krier Martins', r:'org.user.change_role',               scope:'all',              granted:true,  meta:{userId:'p9', role:'editar-o-seu'}},
+  {ts:'2026-06-22 16:10:18', u:'Brunno Krier Martins', r:'org.user.remove',                    scope:'all',              granted:true,  meta:{userId:'r7'}},
+  {ts:'2026-06-22 16:03:55', u:'Brunno Krier Martins', r:'org.user.invite',                    scope:'all',              granted:true,  meta:{email:'maria@acme.com.br'}},
+  {ts:'2026-06-22 15:58:31', u:'Alice Iglesias', r:'org.user.invite',                          scope:null,               granted:false, meta:{email:'joao@acme.com.br'}},
+  {ts:'2026-06-22 15:50:12', u:'Gabriel Faria',  r:'software_requirement.export',              scope:'all',              granted:true,  meta:{softwareAnalysisId:77}},
+  {ts:'2026-06-22 15:44:03', u:'Alice Iglesias', r:'export.xlsx',                              scope:'all',              granted:true,  meta:{exportScope:'all'}},
+  {ts:'2026-06-22 15:39:47', u:'Carla Mendes',   r:'export.csv',                               scope:'responsible_only', granted:true,  meta:{exportScope:'own'}},
+  {ts:'2026-06-22 15:31:09', u:'Gabriel Faria',  r:'software_requirement.import',              scope:'all',              granted:true,  meta:{softwareAnalysisId:77}},
+  {ts:'2026-06-22 15:25:33', u:'Gabriel Faria',  r:'software_requirement.columns.manage',      scope:'all',              granted:true,  meta:{softwareAnalysisId:77}},
+  {ts:'2026-06-22 15:18:50', u:'Alice Iglesias', r:'software_requirement.status',              scope:'all',              granted:true,  meta:{softwareAnalysisId:77, status:'em_revisao'}},
+  {ts:'2026-06-22 15:10:27', u:'Gabriel Faria',  r:'software_requirement.set_responsible',     scope:'all',              granted:true,  meta:{requirementId:515, userId:'d1'}},
+  {ts:'2026-06-22 15:02:14', u:'Diego Souza',    r:'software_requirement.evaluate',            scope:'responsible_only', granted:true,  meta:{requirementId:514}},
+  {ts:'2026-06-22 14:55:08', u:'Alice Iglesias', r:'software_requirement.delete',              scope:'all',              granted:true,  meta:{requirementId:513}},
+  {ts:'2026-06-22 14:48:41', u:'Alice Iglesias', r:'software_requirement.update',              scope:'all',              granted:true,  meta:{requirementId:512}},
+  {ts:'2026-06-22 14:40:19', u:'Gabriel Faria',  r:'software_requirement.create',              scope:'all',              granted:true,  meta:{softwareAnalysisId:77}},
+  {ts:'2026-06-22 14:33:02', u:'Alice Iglesias', r:'software_requirement.view',                scope:'all',              granted:true,  meta:{biddingId:201}},
+  // ---- Ontem (21/06) - análise técnica, comentários, responsáveis, status, navegação ----
+  {ts:'2026-06-21 17:50:33', u:'Gabriel Faria',  r:'biddings.technical_analysis.reextract',    scope:'all',              granted:true,  meta:{biddingId:201, summaryId:7, fieldKey:'prazo'}},
+  {ts:'2026-06-21 17:44:11', u:'Gabriel Faria',  r:'biddings.technical_analysis.accept',       scope:'all',              granted:true,  meta:{biddingId:201, summaryId:7, fieldKey:'prazo'}},
+  {ts:'2026-06-21 17:30:58', u:'Carla Mendes',   r:'biddings.technical_analysis.edit',         scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 17:12:40', u:'Paulo Costa',    r:'biddings.technical_analysis.edit',         scope:null,               granted:false, meta:{biddingId:201}},
+  {ts:'2026-06-21 16:58:22', u:'Alice Iglesias', r:'comment.delete',                           scope:'all',              granted:true,  meta:{commentId:91}},
+  {ts:'2026-06-21 16:40:05', u:'Carla Mendes',   r:'comment.update',                           scope:'responsible_only', granted:true,  meta:{commentId:88}},
+  {ts:'2026-06-21 16:22:47', u:'Diego Souza',    r:'comment.create',                           scope:'responsible_only', granted:true,  meta:{biddingId:332}},
+  {ts:'2026-06-21 16:05:13', u:'Carla Mendes',   r:'comment.view',                             scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 15:48:36', u:'Gabriel Faria',  r:'responsible.bulk',                         scope:'all',              granted:true,  meta:{biddingIds:[332,340,351], userIds:['d1','c2']}},
+  {ts:'2026-06-21 15:30:19', u:'Alice Iglesias', r:'responsible.remove',                       scope:'all',              granted:true,  meta:{biddingId:540, userId:'r2'}},
+  {ts:'2026-06-21 15:12:51', u:'Diego Souza',    r:'responsible.add',                          scope:'responsible_only', granted:true,  meta:{biddingId:332, userId:'d1'}},
+  {ts:'2026-06-21 14:55:30', u:'Carla Mendes',   r:'responsible.view',                         scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 14:36:12', u:'Diego Souza',    r:'biddings.status.move',                     scope:'responsible_only', granted:false, meta:{biddingId:540, status:'LOST'}},
+  {ts:'2026-06-21 14:20:44', u:'Alice Iglesias', r:'biddings.status.bulk',                     scope:'all',              granted:true,  meta:{biddingIds:[412,418,431,440,455,467,471,480,492,503,511,520], status:'IGNORED'}},
+  {ts:'2026-06-21 14:05:27', u:'Gabriel Faria',  r:'biddings.status.restore',                  scope:'all',              granted:true,  meta:{biddingId:418}},
+  {ts:'2026-06-21 13:50:03', u:'Alice Iglesias', r:'biddings.status.discard',                  scope:'all',              granted:true,  meta:{biddingId:418, reasonId:3}},
+  {ts:'2026-06-21 13:32:48', u:'Alice Iglesias', r:'biddings.status.ignore',                   scope:'all',              granted:true,  meta:{biddingId:455}},
+  {ts:'2026-06-21 13:15:22', u:'Diego Souza',    r:'biddings.status.lose',                     scope:'responsible_only', granted:true,  meta:{biddingId:332}},
+  {ts:'2026-06-21 12:58:09', u:'Carla Mendes',   r:'biddings.status.win',                      scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 12:40:55', u:'Carla Mendes',   r:'biddings.status.move',                     scope:'responsible_only', granted:true,  meta:{biddingId:321, status:'WON'}},
+  {ts:'2026-06-21 12:20:31', u:'Renata Lima',    r:'biddings.status.move',                     scope:null,               granted:false, meta:{biddingId:540, status:'LOST'}},
+  {ts:'2026-06-21 12:02:17', u:'Diego Souza',    r:'biddings.send_to_analysis',                scope:'responsible_only', granted:true,  meta:{biddingId:332}},
+  {ts:'2026-06-21 11:40:50', u:'Alice Iglesias', r:'search.licitabank.view',                   scope:'all',              granted:true,  meta:{query:'CFTV'}},
+  {ts:'2026-06-21 11:20:14', u:'Paulo Costa',    r:'discarded.list.view',                      scope:'all',              granted:true,  meta:{tab:'descartadas'}},
+  {ts:'2026-06-21 11:00:38', u:'Renata Lima',    r:'workflow.board.view',                      scope:'all',              granted:true,  meta:{view:'kanban'}},
+  {ts:'2026-06-21 10:42:05', u:'Gabriel Faria',  r:'biddings.technical_analysis.view',         scope:'all',              granted:true,  meta:{biddingId:201}},
+  {ts:'2026-06-21 10:20:49', u:'Alice Iglesias', r:'biddings.summary.thermometer.view',        scope:'all',              granted:true,  meta:{biddingId:540}},
+  {ts:'2026-06-21 10:00:12', u:'Diego Souza',    r:'biddings.detail.files.view',               scope:'responsible_only', granted:true,  meta:{biddingId:332}},
+  {ts:'2026-06-21 09:40:27', u:'Carla Mendes',   r:'biddings.detail.items.view',               scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 09:20:53', u:'Carla Mendes',   r:'biddings.detail.view',                     scope:'responsible_only', granted:true,  meta:{biddingId:321}},
+  {ts:'2026-06-21 09:00:31', u:'Renata Lima',    r:'biddings.list',                            scope:'all',              granted:true,  meta:{tab:'em_andamento'}},
+];
+
+/* ============ NAV ============ */
+/* ============ NAV / SHELL ============ */
+const VIEWS={users:{title:'Gerenciar equipe'},audit:{title:'Auditoria'}};
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.getElementById('tbTitle').textContent=VIEWS[view].title;
+  document.getElementById('tbActions').innerHTML = view==='users'
+    ? `<button class="btn" onclick="openRolesSheet()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> O que cada função faz</button>
+       <button class="btn brand" onclick="openInvite()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar pessoa</button>`
+    : `<button class="btn" onclick="exportAudit()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar</button>
+       <button class="btn" onclick="toggleAuditSearch()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar</button>`;
+  closeUserMenu();closeMenu();
+  document.getElementById('bulkBar').classList.remove('show');
+}
+function prod(name){closeUserMenu();toast(`${name}: tela do produto (fora deste protótipo)`);}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('expanded');}
+function toggleUserMenu(e){
+  e.stopPropagation();
+  const m=document.getElementById('userMenu');
+  if(m.classList.contains('open')){m.classList.remove('open');return;}
+  const r=e.currentTarget.getBoundingClientRect();
+  m.style.left=r.left+'px';
+  m.style.bottom=(window.innerHeight-r.top+8)+'px';
+  m.style.top='auto';
+  m.classList.add('open');
+}
+function closeUserMenu(){document.getElementById('userMenu').classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('#userMenu')&&!e.target.closest('.sb-avatar'))closeUserMenu();});
+function toggleAuditSearch(){
+  const row=document.getElementById('auditSearchRow');
+  const show=row.style.display==='none';
+  row.style.display=show?'flex':'none';
+  if(show){setTimeout(()=>document.getElementById('auditSearch').focus(),30);}
+  else{document.getElementById('auditSearch').value='';renderAudit();}
+}
+function roleOf(name){const u=users.find(x=>x.n===name);return u?u.role:null;}
+
+/* ============ FILTROS POR COLUNA ============ */
+function auditArea(r){
+  if(r.startsWith('org.'))return 'Organização';
+  if(r.includes('technical_analysis'))return 'Análise técnica';
+  if(r.startsWith('software_requirement'))return 'Requisitos de software';
+  if(r.startsWith('export.'))return 'Exportação';
+  if(r.startsWith('comment.'))return 'Comentários';
+  if(r.startsWith('responsible.'))return 'Responsáveis';
+  return 'Licitações';
+}
+const COLS={
+  users:[
+    {key:'pessoa',label:'Pessoa',type:'list',get:u=>u.n,opts:()=>users.map(u=>u.n)},
+    {key:'funcao',label:'Função',type:'list',get:u=>ROLES[u.role].label,opts:()=>Object.values(ROLES).map(r=>r.label)},
+    {key:'status',label:'Status',type:'list',get:u=>u.status==='invited'?'Convite pendente':'Ativo',opts:()=>['Ativo','Convite pendente']},
+    {key:'ultimo',label:'Último acesso',type:'date',getDate:u=>u.lastDate},
+  ],
+  audit:[
+    {key:'pessoa',label:'Pessoa',type:'list',get:a=>a.u,opts:()=>[...new Set(AUDIT.map(a=>a.u))]},
+    {key:'evento',label:'Tipo de evento',type:'list',get:a=>auditArea(a.r),opts:()=>[...new Set(AUDIT.map(a=>auditArea(a.r)))]},
+    {key:'data',label:'Data',type:'date',getDate:a=>a.ts.split(' ')[0]},
+  ],
+};
+const colF={users:{},audit:{}};
+let _cfCtx=null;
+function colDef(t,k){return COLS[t].find(c=>c.key===k);}
+function passColF(t,item){
+  return COLS[t].every(c=>{
+    const fv=colF[t][c.key];
+    if(c.type==='date'){
+      if(!fv||(!fv.de&&!fv.ate))return true;
+      const d=c.getDate(item);
+      if(!d)return false;
+      return (!fv.de||d>=fv.de)&&(!fv.ate||d<=fv.ate);
+    }
+    if(!fv||(Array.isArray(fv)&&!fv.length))return true;
+    return fv.some(x=>String(c.get(item)).toLowerCase()===String(x).toLowerCase());
+  });
+}
+function openColFilter(e,t,k){
+  e.stopPropagation();
+  _cfCtx={t,k};
+  const c=colDef(t,k);
+  const pop=document.getElementById('colFilterPop');
+  if(c.type==='date'){
+    const v=colF[t][k]||{};
+    pop.innerHTML=`<div class="cf-date"><label>De<input type="date" value="${v.de||''}" onchange="setDateFilter('de',this.value)"></label><label>Até<input type="date" value="${v.ate||''}" onchange="setDateFilter('ate',this.value)"></label></div><button class="cf-clear" onclick="clearColF()">Limpar filtro</button>`;
+  }else{
+    const sel=colF[t][k]||[];
+    pop.innerHTML=`<div class="cf-list">`+c.opts().map(o=>`<label><input type="checkbox" ${sel.includes(o)?'checked':''} onchange="toggleListFilter(this,'${String(o).replace(/'/g,"&#39;")}')"> ${o}</label>`).join('')+`</div><button class="cf-clear" onclick="clearColF()">Limpar filtro</button>`;
+  }
+  const r=e.currentTarget.getBoundingClientRect();
+  pop.style.top=(r.bottom+window.scrollY+6)+'px';
+  pop.style.left=Math.min(r.left+window.scrollX, window.scrollX+window.innerWidth-244)+'px';
+  pop.classList.add('open');
+}
+function setDateFilter(which,val){const cur=Object.assign({},colF[_cfCtx.t][_cfCtx.k]||{});cur[which]=val||undefined;colF[_cfCtx.t][_cfCtx.k]=(cur.de||cur.ate)?cur:undefined;rerender(_cfCtx.t);}
+function toggleListFilter(el,o){
+  const cur=colF[_cfCtx.t][_cfCtx.k]||[];
+  const next=el.checked?[...cur,o]:cur.filter(x=>x!==o);
+  colF[_cfCtx.t][_cfCtx.k]=next.length?next:undefined;
+  rerender(_cfCtx.t);
+}
+function clearColF(){if(_cfCtx)colF[_cfCtx.t][_cfCtx.k]=undefined;rerender(_cfCtx?_cfCtx.t:'users');closeColFilter();}
+function closeColFilter(){document.getElementById('colFilterPop').classList.remove('open');}
+function rerender(t){t==='users'?renderUsers():renderAudit();}
+function updateFunnels(t){document.querySelectorAll(`[data-funnel^="${t}:"]`).forEach(b=>{b.classList.toggle('on',!!colF[t][b.dataset.funnel.split(':')[1]]);});}
+document.addEventListener('click',e=>{if(!e.target.closest('#colFilterPop')&&!e.target.closest('.fbtn'))closeColFilter();});
+function exportAudit(){
+  const n=document.querySelector('#auditBody .empty')?0:document.querySelectorAll('#auditBody tr').length;
+  toast(`${n} ${n===1?'registro de auditoria exportado':'registros de auditoria exportados'} com sucesso!`);
+}
+
+/* ============ GERENCIAR EQUIPE ============ */
+function initials(n){return n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();}
+let teamTab='';
+function renderRoleTabs(){
+  const counts={};Object.keys(ROLES).forEach(k=>counts[k]=users.filter(u=>u.role===k).length);
+  const tabs=[['','Todos',users.length],...Object.entries(ROLES).map(([k,v])=>[k,v.label,counts[k]])];
+  document.getElementById('roleTabs').innerHTML=tabs.map(([k,label,n])=>
+    `<button class="ftab${k===teamTab?' active':''}" onclick="setTeamTab('${k}')">${label} <span class="cnt">${n}</span></button>`).join('');
+}
+function setTeamTab(k){teamTab=k;renderUsers();}
+function renderUsers(){
+  renderRoleTabs();updateFunnels('users');
+  const q=(document.getElementById('userSearch').value||'').toLowerCase();
+  const rows=users.filter(u=>(!teamTab||u.role===teamTab)&&(!q||u.n.toLowerCase().includes(q)||u.e.toLowerCase().includes(q))&&passColF('users',u));
+  const body=document.getElementById('usersBody');
+  if(!rows.length){body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h4>Nenhuma pessoa encontrada</h4><p>Ajuste a busca ou a aba de função.</p></div></td></tr>`;return;}
+  body.innerHTML=rows.map(u=>{
+    const idx=users.indexOf(u);
+    const status=u.status==='invited'?`<span class="pill amber">Convite pendente</span>`:`<span class="pill green">Ativo</span>`;
+    return `<tr>
+      <td><input type="checkbox" class="rowcb" data-idx="${idx}" onchange="updateBulk('users')"></td>
+      <td><div><div style="font-weight:600">${u.n}</div><div class="u-email">${u.e}</div></div></td>
+      <td><button class="role-pill" onclick="openRoleMenu(event,${idx})" title="Trocar função">${ROLES[u.role].label}</button></td>
+      <td>${status}</td>
+      <td class="muted nowrap cap">${u.last}</td>
+      <td class="right nowrap">
+        <button class="row-act" title="Resetar senha" onclick="resetPwd(${idx})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+        <button class="row-act del" title="Remover" onclick="removeUser(${idx})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </td>
+    </tr>`;
+  }).join('');
+  updateBulk('users');
+}
+
+/* ---- row menu ---- */
+function openMenu(e,idx){
+  e.stopPropagation();
+  const m=document.getElementById('rowMenu');
+  m.innerHTML=`
+    <button onclick="openChangeRole(${idx})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Editar usuário</button>
+    <button onclick="resetPwd(${idx})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Resetar senha</button>
+    <div class="sep"></div>
+    <button class="danger" onclick="removeUser(${idx})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Remover do workspace</button>`;
+  const rect=e.currentTarget.getBoundingClientRect();
+  m.style.top=(rect.bottom+window.scrollY+6)+'px';
+  m.style.left=(rect.right+window.scrollX-188)+'px';
+  m.classList.add('open');
+}
+function closeMenu(){document.getElementById('rowMenu').classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('#rowMenu')&&!e.target.closest('.role-pill'))closeMenu();});
+
+/* Dropdown de função (clique na badge) - troca rápida, sem abrir o sheet */
+function openRoleMenu(e,idx){
+  e.stopPropagation();
+  const m=document.getElementById('rowMenu');
+  const cur=users[idx].role;
+  m.innerHTML=Object.entries(ROLES).map(([k,v])=>
+    `<button onclick="applyRole(${idx},'${k}')" style="align-items:flex-start">
+       <div style="flex:1;min-width:0">
+         <div><span class="role-pill" style="pointer-events:none">${v.label}</span></div>
+         <div style="font-size:12px;color:var(--muted-foreground);margin-top:5px;line-height:1.4;white-space:normal">${ROLE_DESC[k]}</div>
+       </div>
+       ${k===cur?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="flex:none;margin-top:3px;color:var(--accent-600)"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>`
+  ).join('');
+  m.style.width='290px';
+  const rect=e.currentTarget.getBoundingClientRect();
+  m.style.top=(rect.bottom+window.scrollY+6)+'px';
+  m.style.left=(rect.left+window.scrollX)+'px';
+  m.classList.add('open');
+}
+function applyRole(idx,role){
+  closeMenu();
+  if(users[idx].role===role)return;
+  users[idx].role=role;renderUsers();
+  toast(`${users[idx].n} agora é ${ROLES[role].label}`);
+}
+
+/* diálogo de confirmação genérico */
+let _cfOk=null;
+function confirmAction(opts){
+  document.getElementById('cfIc').innerHTML=opts.icon||'';
+  document.getElementById('cfTitle').textContent=opts.title||'';
+  document.getElementById('cfMsg').innerHTML=opts.msg||'';
+  const ok=document.getElementById('cfOk');
+  ok.textContent=opts.okLabel||'Confirmar';
+  ok.className='btn '+(opts.danger?'':'primary')+(opts.danger?' ':'');
+  if(opts.danger){ok.style.background='var(--destructive)';ok.style.borderColor='var(--destructive)';ok.style.color='#fff';}
+  else{ok.style.background='';ok.style.borderColor='';ok.style.color='';}
+  _cfOk=opts.onOk;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');_cfOk=null;}
+function runConfirm(){const f=_cfOk;closeConfirm();if(f)f();}
+document.getElementById('confirmOverlay').addEventListener('click',e=>{if(e.target.id==='confirmOverlay')closeConfirm();});
+
+// Resetar senha - admin não define a senha; dispara link de redefinição por e-mail
+function resetPwd(idx){
+  closeMenu();
+  const u=users[idx];
+  confirmAction({
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    title:'Resetar senha',
+    msg:`Vamos enviar um <b>link de redefinição</b> para <b>${u.e}</b>. A própria pessoa cria a nova senha. Você não chega a vê-la, e a senha atual deixa de funcionar.`,
+    okLabel:'Enviar link',
+    onOk:()=>toast(`Link de redefinição enviado para ${u.e}`)
+  });
+}
+function removeUser(idx){closeMenu();const u=users[idx];if(confirm(`Remover ${u.n} do workspace?`)){users.splice(idx,1);renderUsers();toast(`${u.n} removido`);}}
+
+/* ---- modals ---- */
+const overlay=document.getElementById('overlay'), modal=document.getElementById('modal');
+function closeModal(){overlay.classList.remove('open');}
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+
+function roleOptions(selected){
+  return Object.entries(ROLES).map(([k,v])=>{
+    const desc=ROLE_DESC[k];
+    return `<label class="role-opt ${k===selected?'sel':''}" onclick="pickRole(this)">
+      <input type="radio" name="rolepick" value="${k}" ${k===selected?'checked':''}>
+      <div><div class="rt">${v.label}</div><div class="rd">${desc}</div></div>
+    </label>`;
+  }).join('');
+}
+function pickRole(el){document.querySelectorAll('.role-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');el.querySelector('input').checked=true;}
+
+function openInvite(){
+  closeMenu();
+  modal.innerHTML=`
+    <button class="sheet-x" onclick="closeModal()" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-head"><h3>Convidar usuário</h3><p>A pessoa recebe um e-mail para definir a senha. A função pode ser ajustada depois.</p></div>
+    <div class="modal-body">
+      <div class="field"><label>Nome completo</label><input id="inN" placeholder="Maria Silva"></div>
+      <div class="field"><label>E-mail</label><input id="inE" type="email" placeholder="maria@acme.com.br"></div>
+      <div class="field"><label>Função</label><div class="role-pick">${roleOptions('somente-ver')}</div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="submitInvite()">Enviar convite</button>
+    </div>`;
+  overlay.classList.add('open');
+  setTimeout(()=>document.getElementById('inN').focus(),50);
+}
+function submitInvite(){
+  const n=document.getElementById('inN').value.trim();
+  const e=document.getElementById('inE').value.trim();
+  const role=document.querySelector('input[name=rolepick]:checked').value;
+  if(!n||!e){toast('Preencha nome e e-mail');return;}
+  users.push({n,e,role,status:'invited',last:'Ainda não acessou'});
+  closeModal();renderUsers();toast(`Convite enviado para ${e}`);
+}
+
+function openChangeRole(idx){
+  closeMenu();
+  const u=users[idx];
+  modal.innerHTML=`
+    <button class="sheet-x" onclick="closeModal()" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-head"><h3>Editar usuário</h3><p>Altere a função. Os dados de cadastro são somente leitura.</p></div>
+    <div class="modal-body">
+      <div class="field"><label>Nome completo</label><input value="${u.n}" disabled><div class="hint">Este campo não pode ser editado</div></div>
+      <div class="field"><label>E-mail</label><input value="${u.e}" disabled><div class="hint">Este campo não pode ser editado</div></div>
+      <div class="field"><label>Função</label><div class="role-pick">${roleOptions(u.role)}</div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="submitRole(${idx})">Salvar</button>
+    </div>`;
+  overlay.classList.add('open');
+}
+function submitRole(idx){
+  const role=document.querySelector('input[name=rolepick]:checked').value;
+  users[idx].role=role;closeModal();renderUsers();
+  toast(`${users[idx].n} agora é ${ROLES[role].label}`);
+}
+
+/* ============ FUNÇÕES & PERMISSÕES (FAQ) ============ */
+// Catálogo de ações por área (fiel ao doc, Seção 6). scope por função: A=todas, R=só as suas, N=sem acesso.
+const A='all', R='responsible_only', N='none';
+const ROLE_KEY={'somente-ver':'sv','editar-o-seu':'es','editar-geral':'eg','administrador':'ad'};
+const CAPS=[
+  {area:'Licitações', items:[
+    {l:'Ver a lista de licitações',                 sv:A, es:R, eg:A, ad:A},
+    {l:'Abrir o detalhe de uma licitação',          sv:A, es:R, eg:A, ad:A},
+    {l:'Ver os itens da licitação',                 sv:A, es:R, eg:A, ad:A},
+    {l:'Ver os arquivos da licitação',              sv:A, es:R, eg:A, ad:A},
+    {l:'Ver o termômetro / resumo (IA)',            sv:A, es:R, eg:A, ad:A},
+    {l:'Ver a análise técnica',                     sv:A, es:R, eg:A, ad:A},
+    {l:'Ver o quadro (kanban / tabela / calendário)',sv:A, es:R, eg:A, ad:A},
+    {l:'Ver licitações descartadas',                sv:A, es:A, eg:A, ad:A},
+    {l:'Buscar licitações no LicitaBank',           sv:A, es:A, eg:A, ad:A},
+    {l:'Enviar licitação para análise',             sv:N, es:R, eg:A, ad:A},
+    {l:'Mover licitação de status',                 sv:N, es:R, eg:A, ad:A},
+    {l:'Marcar como ganha',                         sv:N, es:R, eg:A, ad:A},
+    {l:'Marcar como perdida',                       sv:N, es:R, eg:A, ad:A},
+    {l:'Ignorar licitação',                         sv:N, es:R, eg:A, ad:A},
+    {l:'Descartar licitação',                       sv:N, es:R, eg:A, ad:A},
+    {l:'Restaurar licitação descartada',            sv:N, es:R, eg:A, ad:A},
+    {l:'Mudar status em lote',                      sv:N, es:N, eg:A, ad:A},
+  ]},
+  {area:'Responsáveis', items:[
+    {l:'Ver responsáveis',                          sv:A, es:R, eg:A, ad:A},
+    {l:'Atribuir responsável',                      sv:N, es:R, eg:A, ad:A},
+    {l:'Remover responsável',                       sv:N, es:R, eg:A, ad:A},
+    {l:'Atribuir responsáveis em lote',             sv:N, es:N, eg:A, ad:A},
+  ]},
+  {area:'Comentários', items:[
+    {l:'Ver comentários',                           sv:A, es:R, eg:A, ad:A},
+    {l:'Comentar',                                  sv:N, es:R, eg:A, ad:A},
+    {l:'Editar comentário',                         sv:N, es:R, eg:A, ad:A},
+    {l:'Excluir comentário',                        sv:N, es:R, eg:A, ad:A},
+  ]},
+  {area:'Análise técnica', items:[
+    {l:'Editar a análise técnica',                  sv:N, es:R, eg:A, ad:A},
+    {l:'Aceitar valores da análise',                sv:N, es:R, eg:A, ad:A},
+    {l:'Reprocessar a análise (IA)',                sv:N, es:R, eg:A, ad:A},
+  ]},
+  {area:'Requisitos de software', items:[
+    {l:'Ver requisitos de software',                sv:A, es:R, eg:A, ad:A},
+    {l:'Criar requisito',                           sv:N, es:R, eg:A, ad:A},
+    {l:'Editar requisito',                          sv:N, es:R, eg:A, ad:A},
+    {l:'Excluir requisito',                         sv:N, es:R, eg:A, ad:A},
+    {l:'Avaliar requisito',                         sv:N, es:R, eg:A, ad:A},
+    {l:'Definir responsável por requisito',         sv:N, es:R, eg:A, ad:A},
+    {l:'Mudar status dos requisitos',               sv:N, es:R, eg:A, ad:A},
+    {l:'Gerenciar colunas dos requisitos',          sv:N, es:R, eg:A, ad:A},
+    {l:'Importar requisitos',                       sv:N, es:N, eg:A, ad:A},
+  ]},
+  {area:'Exportação', items:[
+    {l:'Exportar para CSV',                         sv:A, es:R, eg:A, ad:A},
+    {l:'Exportar para XLSX',                        sv:A, es:R, eg:A, ad:A},
+    {l:'Exportar requisitos',                       sv:A, es:R, eg:A, ad:A},
+  ]},
+  {area:'Organização (admin)', items:[
+    {l:'Convidar usuários',                         sv:N, es:N, eg:N, ad:A},
+    {l:'Remover usuários',                          sv:N, es:N, eg:N, ad:A},
+    {l:'Mudar a função de usuários',                sv:N, es:N, eg:N, ad:A},
+    {l:'Gerenciar segmentos',                       sv:N, es:N, eg:N, ad:A},
+    {l:'Gerenciar órgãos e agências',               sv:N, es:N, eg:N, ad:A},
+    {l:'Gerenciar configurações da organização',    sv:N, es:N, eg:N, ad:A},
+    {l:'Ver a auditoria',                           sv:N, es:N, eg:N, ad:A},
+  ]},
+];
+const ROLE_META=[
+  {key:'somente-ver',  dot:'#94a3b8', prose:'Acesso somente leitura: vê tudo, sem nenhuma ação de edição.'},
+  {key:'editar-o-seu', dot:'#0ea5e9', prose:'Vê e edita apenas as licitações em que é <b>responsável</b>; as demais não aparecem.'},
+  {key:'editar-geral', dot:'#8b5cf6', prose:'Vê e edita <b>todas</b> as licitações, sem a restrição de responsável, inclusive em lote.'},
+  {key:'administrador',dot:'#e11d48', prose:'Tudo do Editor completo, <b>mais</b> a administração da organização e a auditoria.'},
+];
+// Tabela completa das ações liberadas para uma função (fecha "ver cada recurso")
+function capTable(role){
+  const k=ROLE_KEY[role];
+  let rows='';
+  CAPS.forEach(area=>{
+    const items=area.items.filter(it=>it[k]!==N);
+    if(!items.length)return;
+    rows+=`<tr class="faq-area"><td colspan="2">${area.area}</td></tr>`;
+    items.forEach(it=>{
+      const right = it[k]===R
+        ? '<span class="faq-chip resp">Só as suas</span>'
+        : '<span class="faq-chip all">Todas</span>';
+      rows+=`<tr><td>${it.l}</td><td class="r">${right}</td></tr>`;
+    });
+  });
+  return `<table class="faq-table"><tbody>${rows}</tbody></table>`;
+}
+
+// Sheet "O que cada função faz" - referência sob demanda (FAQ), aberta da página Usuários
+function openRolesSheet(){
+  closeMenu();
+  const sections=ROLE_META.map(m=>`
+    <details class="faq-item"${m.key==='somente-ver'?' open':''}>
+      <summary><span class="faq-dot" style="background:${m.dot}"></span>${ROLES[m.key].label}</summary>
+      <div class="faq-body">
+        <p>${ROLE_DESC[m.key]}</p>
+        ${capTable(m.key)}
+      </div>
+    </details>`).join('');
+  modal.innerHTML=`
+    <button class="sheet-x" onclick="closeModal()" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-head"><h3>O que cada função faz</h3><p>As 4 funções são fixas nesta fase. Cada pessoa recebe uma.</p></div>
+    <div class="modal-body">
+      <p class="faq-intro">Expanda uma função para ver o resumo e a lista completa das ações que ela libera. <span class="faq-chip all">Todas</span> = acesso a todas as licitações; <span class="faq-chip resp">Só as suas</span> = apenas onde a pessoa é responsável.</p>
+      ${sections}
+    </div>`;
+  overlay.classList.add('open');
+}
+
+/* ============ AUDIT ============ */
+// Evento em linguagem natural - costura o metadado na frase (como o Notion faz com o nome da página)
+const STATUS_PT={WON:'Ganha',LOST:'Perdida',IGNORED:'Ignorada'};
+// Para cada recurso do catálogo (Seção 6): g = ação concluída (concedida); inf = infinitivo p/ "tentou ___" (negada)
+const AUDIT_EV={
+  'biddings.list':                       ()=>({g:'abriu a lista de licitações', inf:'abrir a lista de licitações'}),
+  'biddings.detail.view':                m=>({g:`abriu o detalhe da licitação nº ${m.biddingId}`, inf:`abrir o detalhe da licitação nº ${m.biddingId}`}),
+  'biddings.detail.items.view':          m=>({g:`viu os itens da licitação nº ${m.biddingId}`, inf:`ver os itens da licitação nº ${m.biddingId}`}),
+  'biddings.detail.files.view':          m=>({g:`viu os arquivos da licitação nº ${m.biddingId}`, inf:`ver os arquivos da licitação nº ${m.biddingId}`}),
+  'biddings.summary.thermometer.view':   m=>({g:`viu o termômetro da licitação nº ${m.biddingId}`, inf:`ver o termômetro da licitação nº ${m.biddingId}`}),
+  'biddings.technical_analysis.view':    m=>({g:`viu a análise técnica da licitação nº ${m.biddingId}`, inf:`ver a análise técnica da licitação nº ${m.biddingId}`}),
+  'workflow.board.view':                 m=>({g:`abriu o quadro (${m.view})`, inf:`abrir o quadro (${m.view})`}),
+  'discarded.list.view':                 ()=>({g:'abriu as licitações descartadas', inf:'abrir as licitações descartadas'}),
+  'search.licitabank.view':              m=>({g:`buscou "${m.query}" no LicitaBank`, inf:'buscar no LicitaBank'}),
+  'biddings.send_to_analysis':           m=>({g:`enviou a licitação nº ${m.biddingId} para análise`, inf:`enviar a licitação nº ${m.biddingId} para análise`}),
+  'biddings.status.move':                m=>({g:`moveu a licitação nº ${m.biddingId}${m.status?` para ${STATUS_PT[m.status]||m.status}`:''}`, inf:`mover a licitação nº ${m.biddingId}`}),
+  'biddings.status.win':                 m=>({g:`marcou a licitação nº ${m.biddingId} como ganha`, inf:`marcar a licitação nº ${m.biddingId} como ganha`}),
+  'biddings.status.lose':                m=>({g:`marcou a licitação nº ${m.biddingId} como perdida`, inf:`marcar a licitação nº ${m.biddingId} como perdida`}),
+  'biddings.status.ignore':              m=>({g:`ignorou a licitação nº ${m.biddingId}`, inf:`ignorar a licitação nº ${m.biddingId}`}),
+  'biddings.status.discard':             m=>({g:`descartou a licitação nº ${m.biddingId}`, inf:`descartar a licitação nº ${m.biddingId}`}),
+  'biddings.status.restore':             m=>({g:`restaurou a licitação nº ${m.biddingId}`, inf:`restaurar a licitação nº ${m.biddingId}`}),
+  'biddings.status.bulk':                m=>({g:`mudou o status de ${(m.biddingIds||[]).length} licitações em lote`, inf:`mudar o status de ${(m.biddingIds||[]).length} licitações em lote`}),
+  'responsible.view':                    m=>({g:`viu os responsáveis da licitação nº ${m.biddingId}`, inf:`ver os responsáveis da licitação nº ${m.biddingId}`}),
+  'responsible.add':                     m=>({g:`atribuiu um responsável à licitação nº ${m.biddingId}`, inf:`atribuir um responsável à licitação nº ${m.biddingId}`}),
+  'responsible.remove':                  m=>({g:`removeu um responsável da licitação nº ${m.biddingId}`, inf:`remover um responsável da licitação nº ${m.biddingId}`}),
+  'responsible.bulk':                    m=>({g:`atribuiu responsáveis a ${(m.biddingIds||[]).length} licitações em lote`, inf:`atribuir responsáveis a ${(m.biddingIds||[]).length} licitações em lote`}),
+  'comment.view':                        m=>({g:`viu os comentários da licitação nº ${m.biddingId}`, inf:`ver os comentários da licitação nº ${m.biddingId}`}),
+  'comment.create':                      m=>({g:`comentou na licitação nº ${m.biddingId}`, inf:`comentar na licitação nº ${m.biddingId}`}),
+  'comment.update':                      ()=>({g:'editou um comentário', inf:'editar um comentário'}),
+  'comment.delete':                      ()=>({g:'excluiu um comentário', inf:'excluir um comentário'}),
+  'biddings.technical_analysis.edit':    m=>({g:`editou a análise técnica da licitação nº ${m.biddingId}`, inf:`editar a análise técnica da licitação nº ${m.biddingId}`}),
+  'biddings.technical_analysis.accept':  m=>({g:`aceitou um valor da análise da licitação nº ${m.biddingId}`, inf:`aceitar um valor da análise da licitação nº ${m.biddingId}`}),
+  'biddings.technical_analysis.reextract':m=>({g:`reprocessou a análise da licitação nº ${m.biddingId}`, inf:`reprocessar a análise da licitação nº ${m.biddingId}`}),
+  'software_requirement.view':           m=>({g:`viu os requisitos da licitação nº ${m.biddingId}`, inf:`ver os requisitos da licitação nº ${m.biddingId}`}),
+  'software_requirement.create':         ()=>({g:'criou um requisito de software', inf:'criar um requisito de software'}),
+  'software_requirement.update':         ()=>({g:'editou um requisito de software', inf:'editar um requisito de software'}),
+  'software_requirement.delete':         ()=>({g:'excluiu um requisito de software', inf:'excluir um requisito de software'}),
+  'software_requirement.evaluate':       ()=>({g:'avaliou um requisito de software', inf:'avaliar um requisito de software'}),
+  'software_requirement.set_responsible':()=>({g:'definiu o responsável por um requisito', inf:'definir o responsável por um requisito'}),
+  'software_requirement.status':         ()=>({g:'mudou o status dos requisitos', inf:'mudar o status dos requisitos'}),
+  'software_requirement.columns.manage': ()=>({g:'ajustou as colunas dos requisitos', inf:'ajustar as colunas dos requisitos'}),
+  'software_requirement.import':         ()=>({g:'importou requisitos de software', inf:'importar requisitos de software'}),
+  'export.csv':                          ()=>({g:'exportou um CSV', inf:'exportar um CSV'}),
+  'export.xlsx':                         ()=>({g:'exportou uma planilha (XLSX)', inf:'exportar uma planilha (XLSX)'}),
+  'software_requirement.export':         ()=>({g:'exportou os requisitos de software', inf:'exportar os requisitos de software'}),
+  'org.user.invite':                     m=>({g:`convidou o usuário ${m.email}`, inf:'convidar um usuário'}),
+  'org.user.remove':                     ()=>({g:'removeu um usuário', inf:'remover um usuário'}),
+  'org.user.change_role':                ()=>({g:'mudou a função de um usuário', inf:'mudar a função de um usuário'}),
+  'org.segments.manage':                 ()=>({g:'gerenciou os segmentos', inf:'gerenciar os segmentos'}),
+  'org.agencies.manage':                 ()=>({g:'gerenciou os órgãos e agências', inf:'gerenciar os órgãos e agências'}),
+  'org.settings.manage':                 ()=>({g:'alterou as configurações da organização', inf:'alterar as configurações da organização'}),
+  'org.audit_log.view':                  ()=>({g:'abriu a auditoria', inf:'abrir a auditoria'}),
+};
+function auditEvent(a){
+  const f=AUDIT_EV[a.r]; const e=f?f(a.meta||{}):{g:a.r,inf:a.r};
+  return a.granted ? e.g : `tentou ${e.inf} e o acesso foi negado (403)`;
+}
+function metaStr(m){return '{'+Object.entries(m||{}).map(([k,v])=>`${k}:${Array.isArray(v)?'['+v.join(',')+']':v}`).join(', ')+'}';}
+// Copia o registro bruto documentado (data;userId;recurso;metadado + escopo/granted) - detalhe técnico fora da tela
+function copyAudit(i){
+  const a=AUDIT[i];
+  const line=`${a.ts};${a.u};${a.r};${metaStr(a.meta)};scope=${a.scope||'null'};granted=${a.granted}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(line).catch(()=>{});
+  toast('Registro copiado');
+}
+function cap1(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+function fmtAuditDate(ts){const [d,c]=ts.split(' ');const [y,m,day]=d.split('-');return `${day}/${m}/${y} às ${c}`;}
+function emailOf(name){const u=users.find(x=>x.n===name);return u?u.e:'';}
+function renderAudit(){
+  updateFunnels('audit');
+  const q=(document.getElementById('auditSearch').value||'').toLowerCase();
+  const rows=AUDIT.filter(a=>
+    (!q||a.u.toLowerCase().includes(q)||auditEvent(a).toLowerCase().includes(q)||a.r.toLowerCase().includes(q))&&passColF('audit',a)
+  );
+  const body=document.getElementById('auditBody');
+  if(!rows.length){body.innerHTML=`<tr><td colspan="4"><div class="empty"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><h4>Nenhum registro</h4><p>Ajuste a busca para ver eventos de auditoria.</p></div></td></tr>`;return;}
+  body.innerHTML=rows.map(a=>{
+    const email=emailOf(a.u);
+    const role=roleOf(a.u);
+    const badge=role?`<span class="role-pill" style="cursor:default;pointer-events:none">${ROLES[role].label}</span>`:'';
+    return `<tr>
+      <td><input type="checkbox" class="rowcb" onchange="updateBulk('audit')"></td>
+      <td><div><div style="display:flex;align-items:center;gap:7px"><span style="font-weight:600">${a.u}</span>${badge}</div>${email?`<div class="u-email">${email}</div>`:''}</div></td>
+      <td class="audit-event">${cap1(auditEvent(a))}</td>
+      <td class="audit-date">${fmtAuditDate(a.ts)}</td>
+    </tr>`;
+  }).join('');
+  updateBulk('audit');
+}
+
+/* ============ TOAST ============ */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+  t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ============ AÇÃO EM LOTE ============ */
+let _bulkCtx='users';
+function bodyOf(t){return document.getElementById(t==='users'?'usersBody':'auditBody');}
+function rowCbs(t){return [...bodyOf(t).querySelectorAll('.rowcb')];}
+function toggleAll(t,el){rowCbs(t).forEach(c=>c.checked=el.checked);updateBulk(t);}
+function clearBulk(){rowCbs(_bulkCtx).forEach(c=>c.checked=false);updateBulk(_bulkCtx);}
+function updateBulk(t){
+  const cbs=rowCbs(t), n=cbs.filter(c=>c.checked).length;
+  const head=document.querySelector(`#view-${t} .rowcb-all`);
+  if(head){head.checked=n>0&&n===cbs.length;head.indeterminate=n>0&&n<cbs.length;}
+  const bar=document.getElementById('bulkBar');
+  if(n===0){bar.classList.remove('show');return;}
+  _bulkCtx=t;
+  const noun=t==='users'?(n===1?'pessoa selecionada':'pessoas selecionadas'):(n===1?'registro selecionado':'registros selecionados');
+  document.getElementById('bbCount').textContent=`${n} ${noun}`;
+  document.getElementById('bbActions').innerHTML = t==='users'
+    ? `<button onclick="bulkUsers('funcao')">Mudar função</button><button onclick="bulkUsers('senha')">Resetar senha</button><button onclick="bulkUsers('remover')">Remover</button>`
+    : `<button onclick="bulkAudit()">Exportar</button>`;
+  bar.classList.add('show');
+}
+function bulkCount(t){return rowCbs(t).filter(c=>c.checked).length;}
+function bulkUsers(a){
+  const n=bulkCount('users'), pl=n===1?'pessoa':'pessoas';
+  if(a==='senha'){toast(`Link de redefinição enviado para ${n} ${pl}`);clearBulk();}
+  else if(a==='funcao'){toast(`Função atualizada para ${n} ${pl}`);clearBulk();}
+  else if(a==='remover'){
+    confirmAction({
+      icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+      title:'Remover acesso', danger:true, okLabel:'Remover',
+      msg:`Remover <b>${n}</b> ${pl} do workspace? Elas perdem o acesso imediatamente.`,
+      onOk:()=>{
+        const idxs=rowCbs('users').filter(c=>c.checked).map(c=>+c.dataset.idx).sort((x,y)=>y-x);
+        idxs.forEach(i=>users.splice(i,1));
+        renderUsers();toast(`${n} ${pl} ${n===1?'removida':'removidas'}`);
+      }
+    });
+  }
+}
+function bulkAudit(){
+  const n=bulkCount('audit');
+  toast(`${n} ${n===1?'registro exportado':'registros exportados'} com sucesso!`);
+  clearBulk();
+}
+
+/* ============ INIT ============ */
+renderAudit();renderUsers();go('users');
+</script>
+</body>
+</html>
