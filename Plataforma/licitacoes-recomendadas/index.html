@@ -240,6 +240,15 @@
     display:inline-flex;align-items:center;justify-content:center;color:#525252;
   }
   .ia:hover{background:var(--muted);color:var(--foreground);}
+  /* badge de contagem de arquivos no ícone de pasta (estilo notificação) */
+  .ia.folder{position:relative;overflow:visible;}
+  .ia-count{
+    position:absolute;top:-6px;right:-6px;
+    min-width:17px;height:17px;padding:0 4px;border-radius:9999px;box-sizing:border-box;
+    background:var(--accent);color:#fff;font-size:10px;font-weight:700;line-height:14px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid #fff;
+  }
 
   /* segments */
   .segments{display:flex;gap:6px;margin:14px 0 12px;flex-wrap:wrap;}
@@ -639,7 +648,7 @@ const DATA = [
     valor:'12.640.310,00', id:'1099842', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por lote',
     estado:'SP', cidade:'Campinas', habitantes:'1.223.237', portal:'compras.campinas.sp.gov…',
     adicionada:'07/02/2026', atualizada:'14/02/2026', envio:'21/02/2026', itens:14, total:120, collapsed:false,
-    semAnexo:false, saved:false,
+    semAnexo:false, saved:false, arquivos:3,
   },
   {
     edital:'90455/2025', orgao:'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
@@ -647,7 +656,7 @@ const DATA = [
     valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
     estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
     adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
-    semAnexo:false, saved:true, updated:true,   // salvo que já recebeu o anexo → mostra "Atualizado" na fila
+    semAnexo:false, saved:true, updated:true, arquivos:2,   // salvo que já recebeu o anexo → "Atualizado" + qtd de arquivos
   },
 ];
 
@@ -676,7 +685,7 @@ function cardHTML(d){
           <button class="ia" title="Copiar link">${I.link}</button>
           <button class="ia" title="Compartilhar">${I.share}</button>
           <button class="ia" title="Documentos">${I.file}</button>
-          <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':'Abrir anexo'}">${d.semAnexo?I.folderOff:I.folder}</button>
+          <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':((d.arquivos||0)+(((d.arquivos||0)===1)?' arquivo anexado':' arquivos anexados'))}">${d.semAnexo?I.folderOff:I.folder}${(!d.semAnexo&&d.arquivos>0)?`<span class="ia-count">${d.arquivos}</span>`:''}</button>
         </div>
       </div>
     </div>
