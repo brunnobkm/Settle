@@ -177,26 +177,48 @@
   .doc-table td.full { font-weight: 700; }
   .doc-table a { color: #1d4ed8; }
 
-  /* floating extract button */
+  /* dica que acompanha o cursor antes de selecionar */
+  .cursor-hint {
+    position: fixed; z-index: 55;
+    display: none;
+    padding: 5px 10px;
+    background: rgba(17,24,39,.92);
+    color: #fff; font-size: 12.5px; font-weight: 500;
+    border-radius: 7px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+  .cursor-hint.is-visible { display: block; }
+
+  /* barra flutuante de ação ao selecionar um trecho (estilo Figma) */
   .extract-fab {
     position: fixed; z-index: 60;
     transform: translate(-50%, -100%);
     display: none;
-    align-items: center; gap: 7px;
-    padding: 8px 13px;
-    background: #111827; color: #fff;
-    border-radius: 9px; font-size: 13px; font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,.28);
+    align-items: center; gap: 8px;
+    padding: 8px;
+    background: #3a9b9e;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.1);
     white-space: nowrap;
     animation: pop .12s ease;
   }
+  .extract-fab.is-visible { display: inline-flex; }
   .extract-fab::after {
     content: ""; position: absolute; left: 50%; top: 100%;
     transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: #111827;
+    border: 7px solid transparent; border-top-color: #3a9b9e;
   }
-  .extract-fab.is-visible { display: inline-flex; }
-  .extract-fab svg { color: #5eead4; }
+  .fab-label { color: #fff; font-size: 14px; font-weight: 500; padding: 0 8px; }
+  .fab-sep { width: 1px; height: 24px; background: rgba(255,255,255,.35); flex: 0 0 auto; }
+  .fab-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #fff; font-size: 14px; font-weight: 500;
+    padding: 6px 12px; border-radius: 8px;
+    transition: background .15s;
+  }
+  .fab-btn:hover { background: rgba(255,255,255,.16); }
   @keyframes pop { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } }
 
   /* ---------- Sidebar ---------- */
@@ -454,11 +476,17 @@
     </div>
   </div>
 
-  <!-- floating extract button -->
-  <button class="extract-fab" id="extractFab" type="button" onmousedown="event.preventDefault()" onclick="addFromSelection()">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
-    Extrair
-  </button>
+  <!-- dica que acompanha o cursor antes de selecionar -->
+  <div class="cursor-hint" id="cursorHint">Selecione um trecho</div>
+
+  <!-- barra flutuante de ação ao selecionar um trecho -->
+  <div class="extract-fab" id="extractFab" onmousedown="event.preventDefault()">
+    <span class="fab-label">Trecho selecionado</span>
+    <span class="fab-sep"></span>
+    <button class="fab-btn" type="button" onclick="addFromSelection()">Extrair</button>
+    <span class="fab-sep"></span>
+    <button class="fab-btn" type="button" onclick="copySelection()">Copiar</button>
+  </div>
 
   <div class="toast" id="toast">Marcação adicionada</div>
 
@@ -486,18 +514,34 @@
     return { text, range };
   }
 
+  const cursorHint = document.getElementById('cursorHint');
+  let hasSelection = false;
+
   document.addEventListener('selectionchange', () => {
     const found = currentSelectionInDoc();
     if (found) {
       pendingText = found.text;
+      hasSelection = true;
       addBtn.disabled = false;
+      hideCursorHint();
       showFab(found.range);
     } else {
       pendingText = '';
+      hasSelection = false;
       addBtn.disabled = true;
       hideFab();
     }
   });
+
+  // dica "Selecione um trecho" acompanhando o cursor (enquanto nada está selecionado)
+  page.addEventListener('mousemove', (e) => {
+    if (hasSelection) { hideCursorHint(); return; }
+    cursorHint.style.left = (e.clientX + 14) + 'px';
+    cursorHint.style.top = e.clientY + 'px';
+    cursorHint.classList.add('is-visible');
+  });
+  page.addEventListener('mouseleave', hideCursorHint);
+  function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
 
   function showFab(range) {
     const rect = range.getBoundingClientRect();
@@ -507,6 +551,24 @@
     fab.classList.add('is-visible');
   }
   function hideFab() { fab.classList.remove('is-visible'); }
+
+  function copySelection() {
+    const text = pendingText;
+    if (!text) return;
+    const done = () => toast('Trecho copiado');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta); done();
+  }
 
   document.getElementById('pdfScroll').addEventListener('scroll', hideFab);
 
