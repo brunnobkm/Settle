@@ -340,10 +340,12 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
             </button>
             <select id="zoomSelect" onchange="setZoom(this.value)" aria-label="Nível de zoom">
+              <option value="fit" selected>Ajustar</option>
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
               <option value="1">100%</option>
               <option value="1.25">125%</option>
               <option value="1.5">150%</option>
-              <option value="1.67" selected>167%</option>
               <option value="2">200%</option>
             </select>
             <button class="tool" type="button" aria-label="Aumentar zoom" onclick="zoomStep(1)">
@@ -572,19 +574,48 @@
     return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  /* ---------- toolbar (visual) ---------- */
+  /* ---------- zoom / fit ---------- */
+  const PAGE_NATURAL_W = 760; // largura base do documento (px)
+  const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+  function fitScale() {
+    const scroll = document.getElementById('pdfScroll');
+    const cs = getComputedStyle(scroll);
+    const avail = scroll.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    return Math.max(0.2, avail / PAGE_NATURAL_W);
+  }
+
+  function applyScale(scale) { page.style.zoom = scale; }
+
   function setZoom(v) {
-    page.style.transform = `scale(${v})`;
-    document.getElementById('zoomSelect').value = v;
+    const sel = document.getElementById('zoomSelect');
+    if (v === 'fit') {
+      applyScale(fitScale());
+      sel.value = 'fit';
+    } else {
+      applyScale(parseFloat(v));
+      sel.value = String(v);
+    }
   }
+
   function zoomStep(dir) {
-    const opts = [1, 1.25, 1.5, 1.67, 2];
-    const cur = parseFloat(document.getElementById('zoomSelect').value);
-    let i = opts.indexOf(cur);
-    if (i === -1) i = 3;
-    i = Math.max(0, Math.min(opts.length - 1, i + dir));
-    setZoom(opts[i]);
+    const sel = document.getElementById('zoomSelect');
+    const cur = sel.value === 'fit' ? fitScale() : parseFloat(sel.value);
+    let target;
+    if (dir > 0) {
+      target = ZOOM_STEPS.find(o => o > cur + 0.001);
+      if (target === undefined) target = ZOOM_STEPS[ZOOM_STEPS.length - 1];
+    } else {
+      target = [...ZOOM_STEPS].reverse().find(o => o < cur - 0.001);
+      if (target === undefined) target = ZOOM_STEPS[0];
+    }
+    setZoom(String(target));
   }
+
+  // mantém o documento ajustado à área ao redimensionar a janela
+  window.addEventListener('resize', () => {
+    if (document.getElementById('zoomSelect').value === 'fit') applyScale(fitScale());
+  });
   function setTool(t) {
     document.getElementById('handTool').classList.toggle('is-active', t === 'hand');
     document.getElementById('selectTool').classList.toggle('is-active', t === 'select');
@@ -599,7 +630,7 @@
     toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
   }
 
-  setZoom(1.67);
+  setZoom('fit');
 </script>
 </body>
 </html>
