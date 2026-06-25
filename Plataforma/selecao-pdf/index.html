@@ -41,10 +41,10 @@
   .screen {
     max-width: 1860px;
     margin: 0 auto;
-    padding: 22px 26px 26px;
+    padding: 22px 16px 16px;
   }
 
-  .screen-head { padding: 6px 6px 18px; }
+  .screen-head { padding: 6px 0 18px; }
   .screen-head h1 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
   .screen-head p { margin-top: 5px; font-size: 14px; color: var(--muted); }
 
@@ -111,7 +111,7 @@
   /* PDF control strip */
   .pdf-tools {
     display: flex; align-items: center; gap: 6px;
-    padding: 8px 14px;
+    padding: 8px 16px;
     border-bottom: 1px solid var(--line);
     background: #fcfcfd;
   }
@@ -137,8 +137,8 @@
 
   /* PDF scroll area + page */
   .pdf-scroll {
-    flex: 1; overflow: auto; background: #6b7180;
-    padding: 28px; display: flex; justify-content: center;
+    flex: 1; overflow: auto; background: #fff;
+    padding: 16px; display: flex; justify-content: center;
   }
   .pdf-scroll::-webkit-scrollbar { width: 12px; height: 12px; }
   .pdf-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.28); border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
@@ -146,8 +146,8 @@
   .page {
     width: 760px; max-width: 100%;
     background: #fff;
-    box-shadow: var(--shadow-lg);
-    padding: 56px 64px;
+    border: 1px solid var(--line);
+    padding: 16px;
     color: #1a1a1a;
     transform-origin: top center;
     --doc-zoom: 1;
@@ -202,7 +202,7 @@
     min-height: 560px;
     display: flex; flex-direction: column;
   }
-  .sb-head { padding: 20px 20px 14px; border-bottom: 1px solid var(--line); }
+  .sb-head { padding: 20px 16px 14px; border-bottom: 1px solid var(--line); }
   .sb-head h2 { font-size: 15.5px; font-weight: 700; }
   .sb-head p { margin-top: 5px; font-size: 13px; color: var(--muted); line-height: 1.45; }
 
@@ -229,7 +229,7 @@
   .btn-add:active { transform: translateY(1px); }
   .btn-add:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
 
-  .sb-body { flex: 1; overflow: auto; padding: 16px 18px; }
+  .sb-body { flex: 1; overflow: auto; padding: 16px; }
 
   .empty {
     border: 1px dashed var(--line-strong); border-radius: 11px;
@@ -270,7 +270,7 @@
   .mark-foot { margin-top: 11px; }
   .mark-foot .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
 
-  .sb-foot { padding: 14px 18px; border-top: 1px solid var(--line); }
+  .sb-foot { padding: 14px 16px; border-top: 1px solid var(--line); }
   .btn-submit {
     width: 100%; padding: 13px; border-radius: 11px;
     background: var(--green-soft); color: #fff; font-size: 14.5px; font-weight: 700;
@@ -300,8 +300,8 @@
 <body>
   <div class="screen">
     <header class="screen-head">
-      <h1>Seleção de PDF</h1>
-      <p>Revise e ajuste os trechos usados na análise de software.</p>
+      <h1>Title</h1>
+      <p>Explicação ...</p>
     </header>
 
     <div class="workspace">
@@ -311,7 +311,6 @@
           <span class="file-pill">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
             <span class="name">edital_preg_o_004.16_plataform</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </span>
           <span class="spacer"></span>
           <button class="btn-ghost" type="button" onclick="toast('Download iniciado')">
