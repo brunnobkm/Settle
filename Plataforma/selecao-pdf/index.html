@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Seleção de PDF · Settle</title>
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --panel: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #e5e7eb;
+    --line-strong: #d4d4d4;
+    --accent: #2563eb;
+    --accent-soft: #eff4ff;
+    --green: #14b8a6;
+    --green-strong: #0d9488;
+    --green-soft: #8fd6cb;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-lg: 0 10px 30px rgba(16,24,40,.10);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  select { font: inherit; cursor: pointer; }
+
+  /* ---------- Shell ---------- */
+  .screen {
+    max-width: 1860px;
+    margin: 0 auto;
+    padding: 22px 26px 26px;
+  }
+
+  .screen-head { padding: 6px 6px 18px; }
+  .screen-head h1 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+  .screen-head p { margin-top: 5px; font-size: 14px; color: var(--muted); }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 392px;
+    gap: 22px;
+    align-items: start;
+  }
+
+  /* ---------- Viewer panel ---------- */
+  .viewer {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 130px);
+    min-height: 560px;
+  }
+
+  .viewer-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .file-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fafafa;
+    font-size: 13.5px;
+    color: #374151;
+    max-width: 340px;
+  }
+  .file-pill .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-pill svg { flex: 0 0 auto; color: var(--faint); }
+
+  .viewer-bar .spacer { flex: 1; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border: 1px solid var(--line); border-radius: 9px;
+    background: #fff; font-size: 13.5px; color: #374151; font-weight: 500;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-ghost:hover { background: #f7f7f8; border-color: var(--line-strong); }
+
+  .icon-btn {
+    width: 36px; height: 36px; display: inline-grid; place-items: center;
+    border-radius: 9px; color: var(--muted);
+    transition: background .15s, color .15s;
+  }
+  .icon-btn:hover { background: #f1f1f2; color: var(--ink); }
+
+  /* PDF control strip */
+  .pdf-tools {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #fcfcfd;
+  }
+  .pdf-tools .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+  .pdf-tools .grow { flex: 1; }
+  .tool {
+    width: 34px; height: 34px; display: inline-grid; place-items: center;
+    border-radius: 8px; color: var(--muted);
+    transition: background .15s, color .15s, box-shadow .15s;
+  }
+  .tool:hover { background: #eef0f2; color: var(--ink); }
+  .tool.is-active { color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px rgba(37,99,235,.25); }
+  .zoom {
+    display: inline-flex; align-items: center; gap: 4px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 3px;
+    background: #fff;
+  }
+  .zoom select {
+    border: 0; background: none; font-size: 13px; padding: 4px 6px; color: #374151;
+    appearance: none; -webkit-appearance: none; text-align: center;
+  }
+  .zoom .tool { width: 30px; height: 28px; }
+
+  /* PDF scroll area + page */
+  .pdf-scroll {
+    flex: 1; overflow: auto; background: #6b7180;
+    padding: 28px; display: flex; justify-content: center;
+  }
+  .pdf-scroll::-webkit-scrollbar { width: 12px; height: 12px; }
+  .pdf-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.28); border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+
+  .page {
+    width: 760px; max-width: 100%;
+    background: #fff;
+    box-shadow: var(--shadow-lg);
+    padding: 56px 64px;
+    color: #1a1a1a;
+    transform-origin: top center;
+    --doc-zoom: 1;
+  }
+  /* selectable doc text */
+  .doc { font-size: 14.5px; line-height: 1.62; }
+  .doc ::selection, .doc::selection { background: rgba(20,184,166,.28); }
+  .doc .center { text-align: center; }
+  .emblem { width: 86px; height: 86px; margin: 0 auto 14px; display: block; }
+  .doc h2 { font-size: 18px; font-weight: 800; letter-spacing: .02em; }
+  .doc .sub { font-size: 16px; font-weight: 700; font-style: italic; margin-top: 2px; }
+  .doc .edital-tag { font-size: 15px; font-weight: 800; letter-spacing: .04em; margin-top: 4px; }
+  .doc .heading { font-weight: 800; margin: 22px 0 6px; }
+  .doc p { margin: 12px 0; text-align: justify; }
+  .doc b { font-weight: 700; }
+
+  .doc-table { width: 100%; border-collapse: collapse; margin: 18px 0 8px; font-size: 13.5px; }
+  .doc-table td { border: 1px solid #111; padding: 6px 9px; vertical-align: top; line-height: 1.5; }
+  .doc-table td.k { width: 38%; font-weight: 700; white-space: nowrap; }
+  .doc-table td.full { font-weight: 700; }
+  .doc-table a { color: #1d4ed8; }
+
+  /* floating extract button */
+  .extract-fab {
+    position: fixed; z-index: 60;
+    transform: translate(-50%, -100%);
+    display: none;
+    align-items: center; gap: 7px;
+    padding: 8px 13px;
+    background: #111827; color: #fff;
+    border-radius: 9px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,.28);
+    white-space: nowrap;
+    animation: pop .12s ease;
+  }
+  .extract-fab::after {
+    content: ""; position: absolute; left: 50%; top: 100%;
+    transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: #111827;
+  }
+  .extract-fab.is-visible { display: inline-flex; }
+  .extract-fab svg { color: #5eead4; }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    height: calc(100dvh - 130px);
+    min-height: 560px;
+    display: flex; flex-direction: column;
+  }
+  .sb-head { padding: 20px 20px 14px; border-bottom: 1px solid var(--line); }
+  .sb-head h2 { font-size: 15.5px; font-weight: 700; }
+  .sb-head p { margin-top: 5px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+
+  .sb-controls { display: flex; gap: 9px; margin-top: 14px; }
+  .type-select {
+    position: relative; flex: 1;
+  }
+  .type-select select {
+    width: 100%; appearance: none; -webkit-appearance: none;
+    border: 1px solid var(--line); border-radius: 9px;
+    padding: 9px 32px 9px 12px; font-size: 13.5px; color: #374151; background: #fff;
+    transition: border-color .15s;
+  }
+  .type-select select:hover { border-color: var(--line-strong); }
+  .type-select .chev { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--faint); }
+
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: 9px;
+    background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 600;
+    transition: opacity .15s, background .15s, transform .05s;
+  }
+  .btn-add:hover { background: #000; }
+  .btn-add:active { transform: translateY(1px); }
+  .btn-add:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+
+  .sb-body { flex: 1; overflow: auto; padding: 16px 18px; }
+
+  .empty {
+    border: 1px dashed var(--line-strong); border-radius: 11px;
+    padding: 26px 18px; text-align: center;
+    color: var(--faint); font-size: 13.5px;
+    background: #fafafa;
+  }
+
+  .mark-list { display: flex; flex-direction: column; gap: 11px; }
+  .mark {
+    border: 1px solid var(--line); border-radius: 11px;
+    background: #fff; padding: 13px 13px 12px;
+    box-shadow: var(--shadow);
+    animation: card-in .18s ease;
+  }
+  @keyframes card-in { from { opacity: 0; transform: translateY(4px); } }
+  .mark.is-title { border-color: #c7d2fe; background: #f5f7ff; }
+
+  .mark-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    background: #eef2f5; color: #4b5563;
+  }
+  .badge.title { background: #e0e7ff; color: #4338ca; }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .mark-del {
+    width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 7px;
+    color: var(--faint); transition: background .15s, color .15s;
+  }
+  .mark-del:hover { background: #fdecec; color: #dc2626; }
+
+  .mark-text { font-size: 13.5px; line-height: 1.5; color: #1f2937; }
+  .mark.is-title .mark-text { font-weight: 700; color: #111827; }
+  .mark-text .quote { color: var(--faint); }
+
+  .mark-foot { margin-top: 11px; }
+  .mark-foot .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
+
+  .sb-foot { padding: 14px 18px; border-top: 1px solid var(--line); }
+  .btn-submit {
+    width: 100%; padding: 13px; border-radius: 11px;
+    background: var(--green-soft); color: #fff; font-size: 14.5px; font-weight: 700;
+    transition: background .15s, box-shadow .15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-submit.is-ready { background: var(--green); box-shadow: 0 6px 18px rgba(20,184,166,.30); }
+  .btn-submit.is-ready:hover { background: var(--green-strong); }
+  .btn-submit:not(.is-ready) { cursor: not-allowed; }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #111827; color: #fff; padding: 11px 18px; border-radius: 10px;
+    font-size: 13.5px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 80;
+  }
+  .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 1080px) {
+    .workspace { grid-template-columns: 1fr; }
+    .viewer, .sidebar { height: auto; }
+    .pdf-scroll { max-height: 60vh; }
+  }
+</style>
+</head>
+<body>
+  <div class="screen">
+    <header class="screen-head">
+      <h1>Seleção de PDF</h1>
+      <p>Revise e ajuste os trechos usados na análise de software.</p>
+    </header>
+
+    <div class="workspace">
+      <!-- ===================== VIEWER ===================== -->
+      <section class="viewer" aria-label="Visualizador de PDF">
+        <div class="viewer-bar">
+          <span class="file-pill">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <span class="name">edital_preg_o_004.16_plataform</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
+          <span class="spacer"></span>
+          <button class="btn-ghost" type="button" onclick="toast('Download iniciado')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            Baixar
+          </button>
+          <button class="icon-btn" type="button" aria-label="Fechar" onclick="toast('Fechar visualizador')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="pdf-tools">
+          <button class="tool" type="button" aria-label="Painel de páginas">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          </button>
+          <button class="tool" type="button" aria-label="Uma página">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+          </button>
+          <span class="sep"></span>
+          <div class="zoom">
+            <button class="tool" type="button" aria-label="Diminuir zoom" onclick="zoomStep(-1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+            </button>
+            <select id="zoomSelect" onchange="setZoom(this.value)" aria-label="Nível de zoom">
+              <option value="1">100%</option>
+              <option value="1.25">125%</option>
+              <option value="1.5">150%</option>
+              <option value="1.67" selected>167%</option>
+              <option value="2">200%</option>
+            </select>
+            <button class="tool" type="button" aria-label="Aumentar zoom" onclick="zoomStep(1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </button>
+          </div>
+          <span class="sep"></span>
+          <button class="tool" type="button" id="handTool" aria-label="Mover" onclick="setTool('hand')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+          </button>
+          <button class="tool is-active" type="button" id="selectTool" aria-label="Selecionar texto" onclick="setTool('select')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/></svg>
+          </button>
+          <span class="grow"></span>
+          <button class="tool" type="button" aria-label="Buscar no documento">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+        </div>
+
+        <div class="pdf-scroll" id="pdfScroll">
+          <article class="page" id="page">
+            <div class="doc" id="doc">
+              <div class="center">
+                <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle cx="50" cy="50" r="46" fill="#0b6b3a"/>
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="#0a5530" stroke-width="2"/>
+                  <circle cx="50" cy="50" r="28" fill="#1f8f55"/>
+                  <circle cx="50" cy="50" r="11" fill="#1746a0"/>
+                  <g fill="#ffd23f">
+                    <circle cx="50" cy="33" r="1.6"/><circle cx="62" cy="38" r="1.6"/><circle cx="66" cy="50" r="1.6"/>
+                    <circle cx="62" cy="62" r="1.6"/><circle cx="50" cy="67" r="1.6"/><circle cx="38" cy="62" r="1.6"/>
+                    <circle cx="34" cy="50" r="1.6"/><circle cx="38" cy="38" r="1.6"/>
+                  </g>
+                  <g stroke="#ffd23f" stroke-width="2.4" fill="none" opacity=".85">
+                    <path d="M16 70 Q50 86 84 70"/>
+                  </g>
+                </svg>
+                <h2>CÂMARA DE VEREADORES DE PETROLINA</h2>
+                <div class="sub">Casa Vereador Plínio Amorim</div>
+                <div class="edital-tag">EDITAL</div>
+              </div>
+
+              <p class="center" style="margin-top:26px"><b>PREGÃO ELETRÔNICO Nº 004/2026</b></p>
+              <p class="center" style="margin-top:-6px"><b>PROCESSO ADMINISTRATIVO Nº 080/2026</b></p>
+
+              <p>
+                <b>A Câmara Municipal de Petrolina</b>, inscrito no C.N.P.J/MF sob o nº 11.473.675/0001-74,
+                através da Agente de Contratação, e auxiliada pela <b>Equipe de Apoio</b>, tornam público que fará
+                licitação, na modalidade de <b>PREGÃO</b>, na forma <b>ELETRÔNICA</b>, critério de julgamento <b>MENOR
+                PREÇO</b> (representado pelo <b>MENOR VALOR UNITÁRIO</b>), de acordo com o descrito neste edital
+                e seus anexos, objetivando a contratação conforme segue:
+              </p>
+
+              <table class="doc-table">
+                <tr><td class="k">SOLICITANTE:</td><td>Câmara Municipal de Petrolina.</td></tr>
+                <tr><td class="k">MODALIDADE/Nº</td><td>PREGÃO ELETRÔNICO Nº 004/2026</td></tr>
+                <tr><td class="k">PROCESSO ADMINISTRATIVO Nº</td><td>080/2026</td></tr>
+                <tr><td colspan="2"><b>OBJETO:</b> Contratação de empresa especializada para fornecimento, em regime de Software as a Service (SaaS), de plataforma informatizada de Gestão Eletrônica de Documentos, Processos Administrativos, Comunicação Institucional Interna e Externa e Atendimento Digital ao Cidadão, com implantação, migração de dados, parametrização, treinamento, suporte técnico, manutenção corretiva, adaptativa e evolutiva, para atendimento das necessidades da Câmara Municipal de Petrolina, conforme especificações/quantitativos indicados neste edital e anexos.</td></tr>
+                <tr><td colspan="2" class="full">CRITÉRIO DE JULGAMENTO: MENOR PREÇO, representado MENOR VALOR UNITÁRIO</td></tr>
+                <tr><td colspan="2" class="full">MODO DE DISPUTA: ABERTO E FECHADO</td></tr>
+                <tr><td colspan="2"><b>ACESSO AO EDITAL / LOCAL DA SESSÃO:</b> Conforme item 2 deste edital</td></tr>
+                <tr><td colspan="2"><b>DAS DATAS E HORÁRIOS DO CERTAME:</b> Conforme item 3 deste edital</td></tr>
+                <tr><td colspan="2"><b>PLATAFORMA ELETRÔNICA:</b> Portal de Compras Públicas</td></tr>
+                <tr><td colspan="2"><b>INFORMAÇÕES:</b> O edital e seus anexos encontram-se disponíveis:<br>- na plataforma do Portal de Compras Públicas - <a href="#">www.portaldecompraspublicas.com.br</a>;<br>- no <a href="#">site www.gov.br/pncp</a>.<br><b>Obs.:</b> Ainda, poderão ser solicitados pelo e-mail diretoriacamarapetrolina@gmail.com</td></tr>
+              </table>
+
+              <div class="heading">1. DO OBJETO</div>
+              <p>1.1. O objeto da presente licitação é a escolha da proposta mais vantajosa para a contratação do objeto acima descrito, conforme condições, quantidades e exigências estabelecidas neste Edital e seus anexos.</p>
+              <p>1.2. O critério de julgamento adotado será o <b>menor preço unitário</b> do item, observadas as exigências contidas neste Edital e seus anexos quanto às especificações do objeto.</p>
+
+              <div class="heading">2. DOS RECURSOS ORÇAMENTÁRIOS</div>
+              <p>2.1. As despesas decorrentes da presente contratação correrão à conta de recursos específicos consignados no orçamento vigente da Câmara Municipal de Petrolina.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <aside class="sidebar" aria-label="Trechos do PDF">
+        <div class="sb-head">
+          <h2>Trechos do PDF</h2>
+          <p>Selecione texto no PDF para criar ou substituir uma marcação.</p>
+          <div class="sb-controls">
+            <label class="type-select">
+              <select id="defaultType" aria-label="Tipo da próxima marcação">
+                <option value="conteudo">Conteúdo</option>
+                <option value="titulo">Título</option>
+              </select>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </label>
+            <button class="btn-add" id="addBtn" type="button" disabled onclick="addFromSelection()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Adicionar
+            </button>
+          </div>
+        </div>
+
+        <div class="sb-body" id="sbBody">
+          <div class="empty" id="emptyState">Nenhuma marcação foi localizada para este PDF.</div>
+          <div class="mark-list" id="markList" hidden></div>
+        </div>
+
+        <div class="sb-foot">
+          <button class="btn-submit" id="submitBtn" type="button" onclick="submitMarks()">Submeter</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- floating extract button -->
+  <button class="extract-fab" id="extractFab" type="button" onmousedown="event.preventDefault()" onclick="addFromSelection()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+    Extrair
+  </button>
+
+  <div class="toast" id="toast">Marcação adicionada</div>
+
+<script>
+  const docEl = document.getElementById('doc');
+  const fab = document.getElementById('extractFab');
+  const addBtn = document.getElementById('addBtn');
+  const markList = document.getElementById('markList');
+  const emptyState = document.getElementById('emptyState');
+  const submitBtn = document.getElementById('submitBtn');
+  const defaultType = document.getElementById('defaultType');
+  const page = document.getElementById('page');
+
+  let pendingText = '';
+  const marks = [];
+
+  /* ---------- selection handling ---------- */
+  function currentSelectionInDoc() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!docEl.contains(range.commonAncestorContainer)) return null;
+    const text = sel.toString().replace(/\s+/g, ' ').trim();
+    if (text.length < 2) return null;
+    return { text, range };
+  }
+
+  document.addEventListener('selectionchange', () => {
+    const found = currentSelectionInDoc();
+    if (found) {
+      pendingText = found.text;
+      addBtn.disabled = false;
+      showFab(found.range);
+    } else {
+      pendingText = '';
+      addBtn.disabled = true;
+      hideFab();
+    }
+  });
+
+  function showFab(range) {
+    const rect = range.getBoundingClientRect();
+    if (!rect.width && !rect.height) return;
+    fab.style.left = (rect.left + rect.width / 2) + 'px';
+    fab.style.top = (rect.top - 8) + 'px';
+    fab.classList.add('is-visible');
+  }
+  function hideFab() { fab.classList.remove('is-visible'); }
+
+  document.getElementById('pdfScroll').addEventListener('scroll', hideFab);
+
+  /* ---------- marcações ---------- */
+  function addFromSelection() {
+    if (!pendingText) return;
+    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value });
+    render();
+    window.getSelection()?.removeAllRanges();
+    pendingText = '';
+    addBtn.disabled = true;
+    hideFab();
+    toast('Marcação adicionada');
+  }
+
+  function removeMark(id) {
+    const i = marks.findIndex(m => m.id === id);
+    if (i > -1) marks.splice(i, 1);
+    render();
+  }
+
+  function setMarkType(id, value) {
+    const m = marks.find(m => m.id === id);
+    if (m) { m.type = value; render(); }
+  }
+
+  function render() {
+    const has = marks.length > 0;
+    emptyState.hidden = has;
+    markList.hidden = !has;
+    submitBtn.classList.toggle('is-ready', has);
+    submitBtn.textContent = has ? `Submeter (${marks.length})` : 'Submeter';
+
+    markList.innerHTML = marks.map(m => {
+      const isTitle = m.type === 'titulo';
+      return `
+      <div class="mark ${isTitle ? 'is-title' : ''}">
+        <div class="mark-top">
+          <span class="badge ${isTitle ? 'title' : ''}"><span class="dot"></span>${isTitle ? 'Título' : 'Conteúdo'}</span>
+          <button class="mark-del" type="button" aria-label="Remover" onclick="removeMark('${m.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
+        <div class="mark-foot">
+          <label class="type-select">
+            <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
+              <option value="conteudo" ${!isTitle ? 'selected' : ''}>Conteúdo</option>
+              <option value="titulo" ${isTitle ? 'selected' : ''}>Título</option>
+            </select>
+            <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </label>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function submitMarks() {
+    if (!marks.length) { toast('Adicione ao menos uma marcação'); return; }
+    toast(`${marks.length} marcação(ões) enviada(s) para análise`);
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ---------- toolbar (visual) ---------- */
+  function setZoom(v) {
+    page.style.transform = `scale(${v})`;
+    document.getElementById('zoomSelect').value = v;
+  }
+  function zoomStep(dir) {
+    const opts = [1, 1.25, 1.5, 1.67, 2];
+    const cur = parseFloat(document.getElementById('zoomSelect').value);
+    let i = opts.indexOf(cur);
+    if (i === -1) i = 3;
+    i = Math.max(0, Math.min(opts.length - 1, i + dir));
+    setZoom(opts[i]);
+  }
+  function setTool(t) {
+    document.getElementById('handTool').classList.toggle('is-active', t === 'hand');
+    document.getElementById('selectTool').classList.toggle('is-active', t === 'select');
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
+  }
+
+  setZoom(1.67);
+</script>
+</body>
+</html>
