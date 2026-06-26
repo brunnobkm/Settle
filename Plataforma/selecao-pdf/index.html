@@ -289,13 +289,22 @@
   }
   .mark-del:hover { background: #fdecec; color: #dc2626; }
 
-  .mark-text { font-size: 13.5px; line-height: 1.5; color: #1f2937; }
+  .mark-head { display: flex; align-items: center; gap: 8px; }
+  .mark-head .type-select { flex: 1; }
+  .mark-head .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
+  .mark-toggle {
+    flex: 0 0 auto;
+    width: 28px; height: 32px; display: inline-grid; place-items: center; border-radius: 8px;
+    color: var(--faint); transition: background .15s, color .15s;
+  }
+  .mark-toggle:hover { background: #f1f1f2; color: var(--ink); }
+  .mark-toggle .chev-toggle { transition: transform .18s ease; }
+  .mark.is-collapsed .mark-toggle .chev-toggle { transform: rotate(-90deg); }
+
+  .mark-text { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: #1f2937; }
   .mark.is-title .mark-text { font-weight: 700; color: #111827; }
   .mark-text .quote { color: var(--faint); }
-
-  .mark-foot { margin-top: 11px; display: flex; align-items: center; gap: 8px; }
-  .mark-foot .type-select { flex: 1; }
-  .mark-foot .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
+  .mark.is-collapsed .mark-text { display: none; }
 
   .sb-foot { padding: 14px 16px; border-top: 1px solid var(--line); }
   .btn-submit {
@@ -566,7 +575,7 @@
   /* ---------- marcações ---------- */
   function addFromSelection() {
     if (!pendingText) return;
-    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value });
+    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value, collapsed: false });
     render();
     window.getSelection()?.removeAllRanges();
     pendingText = '';
@@ -586,6 +595,11 @@
     if (m) { m.type = value; render(); }
   }
 
+  function toggleMark(id) {
+    const m = marks.find(m => m.id === id);
+    if (m) { m.collapsed = !m.collapsed; render(); }
+  }
+
   function render() {
     const has = marks.length > 0;
     emptyState.hidden = has;
@@ -596,9 +610,11 @@
     markList.innerHTML = marks.map(m => {
       const isTitle = m.type === 'titulo';
       return `
-      <div class="mark ${isTitle ? 'is-title' : ''}">
-        <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
-        <div class="mark-foot">
+      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''}">
+        <div class="mark-head">
+          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleMark('${m.id}')">
+            <svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
           <label class="type-select">
             <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
               <option value="conteudo" ${!isTitle ? 'selected' : ''}>Conteúdo</option>
@@ -610,6 +626,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
           </button>
         </div>
+        <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
       </div>`;
     }).join('');
   }
