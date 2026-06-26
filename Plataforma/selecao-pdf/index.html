@@ -293,11 +293,12 @@
   /* itens (requisitos) */
   .item {
     display: flex; align-items: flex-start; gap: 6px;
-    border: 1px solid var(--line); border-radius: 9px; background: #fff;
-    padding: 9px 9px 9px 4px; cursor: pointer;
-    transition: border-color .15s, box-shadow .15s, background .15s;
+    border: 1px solid #e5e5e5; border-radius: 14px; background: #fff;
+    padding: 10px 10px 10px 5px; cursor: pointer;
+    box-shadow: rgba(0,0,0,0.10) 0px 1px 3px 0px, rgba(0,0,0,0.10) 0px 1px 2px -1px;
+    transition: box-shadow .25s ease-in-out, transform .15s ease-out;
   }
-  .item:hover { border-color: var(--green-soft); box-shadow: 0 2px 10px rgba(20,184,166,.12); }
+  .item:hover { box-shadow: rgba(0,0,0,0.10) 0px 10px 35px; transform: scale(1.005); }
   .item.is-active { background: #f5f5f5; }
   .item.dragging { opacity: .5; }
   .item-handle { width: 18px; height: 22px; margin-top: 1px; }
