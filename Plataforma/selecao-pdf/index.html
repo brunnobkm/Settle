@@ -194,22 +194,18 @@
   /* barra flutuante de ação ao selecionar um trecho (estilo Figma) */
   .extract-fab {
     position: fixed; z-index: 60;
-    transform: translate(-50%, -100%);
+    left: 50%; bottom: 16px;
+    transform: translateX(-50%);
     display: none;
     align-items: center; gap: 8px;
     padding: 8px;
     background: #3a9b9e;
     border-radius: 14px;
-    box-shadow: 0 4px 6px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.1);
+    box-shadow: 0 10px 30px rgba(16,24,40,.18), 0 2px 8px rgba(16,24,40,.12);
     white-space: nowrap;
-    animation: pop .12s ease;
+    animation: sonner-in .2s cubic-bezier(.4,0,.2,1);
   }
   .extract-fab.is-visible { display: inline-flex; }
-  .extract-fab::after {
-    content: ""; position: absolute; left: 50%; top: 100%;
-    transform: translateX(-50%);
-    border: 7px solid transparent; border-top-color: #3a9b9e;
-  }
   .fab-label { color: #fff; font-size: 14px; font-weight: 500; padding: 0 8px; }
   .fab-sep { width: 1px; height: 24px; background: rgba(255,255,255,.35); flex: 0 0 auto; }
   .fab-btn {
@@ -219,7 +215,7 @@
     transition: background .15s;
   }
   .fab-btn:hover { background: rgba(255,255,255,.16); }
-  @keyframes pop { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } }
+  @keyframes sonner-in { from { opacity: 0; transform: translate(-50%, 12px); } }
 
   /* ---------- Sidebar ---------- */
   .sidebar {
@@ -287,7 +283,8 @@
   .badge.title { background: #e0e7ff; color: #4338ca; }
   .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
   .mark-del {
-    width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 7px;
+    flex: 0 0 auto;
+    width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 8px;
     color: var(--faint); transition: background .15s, color .15s;
   }
   .mark-del:hover { background: #fdecec; color: #dc2626; }
@@ -296,7 +293,8 @@
   .mark.is-title .mark-text { font-weight: 700; color: #111827; }
   .mark-text .quote { color: var(--faint); }
 
-  .mark-foot { margin-top: 11px; }
+  .mark-foot { margin-top: 11px; display: flex; align-items: center; gap: 8px; }
+  .mark-foot .type-select { flex: 1; }
   .mark-foot .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
 
   .sb-foot { padding: 14px 16px; border-top: 1px solid var(--line); }
@@ -312,7 +310,7 @@
 
   /* toast */
   .toast {
-    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: #111827; color: #fff; padding: 11px 18px; border-radius: 10px;
     font-size: 13.5px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
     opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 80;
@@ -524,7 +522,7 @@
       hasSelection = true;
       addBtn.disabled = false;
       hideCursorHint();
-      showFab(found.range);
+      showFab();
     } else {
       pendingText = '';
       hasSelection = false;
@@ -543,13 +541,7 @@
   page.addEventListener('mouseleave', hideCursorHint);
   function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
 
-  function showFab(range) {
-    const rect = range.getBoundingClientRect();
-    if (!rect.width && !rect.height) return;
-    fab.style.left = (rect.left + rect.width / 2) + 'px';
-    fab.style.top = (rect.top - 8) + 'px';
-    fab.classList.add('is-visible');
-  }
+  function showFab() { fab.classList.add('is-visible'); }
   function hideFab() { fab.classList.remove('is-visible'); }
 
   function copySelection() {
@@ -570,7 +562,6 @@
     document.body.removeChild(ta); done();
   }
 
-  document.getElementById('pdfScroll').addEventListener('scroll', hideFab);
 
   /* ---------- marcações ---------- */
   function addFromSelection() {
@@ -606,12 +597,6 @@
       const isTitle = m.type === 'titulo';
       return `
       <div class="mark ${isTitle ? 'is-title' : ''}">
-        <div class="mark-top">
-          <span class="badge ${isTitle ? 'title' : ''}"><span class="dot"></span>${isTitle ? 'Título' : 'Conteúdo'}</span>
-          <button class="mark-del" type="button" aria-label="Remover" onclick="removeMark('${m.id}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
-        </div>
         <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
         <div class="mark-foot">
           <label class="type-select">
@@ -621,6 +606,9 @@
             </select>
             <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </label>
+          <button class="mark-del" type="button" aria-label="Remover" onclick="removeMark('${m.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+          </button>
         </div>
       </div>`;
     }).join('');
