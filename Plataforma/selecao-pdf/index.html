@@ -277,7 +277,7 @@
   }
   .mark:hover { border-color: var(--green-soft); box-shadow: 0 2px 10px rgba(20,184,166,.12); }
   @keyframes card-in { from { opacity: 0; transform: translateY(4px); } }
-  .mark.is-title { border-color: #c7d2fe; background: #f5f7ff; }
+  .mark.is-active { background: #f5f5f5; }
 
   .mark-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
   .badge {
@@ -515,6 +515,7 @@
 
   let pendingText = '';
   let pendingRange = null;
+  let activeMarkId = null;
   const marks = [];
 
   /* ---------- realce dos trechos no documento ---------- */
@@ -535,7 +536,10 @@
 
   function goToMark(id) {
     const m = marks.find(m => m.id === id);
-    if (!m || !m.range) return;
+    if (!m) return;
+    activeMarkId = id;
+    render();
+    if (!m.range) return;
     scrollRangeIntoView(m.range);
     if (supportsHighlight) {
       activeHighlight.clear();
@@ -635,6 +639,7 @@
   function removeMark(id) {
     const i = marks.findIndex(m => m.id === id);
     if (i > -1) marks.splice(i, 1);
+    if (activeMarkId === id) activeMarkId = null;
     rebuildHighlights();
     render();
   }
@@ -659,7 +664,7 @@
     markList.innerHTML = marks.map(m => {
       const isTitle = m.type === 'titulo';
       return `
-      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''}" onclick="goToMark('${m.id}')" title="Ir para o trecho no documento">
+      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''} ${m.id === activeMarkId ? 'is-active' : ''}" onclick="goToMark('${m.id}')" title="Ir para o trecho no documento">
         <div class="mark-head">
           <label class="type-select" onclick="event.stopPropagation()">
             <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
