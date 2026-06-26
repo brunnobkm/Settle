@@ -612,9 +612,6 @@
       return `
       <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''}">
         <div class="mark-head">
-          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleMark('${m.id}')">
-            <svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
           <label class="type-select">
             <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
               <option value="conteudo" ${!isTitle ? 'selected' : ''}>Conteúdo</option>
@@ -624,6 +621,9 @@
           </label>
           <button class="mark-del" type="button" aria-label="Remover" onclick="removeMark('${m.id}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+          </button>
+          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleMark('${m.id}')">
+            <svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
         </div>
         <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
