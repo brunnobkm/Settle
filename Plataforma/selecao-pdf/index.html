@@ -162,6 +162,9 @@
   /* selectable doc text */
   .doc { font-size: 14.5px; line-height: 1.62; }
   .doc ::selection, .doc::selection { background: rgba(20,184,166,.28); }
+  /* trechos extraídos realçados no documento (CSS Custom Highlight API) */
+  ::highlight(trecho) { background-color: rgba(20,184,166,.20); }
+  ::highlight(trecho-active) { background-color: rgba(13,148,136,.45); }
   .doc .center { text-align: center; }
   .emblem { width: 86px; height: 86px; margin: 0 auto 14px; display: block; }
   .doc h2 { font-size: 18px; font-weight: 800; letter-spacing: .02em; }
@@ -269,7 +272,10 @@
     background: #fff; padding: 13px 13px 12px;
     box-shadow: var(--shadow);
     animation: card-in .18s ease;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
   }
+  .mark:hover { border-color: var(--green-soft); box-shadow: 0 2px 10px rgba(20,184,166,.12); }
   @keyframes card-in { from { opacity: 0; transform: translateY(4px); } }
   .mark.is-title { border-color: #c7d2fe; background: #f5f7ff; }
 
@@ -508,7 +514,45 @@
   const page = document.getElementById('page');
 
   let pendingText = '';
+  let pendingRange = null;
   const marks = [];
+
+  /* ---------- realce dos trechos no documento ---------- */
+  const supportsHighlight = typeof Highlight !== 'undefined' && typeof CSS !== 'undefined' && CSS.highlights;
+  const docHighlight = supportsHighlight ? new Highlight() : null;
+  const activeHighlight = supportsHighlight ? new Highlight() : null;
+  if (supportsHighlight) {
+    CSS.highlights.set('trecho', docHighlight);
+    CSS.highlights.set('trecho-active', activeHighlight);
+  }
+  let flashTimer;
+
+  function rebuildHighlights() {
+    if (!supportsHighlight) return;
+    docHighlight.clear();
+    marks.forEach(m => { if (m.range) docHighlight.add(m.range); });
+  }
+
+  function goToMark(id) {
+    const m = marks.find(m => m.id === id);
+    if (!m || !m.range) return;
+    scrollRangeIntoView(m.range);
+    if (supportsHighlight) {
+      activeHighlight.clear();
+      activeHighlight.add(m.range);
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => activeHighlight.clear(), 1500);
+    }
+  }
+
+  function scrollRangeIntoView(range) {
+    const scroll = document.getElementById('pdfScroll');
+    const rRect = range.getBoundingClientRect();
+    if (!rRect.height && !rRect.width) return;
+    const sRect = scroll.getBoundingClientRect();
+    const delta = (rRect.top - sRect.top) - (scroll.clientHeight / 2) + (rRect.height / 2);
+    scroll.scrollBy({ top: delta, behavior: 'smooth' });
+  }
 
   /* ---------- selection handling ---------- */
   function currentSelectionInDoc() {
@@ -528,12 +572,14 @@
     const found = currentSelectionInDoc();
     if (found) {
       pendingText = found.text;
+      pendingRange = found.range.cloneRange();
       hasSelection = true;
       addBtn.disabled = false;
       hideCursorHint();
       showFab();
     } else {
       pendingText = '';
+      pendingRange = null;
       hasSelection = false;
       addBtn.disabled = true;
       hideFab();
@@ -575,10 +621,12 @@
   /* ---------- marcações ---------- */
   function addFromSelection() {
     if (!pendingText) return;
-    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value, collapsed: false });
+    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value, collapsed: false, range: pendingRange });
+    rebuildHighlights();
     render();
     window.getSelection()?.removeAllRanges();
     pendingText = '';
+    pendingRange = null;
     addBtn.disabled = true;
     hideFab();
     toast('Marcação adicionada');
@@ -587,6 +635,7 @@
   function removeMark(id) {
     const i = marks.findIndex(m => m.id === id);
     if (i > -1) marks.splice(i, 1);
+    rebuildHighlights();
     render();
   }
 
@@ -610,19 +659,19 @@
     markList.innerHTML = marks.map(m => {
       const isTitle = m.type === 'titulo';
       return `
-      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''}">
+      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''}" onclick="goToMark('${m.id}')" title="Ir para o trecho no documento">
         <div class="mark-head">
-          <label class="type-select">
+          <label class="type-select" onclick="event.stopPropagation()">
             <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
               <option value="conteudo" ${!isTitle ? 'selected' : ''}>Conteúdo</option>
               <option value="titulo" ${isTitle ? 'selected' : ''}>Título</option>
             </select>
             <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </label>
-          <button class="mark-del" type="button" aria-label="Remover" onclick="removeMark('${m.id}')">
+          <button class="mark-del" type="button" aria-label="Remover" onclick="event.stopPropagation(); removeMark('${m.id}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
           </button>
-          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleMark('${m.id}')">
+          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="event.stopPropagation(); toggleMark('${m.id}')">
             <svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
         </div>
