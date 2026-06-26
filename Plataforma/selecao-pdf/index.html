@@ -231,13 +231,8 @@
     display: flex; flex-direction: column;
   }
   .sb-head { flex: 0 0 auto; height: 64px; padding: 0 16px; display: flex; align-items: center; border-bottom: 1px solid var(--line); }
-  .sb-head h2 { font-size: 15.5px; font-weight: 700; }
-  .sb-head p { margin-top: 5px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-
-  .sb-controls { display: flex; gap: 9px; width: 100%; }
-  .type-select {
-    position: relative; flex: 1;
-  }
+  .sb-controls { display: flex; gap: 9px; width: 100%; align-items: center; }
+  .type-select { position: relative; flex: 1; }
   .type-select select {
     width: 100%; appearance: none; -webkit-appearance: none;
     border: 1px solid var(--line); border-radius: 9px;
@@ -248,69 +243,69 @@
   .type-select .chev { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--faint); }
 
   .btn-add {
+    flex: 0 0 auto;
     display: inline-flex; align-items: center; gap: 7px;
-    padding: 9px 16px; border-radius: 9px;
+    padding: 9px 14px; border-radius: 9px;
     background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 600;
-    transition: opacity .15s, background .15s, transform .05s;
+    transition: background .15s, transform .05s;
   }
   .btn-add:hover { background: #000; }
   .btn-add:active { transform: translateY(1px); }
-  .btn-add:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
 
   .sb-body { flex: 1; overflow: auto; padding: 16px; }
-
   .empty {
     border: 1px dashed var(--line-strong); border-radius: 11px;
     padding: 26px 18px; text-align: center;
-    color: var(--faint); font-size: 13.5px;
-    background: #fafafa;
+    color: var(--faint); font-size: 13.5px; background: #fafafa;
   }
 
-  .mark-list { display: flex; flex-direction: column; gap: 11px; }
-  .mark {
-    border: 1px solid var(--line); border-radius: 11px;
-    background: #fff; padding: 13px 13px 12px;
-    box-shadow: var(--shadow);
-    animation: card-in .18s ease;
-    cursor: pointer;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .mark:hover { border-color: var(--green-soft); box-shadow: 0 2px 10px rgba(20,184,166,.12); }
+  /* módulos */
+  .modules { display: flex; flex-direction: column; gap: 12px; }
+  .module { border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); animation: card-in .18s ease; }
   @keyframes card-in { from { opacity: 0; transform: translateY(4px); } }
-  .mark.is-active { background: #f5f5f5; }
-
-  .mark-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-    padding: 3px 9px; border-radius: 999px;
-    background: #eef2f5; color: #4b5563;
+  .module.dragging { opacity: .5; }
+  .module-head { display: flex; align-items: center; gap: 4px; padding: 8px 8px 8px 4px; }
+  .mod-handle, .item-handle {
+    flex: 0 0 auto; display: inline-grid; place-items: center;
+    color: #cbd0d6; cursor: grab; border-radius: 6px;
   }
-  .badge.title { background: #e0e7ff; color: #4338ca; }
-  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .mark-del {
-    flex: 0 0 auto;
-    width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 8px;
-    color: var(--faint); transition: background .15s, color .15s;
+  .mod-handle:hover, .item-handle:hover { color: var(--muted); background: #f1f1f2; }
+  .mod-handle:active, .item-handle:active { cursor: grabbing; }
+  .mod-handle { width: 20px; height: 30px; }
+  .mod-toggle { flex: 0 0 auto; width: 26px; height: 30px; display: inline-grid; place-items: center; border-radius: 6px; color: var(--faint); transition: background .15s, color .15s; }
+  .mod-toggle:hover { background: #f1f1f2; color: var(--ink); }
+  .mod-toggle .chev-toggle { transition: transform .18s ease; }
+  .module.is-collapsed .mod-toggle .chev-toggle { transform: rotate(-90deg); }
+  .mod-name {
+    flex: 1; min-width: 0; font: inherit; font-size: 13.5px; font-weight: 700; color: #111827;
+    border: 1px solid transparent; background: transparent; padding: 5px 7px; border-radius: 7px;
   }
-  .mark-del:hover { background: #fdecec; color: #dc2626; }
+  .mod-name:hover { background: #f3f4f6; }
+  .mod-name:focus { outline: none; background: #fff; border-color: var(--green-soft); }
+  .mod-count { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--muted); background: #f1f3f5; border-radius: 999px; padding: 2px 8px; }
+  .mod-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
+  .mod-del:hover { background: #fdecec; color: #dc2626; }
 
-  .mark-head { display: flex; align-items: center; gap: 8px; }
-  .mark-head .type-select { flex: 1; }
-  .mark-head .type-select select { padding: 7px 30px 7px 11px; font-size: 12.5px; border-radius: 8px; }
-  .mark-toggle {
-    flex: 0 0 auto;
-    width: 28px; height: 32px; display: inline-grid; place-items: center; border-radius: 8px;
-    color: var(--faint); transition: background .15s, color .15s;
+  .module-items { display: flex; flex-direction: column; gap: 8px; padding: 0 10px 10px 10px; min-height: 6px; }
+  .module.is-collapsed .module-items { display: none; }
+  .items-empty { font-size: 12px; color: var(--faint); padding: 12px 8px; border: 1px dashed var(--line-strong); border-radius: 8px; text-align: center; }
+
+  /* itens (requisitos) */
+  .item {
+    display: flex; align-items: flex-start; gap: 6px;
+    border: 1px solid var(--line); border-radius: 9px; background: #fff;
+    padding: 9px 9px 9px 4px; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, background .15s;
   }
-  .mark-toggle:hover { background: #f1f1f2; color: var(--ink); }
-  .mark-toggle .chev-toggle { transition: transform .18s ease; }
-  .mark.is-collapsed .mark-toggle .chev-toggle { transform: rotate(-90deg); }
-
-  .mark-text { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: #1f2937; }
-  .mark.is-title .mark-text { font-weight: 700; color: #111827; }
-  .mark-text .quote { color: var(--faint); }
-  .mark.is-collapsed .mark-text { display: none; }
+  .item:hover { border-color: var(--green-soft); box-shadow: 0 2px 10px rgba(20,184,166,.12); }
+  .item.is-active { background: #f5f5f5; }
+  .item.dragging { opacity: .5; }
+  .item-handle { width: 18px; height: 22px; margin-top: 1px; }
+  .item-text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; color: #1f2937; }
+  .item-text .quote { color: var(--faint); }
+  .tag-ia { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: .04em; color: #0d9488; background: #d7f2ec; border-radius: 5px; padding: 1px 5px; margin-right: 6px; vertical-align: middle; }
+  .item-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
+  .item-del:hover { background: #fdecec; color: #dc2626; }
 
   .sb-foot { padding: 14px 16px; border-top: 1px solid var(--line); }
   .btn-submit {
@@ -463,23 +458,20 @@
       </section>
 
       <!-- ===================== SIDEBAR ===================== -->
-      <aside class="sidebar" aria-label="Trechos do PDF">
+      <aside class="sidebar" aria-label="Requisitos do edital">
         <div class="sb-head">
           <div class="sb-controls">
-            <label class="type-select">
-              <select id="defaultType" aria-label="Tipo da próxima marcação">
-                <option value="conteudo">Conteúdo</option>
-                <option value="titulo">Título</option>
-              </select>
+            <label class="type-select" title="Módulo que recebe os trechos extraídos">
+              <select id="targetModule" aria-label="Módulo destino" onchange="targetModuleId = this.value"></select>
               <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </label>
-            <button class="btn-add" id="addBtn" type="button" disabled onclick="addFromSelection()">Adicionar</button>
+            <button class="btn-add" id="addModuleBtn" type="button" onclick="addModule()">+ Módulo</button>
           </div>
         </div>
 
         <div class="sb-body" id="sbBody">
-          <div class="empty" id="emptyState">Nenhuma marcação foi localizada para este PDF.</div>
-          <div class="mark-list" id="markList" hidden></div>
+          <div class="empty" id="emptyState">Nenhum item ainda — extraia trechos do PDF ou crie um módulo.</div>
+          <div class="modules" id="modulesList" hidden></div>
         </div>
 
         <div class="sb-foot">
@@ -506,19 +498,21 @@
 <script>
   const docEl = document.getElementById('doc');
   const fab = document.getElementById('extractFab');
-  const addBtn = document.getElementById('addBtn');
-  const markList = document.getElementById('markList');
+  const page = document.getElementById('page');
+  const modulesList = document.getElementById('modulesList');
   const emptyState = document.getElementById('emptyState');
   const submitBtn = document.getElementById('submitBtn');
-  const defaultType = document.getElementById('defaultType');
-  const page = document.getElementById('page');
+  const cursorHint = document.getElementById('cursorHint');
 
+  let uid = 0; const newId = () => 'n' + (++uid);
+  let modules = [];
+  let targetModuleId = null;
+  let activeItemId = null;
   let pendingText = '';
   let pendingRange = null;
-  let activeMarkId = null;
-  const marks = [];
+  let hasSelection = false;
 
-  /* ---------- realce dos trechos no documento ---------- */
+  /* ---------- realce dos trechos (CSS Custom Highlight API) ---------- */
   const supportsHighlight = typeof Highlight !== 'undefined' && typeof CSS !== 'undefined' && CSS.highlights;
   const docHighlight = supportsHighlight ? new Highlight() : null;
   const activeHighlight = supportsHighlight ? new Highlight() : null;
@@ -527,38 +521,85 @@
     CSS.highlights.set('trecho-active', activeHighlight);
   }
   let flashTimer;
-
   function rebuildHighlights() {
     if (!supportsHighlight) return;
     docHighlight.clear();
-    marks.forEach(m => { if (m.range) docHighlight.add(m.range); });
+    modules.forEach(m => m.items.forEach(it => { if (it.range) docHighlight.add(it.range); }));
   }
-
-  function goToMark(id) {
-    const m = marks.find(m => m.id === id);
-    if (!m) return;
-    activeMarkId = id;
-    render();
-    if (!m.range) return;
-    scrollRangeIntoView(m.range);
-    if (supportsHighlight) {
-      activeHighlight.clear();
-      activeHighlight.add(m.range);
-      clearTimeout(flashTimer);
-      flashTimer = setTimeout(() => activeHighlight.clear(), 1500);
-    }
+  function flashRange(range) {
+    if (!supportsHighlight || !range) return;
+    activeHighlight.clear(); activeHighlight.add(range);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => activeHighlight.clear(), 1500);
   }
-
   function scrollRangeIntoView(range) {
     const scroll = document.getElementById('pdfScroll');
-    const rRect = range.getBoundingClientRect();
+    const rects = range.getClientRects();
+    const rRect = rects.length ? rects[0] : range.getBoundingClientRect();
     if (!rRect.height && !rRect.width) return;
     const sRect = scroll.getBoundingClientRect();
     const delta = (rRect.top - sRect.top) - (scroll.clientHeight / 2) + (rRect.height / 2);
     scroll.scrollBy({ top: delta, behavior: 'smooth' });
   }
 
-  /* ---------- selection handling ---------- */
+  /* ---------- modelo: Módulos -> Itens ---------- */
+  function findItem(itemId) {
+    for (const m of modules) { const it = m.items.find(i => i.id === itemId); if (it) return { mod: m, it }; }
+    return null;
+  }
+  function createModule(nome) { const mod = { id: newId(), nome, collapsed: false, items: [] }; modules.push(mod); return mod; }
+  function addModule() {
+    const mod = createModule('Módulo ' + (modules.length + 1));
+    targetModuleId = mod.id;
+    render();
+    const input = modulesList.querySelector(`.module[data-mod="${mod.id}"] .mod-name`);
+    if (input) { input.focus(); input.select(); }
+  }
+  function renameModule(id, val) { const m = modules.find(m => m.id === id); if (m) m.nome = val; }
+  function toggleModule(id) { const m = modules.find(m => m.id === id); if (m) { m.collapsed = !m.collapsed; render(); } }
+  function removeModule(id) {
+    modules = modules.filter(m => m.id !== id);
+    if (targetModuleId === id) targetModuleId = modules[0] ? modules[0].id : null;
+    rebuildHighlights(); render();
+  }
+  function removeItem(itemId) {
+    const f = findItem(itemId); if (!f) return;
+    f.mod.items = f.mod.items.filter(i => i.id !== itemId);
+    if (activeItemId === itemId) activeItemId = null;
+    rebuildHighlights(); render();
+  }
+
+  /* ---------- navegação / sync bidirecional ---------- */
+  function goToItem(itemId) {            // card -> PDF
+    const f = findItem(itemId); if (!f) return;
+    activeItemId = itemId; render();
+    if (f.it.range) { scrollRangeIntoView(f.it.range); flashRange(f.it.range); }
+  }
+  function selectItemFromPDF(itemId) {   // PDF -> card
+    const f = findItem(itemId); if (!f) return;
+    activeItemId = itemId;
+    if (f.mod.collapsed) f.mod.collapsed = false;
+    render();
+    const card = modulesList.querySelector(`.item[data-item="${itemId}"]`);
+    if (card) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    flashRange(f.it.range);
+  }
+  function itemAtPoint(x, y) {
+    for (const m of modules) for (const it of m.items) {
+      if (!it.range) continue;
+      const rects = it.range.getClientRects();
+      for (const r of rects) if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return it.id;
+    }
+    return null;
+  }
+  docEl.addEventListener('click', (e) => {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return;          // ignora clique que finaliza uma seleção
+    const id = itemAtPoint(e.clientX, e.clientY);
+    if (id) selectItemFromPDF(id);
+  });
+
+  /* ---------- seleção de texto + extração ---------- */
   function currentSelectionInDoc() {
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
@@ -568,29 +609,15 @@
     if (text.length < 2) return null;
     return { text, range };
   }
-
-  const cursorHint = document.getElementById('cursorHint');
-  let hasSelection = false;
-
   document.addEventListener('selectionchange', () => {
     const found = currentSelectionInDoc();
     if (found) {
-      pendingText = found.text;
-      pendingRange = found.range.cloneRange();
-      hasSelection = true;
-      addBtn.disabled = false;
-      hideCursorHint();
-      showFab();
+      pendingText = found.text; pendingRange = found.range.cloneRange();
+      hasSelection = true; hideCursorHint(); showFab();
     } else {
-      pendingText = '';
-      pendingRange = null;
-      hasSelection = false;
-      addBtn.disabled = true;
-      hideFab();
+      pendingText = ''; pendingRange = null; hasSelection = false; hideFab();
     }
   });
-
-  // dica "Selecione um trecho" acompanhando o cursor (enquanto nada está selecionado)
   page.addEventListener('mousemove', (e) => {
     if (hasSelection) { hideCursorHint(); return; }
     cursorHint.style.left = (e.clientX + 14) + 'px';
@@ -599,99 +626,152 @@
   });
   page.addEventListener('mouseleave', hideCursorHint);
   function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
-
   function showFab() { fab.classList.add('is-visible'); }
   function hideFab() { fab.classList.remove('is-visible'); }
 
+  function addFromSelection() {          // "Extrair" -> vira item no módulo destino
+    if (!pendingText) return;
+    let mod = modules.find(m => m.id === targetModuleId) || modules[0] || createModule('Módulo 1');
+    targetModuleId = mod.id;
+    const it = { id: newId(), text: pendingText, range: pendingRange, ia: false };
+    mod.items.push(it);
+    activeItemId = it.id;
+    mod.collapsed = false;
+    rebuildHighlights(); render();
+    const s = window.getSelection(); if (s) s.removeAllRanges();
+    pendingText = ''; pendingRange = null; hideFab();
+    toast('Trecho extraído');
+  }
   function copySelection() {
-    const text = pendingText;
-    if (!text) return;
+    const text = pendingText; if (!text) return;
     const done = () => toast('Trecho copiado');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
-    } else {
-      fallbackCopy(text, done);
-    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    else fallbackCopy(text, done);
   }
   function fallbackCopy(text, done) {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); } catch (e) {}
-    document.body.removeChild(ta); done();
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done();
   }
 
-
-  /* ---------- marcações ---------- */
-  function addFromSelection() {
-    if (!pendingText) return;
-    marks.push({ id: Date.now() + '' + marks.length, text: pendingText, type: defaultType.value, collapsed: false, range: pendingRange });
-    rebuildHighlights();
-    render();
-    window.getSelection()?.removeAllRanges();
-    pendingText = '';
-    pendingRange = null;
-    addBtn.disabled = true;
-    hideFab();
-    toast('Marcação adicionada');
+  /* ---------- render ---------- */
+  function refreshTargetSelect() {
+    const sel = document.getElementById('targetModule');
+    if (!modules.find(m => m.id === targetModuleId)) targetModuleId = modules[0] ? modules[0].id : null;
+    sel.innerHTML = modules.length
+      ? modules.map(m => `<option value="${m.id}" ${m.id === targetModuleId ? 'selected' : ''}>${escapeHtml(m.nome)}</option>`).join('')
+      : '<option value="">—</option>';
   }
-
-  function removeMark(id) {
-    const i = marks.findIndex(m => m.id === id);
-    if (i > -1) marks.splice(i, 1);
-    if (activeMarkId === id) activeMarkId = null;
-    rebuildHighlights();
-    render();
-  }
-
-  function setMarkType(id, value) {
-    const m = marks.find(m => m.id === id);
-    if (m) { m.type = value; render(); }
-  }
-
-  function toggleMark(id) {
-    const m = marks.find(m => m.id === id);
-    if (m) { m.collapsed = !m.collapsed; render(); }
-  }
-
   function render() {
-    const has = marks.length > 0;
-    emptyState.hidden = has;
-    markList.hidden = !has;
-    submitBtn.classList.toggle('is-ready', has);
-    submitBtn.textContent = has ? `Submeter (${marks.length})` : 'Submeter';
-
-    markList.innerHTML = marks.map(m => {
-      const isTitle = m.type === 'titulo';
-      return `
-      <div class="mark ${isTitle ? 'is-title' : ''} ${m.collapsed ? 'is-collapsed' : ''} ${m.id === activeMarkId ? 'is-active' : ''}" onclick="goToMark('${m.id}')" title="Ir para o trecho no documento">
-        <div class="mark-head">
-          <label class="type-select" onclick="event.stopPropagation()">
-            <select aria-label="Tipo da marcação" onchange="setMarkType('${m.id}', this.value)">
-              <option value="conteudo" ${!isTitle ? 'selected' : ''}>Conteúdo</option>
-              <option value="titulo" ${isTitle ? 'selected' : ''}>Título</option>
-            </select>
-            <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </label>
-          <button class="mark-del" type="button" aria-label="Remover" onclick="event.stopPropagation(); removeMark('${m.id}')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-          </button>
-          <button class="mark-toggle" type="button" aria-label="${m.collapsed ? 'Expandir' : 'Recolher'}" onclick="event.stopPropagation(); toggleMark('${m.id}')">
-            <svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-        </div>
-        <div class="mark-text"><span class="quote">"</span>${escapeHtml(m.text)}<span class="quote">"</span></div>
-      </div>`;
-    }).join('');
+    const total = modules.reduce((n, m) => n + m.items.length, 0);
+    emptyState.hidden = modules.length > 0;
+    modulesList.hidden = modules.length === 0;
+    submitBtn.classList.toggle('is-ready', total > 0);
+    submitBtn.textContent = total ? `Submeter (${total})` : 'Submeter';
+    refreshTargetSelect();
+    modulesList.innerHTML = modules.map(moduleHTML).join('');
   }
+  function moduleHTML(mod) {
+    const items = mod.items.length ? mod.items.map(itemHTML).join('')
+      : `<div class="items-empty">Sem itens — arraste um trecho aqui ou extraia do PDF</div>`;
+    return `
+    <div class="module ${mod.collapsed ? 'is-collapsed' : ''}" data-mod="${mod.id}">
+      <div class="module-head">
+        <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
+        <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
+        <input class="mod-name" value="${escapeHtml(mod.nome)}" aria-label="Nome do módulo" onchange="renameModule('${mod.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" />
+        <span class="mod-count">${mod.items.length}</span>
+        <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
+      </div>
+      <div class="module-items" data-mod="${mod.id}">${items}</div>
+    </div>`;
+  }
+  function itemHTML(it) {
+    return `
+    <div class="item ${it.id === activeItemId ? 'is-active' : ''}" data-item="${it.id}" onclick="goToItem('${it.id}')" title="Ir para o trecho no documento">
+      <span class="item-handle" draggable="true" title="Arrastar item" aria-label="Arrastar item">${dotsSvg()}</span>
+      <span class="item-text">${it.ia ? '<span class="tag-ia">IA</span>' : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
+      <button class="item-del" type="button" aria-label="Remover item" onclick="event.stopPropagation(); removeItem('${it.id}')">${trashSvg()}</button>
+    </div>`;
+  }
+  function chevSvg() { return '<svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'; }
+  function trashSvg() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>'; }
+  function dotsSvg() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>'; }
 
   function submitMarks() {
-    if (!marks.length) { toast('Adicione ao menos uma marcação'); return; }
-    toast(`${marks.length} marcação(ões) enviada(s) para análise`);
+    const total = modules.reduce((n, m) => n + m.items.length, 0);
+    if (!total) { toast('Adicione ao menos um item'); return; }
+    toast(`${modules.length} módulo(s) e ${total} item(ns) enviados para análise`);
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ---------- drag and drop (reordenar/mover itens e módulos) ---------- */
+  let dragType = null, dragEl = null;
+  modulesList.addEventListener('dragstart', (e) => {
+    const ih = e.target.closest('.item-handle');
+    const mh = e.target.closest('.mod-handle');
+    if (ih) { dragType = 'item'; dragEl = ih.closest('.item'); }
+    else if (mh) { dragType = 'module'; dragEl = mh.closest('.module'); }
+    else return;
+    dragEl.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(dragEl, 12, 12); } catch (_) {}
+  });
+  modulesList.addEventListener('dragover', (e) => {
+    if (!dragEl) return;
+    e.preventDefault();
+    if (dragType === 'item') {
+      const container = e.target.closest('.module-items');
+      if (!container) return;
+      const after = dragAfter(container, e.clientY, '.item');
+      if (after == null) container.appendChild(dragEl); else container.insertBefore(dragEl, after);
+    } else {
+      const after = dragAfter(modulesList, e.clientY, '.module');
+      if (after == null) modulesList.appendChild(dragEl); else modulesList.insertBefore(dragEl, after);
+    }
+  });
+  modulesList.addEventListener('drop', (e) => { e.preventDefault(); });
+  modulesList.addEventListener('dragend', () => {
+    if (!dragEl) return;
+    dragEl.classList.remove('dragging');
+    syncModelFromDOM();
+    dragType = null; dragEl = null;
+    rebuildHighlights(); render();
+  });
+  function dragAfter(container, y, sel) {
+    const els = [...container.children].filter(c => c.matches && c.matches(sel) && !c.classList.contains('dragging'));
+    let best = { offset: -Infinity, el: null };
+    for (const child of els) {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > best.offset) best = { offset, el: child };
+    }
+    return best.el;
+  }
+  function syncModelFromDOM() {
+    const modById = {}, itById = {};
+    modules.forEach(m => { modById[m.id] = m; m.items.forEach(it => itById[it.id] = it); });
+    const next = [];
+    modulesList.querySelectorAll(':scope > .module').forEach(modEl => {
+      const mod = modById[modEl.dataset.mod]; if (!mod) return;
+      const items = [];
+      modEl.querySelectorAll('.item').forEach(itEl => { const it = itById[itEl.dataset.item]; if (it) items.push(it); });
+      mod.items = items; next.push(mod);
+    });
+    modules = next;
   }
 
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  /* ---------- IA pré-popula o PDF (backend simulado) ---------- */
+  function rangeOf(el) { const r = document.createRange(); r.selectNodeContents(el); return r; }
+  function txt(el) { return el.textContent.replace(/\s+/g, ' ').trim(); }
+  function tdWith(sub) { return [...docEl.querySelectorAll('.doc-table td')].find(td => td.textContent.includes(sub)); }
+  function pWith(prefix) { return [...docEl.querySelectorAll('p')].find(p => p.textContent.trim().startsWith(prefix)); }
+  function seed() {
+    const mk = (el) => el ? { id: newId(), text: txt(el).slice(0, 360), range: rangeOf(el), ia: true } : null;
+    const M = (nome, els) => { const m = createModule(nome); m.items = els.map(mk).filter(Boolean); };
+    M('Objeto e escopo', [tdWith('OBJETO:')]);
+    M('Critério de julgamento', [tdWith('CRITÉRIO DE JULGAMENTO'), tdWith('MODO DE DISPUTA')]);
+    M('Requisitos gerais', [pWith('1.1.'), pWith('1.2.'), pWith('2.1.')]);
+    targetModuleId = modules[0] ? modules[0].id : null;
   }
 
   /* ---------- zoom / fit ---------- */
@@ -750,6 +830,9 @@
     toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
   }
 
+  seed();
+  rebuildHighlights();
+  render();
   setZoom('fit');
 </script>
 </body>
