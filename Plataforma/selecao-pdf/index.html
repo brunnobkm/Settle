@@ -316,6 +316,7 @@
 
   /* itens (requisitos) */
   .item {
+    position: relative;
     display: flex; align-items: flex-start; gap: 6px;
     border: 1px solid #e5e5e5; border-radius: 14px; background: #fff;
     padding: 10px 10px 10px 5px; cursor: pointer;
@@ -339,8 +340,20 @@
     pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,.22);
   }
   .ia-tip::after { content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; }
-  .item-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
-  .item-del:hover { background: #fdecec; color: #dc2626; }
+  /* icon group revelado no hover do card */
+  .item-actions {
+    position: absolute; top: 6px; right: 6px;
+    display: inline-flex; align-items: center;
+    background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+    box-shadow: var(--shadow);
+    opacity: 0; pointer-events: none;
+    transition: opacity .15s ease;
+  }
+  .item:hover .item-actions { opacity: 1; pointer-events: auto; }
+  .iact { width: 28px; height: 28px; display: inline-grid; place-items: center; color: var(--muted); transition: background .12s, color .12s; }
+  .iact + .iact { border-left: 1px solid var(--line); }
+  .iact:hover { background: #f3f4f6; color: var(--ink); }
+  .iact-del:hover { background: #fdecec; color: #dc2626; }
 
   .sb-foot { padding: 14px 16px; border-top: 1px solid var(--line); }
   .btn-submit {
@@ -610,6 +623,13 @@
     if (activeItemId === itemId) activeItemId = null;
     rebuildHighlights(); render();
   }
+  function copyItem(itemId) {
+    const f = findItem(itemId); if (!f) return;
+    const text = f.it.text;
+    const done = () => toast('Trecho copiado');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    else fallbackCopy(text, done);
+  }
 
   /* ---------- navegação / sync bidirecional ---------- */
   function goToItem(itemId) {            // card -> PDF
@@ -774,16 +794,22 @@
   }
   function itemHTML(it) {
     return `
-    <div class="item ${it.id === activeItemId ? 'is-active' : ''}" data-item="${it.id}" onclick="goToItem('${it.id}')" title="Ir para o trecho no documento">
+    <div class="item ${it.id === activeItemId ? 'is-active' : ''}" data-item="${it.id}" onclick="goToItem('${it.id}')">
       <span class="item-handle" draggable="true" title="Arrastar item" aria-label="Arrastar item">${dotsSvg()}</span>
       <span class="item-text">${it.ia ? `<span class="tag-ia" aria-label="Extraído pela IA da Settle">${sparklesSvg()}</span>` : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
-      <button class="item-del" type="button" aria-label="Remover item" onclick="event.stopPropagation(); removeItem('${it.id}')">${trashSvg()}</button>
+      <span class="item-actions">
+        <button class="iact" type="button" title="Copiar texto" aria-label="Copiar texto" onclick="event.stopPropagation(); copyItem('${it.id}')">${copySvg()}</button>
+        <button class="iact" type="button" title="Ir para o trecho" aria-label="Ir para o trecho" onclick="event.stopPropagation(); goToItem('${it.id}')">${gotoSvg()}</button>
+        <button class="iact iact-del" type="button" title="Excluir" aria-label="Excluir" onclick="event.stopPropagation(); removeItem('${it.id}')">${trashSvg()}</button>
+      </span>
     </div>`;
   }
   function chevSvg() { return '<svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'; }
   function trashSvg() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>'; }
   function dotsSvg() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>'; }
   function sparklesSvg() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>'; }
+  function copySvg() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; }
+  function gotoSvg() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>'; }
 
   function submitMarks() {
     const total = modules.reduce((n, m) => n + m.items.length, 0);
