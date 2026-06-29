@@ -522,7 +522,7 @@
         </div>
 
         <div class="sb-foot">
-          <button class="btn-submit" id="submitBtn" type="button" onclick="submitMarks()">Submeter</button>
+          <button class="btn-submit" id="submitBtn" type="button" onclick="submitMarks()">Salvar</button>
         </div>
       </aside>
     </div>
@@ -776,7 +776,7 @@
     emptyState.hidden = modules.length > 0;
     modulesList.hidden = modules.length === 0;
     submitBtn.classList.toggle('is-ready', total > 0);
-    submitBtn.textContent = total ? `Submeter (${total})` : 'Submeter';
+    submitBtn.textContent = total ? `Salvar (${total})` : 'Salvar';
     modulesList.innerHTML = modules.map(moduleHTML).join('');
   }
   function moduleHTML(mod) {
@@ -816,7 +816,7 @@
   function submitMarks() {
     const total = modules.reduce((n, m) => n + m.items.length, 0);
     if (!total) { toast('Adicione ao menos um item'); return; }
-    toast(`${modules.length} módulo(s) e ${total} item(ns) enviados para análise`);
+    toast(`${modules.length} módulo(s) e ${total} item(ns) salvos`);
   }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
