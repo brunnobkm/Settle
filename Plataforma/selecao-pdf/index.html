@@ -210,7 +210,7 @@
   }
   .extract-fab.is-visible { display: inline-flex; }
   .fab-label { color: #fff; font-size: 14px; font-weight: 500; padding: 0 8px; }
-  .fab-sep { width: 1px; height: 24px; background: rgba(255,255,255,.5); flex: 0 0 auto; }
+  .fab-sep { width: 1px; height: 24px; background: rgba(255,255,255,.35); flex: 0 0 auto; }
   .fab-btn {
     display: inline-flex; align-items: center; gap: 6px;
     color: #fff; font-size: 14px; font-weight: 500;
@@ -543,7 +543,6 @@
     <button class="fab-btn" id="extractBtn" type="button" onclick="toggleExtractMenu()">Extrair em
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
     </button>
-    <span class="fab-sep"></span>
     <button class="fab-btn" type="button" onclick="copySelection()">Copiar</button>
     <span class="fab-sep"></span>
     <button class="fab-btn fab-close" type="button" aria-label="Fechar" onclick="dismissSelection()">
