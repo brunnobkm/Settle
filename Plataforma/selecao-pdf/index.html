@@ -321,9 +321,9 @@
     border: 1px solid #e5e5e5; border-radius: 14px; background: #fff;
     padding: 10px 10px 10px 5px; cursor: pointer;
     box-shadow: none;
-    transition: box-shadow .25s ease-in-out, transform .15s ease-out;
+    transition: box-shadow .25s ease-in-out, transform .15s ease-out, background .15s ease;
   }
-  .item:hover { box-shadow: rgba(0,0,0,0.10) 0px 10px 35px; transform: scale(1.005); }
+  .item:hover { background: rgba(23,23,23,0.10); box-shadow: rgba(0,0,0,0.10) 0px 10px 35px; transform: scale(1.005); }
   .item.is-active { background: #f5f5f5; }
   .item.dragging { opacity: .5; }
   .item-handle { width: 18px; height: 22px; margin-top: 1px; }
@@ -344,14 +344,16 @@
   .item-actions {
     position: absolute; top: 6px; right: 6px;
     display: inline-flex; align-items: center;
-    background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
-    box-shadow: var(--shadow);
+    background: #fff; border-radius: 8px; overflow: hidden;
     opacity: 0; pointer-events: none;
     transition: opacity .15s ease;
   }
-  .item:hover .item-actions { opacity: 1; pointer-events: auto; }
+  .item:hover .item-actions,
+  .item.is-active .item-actions { opacity: 1; pointer-events: auto; }
+  /* card ativo (sem hover): mostra só o ícone "ir ao trecho" em verde */
+  .item.is-active:not(:hover) .iact:not(.iact-goto) { display: none; }
+  .item.is-active .iact-goto { color: var(--green-strong); }
   .iact { width: 28px; height: 28px; display: inline-grid; place-items: center; color: var(--muted); transition: background .12s, color .12s; }
-  .iact + .iact { border-left: 1px solid var(--line); }
   .iact:hover { background: #f3f4f6; color: var(--ink); }
   .iact-del:hover { background: #fdecec; color: #dc2626; }
 
@@ -799,7 +801,7 @@
       <span class="item-text">${it.ia ? `<span class="tag-ia" aria-label="Extraído pela IA da Settle">${sparklesSvg()}</span>` : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
       <span class="item-actions">
         <button class="iact" type="button" title="Copiar texto" aria-label="Copiar texto" onclick="event.stopPropagation(); copyItem('${it.id}')">${copySvg()}</button>
-        <button class="iact" type="button" title="Ir para o trecho" aria-label="Ir para o trecho" onclick="event.stopPropagation(); goToItem('${it.id}')">${gotoSvg()}</button>
+        <button class="iact iact-goto" type="button" title="Ir para o trecho" aria-label="Ir para o trecho" onclick="event.stopPropagation(); goToItem('${it.id}')">${gotoSvg()}</button>
         <button class="iact iact-del" type="button" title="Excluir" aria-label="Excluir" onclick="event.stopPropagation(); removeItem('${it.id}')">${trashSvg()}</button>
       </span>
     </div>`;
