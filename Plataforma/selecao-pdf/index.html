@@ -218,6 +218,7 @@
     transition: background .15s;
   }
   .fab-btn:hover { background: rgba(255,255,255,.16); }
+  .fab-close { padding: 8px; }
   @keyframes sonner-in { from { opacity: 0; transform: translate(-50%, 12px); } }
 
   /* menu de destino da extração */
@@ -544,6 +545,10 @@
     </button>
     <span class="fab-sep"></span>
     <button class="fab-btn" type="button" onclick="copySelection()">Copiar</button>
+    <span class="fab-sep"></span>
+    <button class="fab-btn fab-close" type="button" aria-label="Fechar" onclick="dismissSelection()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
   </div>
   <div class="fab-menu" id="fabMenu" hidden onmousedown="event.preventDefault()"></div>
 
@@ -693,6 +698,12 @@
   function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
   function showFab() { fab.classList.add('is-visible'); }
   function hideFab() { fab.classList.remove('is-visible'); hideExtractMenu(); }
+  function dismissSelection() {
+    hideExtractMenu();
+    const s = window.getSelection(); if (s) s.removeAllRanges();
+    pendingText = ''; pendingRange = null; hasSelection = false;
+    hideFab();
+  }
 
   function clearSelectionState() {
     const s = window.getSelection(); if (s) s.removeAllRanges();
