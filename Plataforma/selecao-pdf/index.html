@@ -220,6 +220,29 @@
   .fab-btn:hover { background: rgba(255,255,255,.16); }
   @keyframes sonner-in { from { opacity: 0; transform: translate(-50%, 12px); } }
 
+  /* menu de destino da extração */
+  .fab-menu {
+    position: fixed; z-index: 70;
+    transform: translateX(-50%);
+    min-width: 248px; max-width: 320px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 34px rgba(16,24,40,.22);
+    padding: 6px;
+    animation: sonner-in .15s ease;
+  }
+  .fab-menu-label { font-size: 11px; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; padding: 6px 8px 4px; }
+  .fab-menu-item {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px; border-radius: 8px; font-size: 13.5px; color: #1f2937; text-align: left;
+    transition: background .12s;
+  }
+  .fab-menu-item:hover { background: #f3f4f6; }
+  .fmi-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fmi-count { flex: 0 0 auto; font-size: 11px; color: var(--muted); background: #f1f3f5; border-radius: 999px; padding: 1px 7px; }
+  .fab-menu-sep { height: 1px; background: var(--line); margin: 5px 4px; }
+  .fmi-new { color: var(--green-strong); font-weight: 600; }
+  .fab-menu-empty { padding: 8px; font-size: 12.5px; color: var(--faint); }
+
   /* ---------- Sidebar ---------- */
   .sidebar {
     background: var(--panel);
@@ -232,6 +255,7 @@
   }
   .sb-head { flex: 0 0 auto; height: 64px; padding: 0 16px; display: flex; align-items: center; border-bottom: 1px solid var(--line); }
   .sb-controls { display: flex; gap: 9px; width: 100%; align-items: center; }
+  .sb-title { flex: 1; font-size: 14px; font-weight: 700; color: #111827; }
   .type-select { position: relative; flex: 1; }
   .type-select select {
     width: 100%; appearance: none; -webkit-appearance: none;
@@ -462,10 +486,7 @@
       <aside class="sidebar" aria-label="Requisitos do edital">
         <div class="sb-head">
           <div class="sb-controls">
-            <label class="type-select" title="Módulo que recebe os trechos extraídos">
-              <select id="targetModule" aria-label="Módulo destino" onchange="targetModuleId = this.value"></select>
-              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </label>
+            <span class="sb-title">Requisitos</span>
             <button class="btn-add" id="addModuleBtn" type="button" onclick="addModule()">Adicionar módulo</button>
           </div>
         </div>
@@ -489,10 +510,13 @@
   <div class="extract-fab" id="extractFab" onmousedown="event.preventDefault()">
     <span class="fab-label">Trecho selecionado</span>
     <span class="fab-sep"></span>
-    <button class="fab-btn" type="button" onclick="addFromSelection()">Extrair</button>
+    <button class="fab-btn" id="extractBtn" type="button" onclick="toggleExtractMenu()">Extrair em
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
     <span class="fab-sep"></span>
     <button class="fab-btn" type="button" onclick="copySelection()">Copiar</button>
   </div>
+  <div class="fab-menu" id="fabMenu" hidden onmousedown="event.preventDefault()"></div>
 
   <div class="toast" id="toast">Marcação adicionada</div>
 
@@ -504,6 +528,7 @@
   const emptyState = document.getElementById('emptyState');
   const submitBtn = document.getElementById('submitBtn');
   const cursorHint = document.getElementById('cursorHint');
+  const fabMenu = document.getElementById('fabMenu');
 
   let uid = 0; const newId = () => 'n' + (++uid);
   let modules = [];
@@ -525,7 +550,10 @@
   function rebuildHighlights() {
     if (!supportsHighlight) return;
     docHighlight.clear();
-    modules.forEach(m => m.items.forEach(it => { if (it.range) docHighlight.add(it.range); }));
+    modules.forEach(m => {
+      if (m.range) docHighlight.add(m.range);
+      m.items.forEach(it => { if (it.range) docHighlight.add(it.range); });
+    });
   }
   function flashRange(range) {
     if (!supportsHighlight || !range) return;
@@ -628,21 +656,58 @@
   page.addEventListener('mouseleave', hideCursorHint);
   function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
   function showFab() { fab.classList.add('is-visible'); }
-  function hideFab() { fab.classList.remove('is-visible'); }
+  function hideFab() { fab.classList.remove('is-visible'); hideExtractMenu(); }
 
-  function addFromSelection() {          // "Extrair" -> vira item no módulo destino
+  function clearSelectionState() {
+    const s = window.getSelection(); if (s) s.removeAllRanges();
+    pendingText = ''; pendingRange = null; hideFab();
+  }
+  function addFromSelection(modId) {      // trecho -> item no módulo escolhido
     if (!pendingText) return;
-    let mod = modules.find(m => m.id === targetModuleId) || modules[0] || createModule('Módulo 1');
+    let mod = (modId && modules.find(m => m.id === modId)) || modules.find(m => m.id === targetModuleId) || modules[0] || createModule('Módulo 1');
     targetModuleId = mod.id;
     const it = { id: newId(), text: pendingText, range: pendingRange, ia: false };
     mod.items.push(it);
     activeItemId = it.id;
     mod.collapsed = false;
     rebuildHighlights(); render();
-    const s = window.getSelection(); if (s) s.removeAllRanges();
-    pendingText = ''; pendingRange = null; hideFab();
-    toast('Trecho extraído');
+    clearSelectionState();
+    toast('Adicionado em “' + mod.nome + '”');
   }
+  function promoteToModule() {            // trecho -> novo módulo (nome = seleção)
+    if (!pendingText) return;
+    hideExtractMenu();
+    const mod = createModule(pendingText.slice(0, 60));
+    mod.range = pendingRange;
+    targetModuleId = mod.id;
+    rebuildHighlights(); render();
+    clearSelectionState();
+    toast('Módulo “' + mod.nome + '” criado');
+  }
+  function extractInto(modId) { hideExtractMenu(); addFromSelection(modId); }
+
+  /* menu de destino na barra de extração */
+  function toggleExtractMenu() {
+    if (!fabMenu.hidden) { hideExtractMenu(); return; }
+    buildExtractMenu();
+    const btn = document.getElementById('extractBtn');
+    const r = btn.getBoundingClientRect();
+    fabMenu.style.left = (r.left + r.width / 2) + 'px';
+    fabMenu.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+    fabMenu.hidden = false;
+  }
+  function hideExtractMenu() { fabMenu.hidden = true; }
+  function buildExtractMenu() {
+    const list = modules.length
+      ? modules.map(m => `<button class="fab-menu-item" type="button" onmousedown="event.preventDefault()" onclick="extractInto('${m.id}')"><span class="fmi-name">${escapeHtml(m.nome)}</span><span class="fmi-count">${m.items.length}</span></button>`).join('')
+      : '<div class="fab-menu-empty">Nenhum módulo ainda</div>';
+    fabMenu.innerHTML = `<div class="fab-menu-label">Adicionar como item em</div>${list}<div class="fab-menu-sep"></div><button class="fab-menu-item fmi-new" type="button" onmousedown="event.preventDefault()" onclick="promoteToModule()">Criar módulo com este trecho</button>`;
+  }
+  document.addEventListener('click', (e) => {
+    if (fabMenu.hidden) return;
+    if (e.target.closest('#fabMenu') || e.target.closest('#extractBtn')) return;
+    hideExtractMenu();
+  });
   function copySelection() {
     const text = pendingText; if (!text) return;
     const done = () => toast('Trecho copiado');
@@ -655,20 +720,13 @@
   }
 
   /* ---------- render ---------- */
-  function refreshTargetSelect() {
-    const sel = document.getElementById('targetModule');
-    if (!modules.find(m => m.id === targetModuleId)) targetModuleId = modules[0] ? modules[0].id : null;
-    sel.innerHTML = modules.length
-      ? modules.map(m => `<option value="${m.id}" ${m.id === targetModuleId ? 'selected' : ''}>${escapeHtml(m.nome)}</option>`).join('')
-      : '<option value="">—</option>';
-  }
   function render() {
+    if (!modules.find(m => m.id === targetModuleId)) targetModuleId = modules[0] ? modules[0].id : null;
     const total = modules.reduce((n, m) => n + m.items.length, 0);
     emptyState.hidden = modules.length > 0;
     modulesList.hidden = modules.length === 0;
     submitBtn.classList.toggle('is-ready', total > 0);
     submitBtn.textContent = total ? `Submeter (${total})` : 'Submeter';
-    refreshTargetSelect();
     modulesList.innerHTML = modules.map(moduleHTML).join('');
   }
   function moduleHTML(mod) {
