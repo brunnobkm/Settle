@@ -328,7 +328,17 @@
   .item-handle { width: 18px; height: 22px; margin-top: 1px; }
   .item-text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; color: #1f2937; }
   .item-text .quote { color: var(--faint); }
-  .tag-ia { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: .04em; color: #0d9488; background: #d7f2ec; border-radius: 5px; padding: 1px 5px; margin-right: 6px; vertical-align: middle; }
+  .tag-ia { color: #d97706; margin-right: 5px; vertical-align: -2px; cursor: help; }
+  .tag-ia svg { display: inline-block; }
+  /* tooltip de origem IA */
+  .ia-tip {
+    position: fixed; z-index: 75;
+    transform: translate(-50%, -100%);
+    background: #111827; color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 9px; border-radius: 7px; white-space: nowrap;
+    pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,.22);
+  }
+  .ia-tip::after { content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; }
   .item-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
   .item-del:hover { background: #fdecec; color: #dc2626; }
 
@@ -505,6 +515,9 @@
 
   <!-- dica que acompanha o cursor antes de selecionar -->
   <div class="cursor-hint" id="cursorHint">Selecione um trecho</div>
+
+  <!-- tooltip de origem IA -->
+  <div class="ia-tip" id="iaTip" hidden>Esta extração foi feita pela IA da Settle</div>
 
   <!-- barra flutuante de ação ao selecionar um trecho -->
   <div class="extract-fab" id="extractFab" onmousedown="event.preventDefault()">
@@ -708,6 +721,21 @@
     if (e.target.closest('#fabMenu') || e.target.closest('#extractBtn')) return;
     hideExtractMenu();
   });
+
+  /* tooltip "feito pela IA da Settle" no ícone sparkles */
+  const iaTip = document.getElementById('iaTip');
+  modulesList.addEventListener('mouseover', (e) => {
+    const tag = e.target.closest('.tag-ia');
+    if (!tag) return;
+    const r = tag.getBoundingClientRect();
+    iaTip.style.left = (r.left + r.width / 2) + 'px';
+    iaTip.style.top = (r.top - 6) + 'px';
+    iaTip.hidden = false;
+  });
+  modulesList.addEventListener('mouseout', (e) => {
+    if (e.target.closest('.tag-ia')) iaTip.hidden = true;
+  });
+  document.getElementById('sbBody').addEventListener('scroll', () => { iaTip.hidden = true; });
   function copySelection() {
     const text = pendingText; if (!text) return;
     const done = () => toast('Trecho copiado');
@@ -748,13 +776,14 @@
     return `
     <div class="item ${it.id === activeItemId ? 'is-active' : ''}" data-item="${it.id}" onclick="goToItem('${it.id}')" title="Ir para o trecho no documento">
       <span class="item-handle" draggable="true" title="Arrastar item" aria-label="Arrastar item">${dotsSvg()}</span>
-      <span class="item-text">${it.ia ? '<span class="tag-ia">IA</span>' : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
+      <span class="item-text">${it.ia ? `<span class="tag-ia" aria-label="Extraído pela IA da Settle">${sparklesSvg()}</span>` : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
       <button class="item-del" type="button" aria-label="Remover item" onclick="event.stopPropagation(); removeItem('${it.id}')">${trashSvg()}</button>
     </div>`;
   }
   function chevSvg() { return '<svg class="chev-toggle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'; }
   function trashSvg() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>'; }
   function dotsSvg() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>'; }
+  function sparklesSvg() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>'; }
 
   function submitMarks() {
     const total = modules.reduce((n, m) => n + m.items.length, 0);
