@@ -517,7 +517,7 @@
         </div>
 
         <div class="sb-body" id="sbBody">
-          <div class="empty" id="emptyState">Nenhum item ainda — extraia trechos do PDF ou crie um módulo.</div>
+          <div class="empty" id="emptyState">Nenhum requisito ainda — extraia trechos do PDF ou crie um módulo.</div>
           <div class="modules" id="modulesList" hidden></div>
         </div>
 
@@ -736,7 +736,7 @@
     const list = modules.length
       ? modules.map(m => `<button class="fab-menu-item" type="button" onmousedown="event.preventDefault()" onclick="extractInto('${m.id}')"><span class="fmi-name">${escapeHtml(m.nome)}</span><span class="fmi-count">${m.items.length}</span></button>`).join('')
       : '<div class="fab-menu-empty">Nenhum módulo ainda</div>';
-    fabMenu.innerHTML = `<div class="fab-menu-label">Adicionar como item em</div>${list}<div class="fab-menu-sep"></div><button class="fab-menu-item fmi-new" type="button" onmousedown="event.preventDefault()" onclick="promoteToModule()">Criar módulo com este trecho</button>`;
+    fabMenu.innerHTML = `<div class="fab-menu-label">Adicionar como requisito em</div>${list}<div class="fab-menu-sep"></div><button class="fab-menu-item fmi-new" type="button" onmousedown="event.preventDefault()" onclick="promoteToModule()">Criar módulo com este trecho</button>`;
   }
   document.addEventListener('click', (e) => {
     if (fabMenu.hidden) return;
@@ -776,12 +776,12 @@
     emptyState.hidden = modules.length > 0;
     modulesList.hidden = modules.length === 0;
     submitBtn.classList.toggle('is-ready', total > 0);
-    submitBtn.textContent = total ? `Salvar (${total})` : 'Salvar';
+    submitBtn.textContent = 'Salvar';
     modulesList.innerHTML = modules.map(moduleHTML).join('');
   }
   function moduleHTML(mod) {
     const items = mod.items.length ? mod.items.map(itemHTML).join('')
-      : `<div class="items-empty">Sem itens — arraste um trecho aqui ou extraia do PDF</div>`;
+      : `<div class="items-empty">Sem requisitos — arraste um trecho aqui ou extraia do PDF</div>`;
     return `
     <div class="module ${mod.collapsed ? 'is-collapsed' : ''}" data-mod="${mod.id}">
       <div class="module-head">
@@ -797,7 +797,7 @@
   function itemHTML(it) {
     return `
     <div class="item ${it.id === activeItemId ? 'is-active' : ''}" data-item="${it.id}" onclick="goToItem('${it.id}')">
-      <span class="item-handle" draggable="true" title="Arrastar item" aria-label="Arrastar item">${dotsSvg()}</span>
+      <span class="item-handle" draggable="true" title="Arrastar requisito" aria-label="Arrastar requisito">${dotsSvg()}</span>
       <span class="item-text">${it.ia ? `<span class="tag-ia" aria-label="Extraído pela IA da Settle">${sparklesSvg()}</span>` : ''}<span class="quote">"</span>${escapeHtml(it.text)}<span class="quote">"</span></span>
       <span class="item-actions">
         <button class="iact" type="button" title="Copiar texto" aria-label="Copiar texto" onclick="event.stopPropagation(); copyItem('${it.id}')">${copySvg()}</button>
@@ -815,8 +815,8 @@
 
   function submitMarks() {
     const total = modules.reduce((n, m) => n + m.items.length, 0);
-    if (!total) { toast('Adicione ao menos um item'); return; }
-    toast(`${modules.length} módulo(s) e ${total} item(ns) salvos`);
+    if (!total) { toast('Adicione ao menos um requisito'); return; }
+    toast(`${modules.length} módulo(s) e ${total} requisito(s) salvos`);
   }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
