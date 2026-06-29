@@ -320,7 +320,7 @@
     display: flex; align-items: flex-start; gap: 6px;
     border: 1px solid #e5e5e5; border-radius: 14px; background: #fff;
     padding: 10px 10px 10px 5px; cursor: pointer;
-    box-shadow: rgba(0,0,0,0.10) 0px 1px 3px 0px, rgba(0,0,0,0.10) 0px 1px 2px -1px;
+    box-shadow: none;
     transition: box-shadow .25s ease-in-out, transform .15s ease-out;
   }
   .item:hover { box-shadow: rgba(0,0,0,0.10) 0px 10px 35px; transform: scale(1.005); }
@@ -329,7 +329,7 @@
   .item-handle { width: 18px; height: 22px; margin-top: 1px; }
   .item-text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; color: #1f2937; }
   .item-text .quote { color: var(--faint); }
-  .tag-ia { color: #d97706; margin-right: 5px; vertical-align: -2px; cursor: help; }
+  .tag-ia { color: var(--green-strong); margin-right: 5px; vertical-align: -2px; cursor: help; }
   .tag-ia svg { display: inline-block; }
   /* tooltip de origem IA */
   .ia-tip {
@@ -784,10 +784,10 @@
     <div class="module ${mod.collapsed ? 'is-collapsed' : ''}" data-mod="${mod.id}">
       <div class="module-head">
         <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
-        <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
         <input class="mod-name" value="${escapeHtml(mod.nome)}" aria-label="Nome do módulo" onchange="renameModule('${mod.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" />
         <span class="mod-count">${mod.items.length}</span>
         <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
+        <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
       </div>
       <div class="module-items" data-mod="${mod.id}">${items}</div>
     </div>`;
