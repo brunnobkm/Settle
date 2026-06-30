@@ -663,25 +663,6 @@ function cardHTML(d){
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
       <span class="badge-updated" title="Atualizado: o anexo chegou">${I.refresh} Atualizado</span>
-      <div class="card-top-right">
-        <button class="btn btn-outline">Descartar</button>
-        <button class="btn btn-primary">Enviar para análise</button>
-        <button class="btn btn-status">${I.pencil} Em disputa ou Homologação</button>
-        <div class="avatars">
-          <span class="av" style="background:#6b7280">JS</span>
-          <span class="av" style="background:#0f766e">MR</span>
-          <span class="av" style="background:#9333ea">AL</span>
-          <span class="av add">+</span>
-        </div>
-        <div class="icon-actions">
-          <button class="ia bookmark" title="${d.saved?'Remover de Salvos para depois':'Salvar para depois'}" aria-pressed="${d.saved?'true':'false'}">${I.bookmark}</button>
-          <button class="ia" title="Notificar">${I.bell}</button>
-          <button class="ia" title="Copiar link">${I.link}</button>
-          <button class="ia" title="Compartilhar">${I.share}</button>
-          <button class="ia" title="Documentos">${I.file}</button>
-          <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':((d.arquivos||0)+(((d.arquivos||0)===1)?' arquivo anexado':' arquivos anexados'))}">${d.semAnexo?I.folderOff:I.folder}${(!d.semAnexo&&d.arquivos>0)?`<span class="ia-count">${d.arquivos}</span>`:''}</button>
-        </div>
-      </div>
     </div>
 
     <div class="segments">
@@ -715,28 +696,6 @@ function cardHTML(d){
       </div>
     </div>
 
-    <button class="expand-toggle">${I.chev}<span class="lbl-toggle">${d.collapsed?'Mostrar itens com correspondência':'Ocultar itens'}</span></button>
-
-    <div class="items-wrap">
-      <div class="items-head">
-        <span class="items-title">Itens com Correspondência</span>
-        <span class="count-chip">${d.itens}</span>
-        <span class="items-total">Total de itens: ${d.total}</span>
-      </div>
-      <table class="items">
-        <thead>
-          <tr>
-            <th style="width:48px">Lote</th>
-            <th>Nome</th>
-            <th style="width:200px">Segmento</th>
-            <th style="width:90px">Unidades</th>
-            <th style="width:140px">Valor Unitário</th>
-            <th style="width:150px">Valor Total</th>
-          </tr>
-        </thead>
-        <tbody>${itemsRows()}</tbody>
-      </table>
-    </div>
   </article>`;
 }
 
