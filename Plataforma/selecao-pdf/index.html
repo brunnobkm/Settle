@@ -315,6 +315,9 @@
   .mod-count { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--muted); background: #f1f3f5; border-radius: 999px; padding: 2px 8px; }
   .mod-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
   .mod-del:hover { background: #fdecec; color: #dc2626; }
+  .mod-link { flex: 0 0 auto; font-size: 11.5px; font-weight: 600; color: var(--green-strong); padding: 4px 8px; border-radius: 7px; white-space: nowrap; transition: background .15s; }
+  .mod-link:hover { background: #eafaf6; }
+  .mod-link.is-active { background: #d7f2ec; }
 
   .module-items { display: flex; flex-direction: column; gap: 8px; padding: 0 10px 10px 10px; min-height: 6px; }
   .module.is-collapsed .module-items { display: none; }
@@ -556,6 +559,17 @@
   </div>
   <div class="fab-menu" id="fabMenu" hidden onmousedown="event.preventDefault()"></div>
 
+  <!-- barra de vincular título ao módulo -->
+  <div class="extract-fab" id="linkFab" onmousedown="event.preventDefault()">
+    <span class="fab-label">Definir como título do módulo</span>
+    <span class="fab-sep"></span>
+    <button class="fab-btn" type="button" onclick="confirmLinkTitle()">Vincular</button>
+    <span class="fab-sep"></span>
+    <button class="fab-btn fab-close" type="button" aria-label="Cancelar" onclick="cancelLinkTitle()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+
   <div class="toast" id="toast">Marcação adicionada</div>
 
 <script>
@@ -567,11 +581,13 @@
   const submitBtn = document.getElementById('submitBtn');
   const cursorHint = document.getElementById('cursorHint');
   const fabMenu = document.getElementById('fabMenu');
+  const linkFab = document.getElementById('linkFab');
 
   let uid = 0; const newId = () => 'n' + (++uid);
   let modules = [];
   let targetModuleId = null;
   let activeItemId = null;
+  let linkingModuleId = null;
   let pendingText = '';
   let pendingRange = null;
   let hasSelection = false;
@@ -619,8 +635,8 @@
     const mod = createModule('Módulo ' + (modules.length + 1));
     targetModuleId = mod.id;
     render();
-    const input = modulesList.querySelector(`.module[data-mod="${mod.id}"] .mod-name`);
-    if (input) { input.focus(); input.select(); }
+    const span = modulesList.querySelector(`.module[data-mod="${mod.id}"] .mod-name`);
+    if (span) editModuleName(span, mod.id);
   }
   function renameModule(id, val) { const m = modules.find(m => m.id === id); if (m) m.nome = val; }
   function goToModule(id) {              // título do módulo -> trecho no PDF
@@ -715,20 +731,49 @@
   });
   page.addEventListener('mousemove', (e) => {
     if (hasSelection) { hideCursorHint(); return; }
+    cursorHint.textContent = linkingModuleId ? 'Selecione o título do módulo' : 'Selecione um trecho';
     cursorHint.style.left = (e.clientX + 14) + 'px';
     cursorHint.style.top = e.clientY + 'px';
     cursorHint.classList.add('is-visible');
   });
   page.addEventListener('mouseleave', hideCursorHint);
   function hideCursorHint() { cursorHint.classList.remove('is-visible'); }
-  function showFab() { fab.classList.add('is-visible'); }
-  function hideFab() { fab.classList.remove('is-visible'); hideExtractMenu(); }
+  function showFab() {
+    if (linkingModuleId) { linkFab.classList.add('is-visible'); fab.classList.remove('is-visible'); }
+    else { fab.classList.add('is-visible'); linkFab.classList.remove('is-visible'); }
+  }
+  function hideFab() { fab.classList.remove('is-visible'); linkFab.classList.remove('is-visible'); hideExtractMenu(); }
   function dismissSelection() {
     hideExtractMenu();
     const s = window.getSelection(); if (s) s.removeAllRanges();
     pendingText = ''; pendingRange = null; hasSelection = false;
     hideFab();
   }
+
+  /* ---------- vincular título ao módulo ---------- */
+  function linkTitle(modId) {
+    linkingModuleId = (linkingModuleId === modId) ? null : modId;
+    render();
+    if (linkingModuleId) {
+      const mod = modules.find(m => m.id === linkingModuleId);
+      toast('Selecione o título de “' + (mod ? mod.nome : '') + '” no documento');
+    }
+  }
+  function confirmLinkTitle() {
+    if (!linkingModuleId || !pendingRange) return;
+    const mod = modules.find(m => m.id === linkingModuleId);
+    if (mod) mod.range = pendingRange;
+    linkingModuleId = null;
+    rebuildHighlights(); render();
+    clearSelectionState();
+    toast(mod ? 'Título vinculado a “' + mod.nome + '”' : 'Título vinculado');
+  }
+  function cancelLinkTitle() {
+    linkingModuleId = null;
+    clearSelectionState();
+    render();
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && linkingModuleId) cancelLinkTitle(); });
 
   function clearSelectionState() {
     const s = window.getSelection(); if (s) s.removeAllRanges();
@@ -824,6 +869,7 @@
       <div class="module-head">
         <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
         <span class="mod-name ${mod.range ? 'is-linked' : ''}" title="${mod.range ? 'Ir para o trecho no documento (duplo clique para renomear)' : 'Duplo clique para renomear'}" ${mod.range ? `onclick="if(event.detail===1)goToModule('${mod.id}')"` : ''} ondblclick="editModuleName(this, '${mod.id}')">${escapeHtml(mod.nome)}</span>
+        ${!mod.range ? `<button class="mod-link ${linkingModuleId === mod.id ? 'is-active' : ''}" type="button" onclick="linkTitle('${mod.id}')">Vincular título</button>` : ''}
         <span class="mod-count">${mod.items.length}</span>
         <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
         <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
