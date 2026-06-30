@@ -716,7 +716,7 @@
   });
   page.addEventListener('mousemove', (e) => {
     if (hasSelection) { hideCursorHint(); return; }
-    cursorHint.textContent = linkingModuleId ? 'Selecione o título do módulo' : 'Selecione um trecho';
+    cursorHint.textContent = 'Selecione um trecho';
     cursorHint.style.left = (e.clientX + 14) + 'px';
     cursorHint.style.top = e.clientY + 'px';
     cursorHint.classList.add('is-visible');
@@ -741,7 +741,7 @@
     render();
     if (linkingModuleId) {
       const mod = modules.find(m => m.id === linkingModuleId);
-      toast('Selecione o título de “' + (mod ? mod.nome : '') + '” no documento');
+      toast('Sem trecho vinculado. Selecione um trecho para vincular.');
     }
   }
   function confirmLinkTitle() {
@@ -855,7 +855,7 @@
         <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
         <input class="mod-name" value="${escapeHtml(mod.nome)}" aria-label="Nome do módulo" onchange="renameModule('${mod.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" />
         <span class="mod-count">${mod.items.length}</span>
-        <button class="mod-goto ${mod.range ? 'is-linked' : ''} ${linkingModuleId === mod.id ? 'is-active' : ''}" type="button" title="${mod.range ? 'Ir para o trecho no documento' : 'Vincular trecho do edital'}" aria-label="${mod.range ? 'Ir para o trecho' : 'Vincular trecho'}" onclick="${mod.range ? `goToModule('${mod.id}')` : `linkTitle('${mod.id}')`}">${gotoSvg()}</button>
+        <button class="mod-goto ${mod.range ? 'is-linked' : ''} ${linkingModuleId === mod.id ? 'is-active' : ''}" type="button" title="${mod.range ? 'Ir para o trecho no documento' : 'Sem trecho vinculado. Selecione um trecho para vincular.'}" aria-label="${mod.range ? 'Ir para o trecho' : 'Vincular trecho'}" onclick="${mod.range ? `goToModule('${mod.id}')` : `linkTitle('${mod.id}')`}">${gotoSvg()}</button>
         <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
         <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
       </div>
