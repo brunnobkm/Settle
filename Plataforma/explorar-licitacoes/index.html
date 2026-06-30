@@ -555,8 +555,8 @@
       <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">300</span></button>
-          <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos <span class="cnt">2</span></button>
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas</button>
+          <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos</button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
@@ -969,7 +969,7 @@ const todasCnt  = document.querySelector('.tab.active .cnt');
 const cards     = [...document.querySelectorAll('.card')];
 
 const baseEyebrow = eyebrow.textContent;
-const baseTodas   = todasCnt.textContent;
+const baseTodas   = todasCnt ? todasCnt.textContent : '';
 
 // remove acentos p/ casar "belem" com "Belém"
 const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1076,10 +1076,10 @@ function applyFilter(q){
   if(query){
     const palavra = visible === 1 ? 'licitação' : 'licitações';
     eyebrow.textContent = `Encontramos ${visible} ${palavra} com seus filtros`;
-    todasCnt.textContent = visible;
+    if(todasCnt) todasCnt.textContent = visible;
   }else{
     eyebrow.textContent = baseEyebrow;
-    todasCnt.textContent = baseTodas;
+    if(todasCnt) todasCnt.textContent = baseTodas;
   }
 }
 
