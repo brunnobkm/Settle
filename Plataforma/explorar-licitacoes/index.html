@@ -785,7 +785,9 @@ const TAB_BADGES = {
   'Todas': [],
   // monitoramento: filtro fixo por órgão (multi-seleção). Clicar na badge gerencia os órgãos.
   'Órgãos favoritos': [
-    {label:'Órgão', type:'list', options:ORGAOS, value:[ORGAOS[0], ORGAOS[1]]},
+    {label:'Órgão',  type:'list', options:ORGAOS,  value:[ORGAOS[0], ORGAOS[1]]},
+    {label:'Estado', type:'list', options:ESTADOS, value:['PA','SP']},
+    {label:'Cidade', type:'list', options:CIDADES, value:['Belém','Campinas']},
   ],
 };
 const DATE_PRESETS = {
