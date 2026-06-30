@@ -302,11 +302,16 @@
   .mod-toggle .chev-toggle { transition: transform .18s ease; }
   .module.is-collapsed .mod-toggle .chev-toggle { transform: rotate(-90deg); }
   .mod-name {
-    flex: 1; min-width: 0; font: inherit; font-size: 13.5px; font-weight: 700; color: #111827;
-    border: 1px solid transparent; background: transparent; padding: 5px 7px; border-radius: 7px;
+    flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: #111827;
+    padding: 5px 7px; border-radius: 7px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .mod-name:hover { background: #f3f4f6; }
-  .mod-name:focus { outline: none; background: #fff; border-color: var(--green-soft); }
+  .mod-name.is-linked { cursor: pointer; }
+  .mod-name.is-linked:hover { background: #f3f4f6; }
+  .mod-name-edit {
+    flex: 1; min-width: 0; font: inherit; font-size: 13.5px; font-weight: 700; color: #111827;
+    border: 1px solid var(--green-soft); background: #fff; padding: 5px 7px; border-radius: 7px; outline: none;
+  }
   .mod-count { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--muted); background: #f1f3f5; border-radius: 999px; padding: 2px 8px; }
   .mod-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
   .mod-del:hover { background: #fdecec; color: #dc2626; }
@@ -618,6 +623,27 @@
     if (input) { input.focus(); input.select(); }
   }
   function renameModule(id, val) { const m = modules.find(m => m.id === id); if (m) m.nome = val; }
+  function goToModule(id) {              // título do módulo -> trecho no PDF
+    const mod = modules.find(m => m.id === id);
+    if (!mod || !mod.range) return;
+    scrollRangeIntoView(mod.range);
+    flashRange(mod.range);
+  }
+  function editModuleName(span, id) {    // duplo clique renomeia
+    const mod = modules.find(m => m.id === id); if (!mod) return;
+    const input = document.createElement('input');
+    input.className = 'mod-name-edit';
+    input.value = mod.nome;
+    span.replaceWith(input);
+    input.focus(); input.select();
+    let done = false;
+    const commit = () => { if (done) return; done = true; const v = input.value.trim(); if (v) mod.nome = v; render(); };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') input.blur();
+      else if (e.key === 'Escape') { input.value = mod.nome; input.blur(); }
+    });
+  }
   function toggleModule(id) { const m = modules.find(m => m.id === id); if (m) { m.collapsed = !m.collapsed; render(); } }
   function removeModule(id) {
     modules = modules.filter(m => m.id !== id);
@@ -797,7 +823,7 @@
     <div class="module ${mod.collapsed ? 'is-collapsed' : ''}" data-mod="${mod.id}">
       <div class="module-head">
         <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
-        <input class="mod-name" value="${escapeHtml(mod.nome)}" aria-label="Nome do módulo" onchange="renameModule('${mod.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" />
+        <span class="mod-name ${mod.range ? 'is-linked' : ''}" title="${mod.range ? 'Ir para o trecho no documento (duplo clique para renomear)' : 'Duplo clique para renomear'}" ${mod.range ? `onclick="if(event.detail===1)goToModule('${mod.id}')"` : ''} ondblclick="editModuleName(this, '${mod.id}')">${escapeHtml(mod.nome)}</span>
         <span class="mod-count">${mod.items.length}</span>
         <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
         <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
@@ -892,12 +918,13 @@
   function txt(el) { return el.textContent.replace(/\s+/g, ' ').trim(); }
   function tdWith(sub) { return [...docEl.querySelectorAll('.doc-table td')].find(td => td.textContent.includes(sub)); }
   function pWith(prefix) { return [...docEl.querySelectorAll('p')].find(p => p.textContent.trim().startsWith(prefix)); }
+  function headingWith(sub) { return [...docEl.querySelectorAll('.heading')].find(h => h.textContent.includes(sub)); }
   function seed() {
     const mk = (el) => el ? { id: newId(), text: txt(el).slice(0, 360), range: rangeOf(el), ia: true } : null;
-    const M = (nome, els) => { const m = createModule(nome); m.items = els.map(mk).filter(Boolean); };
-    M('Objeto e escopo', [tdWith('OBJETO:')]);
-    M('Critério de julgamento', [tdWith('CRITÉRIO DE JULGAMENTO'), tdWith('MODO DE DISPUTA')]);
-    M('Requisitos gerais', [pWith('1.1.'), pWith('1.2.'), pWith('2.1.')]);
+    const M = (nome, anchor, els) => { const m = createModule(nome); if (anchor) m.range = rangeOf(anchor); m.items = els.map(mk).filter(Boolean); };
+    M('Objeto e escopo', tdWith('OBJETO:'), [tdWith('OBJETO:')]);
+    M('Critério de julgamento', tdWith('CRITÉRIO DE JULGAMENTO'), [tdWith('CRITÉRIO DE JULGAMENTO'), tdWith('MODO DE DISPUTA')]);
+    M('Requisitos gerais', headingWith('DO OBJETO'), [pWith('1.1.'), pWith('1.2.'), pWith('2.1.')]);
     targetModuleId = modules[0] ? modules[0].id : null;
   }
 
