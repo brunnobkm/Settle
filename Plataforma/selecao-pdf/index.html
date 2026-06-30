@@ -302,22 +302,22 @@
   .mod-toggle .chev-toggle { transition: transform .18s ease; }
   .module.is-collapsed .mod-toggle .chev-toggle { transform: rotate(-90deg); }
   .mod-name {
-    flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: #111827;
-    padding: 5px 7px; border-radius: 7px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .mod-name.is-linked { cursor: pointer; }
-  .mod-name.is-linked:hover { background: #f3f4f6; }
-  .mod-name-edit {
     flex: 1; min-width: 0; font: inherit; font-size: 13.5px; font-weight: 700; color: #111827;
-    border: 1px solid var(--green-soft); background: #fff; padding: 5px 7px; border-radius: 7px; outline: none;
+    border: 1px solid transparent; background: transparent; padding: 5px 7px; border-radius: 7px;
   }
+  .mod-name:hover { background: #f3f4f6; }
+  .mod-name:focus { outline: none; background: #fff; border-color: var(--green-soft); }
+  .mod-goto {
+    flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px;
+    color: var(--muted); transition: background .15s, color .15s;
+  }
+  .mod-goto:hover { background: #f1f1f2; color: var(--ink); }
+  .mod-goto.is-linked { color: var(--green-strong); }
+  .mod-goto.is-linked:hover { background: #eafaf6; color: var(--green-strong); }
+  .mod-goto.is-active { background: #d7f2ec; color: var(--green-strong); }
   .mod-count { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--muted); background: #f1f3f5; border-radius: 999px; padding: 2px 8px; }
   .mod-del { flex: 0 0 auto; width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 7px; color: var(--faint); transition: background .15s, color .15s; }
   .mod-del:hover { background: #fdecec; color: #dc2626; }
-  .mod-link { flex: 0 0 auto; font-size: 11.5px; font-weight: 600; color: var(--green-strong); padding: 4px 8px; border-radius: 7px; white-space: nowrap; transition: background .15s; }
-  .mod-link:hover { background: #eafaf6; }
-  .mod-link.is-active { background: #d7f2ec; }
 
   .module-items { display: flex; flex-direction: column; gap: 8px; padding: 0 10px 10px 10px; min-height: 6px; }
   .module.is-collapsed .module-items { display: none; }
@@ -635,8 +635,8 @@
     const mod = createModule('Módulo ' + (modules.length + 1));
     targetModuleId = mod.id;
     render();
-    const span = modulesList.querySelector(`.module[data-mod="${mod.id}"] .mod-name`);
-    if (span) editModuleName(span, mod.id);
+    const input = modulesList.querySelector(`.module[data-mod="${mod.id}"] .mod-name`);
+    if (input) { input.focus(); input.select(); }
   }
   function renameModule(id, val) { const m = modules.find(m => m.id === id); if (m) m.nome = val; }
   function goToModule(id) {              // título do módulo -> trecho no PDF
@@ -644,21 +644,6 @@
     if (!mod || !mod.range) return;
     scrollRangeIntoView(mod.range);
     flashRange(mod.range);
-  }
-  function editModuleName(span, id) {    // duplo clique renomeia
-    const mod = modules.find(m => m.id === id); if (!mod) return;
-    const input = document.createElement('input');
-    input.className = 'mod-name-edit';
-    input.value = mod.nome;
-    span.replaceWith(input);
-    input.focus(); input.select();
-    let done = false;
-    const commit = () => { if (done) return; done = true; const v = input.value.trim(); if (v) mod.nome = v; render(); };
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') input.blur();
-      else if (e.key === 'Escape') { input.value = mod.nome; input.blur(); }
-    });
   }
   function toggleModule(id) { const m = modules.find(m => m.id === id); if (m) { m.collapsed = !m.collapsed; render(); } }
   function removeModule(id) {
@@ -868,9 +853,9 @@
     <div class="module ${mod.collapsed ? 'is-collapsed' : ''}" data-mod="${mod.id}">
       <div class="module-head">
         <span class="mod-handle" draggable="true" title="Arrastar módulo" aria-label="Arrastar módulo">${dotsSvg()}</span>
-        <span class="mod-name ${mod.range ? 'is-linked' : ''}" title="${mod.range ? 'Ir para o trecho no documento (duplo clique para renomear)' : 'Duplo clique para renomear'}" ${mod.range ? `onclick="if(event.detail===1)goToModule('${mod.id}')"` : ''} ondblclick="editModuleName(this, '${mod.id}')">${escapeHtml(mod.nome)}</span>
-        ${!mod.range ? `<button class="mod-link ${linkingModuleId === mod.id ? 'is-active' : ''}" type="button" onclick="linkTitle('${mod.id}')">Vincular título</button>` : ''}
+        <input class="mod-name" value="${escapeHtml(mod.nome)}" aria-label="Nome do módulo" onchange="renameModule('${mod.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" />
         <span class="mod-count">${mod.items.length}</span>
+        <button class="mod-goto ${mod.range ? 'is-linked' : ''} ${linkingModuleId === mod.id ? 'is-active' : ''}" type="button" title="${mod.range ? 'Ir para o trecho no documento' : 'Vincular trecho do edital'}" aria-label="${mod.range ? 'Ir para o trecho' : 'Vincular trecho'}" onclick="${mod.range ? `goToModule('${mod.id}')` : `linkTitle('${mod.id}')`}">${gotoSvg()}</button>
         <button class="mod-del" type="button" aria-label="Remover módulo" onclick="removeModule('${mod.id}')">${trashSvg()}</button>
         <button class="mod-toggle" type="button" aria-label="${mod.collapsed ? 'Expandir' : 'Recolher'}" onclick="toggleModule('${mod.id}')">${chevSvg()}</button>
       </div>
