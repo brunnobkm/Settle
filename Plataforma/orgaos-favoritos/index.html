@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="pt-BR" data-preview="orgaos-favoritos">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Explorar licitações — Órgãos favoritos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --foreground:#0a0a0a;
+    --muted-foreground:#737373;
+    --border:#e5e5e5;
+    --muted:#f5f5f5;
+    --background:#ffffff;
+    --primary:#171717;
+    --primary-foreground:#fafafa;
+    --warning:#d97706;
+    --warning-bg:#fdf6ec;
+    --accent:#3a9b9e;
+    --accent-600:#2a787b;
+    --accent-100:#d4eef0;
+    --star:#e6a700;
+    --radius-field:8px;
+    --radius-box:10px;
+    --shadow-card:0 1px 2px 0 rgba(0,0,0,.05), 0 1px 3px 0 rgba(0,0,0,.04);
+    --sb-fg:#404040;
+  }
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color:var(--foreground); background:var(--background); font-size:14px; line-height:20px;
+  }
+  button{font-family:inherit; cursor:pointer;}
+  svg{display:block;}
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:52px;
+    background:#f5f5f5; border-right:1px solid var(--border);
+    display:flex; flex-direction:column; z-index:30; overflow:hidden; transition:width .2s ease;
+  }
+  body.sb-open .sidebar{width:280px;}
+  .sb-head{height:64px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;}
+  body:not(.sb-open) .sb-head{padding:0;justify-content:center;}
+  .sb-logo{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .sb-ws{flex:1;min-width:0;}
+  .sb-ws-name{font-size:14px;font-weight:500;color:var(--sb-fg);line-height:20px;white-space:nowrap;}
+  .sb-ws-sub{font-size:12px;color:rgba(63,64,77,.8);line-height:16px;white-space:nowrap;}
+  .sb-caret{flex:none;color:#8a8a8a;cursor:pointer;}
+  body:not(.sb-open) .sb-ws, body:not(.sb-open) .sb-caret{display:none;}
+  .sb-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;padding:8px;}
+  body:not(.sb-open) .sb-content{align-items:center;padding:8px 0;}
+  .sb-group{display:flex;flex-direction:column;gap:4px;width:100%;padding:8px;}
+  body:not(.sb-open) .sb-group{align-items:center;padding:8px;}
+  .sb-section{font-size:12px;font-weight:500;color:var(--sb-fg);opacity:.7;padding:8px;height:32px;display:flex;align-items:center;white-space:nowrap;}
+  body:not(.sb-open) .sb-section{display:none;}
+  .sb-item{
+    display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;
+    padding:8px;border-radius:8px;border:none;background:transparent;cursor:pointer;
+    color:var(--sb-fg);font-family:inherit;font-size:14px;line-height:20px;text-align:left;text-decoration:none;
+    transition:background .12s;position:relative;
+  }
+  .sb-item:hover{background:rgba(0,0,0,.05);}
+  .sb-item.active{background:rgba(0,0,0,.07);font-weight:500;}
+  .sb-ico{width:16px;height:16px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--sb-fg);}
+  .sb-ico svg{width:16px;height:16px;}
+  .sb-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  body:not(.sb-open) .sb-item{width:36px;height:36px;padding:0;justify-content:center;gap:0;}
+  body:not(.sb-open) .sb-label{display:none;}
+  .sb-foot{flex:none;display:flex;align-items:center;gap:8px;padding:16px 8px;}
+  body:not(.sb-open) .sb-foot{justify-content:center;padding:16px 0;}
+  .sb-avatar{width:32px;height:32px;flex:none;border-radius:50%;background:rgba(23,23,23,.1);color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .sb-user{flex:1;min-width:0;}
+  .sb-user-name{font-size:14px;font-weight:500;color:var(--sb-fg);line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-user-email{font-size:12px;font-weight:300;color:var(--sb-fg);line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  body:not(.sb-open) .sb-user{display:none;}
+
+  /* ============ SHELL / NAVBAR ============ */
+  .shell{margin-left:52px;transition:margin-left .2s ease;}
+  body.sb-open .shell{margin-left:280px;}
+  .navbar{
+    height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--background);z-index:20;
+  }
+  .navbar .icon-btn{width:30px;height:30px;border:none;background:transparent;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#737373;}
+  .navbar .icon-btn:hover{background:var(--muted);color:var(--foreground);}
+  .navbar .sep{width:1px;height:22px;background:var(--border);}
+  .navbar .crumb{font-size:15px;font-weight:600;color:var(--foreground);}
+
+  /* ============ CONTENT ============ */
+  .content{max-width:1388px;margin:0 auto;padding:22px 24px 64px;}
+
+  /* search/action row */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .search-box{
+    flex:1;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;
+    border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--muted-foreground);
+  }
+  .search-box input{flex:1;border:none;outline:none;font-family:inherit;font-size:14px;color:var(--foreground);background:transparent;}
+  .search-box svg{color:#9ca3af;flex:none;}
+  .act{
+    height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border-radius:10px;
+    border:1px solid var(--border);background:#fff;color:var(--foreground);font-size:14px;font-weight:500;white-space:nowrap;
+  }
+  .act:hover{background:var(--muted);}
+  .act.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .act.primary:hover{background:var(--accent-600);}
+  .act.ghost{border-color:transparent;background:transparent;color:var(--muted-foreground);}
+  .act.ghost:hover{background:var(--muted);color:var(--foreground);}
+
+  /* ============ ÓRGÃOS FAVORITOS BAR ============ */
+  .fav-wrap{border:1px solid var(--border);border-radius:12px;background:#fcfcfc;padding:12px 14px;margin-bottom:16px;}
+  .fav-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .fav-title{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--foreground);}
+  .fav-title svg{color:var(--star);}
+  .fav-help{font-size:12.5px;color:var(--muted-foreground);}
+  .fav-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .fav-chip{
+    position:relative;display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+    border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--foreground);
+    font-size:13px;font-weight:500;white-space:nowrap;
+  }
+  .fav-chip:hover{background:var(--muted);}
+  .fav-chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .fav-chip .chip-x{
+    width:17px;height:17px;border:none;background:transparent;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;color:inherit;opacity:.55;margin-right:-4px;
+  }
+  .fav-chip .chip-x:hover{opacity:1;background:rgba(0,0,0,.08);}
+  .fav-chip.active .chip-x:hover{background:rgba(255,255,255,.22);}
+  .fav-chip .chip-dot{width:7px;height:7px;border-radius:50%;background:#dc2626;flex:none;}
+  .fav-chip.all{font-weight:600;}
+  .fav-empty{font-size:13px;color:var(--muted-foreground);font-style:italic;}
+
+  /* ============ RESULT HEADER ============ */
+  .res-head{display:flex;align-items:baseline;gap:8px;margin:4px 0 14px;}
+  .res-head .n{font-size:18px;font-weight:600;}
+  .res-head .sub{font-size:13px;color:var(--muted-foreground);}
+
+  /* ============ CARDS ============ */
+  .card-list{display:flex;flex-direction:column;gap:16px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-card);padding:16px 18px;}
+  .card.hidden{display:none;}
+  .card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .edital{font-size:15px;font-weight:600;color:var(--foreground);white-space:nowrap;}
+  .edital b{font-weight:700;}
+  .badge-novo{display:inline-flex;align-items:center;gap:5px;background:var(--accent-100);color:var(--accent-600);font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;}
+  .card-top-right{margin-left:auto;display:inline-flex;align-items:center;gap:8px;}
+  .star{
+    display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;
+    border:1px solid var(--border);background:#fff;color:var(--muted-foreground);font-size:13px;font-weight:500;white-space:nowrap;
+  }
+  .star:hover{background:var(--muted);color:var(--foreground);}
+  .star svg{width:16px;height:16px;color:#bdbdbd;transition:color .12s;}
+  .star[aria-pressed="true"]{border-color:#f0dca3;background:#fdf8e8;color:#9a7400;}
+  .star[aria-pressed="true"] svg{color:var(--star);fill:var(--star);}
+  .ia-files{
+    display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:8px;
+    border:1px solid var(--border);background:#fff;color:var(--foreground);font-size:13px;font-weight:500;white-space:nowrap;
+  }
+  .ia-files:hover{background:var(--muted);}
+  .ia-files svg{width:15px;height:15px;color:#737373;}
+
+  .field-line{font-size:14px;color:var(--foreground);margin:12px 0 8px;line-height:21px;}
+  .field-line:first-of-type{margin-top:14px;}
+  .field-line .lbl{font-weight:600;}
+  .obj{color:var(--foreground);}
+  .valor{font-size:15px;font-weight:700;margin:10px 0 14px;}
+  .valor .dash{color:var(--muted-foreground);font-weight:400;}
+
+  .grid-box{display:flex;border:1px solid var(--border);border-radius:var(--radius-field);overflow:hidden;}
+  .grid-left{flex:none;width:210px;padding:14px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:14px;}
+  .grid-main{flex:1;padding:14px 18px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px 18px;}
+  .fld{min-width:0;}
+  .fld .k{font-size:13px;font-weight:600;color:var(--foreground);margin-bottom:3px;}
+  .fld .v{font-size:14px;color:var(--muted-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  /* empty state */
+  .empty{display:none;text-align:center;padding:48px 20px;color:var(--muted-foreground);}
+  .empty.show{display:block;}
+  .empty strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
+
+  /* pagination */
+  .pager{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;color:var(--muted-foreground);font-size:14px;}
+  .pager button{height:34px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--foreground);font-size:14px;}
+  .pager button:hover{background:var(--muted);}
+  .pager .cur{font-weight:600;color:var(--foreground);padding:0 6px;}
+
+  /* ============ TOASTS (sonner) ============ */
+  #toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:60;}
+  .toast{
+    display:flex;align-items:center;gap:10px;min-width:280px;max-width:380px;
+    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);
+    padding:12px 14px;font-size:14px;color:var(--foreground);
+    opacity:0;transform:translateY(8px) scale(.98);transition:opacity .22s ease, transform .22s ease;
+  }
+  .toast.show{opacity:1;transform:none;}
+  .toast.hide{opacity:0;transform:translateY(8px) scale(.97);}
+  .toast-ico{flex:none;display:flex;}
+  .toast-msg{flex:1;min-width:0;}
+  .toast-undo{border:none;background:transparent;color:var(--accent-600);font-weight:600;font-size:14px;padding:2px 4px;}
+  .toast-undo:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <div class="sb-head">
+      <div class="sb-logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+          <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+          <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="sb-ws">
+        <div class="sb-ws-name">Demos</div>
+        <div class="sb-ws-sub">Espaço de trabalho</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+    <nav class="sb-content">
+      <div class="sb-section">Licitações</div>
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
+        <a class="sb-item active" href="#" aria-current="page" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
+        <a class="sb-item" href="#" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
+        <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-avatar">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier</div>
+        <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ SHELL ============ -->
+  <div class="shell">
+    <header class="navbar">
+      <button class="icon-btn" id="sbToggle" title="Recolher/expandir sidebar" aria-label="Alternar sidebar">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
+      </button>
+      <span class="sep"></span>
+      <span class="crumb">Explorar licitações</span>
+    </header>
+
+    <div class="content">
+      <!-- busca + ações (igual produção) -->
+      <div class="toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
+          <input id="search" type="text" placeholder="Busque por licitações" autocomplete="off" />
+        </div>
+        <button class="act primary" id="btnBuscar">Buscar</button>
+        <button class="act ghost" id="btnLimpar">Limpar</button>
+        <button class="act" id="btnFiltros">
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
+          Filtros
+        </button>
+      </div>
+
+      <!-- ============ ÓRGÃOS FAVORITOS (camada de monitoramento) ============ -->
+      <div class="fav-wrap">
+        <div class="fav-top">
+          <span class="fav-title">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 1.6l1.8 3.9 4.2.5-3.1 2.9.8 4.2L8 11.9 4.3 13.9l.8-4.2L2 6.8l4.2-.5z"/></svg>
+            Órgãos favoritos
+          </span>
+          <span class="fav-help">Acompanhe tudo que um órgão publica, mesmo fora dos seus filtros de curadoria. Favoritos ficam salvos neste navegador.</span>
+        </div>
+        <div class="fav-chips" id="favChips"></div>
+      </div>
+
+      <div class="res-head">
+        <span class="n" id="resCount">0 licitações</span>
+        <span class="sub" id="resSub">no repositório · dados básicos</span>
+      </div>
+
+      <div class="card-list" id="cardList"></div>
+
+      <div class="empty" id="empty">
+        <strong>Nenhuma licitação para este filtro</strong>
+        Esse órgão ainda não publicou nada novo, ou ajuste sua busca.
+      </div>
+
+      <div class="pager">
+        <button>Anterior</button>
+        <span>Página <span class="cur">1</span></span>
+        <button>Próxima</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+<script>
+/* ============ ÍCONES ============ */
+const STAR = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.8l1.8 3.9 4.2.5-3.1 2.9.8 4.2L8 11.9 4.3 13.9l.8-4.2L2 6.8l4.2-.5z" stroke-linejoin="round"/></svg>';
+const FOLDER = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4.5a1 1 0 0 1 1-1h2.5l1.2 1.2H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>';
+const XICO = '<svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/></svg>';
+
+/* ============ ÓRGÃOS (catálogo) ============ */
+/* key = slug estável; short = rótulo do chip; name = nome completo (igual produção) */
+const ORGAOS = {
+  campinas_ti: { short:'Pref. Campinas · TI',   name:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI' },
+  prodesp:     { short:'PRODESP · SP',          name:'GOVERNO DO ESTADO DE SÃO PAULO - PRODESP' },
+  tjpr:        { short:'TJ Paraná',             name:'TRIBUNAL DE JUSTIÇA DO ESTADO DO PARANÁ' },
+  faxinal:     { short:'Faxinal dos Guedes',    name:'MUNICÍPIO DE FAXINAL DOS GUEDES' },
+  esteio:      { short:'Pref. Esteio',          name:'PREFEITURA MUNICIPAL DE ESTEIO' },
+  cpro_ba:     { short:'CPRO · Polícia BA',     name:'COMANDO DE POLICIAMENTO DA REGIAO OESTE' },
+};
+
+/* ============ LICITAÇÕES (dados básicos do repositório) ============ */
+/* Campos vazios = "-" (o pipeline de processamento é que preencheria valor, CAPAG, etc.) */
+const DATA = [
+  { edital:'2025/0481', orgao:'campinas_ti', novo:true,
+    objeto:'Registro de preços para aquisição de notebooks, estações de trabalho e monitores para a rede administrativa municipal, incluindo garantia on-site.',
+    envio:'29/06/2026', id:'4102', estado:'SP', modalidade:'Pregão - Eletrônico' },
+  { edital:'2025/0455', orgao:'campinas_ti', novo:false,
+    objeto:'Contratação de solução de cabeamento estruturado e switches gerenciáveis para modernização do data center municipal.',
+    envio:'12/06/2026', id:'3990', estado:'SP', modalidade:'Pregão - Eletrônico' },
+  { edital:'PRODESP-77/2025', orgao:'prodesp', novo:false,
+    objeto:'Aquisição de licenças de software de produtividade e serviços de suporte técnico para órgãos do Governo do Estado.',
+    envio:'08/06/2026', id:'4007', estado:'SP', modalidade:'Pregão - Eletrônico' },
+  { edital:'TJPR-19/2025', orgao:'tjpr', novo:true,
+    objeto:'Registro de preços para fornecimento de equipamentos de informática e periféricos destinados às unidades judiciárias do interior.',
+    envio:'02/07/2026', id:'4120', estado:'PR', modalidade:'Pregão - Eletrônico' },
+  { edital:'54/2025', orgao:'faxinal', novo:false,
+    objeto:'Aquisição de película interativa digital, projetor multimídia, suporte para fixação e sistema de som para as escolas municipais da rede de ensino.',
+    envio:'17/09/2025', id:'3965', estado:'SC', modalidade:'Pregão - Eletrônico' },
+  { edital:'115/2025', orgao:'esteio', novo:false,
+    objeto:'Registro de preço de ferramentas, portas, madeiras, materiais hidráulicos, elétricos e itens de construção (Portal de Compras Públicas).',
+    envio:'22/09/2025', id:'3967', estado:'RS', modalidade:'Pregão - Eletrônico' },
+  { edital:'PCE2022420250024/2025', orgao:'cpro_ba', novo:false,
+    objeto:'Material de consumo tipo água, café e açúcar para o CPRO e unidades apoiadas.',
+    envio:'10/09/2025', id:'3968', estado:'BA', modalidade:'Dispensa' },
+];
+
+/* ============ ESTADO (favoritos persistidos — MVP localStorage) ============ */
+const LS_KEY = 'settle.orgaos-favoritos.v1';
+const SEED = ['campinas_ti','prodesp','tjpr'];   // pré-favoritados para a demo
+let favs = loadFavs();
+let activeFilter = 'all';   // 'all' | orgaoKey
+
+function loadFavs(){
+  try{ const v = JSON.parse(localStorage.getItem(LS_KEY)); if(Array.isArray(v)) return v; }catch(e){}
+  return [...SEED];
+}
+function saveFavs(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(favs)); }catch(e){} }
+
+/* ============ HELPERS ============ */
+const dash = '<span class="v">-</span>';
+const cardList = document.getElementById('cardList');
+const favChips = document.getElementById('favChips');
+const resCount = document.getElementById('resCount');
+const empty = document.getElementById('empty');
+const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+function novoCountFor(key){
+  return DATA.filter(d=>d.orgao===key && d.novo).length;
+}
+
+/* ============ RENDER: CARDS ============ */
+function cardHTML(d){
+  const o = ORGAOS[d.orgao];
+  const isFav = favs.includes(d.orgao);
+  const blob = norm([d.edital, o.name, d.objeto, d.id, d.estado, d.modalidade].join(' '));
+  return `
+  <article class="card" data-orgao="${d.orgao}" data-novo="${d.novo?'true':'false'}" data-search="${blob.replace(/"/g,'')}">
+    <div class="card-top">
+      <span class="edital">Edital <b>${d.edital}</b></span>
+      ${d.novo ? '<span class="badge-novo">Novo</span>' : ''}
+      <div class="card-top-right">
+        <button class="star" data-orgao="${d.orgao}" aria-pressed="${isFav?'true':'false'}" title="${isFav?'Remover dos órgãos favoritos':'Favoritar órgão para monitorar'}">
+          ${STAR}<span class="star-lbl">${isFav?'Favoritado':'Favoritar órgão'}</span>
+        </button>
+        <button class="ia-files" title="Visualizar arquivos">${FOLDER} Visualizar arquivos</button>
+      </div>
+    </div>
+
+    <p class="field-line"><span class="lbl">Órgão:</span> ${o.name}</p>
+    <p class="field-line obj"><span class="lbl">Objeto:</span> ${d.objeto}</p>
+    <p class="valor">Valor global: <span class="dash">-</span></p>
+
+    <div class="grid-box">
+      <div class="grid-left">
+        <div class="fld"><div class="k">Adicionada</div>${dash}</div>
+        <div class="fld"><div class="k">Atualizada</div>${dash}</div>
+        <div class="fld"><div class="k">Envio da proposta</div><div class="v">${d.envio}</div></div>
+      </div>
+      <div class="grid-main">
+        <div class="fld"><div class="k">ID</div><div class="v">${d.id}</div></div>
+        <div class="fld"><div class="k">Julgamento</div>${dash}</div>
+        <div class="fld"><div class="k">Portal de Disputa</div>${dash}</div>
+        <div class="fld"><div class="k">Estado</div><div class="v">${d.estado}</div></div>
+        <div class="fld"><div class="k">CAPAG Estadual</div>${dash}</div>
+        <div class="fld"><div class="k">Modalidade</div><div class="v">${d.modalidade}</div></div>
+        <div class="fld"><div class="k">UASG</div>${dash}</div>
+        <div class="fld"><div class="k">Cidade</div>${dash}</div>
+        <div class="fld"><div class="k">CAPAG Municipal</div>${dash}</div>
+        <div class="fld"><div class="k">Habitantes</div>${dash}</div>
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderCards(){
+  cardList.innerHTML = DATA.map(cardHTML).join('');
+}
+
+/* ============ RENDER: CHIPS DE FAVORITOS ============ */
+function renderChips(){
+  let html = `<button class="fav-chip all ${activeFilter==='all'?'active':''}" data-orgao="all">Todas as licitações</button>`;
+  if(!favs.length){
+    html += `<span class="fav-empty">Nenhum órgão favoritado ainda. Use a estrela ☆ no card para começar a monitorar.</span>`;
+  }else{
+    html += favs.map(key=>{
+      const o = ORGAOS[key]; if(!o) return '';
+      const nv = novoCountFor(key);
+      return `<button class="fav-chip ${activeFilter===key?'active':''}" data-orgao="${key}" title="${o.name}">
+        ${nv ? '<span class="chip-dot" title="'+nv+' nova(s)"></span>' : ''}
+        ${o.short}
+        <span class="chip-x" data-x="${key}" title="Remover dos favoritos" aria-label="Remover">${XICO}</span>
+      </button>`;
+    }).join('');
+  }
+  favChips.innerHTML = html;
+}
+
+/* ============ FILTRO / VISIBILIDADE ============ */
+function applyView(){
+  const q = norm(document.getElementById('search').value.trim());
+  let visible = 0;
+  cardList.querySelectorAll('.card').forEach(c=>{
+    const okOrg = activeFilter==='all' || c.dataset.orgao===activeFilter;
+    const okQ = !q || c.dataset.search.includes(q);
+    const show = okOrg && okQ;
+    c.classList.toggle('hidden', !show);
+    if(show) visible++;
+  });
+  resCount.textContent = visible===1 ? '1 licitação' : `${visible} licitações`;
+  empty.classList.toggle('show', visible===0);
+}
+
+function setFilter(key){
+  activeFilter = key;
+  renderChips();
+  applyView();
+}
+
+/* ============ TOASTS ============ */
+const toasts = document.getElementById('toasts');
+function showToast(msg, opts){
+  opts = opts || {};
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-ico" style="color:${opts.color||'var(--star)'}">${opts.icon||STAR}</span><span class="toast-msg">${msg}</span>`+
+    (opts.undoLabel ? `<button class="toast-undo">${opts.undoLabel}</button>` : '');
+  toasts.appendChild(t);
+  requestAnimationFrame(()=> t.classList.add('show'));
+  let timer = setTimeout(close, 4200);
+  function close(){ clearTimeout(timer); t.classList.remove('show'); t.classList.add('hide'); setTimeout(()=> t.remove(), 260); }
+  const undo = t.querySelector('.toast-undo');
+  if(undo) undo.addEventListener('click', ()=>{ opts.onUndo && opts.onUndo(); close(); });
+}
+
+/* ============ FAVORITAR / DESFAVORITAR ============ */
+function setFav(key, on){
+  const i = favs.indexOf(key);
+  if(on && i<0) favs.push(key);
+  if(!on && i>=0) favs.splice(i,1);
+  // se o órgão filtrado deixou de ser favorito, volta para "Todas"
+  if(!on && activeFilter===key) activeFilter='all';
+  saveFavs();
+  // atualiza as estrelas de todos os cards desse órgão
+  cardList.querySelectorAll(`.star[data-orgao="${key}"]`).forEach(btn=>{
+    btn.setAttribute('aria-pressed', on?'true':'false');
+    btn.title = on?'Remover dos órgãos favoritos':'Favoritar órgão para monitorar';
+    const lbl = btn.querySelector('.star-lbl'); if(lbl) lbl.textContent = on?'Favoritado':'Favoritar órgão';
+  });
+  renderChips();
+  applyView();
+}
+
+/* ============ EVENTOS ============ */
+cardList.addEventListener('click', e=>{
+  const star = e.target.closest('.star');
+  if(star){
+    const key = star.dataset.orgao;
+    const willFav = star.getAttribute('aria-pressed')!=='true';
+    setFav(key, willFav);
+    const o = ORGAOS[key];
+    showToast(
+      willFav ? `Você agora monitora <b>${o.short}</b>` : `<b>${o.short}</b> saiu dos favoritos`,
+      { color: willFav?'var(--star)':'#9ca3af',
+        undoLabel:'Desfazer', onUndo:()=> setFav(key, !willFav) }
+    );
+  }
+});
+
+favChips.addEventListener('click', e=>{
+  const x = e.target.closest('.chip-x');
+  if(x){ e.stopPropagation(); setFav(x.dataset.x, false); return; }
+  const chip = e.target.closest('.fav-chip');
+  if(chip) setFilter(chip.dataset.orgao);
+});
+
+document.getElementById('search').addEventListener('input', applyView);
+document.getElementById('btnBuscar').addEventListener('click', applyView);
+document.getElementById('btnLimpar').addEventListener('click', ()=>{ document.getElementById('search').value=''; setFilter('all'); });
+document.getElementById('btnFiltros').addEventListener('click', ()=> showToast('No protótipo, use a <b>estrela</b> no card para favoritar um órgão.', {icon:STAR}));
+document.getElementById('sbToggle').addEventListener('click', ()=> document.body.classList.toggle('sb-open'));
+
+/* ============ INIT ============ */
+renderCards();
+renderChips();
+applyView();
+</script>
+</body>
+</html>
