@@ -517,8 +517,8 @@
     <nav class="sb-content">
       <div class="sb-section">Licitações</div>
       <div class="sb-group">
-        <a class="sb-item" href="#" data-view="recomendadas" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
-        <a class="sb-item" href="#" data-view="salvos" title="Salvos para depois"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z" stroke-linejoin="round"/></svg></span><span class="sb-label">Salvos para depois</span><span class="sb-count" id="savedCount">1</span></a>
+        <a class="sb-item" href="../licitacoes-recomendadas/" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
+        <a class="sb-item" href="#" title="Salvos para depois"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z" stroke-linejoin="round"/></svg></span><span class="sb-label">Salvos para depois</span><span class="sb-count" id="savedCount">1</span></a>
         <a class="sb-item active" href="#" aria-current="page" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
         <a class="sb-item" href="#" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
         <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
@@ -547,11 +547,8 @@
 
     <div class="content">
 
-      <!-- ============ HEADER ============ -->
-      <div class="page-head">
-        <p class="eyebrow" id="eyebrow">Encontramos 300 licitações</p>
-        <h1 class="title">Selecione quais deseja analisar</h1>
-      </div>
+      <!-- headline removido nesta página; eyebrow mantido oculto só p/ o JS (contagem/busca) -->
+      <p class="eyebrow" id="eyebrow" hidden>Encontramos 300 licitações</p>
 
       <!-- ============ BARRA STICKY (tabs + ações + badges) ============ -->
       <div class="sticky-toolbar">
@@ -563,8 +560,6 @@
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
-          <button class="act">Ordenar</button>
-          <button class="act">Exportar</button>
           <button class="act" id="searchBtn"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>Buscar</button>
           <div class="search-field" id="searchField">
             <svg class="s-ico" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
@@ -1276,6 +1271,15 @@ document.addEventListener('keydown', e=>{
       }
       updateSavedUI();
       window.scrollTo(0,0);
+    });
+  });
+
+  // sidebar: o destaque (ativo) sempre acompanha o item clicado — não fica preso em "Explorar licitações"
+  document.querySelectorAll('.sb-item').forEach(item=>{
+    item.addEventListener('click', e=>{
+      if(item.getAttribute('href')==='#') e.preventDefault();   // links inertes no protótipo não pulam p/ o topo
+      document.querySelectorAll('.sb-item').forEach(x=>{ x.classList.remove('active'); x.removeAttribute('aria-current'); });
+      item.classList.add('active'); item.setAttribute('aria-current','page');
     });
   });
 
