@@ -355,6 +355,8 @@
   .search-clear:hover{background:rgba(0,0,0,.07);color:var(--foreground);}
 
   .card.hidden{display:none;}
+  /* tab "Órgãos favoritos": só os cards dos órgãos favoritados */
+  body.tab-orgaos #cardList .card:not([data-fav="true"]){display:none !important;}
 
   /* ===== skeleton de carregamento da busca ===== */
   .skeleton{display:none;flex-direction:column;gap:16px;}
@@ -561,6 +563,7 @@
           <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">12</span></button>
           <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">87</span></button>
           <button class="tab" role="tab" data-tab="Exemplo">Exemplo <span class="cnt">3</span></button>
+          <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos <span class="cnt">2</span></button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
@@ -664,7 +667,7 @@ function cardHTML(d){
   const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
     .join(' ').toLowerCase();
   return `
-  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-orgao="${d.orgao.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
     <div class="card-top">
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
@@ -804,6 +807,12 @@ const SEGMENTOS = ['Produtos','Software'];
 const ESTADOS = ['SP','RJ','MG','PA','CE','BA','PR','RS'];
 const CIDADES = ['São Paulo','Campinas','Rio de Janeiro','Belém','Fortaleza'];
 const VALORES = ['Até R$ 100 mil','R$ 100 mil – 1 mi','R$ 1 mi – 10 mi','Acima de R$ 10 mi'];
+// órgãos monitorados (devem casar exatamente com d.orgao dos cards)
+const ORGAOS = [
+  'EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ',
+  'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
+  'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
+];
 const TAB_BADGES = {
   'Todas': [],
   'Ativas':            [{label:'Situação', type:'list', options:SITUACAO, value:['Ativas']}],
@@ -819,6 +828,10 @@ const TAB_BADGES = {
     {label:'Data de adição',     type:'date', mode:'past',   value:{preset:'7d'}},
     {label:'Data de atualização',type:'date', mode:'past',   value:{date:'19/06/2026'}},
     {label:'Envio da proposta',  type:'date', mode:'future', value:{preset:'7d'}},
+  ],
+  // monitoramento: filtro fixo por órgão (multi-seleção). Clicar na badge gerencia os órgãos.
+  'Órgãos favoritos': [
+    {label:'Órgão', type:'list', options:ORGAOS, value:[ORGAOS[0], ORGAOS[1]]},
   ],
 };
 const DATE_PRESETS = {
@@ -848,8 +861,25 @@ function listLabel(b){
   if(!b.value.length) return 'Qualquer';
   return b.value.length===1 ? b.value[0] : b.value.length+' selecionadas';
 }
+// monitoramento por órgão: marca os cards favoritados e atualiza a contagem da tab
+function applyOrgaoView(tab){
+  const isOrg = tab === 'Órgãos favoritos';
+  document.body.classList.toggle('tab-orgaos', isOrg);
+  if(!isOrg) return;
+  const badge = (TAB_BADGES[tab]||[]).find(b=>b.label==='Órgão');
+  const favs = badge ? badge.value : [];
+  let n = 0;
+  document.querySelectorAll('#cardList .card').forEach(c=>{
+    const on = favs.includes(c.dataset.orgao);
+    c.dataset.fav = on ? 'true' : 'false';
+    if(on) n++;
+  });
+  const cntEl = document.querySelector('.tab[data-tab="Órgãos favoritos"] .cnt');
+  if(cntEl) cntEl.textContent = n;
+}
 function renderTabFilters(tab){
   currentTab = tab; closeFbPop();
+  applyOrgaoView(tab);
   const badges = TAB_BADGES[tab] || [];
   if(badges.length){ filtrarCount.hidden=false; filtrarCount.textContent=badges.length; }
   else filtrarCount.hidden=true;
@@ -864,6 +894,7 @@ function refreshBadges(){
   filterBadges.querySelectorAll('.fbadge').forEach((el,i)=>{
     const b=badges[i]; el.querySelector('.v').textContent = b.type==='date'?dateLabel(b):listLabel(b);
   });
+  applyOrgaoView(currentTab);   // re-filtra a lista quando os órgãos mudam no popover
 }
 
 /* ---- popover ---- */
