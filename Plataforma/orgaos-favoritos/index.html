@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Explorar licitações — Órgãos favoritos</title>
+<title>Licitações — Órgãos favoritos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -18,31 +18,38 @@
     --primary-foreground:#fafafa;
     --warning:#d97706;
     --warning-bg:#fdf6ec;
-    --accent:#3a9b9e;
+    --accent:#3a9b9e;       /* slate-500 (teal) */
     --accent-600:#2a787b;
     --accent-100:#d4eef0;
-    --star:#e6a700;
     --radius-field:8px;
     --radius-box:10px;
+    --radius-selector:6px;
+    --shadow-xs:0 1px 2px 0 rgba(0,0,0,.05);
     --shadow-card:0 1px 2px 0 rgba(0,0,0,.05), 0 1px 3px 0 rgba(0,0,0,.04);
-    --sb-fg:#404040;
   }
   *{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
   html,body{margin:0;padding:0;}
   body{
     font-family:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color:var(--foreground); background:var(--background); font-size:14px; line-height:20px;
+    color:var(--foreground);
+    background:var(--background);
+    font-size:14px;
+    line-height:20px;
   }
   button{font-family:inherit; cursor:pointer;}
   svg{display:block;}
 
   /* ============ SIDEBAR ============ */
+  :root{ --sb-fg:#404040; }
   .sidebar{
     position:fixed; left:0; top:0; bottom:0; width:52px;
     background:#f5f5f5; border-right:1px solid var(--border);
-    display:flex; flex-direction:column; z-index:30; overflow:hidden; transition:width .2s ease;
+    display:flex; flex-direction:column; z-index:30;
+    overflow:hidden; transition:width .2s ease;
   }
   body.sb-open .sidebar{width:280px;}
+
+  /* header / workspace */
   .sb-head{height:64px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;}
   body:not(.sb-open) .sb-head{padding:0;justify-content:center;}
   .sb-logo{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;}
@@ -51,12 +58,18 @@
   .sb-ws-sub{font-size:12px;color:rgba(63,64,77,.8);line-height:16px;white-space:nowrap;}
   .sb-caret{flex:none;color:#8a8a8a;cursor:pointer;}
   body:not(.sb-open) .sb-ws, body:not(.sb-open) .sb-caret{display:none;}
+
+  /* content */
   .sb-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;padding:8px;}
   body:not(.sb-open) .sb-content{align-items:center;padding:8px 0;}
   .sb-group{display:flex;flex-direction:column;gap:4px;width:100%;padding:8px;}
   body:not(.sb-open) .sb-group{align-items:center;padding:8px;}
   .sb-section{font-size:12px;font-weight:500;color:var(--sb-fg);opacity:.7;padding:8px;height:32px;display:flex;align-items:center;white-space:nowrap;}
   body:not(.sb-open) .sb-section{display:none;}
+  .sb-divider-h{height:1px;width:24px;background:var(--border);margin:8px auto;flex:none;}
+  body.sb-open .sb-divider-h{display:none;}
+
+  /* item */
   .sb-item{
     display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;
     padding:8px;border-radius:8px;border:none;background:transparent;cursor:pointer;
@@ -68,8 +81,26 @@
   .sb-ico{width:16px;height:16px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--sb-fg);}
   .sb-ico svg{width:16px;height:16px;}
   .sb-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-badge{flex:none;background:#dc2626;color:#fff;font-size:12px;font-weight:500;line-height:16px;padding:0 6px;border-radius:6px;}
+  .sb-dot{display:none;position:absolute;top:6px;left:24px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1.5px solid #f5f5f5;}
+  .sb-chev{flex:none;color:#8a8a8a;transition:transform .15s;}
+  /* fechada: itens viram quadrados 36px, só ícone */
   body:not(.sb-open) .sb-item{width:36px;height:36px;padding:0;justify-content:center;gap:0;}
-  body:not(.sb-open) .sb-label{display:none;}
+  body:not(.sb-open) .sb-label,
+  body:not(.sb-open) .sb-chev,
+  body:not(.sb-open) .sb-badge{display:none;}
+  body:not(.sb-open) .sb-dot{display:block;top:3px;left:23px;}
+
+  /* sub-itens de Novas */
+  .sb-sub{display:flex;flex-direction:column;gap:4px;margin:2px 0 2px 16px;padding-left:8px;border-left:1px solid var(--border);}
+  .sb-subitem{display:block;padding:8px 16px;border-radius:8px;color:var(--sb-fg);font-size:14px;text-decoration:none;white-space:nowrap;}
+  .sb-subitem:hover{background:rgba(0,0,0,.05);}
+  .sb-expandable:not(.open) ~ .sb-sub,
+  body:not(.sb-open) .sb-sub{display:none;}
+  .sb-expandable.open .sb-chev{transform:rotate(0deg);}
+  .sb-expandable:not(.open) .sb-chev{transform:rotate(-90deg);}
+
+  /* footer / user */
   .sb-foot{flex:none;display:flex;align-items:center;gap:8px;padding:16px 8px;}
   body:not(.sb-open) .sb-foot{justify-content:center;padding:16px 0;}
   .sb-avatar{width:32px;height:32px;flex:none;border-radius:50%;background:rgba(23,23,23,.1);color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-size:14px;}
@@ -78,137 +109,395 @@
   .sb-user-email{font-size:12px;font-weight:300;color:var(--sb-fg);line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   body:not(.sb-open) .sb-user{display:none;}
 
-  /* ============ SHELL / NAVBAR ============ */
+  /* ============ SHELL ============ */
   .shell{margin-left:52px;transition:margin-left .2s ease;}
   body.sb-open .shell{margin-left:280px;}
+
+  /* ============ NAVBAR ============ */
   .navbar{
-    height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--border);
+    height:64px;display:flex;align-items:center;gap:12px;
+    padding:0 24px;border-bottom:1px solid var(--border);
     position:sticky;top:0;background:var(--background);z-index:20;
+    transition:transform .25s ease;
   }
-  .navbar .icon-btn{width:30px;height:30px;border:none;background:transparent;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#737373;}
+  /* esconde a navbar ao rolar p/ baixo; reaparece ao rolar p/ cima */
+  body.nav-hidden .navbar{transform:translateY(-100%);}
+  .navbar .icon-btn{
+    width:30px;height:30px;border:none;background:transparent;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;color:#737373;
+  }
   .navbar .icon-btn:hover{background:var(--muted);color:var(--foreground);}
   .navbar .sep{width:1px;height:22px;background:var(--border);}
-  .navbar .crumb{font-size:15px;font-weight:600;color:var(--foreground);}
+  .navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);}
 
   /* ============ CONTENT ============ */
-  .content{max-width:1388px;margin:0 auto;padding:22px 24px 64px;}
+  .content{max-width:1388px;margin:0 auto;padding:24px 24px 64px;}
 
-  /* search/action row */
-  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-  .search-box{
-    flex:1;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;
-    border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--muted-foreground);
+  /* header */
+  .page-head{margin-bottom:22px;}
+  .page-head .eyebrow{font-size:30px;line-height:36px;font-weight:400;color:var(--foreground);margin:0;}
+  .page-head .title{font-size:48px;line-height:1.04;font-weight:700;letter-spacing:-.5px;color:var(--foreground);margin:6px 0 0;}
+
+  /* ============ TAB + ACTION BAR ============ */
+  /* barra sticky: gruda logo abaixo da navbar (64px) ao rolar — igual ao site */
+  .sticky-toolbar{
+    position:sticky; top:64px; z-index:15;
+    background:#ffffff; padding:14px 0; margin-bottom:8px;
+    transition:transform .25s ease;
   }
-  .search-box input{flex:1;border:none;outline:none;font-family:inherit;font-size:14px;color:var(--foreground);background:transparent;}
-  .search-box svg{color:#9ca3af;flex:none;}
+  /* navbar escondida (rolando p/ baixo): a barra de tabs sobe p/ o topo —
+     via transform (mesma timeline da navbar) p/ não abrir vão na transição */
+  body.nav-hidden .sticky-toolbar{transform:translateY(-64px);}
+  .sticky-toolbar .toolbar{margin-bottom:0;}
+  .sticky-toolbar .filter-badges{
+    margin:12px 0 0; overflow-x:auto; overflow-y:visible; max-height:60px; padding-bottom:2px;
+    transition:max-height .25s ease, opacity .2s ease, margin-top .25s ease;
+  }
+  .sticky-toolbar .filter-badges::-webkit-scrollbar{height:6px;}
+  .sticky-toolbar .filter-badges::-webkit-scrollbar-thumb{background:rgba(0,0,0,.16);border-radius:3px;}
+  .sticky-toolbar .filter-badges::-webkit-scrollbar-track{background:transparent;}
+  /* rolando p/ baixo (navbar escondida): as badges colapsam suavemente (sem pulo brusco) */
+  body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:hidden; pointer-events:none;}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .tabs{
+    display:inline-flex;align-items:center;gap:0;
+    background:rgba(23,23,23,.08);border-radius:10px;padding:3px;
+  }
+  .tab{
+    display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
+    padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--foreground);opacity:.6;
+  }
+  .tab:hover{opacity:1;}
+  .tab.active{background:#fff;opacity:1;}
+  .tab .cnt{
+    font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
+    background:rgba(23,23,23,.1);padding:1px 6px;border-radius:6px;
+  }
+
+  /* grupo segmentado de ações — barra cinza única */
+  .actions{display:inline-flex;align-items:center;gap:0;background:rgba(23,23,23,.1);border-radius:8px;overflow:hidden;}
   .act{
-    height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border-radius:10px;
-    border:1px solid var(--border);background:#fff;color:var(--foreground);font-size:14px;font-weight:500;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
+    padding:6px 12px;border-radius:0;font-size:14px;font-weight:500;color:var(--primary);
   }
-  .act:hover{background:var(--muted);}
-  .act.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
-  .act.primary:hover{background:var(--accent-600);}
-  .act.ghost{border-color:transparent;background:transparent;color:var(--muted-foreground);}
-  .act.ghost:hover{background:var(--muted);color:var(--foreground);}
-
-  /* ============ ÓRGÃOS FAVORITOS BAR ============ */
-  .fav-wrap{border:1px solid var(--border);border-radius:12px;background:#fcfcfc;padding:12px 14px;margin-bottom:16px;}
-  .fav-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-  .fav-title{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--foreground);}
-  .fav-title svg{color:var(--star);}
-  .fav-help{font-size:12.5px;color:var(--muted-foreground);}
-  .fav-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
-  .fav-chip{
-    position:relative;display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
-    border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--foreground);
-    font-size:13px;font-weight:500;white-space:nowrap;
+  .act:hover{background:rgba(0,0,0,.05);}
+  .act .pill-cnt{
+    min-width:0;height:18px;padding:0 6px;border-radius:9999px;background:var(--muted);
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:400;color:var(--foreground);
   }
-  .fav-chip:hover{background:var(--muted);}
-  .fav-chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
-  .fav-chip .chip-x{
-    width:17px;height:17px;border:none;background:transparent;border-radius:50%;
-    display:inline-flex;align-items:center;justify-content:center;color:inherit;opacity:.55;margin-right:-4px;
-  }
-  .fav-chip .chip-x:hover{opacity:1;background:rgba(0,0,0,.08);}
-  .fav-chip.active .chip-x:hover{background:rgba(255,255,255,.22);}
-  .fav-chip .chip-dot{width:7px;height:7px;border-radius:50%;background:#dc2626;flex:none;}
-  .fav-chip.all{font-weight:600;}
-  .fav-empty{font-size:13px;color:var(--muted-foreground);font-style:italic;}
+  .act .pill-cnt[hidden]{display:none;}
 
-  /* ============ RESULT HEADER ============ */
-  .res-head{display:flex;align-items:baseline;gap:8px;margin:4px 0 14px;}
-  .res-head .n{font-size:18px;font-weight:600;}
-  .res-head .sub{font-size:13px;color:var(--muted-foreground);}
-
-  /* ============ CARDS ============ */
+  /* ============ CARD ============ */
   .card-list{display:flex;flex-direction:column;gap:16px;}
-  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-card);padding:16px 18px;}
-  .card.hidden{display:none;}
+  .card{
+    background:var(--card,#fff);border:1px solid var(--border);border-radius:var(--radius-box);
+    box-shadow:var(--shadow-card);padding:16px 18px;
+  }
+
   .card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .chk{
+    width:18px;height:18px;border:1.5px solid #d4d4d4;border-radius:5px;background:#fff;
+    flex:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#fff;
+    transition:background .12s,border-color .12s;
+  }
+  .chk.on{background:var(--primary);border-color:var(--primary);}
+  .chk svg{opacity:0;}
+  .chk.on svg{opacity:1;}
+
   .edital{font-size:15px;font-weight:600;color:var(--foreground);white-space:nowrap;}
   .edital b{font-weight:700;}
-  .badge-novo{display:inline-flex;align-items:center;gap:5px;background:var(--accent-100);color:var(--accent-600);font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;}
-  .card-top-right{margin-left:auto;display:inline-flex;align-items:center;gap:8px;}
-  .star{
-    display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;
-    border:1px solid var(--border);background:#fff;color:var(--muted-foreground);font-size:13px;font-weight:500;white-space:nowrap;
-  }
-  .star:hover{background:var(--muted);color:var(--foreground);}
-  .star svg{width:16px;height:16px;color:#bdbdbd;transition:color .12s;}
-  .star[aria-pressed="true"]{border-color:#f0dca3;background:#fdf8e8;color:#9a7400;}
-  .star[aria-pressed="true"] svg{color:var(--star);fill:var(--star);}
-  .ia-files{
-    display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:8px;
-    border:1px solid var(--border);background:#fff;color:var(--foreground);font-size:13px;font-weight:500;white-space:nowrap;
-  }
-  .ia-files:hover{background:var(--muted);}
-  .ia-files svg{width:15px;height:15px;color:#737373;}
 
-  .field-line{font-size:14px;color:var(--foreground);margin:12px 0 8px;line-height:21px;}
-  .field-line:first-of-type{margin-top:14px;}
+  .badge-updated{
+    display:inline-flex;align-items:center;gap:5px;background:var(--warning);color:#fff;
+    font-size:12px;font-weight:600;padding:4px 9px;border-radius:7px;white-space:nowrap;
+  }
+
+  .card-top-right{margin-left:auto;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;border-radius:8px;font-size:14px;font-weight:500;
+    padding:8px 14px;border:1px solid transparent;white-space:nowrap;
+  }
+  .btn-outline{background:#fff;border-color:var(--border);color:var(--foreground);}
+  .btn-outline:hover{background:var(--muted);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-600);border-color:var(--accent-600);}
+  .btn-status{background:var(--warning-bg);border-color:#f3e3c8;color:var(--warning);}
+  .btn-status:hover{filter:brightness(.98);}
+
+  /* avatar stack */
+  .avatars{display:inline-flex;align-items:center;margin-left:2px;}
+  .av{
+    width:30px;height:30px;border-radius:50%;border:2px solid #fff;margin-left:-8px;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;background:#9ca3af;
+  }
+  .av:first-child{margin-left:0;}
+  .av.add{background:var(--muted);color:var(--muted-foreground);border:2px solid #fff;font-weight:700;}
+
+  .icon-actions{display:inline-flex;align-items:center;gap:6px;margin-left:4px;}
+  .ia{
+    width:34px;height:34px;border:1px solid var(--border);background:#fff;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;color:#525252;
+  }
+  .ia:hover{background:var(--muted);color:var(--foreground);}
+  /* badge de contagem de arquivos no ícone de pasta (estilo notificação) */
+  .ia.folder{position:relative;overflow:visible;}
+  .ia-count{
+    position:absolute;top:-6px;right:-6px;
+    min-width:17px;height:17px;padding:0 4px;border-radius:9999px;box-sizing:border-box;
+    background:var(--accent);color:#fff;font-size:10px;font-weight:700;line-height:14px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid #fff;
+  }
+
+  /* segments */
+  .segments{display:flex;gap:6px;margin:14px 0 12px;flex-wrap:wrap;}
+  .seg{background:var(--primary);color:#fafafa;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;}
+  .seg.sm{padding:2px 7px;font-size:11px;}
+  .tag-light{background:var(--muted);color:var(--muted-foreground);font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;}
+
+  .field-line{font-size:14px;color:var(--foreground);margin:0 0 8px;line-height:21px;}
+  .field-line b{font-weight:600;}
   .field-line .lbl{font-weight:600;}
   .obj{color:var(--foreground);}
   .valor{font-size:15px;font-weight:700;margin:10px 0 14px;}
-  .valor .dash{color:var(--muted-foreground);font-weight:400;}
 
+  /* field grid box */
   .grid-box{display:flex;border:1px solid var(--border);border-radius:var(--radius-field);overflow:hidden;}
-  .grid-left{flex:none;width:210px;padding:14px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:14px;}
+  .grid-left{
+    flex:none;width:230px;padding:14px 16px;border-right:1px solid var(--border);
+    display:flex;flex-direction:column;gap:14px;
+  }
   .grid-main{flex:1;padding:14px 18px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px 18px;}
   .fld{min-width:0;}
   .fld .k{font-size:13px;font-weight:600;color:var(--foreground);margin-bottom:3px;}
   .fld .v{font-size:14px;color:var(--muted-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fld .v.warn{color:var(--warning);font-weight:500;}
+  .pair{display:flex;gap:24px;}
 
-  /* empty state */
-  .empty{display:none;text-align:center;padding:48px 20px;color:var(--muted-foreground);}
-  .empty.show{display:block;}
-  .empty strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
+  /* items table */
+  .items-head{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
+  .items-title{font-size:16px;font-weight:600;}
+  .count-chip{
+    background:var(--muted);color:var(--muted-foreground);font-size:12px;font-weight:600;
+    padding:2px 9px;border-radius:9999px;
+  }
+  .items-total{margin-left:auto;font-size:13px;color:var(--muted-foreground);}
+  table.items{width:100%;border-collapse:collapse;font-size:14px;}
+  table.items thead th{
+    text-align:left;font-weight:600;color:var(--foreground);font-size:14px;
+    padding:10px 12px;border-bottom:1px solid var(--border);
+  }
+  table.items tbody td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--foreground);}
+  table.items tbody tr:hover{background:#fafafa;}
+  table.items .col-seg{display:flex;gap:6px;}
+  .num{color:var(--muted-foreground);}
+  .t-right{text-align:right;}
 
-  /* pagination */
-  .pager{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;color:var(--muted-foreground);font-size:14px;}
-  .pager button{height:34px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--foreground);font-size:14px;}
-  .pager button:hover{background:var(--muted);}
-  .pager .cur{font-weight:600;color:var(--foreground);padding:0 6px;}
+  /* collapsed cards hide items */
+  .card .items-wrap{display:block;}
+  .card.collapsed .items-wrap{display:none;}
 
-  /* ============ TOASTS (sonner) ============ */
-  #toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:60;}
+  .expand-toggle{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;border:none;background:transparent;
+    color:var(--muted-foreground);font-size:13px;font-weight:500;padding:4px 0;
+  }
+  .expand-toggle:hover{color:var(--foreground);}
+  .card.collapsed .expand-toggle .chev{transform:rotate(-90deg);}
+  .expand-toggle .chev{transition:transform .15s;}
+
+  /* ============ BUSCA (componente — expande no lugar do botão) ============ */
+  .actions{transition:width .18s ease;}
+  .actions.searching{overflow:visible;}
+  .actions .search-field{display:none;align-items:center;gap:8px;padding:0 4px 0 10px;flex:1;min-width:200px;position:relative;flex-wrap:wrap;}
+  .actions.searching #searchBtn{display:none;}
+  .actions.searching .search-field{display:flex;}
+  /* telas estreitas: o campo assume a barra inteira */
+  @media (max-width:1040px){
+    .actions.searching{flex:1 1 100%;}
+    .actions.searching .act{display:none;}
+  }
+
+  /* chips de escopo dentro do campo */
+  .s-chips{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .s-chips:empty{display:none;}
+  .s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fafafa;font-size:12px;font-weight:500;padding:3px 4px 3px 8px;border-radius:6px;white-space:nowrap;}
+  .s-chip button{border:none;background:transparent;color:#bdbdbd;cursor:pointer;padding:0;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;}
+  .s-chip button:hover{background:rgba(255,255,255,.22);color:#fff;}
+
+  /* botão de filtro de propriedade */
+  .s-filter{border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;flex:none;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;position:relative;}
+  .s-filter:hover{background:rgba(0,0,0,.07);color:var(--foreground);}
+  .s-filter.active{color:var(--accent);}
+  .s-filter .cnt-badge{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;border-radius:9999px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #fff;}
+
+  /* menu de propriedades */
+  .scope-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:246px;max-height:330px;overflow:auto;
+    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;}
+  .scope-menu .sm-head{font-size:11px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px 5px;}
+  .scope-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--foreground);}
+  .scope-item:hover{background:var(--muted);}
+  .scope-box{width:16px;height:16px;border:1.5px solid #d4d4d4;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;}
+  .scope-item.on .scope-box{background:var(--accent);border-color:var(--accent);}
+  .scope-item .scope-box svg{opacity:0;}
+  .scope-item.on .scope-box svg{opacity:1;}
+  .scope-sep{height:1px;background:var(--border);margin:4px 2px;}
+  .search-field .s-ico{color:var(--muted-foreground);flex:none;}
+  .search-field input{
+    border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--foreground);
+    flex:1;min-width:160px;height:30px;
+  }
+  .search-field input::placeholder{color:var(--muted-foreground);}
+  .search-clear{
+    border:none;background:transparent;color:var(--muted-foreground);cursor:pointer;flex:none;
+    width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .search-clear:hover{background:rgba(0,0,0,.07);color:var(--foreground);}
+
+  .card.hidden{display:none;}
+  /* tab "Órgãos favoritos": só os cards dos órgãos favoritados */
+  body.tab-orgaos #cardList .card:not([data-fav="true"]){display:none !important;}
+
+  /* ===== skeleton de carregamento da busca ===== */
+  .skeleton{display:none;flex-direction:column;gap:16px;}
+  .card-list.loading > .card,
+  .card-list.loading > .empty-state{display:none !important;}
+  .card-list.loading > .skeleton{display:flex;}
+  .sk-card{border:1px solid var(--border);border-radius:var(--radius-box);background:#fff;
+    box-shadow:var(--shadow-card);padding:18px;display:flex;flex-direction:column;gap:14px;}
+  .sk-row{display:flex;gap:10px;align-items:center;}
+  .sk{display:block;background:#ececec;border-radius:6px;position:relative;overflow:hidden;flex:none;}
+  .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+    animation:sk-shimmer 1.15s infinite;}
+  @keyframes sk-shimmer{100%{transform:translateX(100%);}}
+  @media (prefers-reduced-motion:reduce){ .sk::after{animation:none;} }
+  .empty-state{
+    text-align:center;padding:56px 16px;color:var(--muted-foreground);font-size:14px;
+    border:1px dashed var(--border);border-radius:var(--radius-box);background:#fff;
+  }
+  .empty-state strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
+  .empty-state .q{color:var(--foreground);font-weight:600;}
+
+  /* ============ BADGES DE FILTRO DA TAB ============ */
+  .filter-badges{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;margin:-6px 0 18px;}
+  .filter-badges:empty{display:none;}
+  /* Soft Badge (Figma 8802:36891): pílula cinza arredondada, texto Geist 12px */
+  .fbadge{
+    position:relative;flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+    background:rgba(23,23,23,.1);border:none;border-radius:9999px;padding:4px 11px;
+    font-size:12px;line-height:16px;font-family:inherit;transition:background .12s;
+  }
+  .fbadge:hover{background:rgba(23,23,23,.16);}
+  .fbadge.open{background:rgba(23,23,23,.2);}
+  .fbadge .k{color:var(--muted-foreground);}
+  .fbadge .v{color:var(--primary);font-weight:600;}
+  .fbadge .car{color:var(--muted-foreground);display:inline-flex;margin-left:1px;}
+
+  /* popover base */
+  .fb-pop{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:70;
+    background:#fff;border:1px solid var(--border);border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.14);padding:8px;
+  }
+  /* date picker */
+  .fb-pop-date{width:300px;}
+  .fb-presets{display:flex;gap:4px;background:var(--muted);border-radius:8px;padding:3px;margin-bottom:8px;}
+  .fb-presets button{
+    flex:1;border:none;background:transparent;border-radius:6px;padding:6px 4px;font-family:inherit;
+    font-size:12px;font-weight:500;color:var(--muted-foreground);cursor:pointer;white-space:nowrap;
+  }
+  .fb-presets button:hover{color:var(--foreground);}
+  .fb-presets button.on{background:#fff;color:var(--foreground);box-shadow:var(--shadow-xs);}
+  .fb-cal-head{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 8px;}
+  .fb-cal-title{font-size:14px;font-weight:600;}
+  .fb-cal-nav{width:26px;height:26px;border:none;background:transparent;border-radius:6px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;color:var(--muted-foreground);}
+  .fb-cal-nav:hover{background:var(--muted);color:var(--foreground);}
+  .fb-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .fb-cal-grid .dow{font-size:11px;color:var(--muted-foreground);text-align:center;padding:4px 0;font-weight:500;}
+  .fb-day{height:34px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-family:inherit;
+    font-size:13px;color:var(--foreground);display:flex;align-items:center;justify-content:center;}
+  .fb-day:hover{background:var(--muted);}
+  .fb-day.out{color:#c4c4c4;}
+  .fb-day.disabled{color:#d4d4d4;cursor:default;pointer-events:none;}
+  .fb-day.today{font-weight:700;box-shadow:inset 0 0 0 1px var(--border);}
+  .fb-day.sel{background:var(--accent);color:#fff;font-weight:600;}
+  .fb-day.sel:hover{background:var(--accent-600);}
+
+  /* lista multi-seleção */
+  .fb-pop-list{width:248px;}
+  .fb-list-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 6px;}
+  .fb-list-head span{font-size:11px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.04em;}
+  .fb-selall{border:none;background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;}
+  .fb-selall:hover{color:var(--accent-600);}
+  .fb-search{position:relative;margin-bottom:4px;}
+  .fb-search input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 30px 7px 10px;
+    font-family:inherit;font-size:13px;outline:none;}
+  .fb-search input:focus{border-color:#cfcfcf;}
+  .fb-search svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted-foreground);}
+  .fb-options{max-height:220px;overflow:auto;}
+  .fb-opt{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:14px;}
+  .fb-opt:hover{background:var(--muted);}
+  .fb-opt .box{width:16px;height:16px;border:1.5px solid #d4d4d4;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;}
+  .fb-opt.on .box{background:var(--accent);border-color:var(--accent);}
+  .fb-opt .box svg{opacity:0;}
+  .fb-opt.on .box svg{opacity:1;}
+
+  /* ============ SALVAR PARA DEPOIS / SEM ANEXO ============ */
+  /* alterna entre Recomendadas e a fila de Salvos pelo estado do bookmark */
+  body:not(.view-salvos) .card[data-saved="true"]{display:none !important;}
+  body.view-salvos .card[data-saved="false"]{display:none !important;}
+  body.view-salvos .tab:not([data-tab="Todas"]){display:none;}
+
+  /* bookmark estilo Slack: vazio = salvar, preenchido = salvo */
+  .ia.bookmark[aria-pressed="true"]{color:#2f6df6;border-color:#cfe0ff;background:#eef4ff;}
+  .ia.bookmark[aria-pressed="true"] svg path{fill:#2f6df6;}
+
+  /* "Atualizado" não aparece em Recomendadas — só em Salvos, quando o anexo chega */
+  .badge-updated{display:none;}
+  body.view-salvos .card[data-updated="true"] .badge-updated{display:inline-flex;}
+  /* pasta sem anexo: destaque âmbar p/ "bater o olho" */
+  .ia.no-file{color:#d97706;border-color:#f3e3c8;}
+  .ia.no-file:hover{background:#fdf6ec;color:#b8650a;}
+
+  /* card saindo (salvar/remover): fade + slide + colapso */
+  .card.card-leaving{
+    opacity:0; transform:translateX(40px) scale(.98); overflow:hidden; pointer-events:none;
+    transition:opacity .3s ease, transform .3s ease, height .32s ease, padding .32s ease, margin .32s ease;
+  }
+
+  /* ===== toasts (sonner) ===== */
+  #toasts{position:fixed;right:24px;bottom:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none;}
   .toast{
-    display:flex;align-items:center;gap:10px;min-width:280px;max-width:380px;
-    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);
-    padding:12px 14px;font-size:14px;color:var(--foreground);
-    opacity:0;transform:translateY(8px) scale(.98);transition:opacity .22s ease, transform .22s ease;
+    pointer-events:auto;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);
+    border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.14);padding:11px 14px;min-width:240px;max-width:380px;
+    font-size:14px;color:var(--foreground);
+    opacity:0;transform:translateY(14px) scale(.97);transition:opacity .26s ease,transform .26s cubic-bezier(.2,.8,.3,1);
   }
   .toast.show{opacity:1;transform:none;}
   .toast.hide{opacity:0;transform:translateY(8px) scale(.97);}
-  .toast-ico{flex:none;display:flex;}
-  .toast-msg{flex:1;min-width:0;}
-  .toast-undo{border:none;background:transparent;color:var(--accent-600);font-weight:600;font-size:14px;padding:2px 4px;}
-  .toast-undo:hover{text-decoration:underline;}
+  .toast-ico{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center;}
+  .toast-ico svg{width:18px;height:18px;}
+  .toast-msg{flex:1;min-width:0;font-weight:500;}
+  .toast-undo{flex:none;border:none;background:transparent;color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:5px 8px;border-radius:7px;}
+  .toast-undo:hover{background:var(--muted);}
+
+  /* contador do item "Salvos para depois" na sidebar */
+  .sb-count{flex:none;background:rgba(0,0,0,.08);color:var(--sb-fg);font-size:12px;font-weight:500;line-height:16px;padding:0 6px;border-radius:9999px;}
+  .sb-count[data-zero="true"]{display:none;}
+  body:not(.sb-open) .sb-count{display:none;}
+
+  @media (max-width:1100px){
+    .grid-main{grid-template-columns:repeat(3,1fr);}
+  }
 </style>
 </head>
 <body>
 
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <!-- header / workspace -->
     <div class="sb-head">
       <div class="sb-logo" aria-hidden="true">
         <svg viewBox="0 0 32 32" width="30" height="30">
@@ -224,306 +513,776 @@
       <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
     </div>
 
+    <!-- nav (espelha produção: Licitações) -->
     <nav class="sb-content">
       <div class="sb-section">Licitações</div>
       <div class="sb-group">
-        <a class="sb-item" href="#" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
-        <a class="sb-item active" href="#" aria-current="page" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
+        <a class="sb-item active" href="#" data-view="recomendadas" aria-current="page" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
+        <a class="sb-item" href="#" data-view="salvos" title="Salvos para depois"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z" stroke-linejoin="round"/></svg></span><span class="sb-label">Salvos para depois</span><span class="sb-count" id="savedCount">1</span></a>
+        <a class="sb-item" href="#" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
         <a class="sb-item" href="#" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
         <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
       </div>
     </nav>
 
+    <!-- footer / user -->
     <div class="sb-foot">
       <div class="sb-avatar">BK</div>
       <div class="sb-user">
         <div class="sb-user-name">Brunno Krier</div>
         <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
       </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
     </div>
   </aside>
 
-  <!-- ============ SHELL ============ -->
   <div class="shell">
+
+    <!-- ============ NAVBAR ============ -->
     <header class="navbar">
-      <button class="icon-btn" id="sbToggle" title="Recolher/expandir sidebar" aria-label="Alternar sidebar">
-        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
-      </button>
+      <button class="icon-btn" title="Recolher sidebar"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg></button>
       <span class="sep"></span>
-      <span class="crumb">Explorar licitações</span>
+      <span class="hello">Olá, Brunno</span>
     </header>
 
     <div class="content">
-      <!-- busca + ações (igual produção) -->
+
+      <!-- ============ HEADER ============ -->
+      <div class="page-head">
+        <p class="eyebrow" id="eyebrow">Encontramos 300 licitações</p>
+        <h1 class="title">Selecione quais deseja analisar</h1>
+      </div>
+
+      <!-- ============ BARRA STICKY (tabs + ações + badges) ============ -->
+      <div class="sticky-toolbar">
+      <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
-        <div class="search-box">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
-          <input id="search" type="text" placeholder="Busque por licitações" autocomplete="off" />
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">300</span></button>
+          <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos <span class="cnt">2</span></button>
         </div>
-        <button class="act primary" id="btnBuscar">Buscar</button>
-        <button class="act ghost" id="btnLimpar">Limpar</button>
-        <button class="act" id="btnFiltros">
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
-          Filtros
-        </button>
-      </div>
-
-      <!-- ============ ÓRGÃOS FAVORITOS (camada de monitoramento) ============ -->
-      <div class="fav-wrap">
-        <div class="fav-top">
-          <span class="fav-title">
-            <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 1.6l1.8 3.9 4.2.5-3.1 2.9.8 4.2L8 11.9 4.3 13.9l.8-4.2L2 6.8l4.2-.5z"/></svg>
-            Órgãos favoritos
-          </span>
-          <span class="fav-help">Acompanhe tudo que um órgão publica, mesmo fora dos seus filtros de curadoria. Favoritos ficam salvos neste navegador.</span>
+        <div class="actions" id="actions">
+          <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
+          <button class="act">Ordenar</button>
+          <button class="act">Exportar</button>
+          <button class="act" id="searchBtn"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>Buscar</button>
+          <div class="search-field" id="searchField">
+            <svg class="s-ico" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg>
+            <span class="s-chips" id="searchChips"></span>
+            <input id="searchInput" type="text" placeholder="Buscar..." autocomplete="off" />
+            <button class="s-filter" id="scopeBtn" title="Filtrar por propriedade" aria-label="Filtrar por propriedade">
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3.5h11l-4.2 5v4l-2.6 1.3V8.5z" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="search-clear" id="searchClear" title="Fechar busca" aria-label="Fechar busca">
+              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+            <div class="scope-menu" id="scopeMenu" hidden></div>
+          </div>
         </div>
-        <div class="fav-chips" id="favChips"></div>
       </div>
 
-      <div class="res-head">
-        <span class="n" id="resCount">0 licitações</span>
-        <span class="sub" id="resSub">no repositório · dados básicos</span>
-      </div>
+      <!-- ============ BADGES DE FILTRO DA TAB ============ -->
+      <div class="filter-badges" id="filterBadges"></div>
+      </div><!-- /sticky-toolbar -->
 
+      <!-- ============ CARD LIST ============ -->
       <div class="card-list" id="cardList"></div>
 
-      <div class="empty" id="empty">
-        <strong>Nenhuma licitação para este filtro</strong>
-        Esse órgão ainda não publicou nada novo, ou ajuste sua busca.
-      </div>
-
-      <div class="pager">
-        <button>Anterior</button>
-        <span>Página <span class="cur">1</span></span>
-        <button>Próxima</button>
-      </div>
     </div>
   </div>
 
+  <!-- ============ TOASTS (sonner) ============ -->
   <div id="toasts" aria-live="polite"></div>
 
 <script>
-/* ============ ÍCONES ============ */
-const STAR = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.8l1.8 3.9 4.2.5-3.1 2.9.8 4.2L8 11.9 4.3 13.9l.8-4.2L2 6.8l4.2-.5z" stroke-linejoin="round"/></svg>';
-const FOLDER = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4.5a1 1 0 0 1 1-1h2.5l1.2 1.2H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>';
-const XICO = '<svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/></svg>';
-
-/* ============ ÓRGÃOS (catálogo) ============ */
-/* key = slug estável; short = rótulo do chip; name = nome completo (igual produção) */
-const ORGAOS = {
-  campinas_ti: { short:'Pref. Campinas · TI',   name:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI' },
-  prodesp:     { short:'PRODESP · SP',          name:'GOVERNO DO ESTADO DE SÃO PAULO - PRODESP' },
-  tjpr:        { short:'TJ Paraná',             name:'TRIBUNAL DE JUSTIÇA DO ESTADO DO PARANÁ' },
-  faxinal:     { short:'Faxinal dos Guedes',    name:'MUNICÍPIO DE FAXINAL DOS GUEDES' },
-  esteio:      { short:'Pref. Esteio',          name:'PREFEITURA MUNICIPAL DE ESTEIO' },
-  cpro_ba:     { short:'CPRO · Polícia BA',     name:'COMANDO DE POLICIAMENTO DA REGIAO OESTE' },
+/* ---- ícones reutilizados ---- */
+const I = {
+  refresh:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 8a5 5 0 1 1-1.5-3.6"/><path d="M13 3v2.5h-2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+  pencil:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z" stroke-linejoin="round"/></svg>',
+  bell:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 14V9a5 5 0 0 1 10 0v5l1 1H4z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0"/></svg>',
+  link:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 11a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M12 9a3 3 0 0 0-4.2 0l-2 2A3 3 0 0 0 10 15.2l1-1" stroke-linecap="round"/></svg>',
+  share:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="10" r="2.2"/><circle cx="14" cy="5" r="2.2"/><circle cx="14" cy="15" r="2.2"/><path d="M8 9l4-2.5M8 11l4 2.5"/></svg>',
+  file:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3h6l3 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M12 3v3h3M7.5 11h5M7.5 13.5h5"/></svg>',
+  folder:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a1 1 0 0 1 1-1h3l1.5 1.5H16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>',
+  folderOff:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a1 1 0 0 1 1-1h3l1.5 1.5H16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M3.2 3.2l13.6 13.6" stroke-linecap="round"/></svg>',
+  bookmark:'<svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.5 3.5h9a1 1 0 0 1 1 1V17l-5.5-3.2L5.5 17V4.5a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>',
+  check:'<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
-/* ============ LICITAÇÕES (dados básicos do repositório) ============ */
-/* Campos vazios = "-" (o pipeline de processamento é que preencheria valor, CAPAG, etc.) */
-const DATA = [
-  { edital:'2025/0481', orgao:'campinas_ti', novo:true,
-    objeto:'Registro de preços para aquisição de notebooks, estações de trabalho e monitores para a rede administrativa municipal, incluindo garantia on-site.',
-    envio:'29/06/2026', id:'4102', estado:'SP', modalidade:'Pregão - Eletrônico' },
-  { edital:'2025/0455', orgao:'campinas_ti', novo:false,
-    objeto:'Contratação de solução de cabeamento estruturado e switches gerenciáveis para modernização do data center municipal.',
-    envio:'12/06/2026', id:'3990', estado:'SP', modalidade:'Pregão - Eletrônico' },
-  { edital:'PRODESP-77/2025', orgao:'prodesp', novo:false,
-    objeto:'Aquisição de licenças de software de produtividade e serviços de suporte técnico para órgãos do Governo do Estado.',
-    envio:'08/06/2026', id:'4007', estado:'SP', modalidade:'Pregão - Eletrônico' },
-  { edital:'TJPR-19/2025', orgao:'tjpr', novo:true,
-    objeto:'Registro de preços para fornecimento de equipamentos de informática e periféricos destinados às unidades judiciárias do interior.',
-    envio:'02/07/2026', id:'4120', estado:'PR', modalidade:'Pregão - Eletrônico' },
-  { edital:'54/2025', orgao:'faxinal', novo:false,
-    objeto:'Aquisição de película interativa digital, projetor multimídia, suporte para fixação e sistema de som para as escolas municipais da rede de ensino.',
-    envio:'17/09/2025', id:'3965', estado:'SC', modalidade:'Pregão - Eletrônico' },
-  { edital:'115/2025', orgao:'esteio', novo:false,
-    objeto:'Registro de preço de ferramentas, portas, madeiras, materiais hidráulicos, elétricos e itens de construção (Portal de Compras Públicas).',
-    envio:'22/09/2025', id:'3967', estado:'RS', modalidade:'Pregão - Eletrônico' },
-  { edital:'PCE2022420250024/2025', orgao:'cpro_ba', novo:false,
-    objeto:'Material de consumo tipo água, café e açúcar para o CPRO e unidades apoiadas.',
-    envio:'10/09/2025', id:'3968', estado:'BA', modalidade:'Dispensa' },
+const ITEMS = [
+  ['1','Microcomputador desktop básico + Monitor Full HD','94'],
+  ['1','Microcomputador desktop intermediário + Monitor Full HD','22'],
+  ['1','Microcomputador desktop básico + Monitor Full HD','94'],
+  ['2','Notebook 14" i5 / 8GB / 256GB SSD','48'],
+  ['2','Notebook 15" i7 / 16GB / 512GB SSD','12'],
+  ['3','Impressora multifuncional laser monocromática','30'],
 ];
 
-/* ============ ESTADO (favoritos persistidos — MVP localStorage) ============ */
-const LS_KEY = 'settle.orgaos-favoritos.v1';
-const SEED = ['campinas_ti','prodesp','tjpr'];   // pré-favoritados para a demo
-let favs = loadFavs();
-let activeFilter = 'all';   // 'all' | orgaoKey
-
-function loadFavs(){
-  try{ const v = JSON.parse(localStorage.getItem(LS_KEY)); if(Array.isArray(v)) return v; }catch(e){}
-  return [...SEED];
-}
-function saveFavs(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(favs)); }catch(e){} }
-
-/* ============ HELPERS ============ */
-const dash = '<span class="v">-</span>';
-const cardList = document.getElementById('cardList');
-const favChips = document.getElementById('favChips');
-const resCount = document.getElementById('resCount');
-const empty = document.getElementById('empty');
-const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-
-function novoCountFor(key){
-  return DATA.filter(d=>d.orgao===key && d.novo).length;
+function itemsRows(){
+  return ITEMS.map(([lote,nome,un])=>`
+    <tr>
+      <td class="num">${lote}</td>
+      <td>${nome}</td>
+      <td><div class="col-seg"><span class="seg sm">Segmento 1</span><span class="seg sm">Segmento 2</span></div></td>
+      <td class="num">${un}</td>
+      <td class="num">R$ 00.000,00</td>
+      <td class="num">R$ 0.000.000,00</td>
+    </tr>`).join('');
 }
 
-/* ============ RENDER: CARDS ============ */
+/* ---- dados das licitações (distintos para a busca ser real) ---- */
+const DATA = [
+  {
+    edital:'90001/2026', orgao:'EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ',
+    objeto:'Licitação para fornecimento de computadores desktop, notebooks, monitores e periféricos para atender a rede municipal de ensino. Inclui instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.',
+    valor:'47.284.499,63', id:'1078513', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por item',
+    estado:'PA', cidade:'Belém', habitantes:'1.303.403', portal:'compras.saobernado.sp…',
+    adicionada:'04/02/2026', atualizada:'12/02/2026', envio:'13/02/2026', itens:29, total:300, collapsed:false,
+    semAnexo:true, saved:false,
+  },
+  {
+    edital:'88234/2026', orgao:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
+    objeto:'Aquisição de equipamentos de rede, switches gerenciáveis, roteadores e infraestrutura de cabeamento estruturado para modernização do data center municipal, com suporte e garantia de 48 meses.',
+    valor:'12.640.310,00', id:'1099842', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por lote',
+    estado:'SP', cidade:'Campinas', habitantes:'1.223.237', portal:'compras.campinas.sp.gov…',
+    adicionada:'07/02/2026', atualizada:'14/02/2026', envio:'21/02/2026', itens:14, total:120, collapsed:false,
+    semAnexo:false, saved:false, arquivos:3,
+  },
+  {
+    edital:'90455/2025', orgao:'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
+    objeto:'Registro de preços para aquisição de mobiliário hospitalar, macas, camas e equipamentos médico-hospitalares destinados às unidades de pronto atendimento do estado, com entrega parcelada.',
+    valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
+    estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
+    adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
+    semAnexo:false, saved:true, updated:true, arquivos:2,   // salvo que já recebeu o anexo → "Atualizado" + qtd de arquivos
+  },
+];
+
 function cardHTML(d){
-  const o = ORGAOS[d.orgao];
-  const isFav = favs.includes(d.orgao);
-  const blob = norm([d.edital, o.name, d.objeto, d.id, d.estado, d.modalidade].join(' '));
+  const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
+    .join(' ').toLowerCase();
   return `
-  <article class="card" data-orgao="${d.orgao}" data-novo="${d.novo?'true':'false'}" data-search="${blob.replace(/"/g,'')}">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-orgao="${d.orgao.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
     <div class="card-top">
+      <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
-      ${d.novo ? '<span class="badge-novo">Novo</span>' : ''}
+      <span class="badge-updated" title="Atualizado: o anexo chegou">${I.refresh} Atualizado</span>
       <div class="card-top-right">
-        <button class="star" data-orgao="${d.orgao}" aria-pressed="${isFav?'true':'false'}" title="${isFav?'Remover dos órgãos favoritos':'Favoritar órgão para monitorar'}">
-          ${STAR}<span class="star-lbl">${isFav?'Favoritado':'Favoritar órgão'}</span>
-        </button>
-        <button class="ia-files" title="Visualizar arquivos">${FOLDER} Visualizar arquivos</button>
+        <button class="btn btn-outline">Descartar</button>
+        <button class="btn btn-primary">Enviar para análise</button>
+        <button class="btn btn-status">${I.pencil} Em disputa ou Homologação</button>
+        <div class="avatars">
+          <span class="av" style="background:#6b7280">JS</span>
+          <span class="av" style="background:#0f766e">MR</span>
+          <span class="av" style="background:#9333ea">AL</span>
+          <span class="av add">+</span>
+        </div>
+        <div class="icon-actions">
+          <button class="ia bookmark" title="${d.saved?'Remover de Salvos para depois':'Salvar para depois'}" aria-pressed="${d.saved?'true':'false'}">${I.bookmark}</button>
+          <button class="ia" title="Notificar">${I.bell}</button>
+          <button class="ia" title="Copiar link">${I.link}</button>
+          <button class="ia" title="Compartilhar">${I.share}</button>
+          <button class="ia" title="Documentos">${I.file}</button>
+          <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':((d.arquivos||0)+(((d.arquivos||0)===1)?' arquivo anexado':' arquivos anexados'))}">${d.semAnexo?I.folderOff:I.folder}${(!d.semAnexo&&d.arquivos>0)?`<span class="ia-count">${d.arquivos}</span>`:''}</button>
+        </div>
       </div>
     </div>
 
-    <p class="field-line"><span class="lbl">Órgão:</span> ${o.name}</p>
+    <div class="segments">
+      <span class="seg">Segmento 1</span>
+      <span class="seg">Segmento 2</span>
+    </div>
+
+    <p class="field-line"><span class="lbl">Órgão:</span> ${d.orgao} <span class="tag-light">ME - EPP</span></p>
     <p class="field-line obj"><span class="lbl">Objeto:</span> ${d.objeto}</p>
-    <p class="valor">Valor global: <span class="dash">-</span></p>
+    <p class="valor">Valor global: R$ ${d.valor}</p>
 
     <div class="grid-box">
       <div class="grid-left">
-        <div class="fld"><div class="k">Adicionada</div>${dash}</div>
-        <div class="fld"><div class="k">Atualizada</div>${dash}</div>
-        <div class="fld"><div class="k">Envio da proposta</div><div class="v">${d.envio}</div></div>
+        <div class="pair">
+          <div class="fld"><div class="k">Adicionada</div><div class="v">${d.adicionada}</div></div>
+          <div class="fld"><div class="k">Atualizada</div><div class="v">${d.atualizada}</div></div>
+        </div>
+        <div class="fld"><div class="k">Envio da proposta</div><div class="v warn">${d.envio}</div></div>
       </div>
       <div class="grid-main">
         <div class="fld"><div class="k">ID</div><div class="v">${d.id}</div></div>
-        <div class="fld"><div class="k">Julgamento</div>${dash}</div>
-        <div class="fld"><div class="k">Portal de Disputa</div>${dash}</div>
-        <div class="fld"><div class="k">Estado</div><div class="v">${d.estado}</div></div>
-        <div class="fld"><div class="k">CAPAG Estadual</div>${dash}</div>
+        <div class="fld"><div class="k">UASG</div><div class="v">–</div></div>
         <div class="fld"><div class="k">Modalidade</div><div class="v">${d.modalidade}</div></div>
-        <div class="fld"><div class="k">UASG</div>${dash}</div>
-        <div class="fld"><div class="k">Cidade</div>${dash}</div>
-        <div class="fld"><div class="k">CAPAG Municipal</div>${dash}</div>
-        <div class="fld"><div class="k">Habitantes</div>${dash}</div>
+        <div class="fld"><div class="k">Julgamento</div><div class="v">${d.julgamento}</div></div>
+        <div class="fld"><div class="k">Estado</div><div class="v">${d.estado}</div></div>
+        <div class="fld"><div class="k">Cidade</div><div class="v">${d.cidade}</div></div>
+        <div class="fld"><div class="k">Habitantes</div><div class="v">${d.habitantes}</div></div>
+        <div class="fld"><div class="k">CAPAG Estadual</div><div class="v">–</div></div>
+        <div class="fld"><div class="k">CAPAG Municipal</div><div class="v">–</div></div>
+        <div class="fld"><div class="k">Portal de disputa</div><div class="v">${d.portal}</div></div>
       </div>
+    </div>
+
+    <button class="expand-toggle">${I.chev}<span class="lbl-toggle">${d.collapsed?'Mostrar itens com correspondência':'Ocultar itens'}</span></button>
+
+    <div class="items-wrap">
+      <div class="items-head">
+        <span class="items-title">Itens com Correspondência</span>
+        <span class="count-chip">${d.itens}</span>
+        <span class="items-total">Total de itens: ${d.total}</span>
+      </div>
+      <table class="items">
+        <thead>
+          <tr>
+            <th style="width:48px">Lote</th>
+            <th>Nome</th>
+            <th style="width:200px">Segmento</th>
+            <th style="width:90px">Unidades</th>
+            <th style="width:140px">Valor Unitário</th>
+            <th style="width:150px">Valor Total</th>
+          </tr>
+        </thead>
+        <tbody>${itemsRows()}</tbody>
+      </table>
     </div>
   </article>`;
 }
 
-function renderCards(){
-  cardList.innerHTML = DATA.map(cardHTML).join('');
+function skeletonCard(){
+  return `
+    <div class="sk-card">
+      <div class="sk-row">
+        <span class="sk" style="width:18px;height:18px"></span>
+        <span class="sk" style="width:150px;height:18px"></span>
+        <span class="sk" style="width:92px;height:24px;border-radius:7px"></span>
+        <span class="sk" style="width:96px;height:34px;border-radius:8px;margin-left:auto"></span>
+        <span class="sk" style="width:130px;height:34px;border-radius:8px"></span>
+        <span class="sk" style="width:170px;height:34px;border-radius:8px"></span>
+      </div>
+      <div class="sk-row">
+        <span class="sk" style="width:74px;height:22px"></span>
+        <span class="sk" style="width:74px;height:22px"></span>
+      </div>
+      <span class="sk" style="width:55%;height:14px"></span>
+      <span class="sk" style="width:92%;height:14px"></span>
+      <span class="sk" style="width:38%;height:14px"></span>
+      <span class="sk" style="width:230px;height:18px"></span>
+      <span class="sk" style="width:100%;height:130px;border-radius:8px"></span>
+    </div>`;
 }
 
-/* ============ RENDER: CHIPS DE FAVORITOS ============ */
+const list = document.getElementById('cardList');
+list.innerHTML = DATA.map(cardHTML).join('') +
+  '<div class="empty-state" id="emptyState" hidden>'+
+  '<strong>Nenhuma licitação encontrada</strong>'+
+  'Não há resultados para “<span class="q" id="emptyQuery"></span>”. Tente outro termo.'+
+  '</div>' +
+  `<div class="skeleton" id="skeleton">${skeletonCard()}${skeletonCard()}</div>`;
+
+/* ---- interatividade dos cards ---- */
+list.addEventListener('click', e=>{
+  const chk = e.target.closest('.chk');
+  if(chk){ chk.classList.toggle('on'); chk.setAttribute('aria-checked', chk.classList.contains('on')); return; }
+  const tog = e.target.closest('.expand-toggle');
+  if(tog){
+    const card = tog.closest('.card');
+    card.classList.toggle('collapsed');
+    const collapsed = card.classList.contains('collapsed');
+    tog.querySelector('.lbl-toggle').textContent = collapsed ? 'Mostrar itens com correspondência' : 'Ocultar itens';
+  }
+});
+
+/* ---- tabs ---- */
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const t = e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
+  t.classList.add('active'); t.setAttribute('aria-selected','true');
+  renderTabFilters(t.dataset.tab);
+});
+
+/* ============ FILTROS DA TAB (badges estilo Notion) ============ */
+const SITUACAO = ['Ativas','Em disputa','Homologação','Encerradas','Descartadas'];
+const SEGMENTOS = ['Produtos','Software'];
+const ESTADOS = ['SP','RJ','MG','PA','CE','BA','PR','RS'];
+const CIDADES = ['São Paulo','Campinas','Rio de Janeiro','Belém','Fortaleza'];
+const VALORES = ['Até R$ 100 mil','R$ 100 mil – 1 mi','R$ 1 mi – 10 mi','Acima de R$ 10 mi'];
+// órgãos monitorados (devem casar exatamente com d.orgao dos cards)
+const ORGAOS = [
+  'EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ',
+  'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
+  'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
+];
+const TAB_BADGES = {
+  'Todas': [],
+  // monitoramento: filtro fixo por órgão (multi-seleção). Clicar na badge gerencia os órgãos.
+  'Órgãos favoritos': [
+    {label:'Órgão', type:'list', options:ORGAOS, value:[ORGAOS[0], ORGAOS[1]]},
+  ],
+};
+const DATE_PRESETS = {
+  past:   [{key:'todos',label:'Todos'},{key:'24h',label:'Últimas 24h'},{key:'7d',label:'Últimos 7 dias'}],
+  future: [{key:'7d',label:'Próximos 7 dias'},{key:'15d',label:'Próximos 15 dias'},{key:'30d',label:'Próximos 30 dias'}],
+};
+const MES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const TODAY = new Date(2026,5,19);                 // referência fixa p/ o protótipo
+const fmtD = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+const parseD = s => { const [d,m,y]=s.split('/').map(Number); return new Date(y,m-1,d); };
+const TODAY_STR = fmtD(TODAY);
+
+const filterBadges = document.getElementById('filterBadges');
+const filtrarCount = document.getElementById('filtrarCount');
+let currentTab = 'Todas', fbOpen = null, calView = null;
+
+const SVG_CARET = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function dateLabel(b){
+  const v=b.value;
+  if(v.preset){ const p=(DATE_PRESETS[b.mode]||[]).find(x=>x.key===v.preset); return p?p.label:v.preset; }
+  if(v.date) return v.date===TODAY_STR ? 'Hoje' : v.date;
+  return 'Qualquer data';
+}
+function listLabel(b){
+  if(!b.value.length) return 'Qualquer';
+  return b.value.length===1 ? b.value[0] : b.value.length+' selecionadas';
+}
+// monitoramento por órgão: marca os cards favoritados e atualiza a contagem da tab
+function applyOrgaoView(tab){
+  const isOrg = tab === 'Órgãos favoritos';
+  document.body.classList.toggle('tab-orgaos', isOrg);
+  if(!isOrg) return;
+  const badge = (TAB_BADGES[tab]||[]).find(b=>b.label==='Órgão');
+  const favs = badge ? badge.value : [];
+  let n = 0;
+  document.querySelectorAll('#cardList .card').forEach(c=>{
+    const on = favs.includes(c.dataset.orgao);
+    c.dataset.fav = on ? 'true' : 'false';
+    if(on) n++;
+  });
+  const cntEl = document.querySelector('.tab[data-tab="Órgãos favoritos"] .cnt');
+  if(cntEl) cntEl.textContent = n;
+}
+function renderTabFilters(tab){
+  currentTab = tab; closeFbPop();
+  applyOrgaoView(tab);
+  const badges = TAB_BADGES[tab] || [];
+  if(badges.length){ filtrarCount.hidden=false; filtrarCount.textContent=badges.length; }
+  else filtrarCount.hidden=true;
+  if(!badges.length){ filterBadges.innerHTML = ''; return; }  // sem filtros: nada aparece
+  filterBadges.innerHTML = badges.map((b,i)=>{
+    const val = b.type==='date' ? dateLabel(b) : listLabel(b);
+    return `<button class="fbadge" data-bi="${i}"><span class="k">${b.label}:</span> <span class="v">${val}</span><span class="car">${SVG_CARET}</span></button>`;
+  }).join('');
+}
+function refreshBadges(){
+  const badges = TAB_BADGES[currentTab];
+  filterBadges.querySelectorAll('.fbadge').forEach((el,i)=>{
+    const b=badges[i]; el.querySelector('.v').textContent = b.type==='date'?dateLabel(b):listLabel(b);
+  });
+  applyOrgaoView(currentTab);   // re-filtra a lista quando os órgãos mudam no popover
+}
+
+/* ---- popover ---- */
+function closeFbPop(){
+  fbOpen=null;
+  document.querySelectorAll('.fb-pop').forEach(p=>p.remove());
+  document.querySelectorAll('.fbadge.open').forEach(b=>b.classList.remove('open'));
+}
+filterBadges.addEventListener('click', e=>{
+  const bd = e.target.closest('.fbadge'); if(!bd) return;
+  const i = +bd.dataset.bi;
+  if(fbOpen===i){ closeFbPop(); return; }
+  openFbPop(bd, i);
+});
+// fecha o popover (fixo) se a barra de badges rolar na horizontal
+filterBadges.addEventListener('scroll', ()=>{ if(fbOpen!==null) closeFbPop(); }, {passive:true});
+function openFbPop(badgeEl, i){
+  closeFbPop(); fbOpen=i; badgeEl.classList.add('open');
+  const b = TAB_BADGES[currentTab][i];
+  const pop = document.createElement('div');
+  pop.className = 'fb-pop ' + (b.type==='date'?'fb-pop-date':'fb-pop-list');
+  pop.innerHTML = b.type==='date' ? datePopHTML(b) : listPopHTML(b);
+  // posiciona FIXO no body p/ não ser cortado pelo scroll horizontal das badges
+  pop.style.position = 'fixed';
+  document.body.appendChild(pop);
+  const br = badgeEl.getBoundingClientRect();
+  const pw = pop.offsetWidth;
+  let left = br.left;
+  if(left + pw > window.innerWidth - 12) left = window.innerWidth - 12 - pw;
+  if(left < 12) left = 12;
+  pop.style.left = left + 'px';
+  pop.style.top = (br.bottom + 6) + 'px';
+  b.type==='date' ? wireDatePop(pop,b) : wireListPop(pop,b);
+}
+
+/* ---- date popover + calendário ---- */
+function datePopHTML(b){
+  calView = b.value.date ? (d=>({year:d.getFullYear(),month:d.getMonth()}))(parseD(b.value.date))
+                         : {year:TODAY.getFullYear(), month:TODAY.getMonth()};
+  const presets = (DATE_PRESETS[b.mode]||[]).map(p=>
+    `<button data-preset="${p.key}" class="${b.value.preset===p.key?'on':''}">${p.label}</button>`).join('');
+  return `<div class="fb-presets">${presets}</div><div class="fb-cal">${calHTML(b)}</div>`;
+}
+function calHTML(b){
+  const {year,month}=calView;
+  const startDow = new Date(year,month,1).getDay();
+  const days = new Date(year,month+1,0).getDate();
+  const prev = new Date(year,month,0).getDate();
+  const sel = b.value.date || null;
+  let cells='';
+  for(let i=startDow-1;i>=0;i--) cells+=`<div class="fb-day out">${prev-i}</div>`;
+  for(let d=1; d<=days; d++){
+    const date=new Date(year,month,d), ds=fmtD(date), cls=['fb-day'];
+    if(ds===TODAY_STR) cls.push('today');
+    if(ds===sel) cls.push('sel');
+    if(b.mode==='past' && date>TODAY) cls.push('disabled');
+    if(b.mode==='future' && date<TODAY) cls.push('disabled');
+    cells+=`<button class="${cls.join(' ')}" data-day="${ds}">${d}</button>`;
+  }
+  const trail = (7 - ((startDow+days)%7))%7;
+  for(let d=1; d<=trail; d++) cells+=`<div class="fb-day out">${d}</div>`;
+  const nav = dir => `<button class="fb-cal-nav" data-nav="${dir}"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M${dir<0?'10 4 6 8l4 4':'6 4l4 4-4 4'}" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+  return `<div class="fb-cal-head">${nav(-1)}<span class="fb-cal-title">${MES[month]} de ${year}</span>${nav(1)}</div>`+
+    `<div class="fb-cal-grid">${DOW.map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div>`;
+}
+function wireDatePop(pop,b){
+  pop.querySelector('.fb-presets').addEventListener('click', e=>{
+    const btn=e.target.closest('button[data-preset]'); if(!btn) return;
+    b.value={preset:btn.dataset.preset}; refreshBadges(); closeFbPop();
+  });
+  pop.querySelector('.fb-cal').addEventListener('click', e=>{
+    const nav=e.target.closest('[data-nav]');
+    if(nav){ calView.month+=+nav.dataset.nav;
+      if(calView.month<0){calView.month=11;calView.year--;}
+      if(calView.month>11){calView.month=0;calView.year++;}
+      pop.querySelector('.fb-cal').innerHTML=calHTML(b); return; }
+    const day=e.target.closest('.fb-day[data-day]');
+    if(!day || day.classList.contains('disabled')) return;
+    b.value={date:day.dataset.day}; refreshBadges(); closeFbPop();
+  });
+}
+
+/* ---- list popover ---- */
+function listPopHTML(b){
+  const opts=b.options.map(o=>
+    `<label class="fb-opt ${b.value.includes(o)?'on':''}" data-opt="${o}"><span class="box">${I.check}</span>${o}</label>`).join('');
+  return `<div class="fb-list-head"><span>Lista de opções</span><button class="fb-selall">${b.value.length===b.options.length?'Limpar':'Selecionar tudo'}</button></div>`+
+    `<div class="fb-search"><input type="text" placeholder="Buscar" /><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7.25" cy="7.25" r="4.5"/><path d="M10.75 10.75 14 14"/></svg></div>`+
+    `<div class="fb-options">${opts}</div>`;
+}
+function wireListPop(pop,b){
+  const opts=pop.querySelector('.fb-options');
+  const selall=pop.querySelector('.fb-selall');
+  opts.addEventListener('click', e=>{
+    const opt=e.target.closest('.fb-opt'); if(!opt) return;
+    e.preventDefault();
+    const v=opt.dataset.opt, idx=b.value.indexOf(v);
+    idx>=0 ? b.value.splice(idx,1) : b.value.push(v);
+    opt.classList.toggle('on');
+    selall.textContent = b.value.length===b.options.length ? 'Limpar' : 'Selecionar tudo';
+    refreshBadges();
+  });
+  selall.addEventListener('click', ()=>{
+    const all = b.value.length===b.options.length;
+    b.value = all ? [] : [...b.options];
+    opts.querySelectorAll('.fb-opt').forEach(o=> o.classList.toggle('on', b.value.includes(o.dataset.opt)));
+    selall.textContent = all ? 'Selecionar tudo' : 'Limpar';
+    refreshBadges();
+  });
+  const s=pop.querySelector('.fb-search input');
+  s.addEventListener('input', ()=>{ const q=norm(s.value);
+    opts.querySelectorAll('.fb-opt').forEach(o=> o.style.display = norm(o.dataset.opt).includes(q)?'':'none'); });
+  s.focus();
+}
+
+// clique fora fecha o popover
+document.addEventListener('click', e=>{
+  if(fbOpen!==null && !e.target.closest('.fbadge') && !e.target.closest('.fb-pop')) closeFbPop();
+});
+// Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
+renderTabFilters('Todas');
+
+/* ============ BUSCA (componente) ============ */
+const actions   = document.getElementById('actions');
+const searchBtn = document.getElementById('searchBtn');
+const searchFld = document.getElementById('searchField');
+const searchInp = document.getElementById('searchInput');
+const searchClr = document.getElementById('searchClear');
+const searchChips = document.getElementById('searchChips');
+const scopeBtn  = document.getElementById('scopeBtn');
+const scopeMenu = document.getElementById('scopeMenu');
+const emptyState= document.getElementById('emptyState');
+const emptyQuery= document.getElementById('emptyQuery');
+const eyebrow   = document.getElementById('eyebrow');
+const todasCnt  = document.querySelector('.tab.active .cnt');
+const cards     = [...document.querySelectorAll('.card')];
+
+const baseEyebrow = eyebrow.textContent;
+const baseTodas   = todasCnt.textContent;
+
+// remove acentos p/ casar "belem" com "Belém"
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+// ---- propriedades pesquisáveis (escopos) ----
+const SCOPES = [
+  {key:'edital',     label:'Edital',            get:d=>d.edital},
+  {key:'orgao',      label:'Órgão',             get:d=>d.orgao},
+  {key:'objeto',     label:'Objeto',            get:d=>d.objeto},
+  {key:'valor',      label:'Valor global',      get:d=>'R$ '+d.valor},
+  {key:'id',         label:'ID',                get:d=>d.id},
+  {key:'uasg',       label:'UASG',              get:d=>'–'},
+  {key:'modalidade', label:'Modalidade',        get:d=>d.modalidade},
+  {key:'julgamento', label:'Julgamento',        get:d=>d.julgamento},
+  {key:'estado',     label:'Estado',            get:d=>d.estado},
+  {key:'cidade',     label:'Cidade',            get:d=>d.cidade},
+  {key:'habitantes', label:'Habitantes',        get:d=>d.habitantes},
+  {key:'segmento',   label:'Segmento',          get:d=>'Segmento 1 Segmento 2'},
+  {key:'adicionada', label:'Adicionada',        get:d=>d.adicionada},
+  {key:'atualizada', label:'Atualizada',        get:d=>d.atualizada},
+  {key:'envio',      label:'Envio da proposta', get:d=>d.envio},
+  {key:'capagE',     label:'CAPAG Estadual',    get:d=>'–'},
+  {key:'capagM',     label:'CAPAG Municipal',   get:d=>'–'},
+  {key:'portal',     label:'Portal de disputa', get:d=>d.portal},
+];
+const scopeLabel = k => (SCOPES.find(s=>s.key===k)||{}).label || k;
+const activeScopes = new Set();
+
+// indexa o texto de cada propriedade por card (cards[i] ↔ DATA[i])
+cards.forEach((card,i)=>{
+  card._fields = {};
+  SCOPES.forEach(s=> card._fields[s.key] = norm(String(s.get(DATA[i]) ?? '')));
+});
+
+// ---- menu de propriedades ----
+function buildMenu(){
+  scopeMenu.innerHTML =
+    '<div class="sm-head">Buscar em</div>' +
+    `<div class="scope-item" data-scope="__all__"><span class="scope-box">${I.check}</span>Todos os campos</div>` +
+    '<div class="scope-sep"></div>' +
+    SCOPES.map(s=>`<div class="scope-item" data-scope="${s.key}"><span class="scope-box">${I.check}</span>${s.label}</div>`).join('');
+  syncMenu();
+}
+function syncMenu(){
+  const allOn = activeScopes.size === 0;
+  scopeMenu.querySelectorAll('.scope-item').forEach(it=>{
+    const k = it.dataset.scope;
+    it.classList.toggle('on', k==='__all__' ? allOn : activeScopes.has(k));
+  });
+}
+function chipHTML(k){
+  const lbl = scopeLabel(k);
+  return `<span class="s-chip" data-scope="${k}">${lbl}<button aria-label="Remover ${lbl}">`+
+    `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></span>`;
+}
 function renderChips(){
-  let html = `<button class="fav-chip all ${activeFilter==='all'?'active':''}" data-orgao="all">Todas as licitações</button>`;
-  if(!favs.length){
-    html += `<span class="fav-empty">Nenhum órgão favoritado ainda. Use a estrela ☆ no card para começar a monitorar.</span>`;
-  }else{
-    html += favs.map(key=>{
-      const o = ORGAOS[key]; if(!o) return '';
-      const nv = novoCountFor(key);
-      return `<button class="fav-chip ${activeFilter===key?'active':''}" data-orgao="${key}" title="${o.name}">
-        ${nv ? '<span class="chip-dot" title="'+nv+' nova(s)"></span>' : ''}
-        ${o.short}
-        <span class="chip-x" data-x="${key}" title="Remover dos favoritos" aria-label="Remover">${XICO}</span>
-      </button>`;
-    }).join('');
-  }
-  favChips.innerHTML = html;
+  searchChips.innerHTML = [...activeScopes].map(chipHTML).join('');
+}
+function updateFilterBtn(){
+  scopeBtn.classList.toggle('active', activeScopes.size>0);
+  let b = scopeBtn.querySelector('.cnt-badge');
+  if(activeScopes.size>0){
+    if(!b){ b=document.createElement('span'); b.className='cnt-badge'; scopeBtn.appendChild(b); }
+    b.textContent = activeScopes.size;
+  }else if(b){ b.remove(); }
 }
 
-/* ============ FILTRO / VISIBILIDADE ============ */
-function applyView(){
-  const q = norm(document.getElementById('search').value.trim());
+// ---- abrir / fechar / filtrar ----
+function openSearch(){ actions.classList.add('searching'); renderChips(); searchInp.focus(); }
+function closeSearch(){
+  actions.classList.remove('searching');
+  scopeMenu.hidden = true;
+  searchInp.value = '';
+  activeScopes.clear();
+  renderChips(); updateFilterBtn(); syncMenu();
+  clearTimeout(searchTimer); hideSkeleton(); applyFilter('');
+}
+let searchTimer = null;
+function showSkeleton(){ list.classList.add('loading'); }
+function hideSkeleton(){ list.classList.remove('loading'); }
+// simula a busca assíncrona: mostra skeleton e revela os resultados após ~450ms
+function scheduleSearch(q){
+  clearTimeout(searchTimer);
+  if(!q.trim()){ hideSkeleton(); applyFilter(''); return; }  // limpou: instantâneo
+  showSkeleton();
+  searchTimer = setTimeout(()=>{ hideSkeleton(); applyFilter(q); }, 450);
+}
+function applyFilter(q){
+  const query = norm(q.trim());
+  const scopeKeys = [...activeScopes];
   let visible = 0;
-  cardList.querySelectorAll('.card').forEach(c=>{
-    const okOrg = activeFilter==='all' || c.dataset.orgao===activeFilter;
-    const okQ = !q || c.dataset.search.includes(q);
-    const show = okOrg && okQ;
-    c.classList.toggle('hidden', !show);
-    if(show) visible++;
+  cards.forEach(card=>{
+    let hit;
+    if(!query)               hit = true;
+    else if(!scopeKeys.length) hit = norm(card.dataset.search).includes(query);
+    else                     hit = scopeKeys.some(k => (card._fields[k]||'').includes(query));
+    card.classList.toggle('hidden', !hit);
+    if(hit) visible++;
   });
-  resCount.textContent = visible===1 ? '1 licitação' : `${visible} licitações`;
-  empty.classList.toggle('show', visible===0);
+  const noResults = query && visible === 0;
+  emptyState.hidden = !noResults;
+  emptyQuery.textContent = q.trim();
+
+  if(query){
+    const palavra = visible === 1 ? 'licitação' : 'licitações';
+    eyebrow.textContent = `Encontramos ${visible} ${palavra} com seus filtros`;
+    todasCnt.textContent = visible;
+  }else{
+    eyebrow.textContent = baseEyebrow;
+    todasCnt.textContent = baseTodas;
+  }
 }
 
-function setFilter(key){
-  activeFilter = key;
-  renderChips();
-  applyView();
-}
+// ---- eventos ----
+searchBtn.addEventListener('click', ()=> actions.classList.contains('searching') ? closeSearch() : openSearch());
+searchInp.addEventListener('input', e=> scheduleSearch(e.target.value));
+searchClr.addEventListener('click', closeSearch);
 
-/* ============ TOASTS ============ */
-const toasts = document.getElementById('toasts');
-function showToast(msg, opts){
-  opts = opts || {};
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = `<span class="toast-ico" style="color:${opts.color||'var(--star)'}">${opts.icon||STAR}</span><span class="toast-msg">${msg}</span>`+
-    (opts.undoLabel ? `<button class="toast-undo">${opts.undoLabel}</button>` : '');
-  toasts.appendChild(t);
-  requestAnimationFrame(()=> t.classList.add('show'));
-  let timer = setTimeout(close, 4200);
-  function close(){ clearTimeout(timer); t.classList.remove('show'); t.classList.add('hide'); setTimeout(()=> t.remove(), 260); }
-  const undo = t.querySelector('.toast-undo');
-  if(undo) undo.addEventListener('click', ()=>{ opts.onUndo && opts.onUndo(); close(); });
-}
-
-/* ============ FAVORITAR / DESFAVORITAR ============ */
-function setFav(key, on){
-  const i = favs.indexOf(key);
-  if(on && i<0) favs.push(key);
-  if(!on && i>=0) favs.splice(i,1);
-  // se o órgão filtrado deixou de ser favorito, volta para "Todas"
-  if(!on && activeFilter===key) activeFilter='all';
-  saveFavs();
-  // atualiza as estrelas de todos os cards desse órgão
-  cardList.querySelectorAll(`.star[data-orgao="${key}"]`).forEach(btn=>{
-    btn.setAttribute('aria-pressed', on?'true':'false');
-    btn.title = on?'Remover dos órgãos favoritos':'Favoritar órgão para monitorar';
-    const lbl = btn.querySelector('.star-lbl'); if(lbl) lbl.textContent = on?'Favoritado':'Favoritar órgão';
-  });
-  renderChips();
-  applyView();
-}
-
-/* ============ EVENTOS ============ */
-cardList.addEventListener('click', e=>{
-  const star = e.target.closest('.star');
-  if(star){
-    const key = star.dataset.orgao;
-    const willFav = star.getAttribute('aria-pressed')!=='true';
-    setFav(key, willFav);
-    const o = ORGAOS[key];
-    showToast(
-      willFav ? `Você agora monitora <b>${o.short}</b>` : `<b>${o.short}</b> saiu dos favoritos`,
-      { color: willFav?'var(--star)':'#9ca3af',
-        undoLabel:'Desfazer', onUndo:()=> setFav(key, !willFav) }
-    );
+scopeBtn.addEventListener('click', e=>{ e.stopPropagation(); scopeMenu.hidden = !scopeMenu.hidden; });
+scopeMenu.addEventListener('click', e=>{
+  const it = e.target.closest('.scope-item'); if(!it) return;
+  const k = it.dataset.scope;
+  if(k==='__all__') activeScopes.clear();
+  else activeScopes.has(k) ? activeScopes.delete(k) : activeScopes.add(k);
+  syncMenu(); renderChips(); updateFilterBtn(); scheduleSearch(searchInp.value);
+  searchInp.focus();
+});
+searchChips.addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  activeScopes.delete(btn.closest('.s-chip').dataset.scope);
+  syncMenu(); renderChips(); updateFilterBtn(); scheduleSearch(searchInp.value);
+  searchInp.focus();
+});
+// clique fora fecha só o menu
+document.addEventListener('click', e=>{
+  if(!scopeMenu.hidden && !scopeMenu.contains(e.target) && !scopeBtn.contains(e.target)) scopeMenu.hidden = true;
+});
+searchInp.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ if(!scopeMenu.hidden) scopeMenu.hidden = true; else closeSearch(); }
+});
+// atalho "/" abre a busca
+document.addEventListener('keydown', e=>{
+  if(e.key==='/' && !actions.classList.contains('searching') &&
+     !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
+    e.preventDefault(); openSearch();
   }
 });
 
-favChips.addEventListener('click', e=>{
-  const x = e.target.closest('.chip-x');
-  if(x){ e.stopPropagation(); setFav(x.dataset.x, false); return; }
-  const chip = e.target.closest('.fav-chip');
-  if(chip) setFilter(chip.dataset.orgao);
-});
+/* ============ NAVBAR: esconde ao rolar p/ baixo, mostra ao rolar p/ cima ============ */
+(function(){
+  let lastY = window.scrollY || 0;
+  const TH = 80, DELTA = 8;  // TH: zona segura no topo; DELTA: movimento mínimo p/ trocar de estado
+  window.addEventListener('scroll', function(){
+    if(typeof fbOpen !== 'undefined' && fbOpen !== null) closeFbPop();           // fecha popover de badge ao rolar
+    const y = window.scrollY;
+    if(y < TH){ document.body.classList.remove('nav-hidden'); lastY = y; }       // perto do topo: sempre visível
+    else if(y - lastY > DELTA){ document.body.classList.add('nav-hidden'); lastY = y; }    // rolando p/ baixo
+    else if(lastY - y > DELTA){ document.body.classList.remove('nav-hidden'); lastY = y; } // rolando p/ cima
+    // movimentos pequenos NÃO atualizam lastY → acumulam até o DELTA (evita jitter/momentum)
+  }, {passive:true});
+})();
 
-document.getElementById('search').addEventListener('input', applyView);
-document.getElementById('btnBuscar').addEventListener('click', applyView);
-document.getElementById('btnLimpar').addEventListener('click', ()=>{ document.getElementById('search').value=''; setFilter('all'); });
-document.getElementById('btnFiltros').addEventListener('click', ()=> showToast('No protótipo, use a <b>estrela</b> no card para favoritar um órgão.', {icon:STAR}));
-document.getElementById('sbToggle').addEventListener('click', ()=> document.body.classList.toggle('sb-open'));
+/* ============ SIDEBAR: abrir/fechar + expandir "Novas" ============ */
+(function(){
+  const toggle = document.querySelector('.navbar .icon-btn');
+  if(toggle) toggle.addEventListener('click', ()=> document.body.classList.toggle('sb-open'));
+  const novas = document.getElementById('novasItem');
+  if(novas) novas.addEventListener('click', ()=>{
+    if(!document.body.classList.contains('sb-open')){ document.body.classList.add('sb-open'); return; }
+    novas.classList.toggle('open');
+  });
+})();
 
-/* ============ INIT ============ */
-renderCards();
-renderChips();
-applyView();
+/* ============ SALVAR PARA DEPOIS / SEM ANEXO ============ */
+(function(){
+  const cardList = document.getElementById('cardList');
+  const savedCountEl = document.getElementById('savedCount');
+  const eyebrowEl = document.getElementById('eyebrow');
+  let view = 'recomendadas';
+
+  const savedCards = () => [...cardList.querySelectorAll('.card')].filter(c=>c.dataset.saved==='true');
+
+  function updateSavedUI(){
+    const n = savedCards().length;
+    savedCountEl.textContent = n;
+    savedCountEl.dataset.zero = n===0 ? 'true' : 'false';
+    if(view==='salvos'){
+      eyebrowEl.textContent = n===1 ? '1 licitação salva para depois' : `${n} licitações salvas para depois`;
+      const todas = document.querySelector('.tab[data-tab="Todas"] .cnt'); if(todas) todas.textContent = n;
+    }
+  }
+
+  // ---- toasts (sonner) ----
+  const toasts = document.getElementById('toasts');
+  const TOAST_SAVED = '<svg viewBox="0 0 20 20" width="18" height="18" fill="#2f6df6" stroke="#2f6df6" stroke-width="1.4" stroke-linejoin="round"><path d="M5.5 3.5h9a1 1 0 0 1 1 1V17l-5.5-3.2L5.5 17V4.5a1 1 0 0 1 1-1z"/></svg>';
+  const TOAST_REMOVED = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#737373" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5h9a1 1 0 0 1 1 1V17l-5.5-3.2L5.5 17V4.5a1 1 0 0 1 1-1z"/><path d="M3.2 3.2l13.6 13.6"/></svg>';
+  function showToast(msg, opts){
+    opts = opts || {};
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<span class="toast-ico">${opts.icon||''}</span><span class="toast-msg">${msg}</span>`+
+      (opts.undoLabel ? `<button class="toast-undo">${opts.undoLabel}</button>` : '');
+    toasts.appendChild(t);
+    requestAnimationFrame(()=> t.classList.add('show'));
+    let timer = setTimeout(close, 4000);
+    function close(){ clearTimeout(timer); t.classList.remove('show'); t.classList.add('hide'); setTimeout(()=> t.remove(), 260); }
+    const undo = t.querySelector('.toast-undo');
+    if(undo) undo.addEventListener('click', ()=>{ opts.onUndo && opts.onUndo(); close(); });
+  }
+  function setBookmarkUI(card, saved){
+    const bm = card.querySelector('.ia.bookmark');
+    if(bm){ bm.setAttribute('aria-pressed', saved?'true':'false'); bm.title = saved ? 'Remover de Salvos para depois' : 'Salvar para depois'; }
+  }
+  function clearLeave(card){ card.classList.remove('card-leaving'); card.style.height=''; card.style.paddingTop=''; card.style.paddingBottom=''; }
+  function finishLeave(card, saved){ clearLeave(card); card.dataset.saved = saved?'true':'false'; card._lv=null; updateSavedUI(); }
+  function undoSnooze(card, wasSaved){
+    if(card._lv){ clearTimeout(card._lv); card._lv=null; }
+    clearLeave(card); card.dataset.saved = wasSaved?'true':'false'; setBookmarkUI(card, wasSaved); updateSavedUI();
+  }
+  function snoozeToggle(card){
+    if(card.classList.contains('card-leaving')) return;
+    const wasSaved = card.dataset.saved === 'true';
+    const newSaved = !wasSaved;
+    setBookmarkUI(card, newSaved);
+    // anima a saída do card (fade + slide + colapso) e só então troca de fila
+    const h = card.offsetHeight;
+    card.style.height = h + 'px'; void card.offsetHeight;
+    card.classList.add('card-leaving');
+    requestAnimationFrame(()=>{ card.style.height='0px'; card.style.paddingTop='0'; card.style.paddingBottom='0'; });
+    card._lv = setTimeout(()=> finishLeave(card, newSaved), 330);
+    showToast(newSaved ? 'Salvo para depois' : 'Removido de Salvos para depois', {
+      icon: newSaved ? TOAST_SAVED : TOAST_REMOVED, undoLabel:'Desfazer',
+      onUndo: ()=> undoSnooze(card, wasSaved)
+    });
+  }
+
+  // bookmark (salvar/remover)
+  cardList.addEventListener('click', e=>{
+    const bm = e.target.closest('.ia.bookmark');
+    if(bm){ snoozeToggle(bm.closest('.card')); }
+  });
+
+  // troca de view pela sidebar (Recomendadas ↔ Salvos para depois)
+  document.querySelectorAll('.sb-item[data-view]').forEach(item=>{
+    item.addEventListener('click', e=>{
+      e.preventDefault();
+      view = item.dataset.view;
+      document.body.classList.toggle('view-salvos', view==='salvos');
+      document.querySelectorAll('.sb-item[data-view]').forEach(x=> x.classList.toggle('active', x===item));
+      // volta para a tab Todas ao trocar de view
+      document.querySelectorAll('.tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      const todasTab = document.querySelector('.tab[data-tab="Todas"]');
+      if(todasTab){ todasTab.classList.add('active'); todasTab.setAttribute('aria-selected','true'); }
+      if(typeof renderTabFilters === 'function') renderTabFilters('Todas');
+      if(view==='recomendadas'){
+        eyebrowEl.textContent = 'Encontramos 300 licitações';
+        const todas = document.querySelector('.tab[data-tab="Todas"] .cnt'); if(todas) todas.textContent = '300';
+      }
+      updateSavedUI();
+      window.scrollTo(0,0);
+    });
+  });
+
+  updateSavedUI();
+})();
+
+buildMenu();
 </script>
 </body>
 </html>
