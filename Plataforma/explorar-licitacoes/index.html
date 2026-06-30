@@ -678,7 +678,6 @@ function cardHTML(d){
           <button class="ia" title="Notificar">${I.bell}</button>
           <button class="ia" title="Copiar link">${I.link}</button>
           <button class="ia" title="Compartilhar">${I.share}</button>
-          <button class="ia" title="Documentos">${I.file}</button>
           <button class="ia folder${d.semAnexo?' no-file':''}" title="${d.semAnexo?'Sem anexo — este edital ainda não possui arquivo':((d.arquivos||0)+(((d.arquivos||0)===1)?' arquivo anexado':' arquivos anexados'))}">${d.semAnexo?I.folderOff:I.folder}${(!d.semAnexo&&d.arquivos>0)?`<span class="ia-count">${d.arquivos}</span>`:''}</button>
         </div>
       </div>
