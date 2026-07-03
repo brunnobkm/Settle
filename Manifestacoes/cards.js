@@ -437,15 +437,21 @@ function openArquivos() {
   //    usuário identificar de qual manifestação é cada arquivo.
   const manis = items.filter((it) => it.anexos && it.anexos.length);
   const maniCount = manis.reduce((n, it) => n + it.anexos.length, 0);
-  const manisHtml = manis.map((it) => {
-    const cat = NCData.CATEGORIAS[it.categoria];
-    const assunto = it.assunto || truncar(it.mensagem || '');
-    const rows = it.anexos.map((a) => fileRow(a.nome, a.tamanho || '')).join('');
+  // Agrupa por CATEGORIA (sem identificador por manifestação por enquanto).
+  const porCategoria = {};
+  const ordemCat = [];
+  manis.forEach((it) => {
+    if (!porCategoria[it.categoria]) { porCategoria[it.categoria] = []; ordemCat.push(it.categoria); }
+    porCategoria[it.categoria].push(...it.anexos);
+  });
+  const manisHtml = ordemCat.map((catKey) => {
+    const cat = NCData.CATEGORIAS[catKey];
+    const rows = porCategoria[catKey].map((a) => fileRow(a.nome, a.tamanho || '')).join('');
     return `
       <div class="mani-group">
         <div class="mani-group-head">
-          <span class="badge badge--${it.categoria}">${cat.label}</span>
-          <span class="mani-group-title">${escapeHtml(assunto)}</span>
+          <span class="badge badge--${catKey}">${cat.label}</span>
+          <span class="acc-count">${porCategoria[catKey].length}</span>
         </div>
         <div class="anexo-list">${rows}</div>
       </div>`;
@@ -458,7 +464,6 @@ function openArquivos() {
     acc('Edital e anexos', ARQUIVOS_EDITAL.length, editalHtml),
     manis.length ? acc('Manifestações', maniCount, manisHtml) : '',
     acc('Manifestações sem vínculo', ARQUIVOS_SEM_VINCULO.length, semvHtml, {
-      destaque: true,
       note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
     }),
   ].join('');
