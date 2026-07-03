@@ -20,9 +20,78 @@ body {
 }
 button { font-family: inherit; cursor: pointer; }
 
-#app { max-width: 1280px; margin: 0 auto; padding: 36px 20px 72px; transition: margin .25s ease; }
+#app { max-width: none; margin: 0; padding: 0; }
+.page { max-width: 1280px; margin: 0 auto; padding: 36px 20px 72px; transition: margin .25s ease; }
 /* Conteúdo "compete por espaço" com a sidebar auxiliar aberta */
-body.aux-open #app { margin-left: 24px; margin-right: 464px; }
+body.aux-open .page { margin-left: 24px; margin-right: 464px; }
+
+/* ---------- Header (navbar) da licitação ---------- */
+.navbar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  height: 64px; padding: 8px 24px; background: #fff; border-bottom: 1px solid var(--border);
+}
+.nav-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; min-width: 0; }
+.breadcrumb svg { color: #A3A3A3; flex: 0 0 auto; }
+.bc-muted { color: var(--text-mute); white-space: nowrap; }
+.bc-current { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-div { width: 1px; height: 24px; background: var(--border); flex: 0 0 auto; }
+.btn-soft {
+  padding: 6px 12px; border: none; border-radius: 8px; background: rgba(23,23,23,.08);
+  color: var(--primary, #171717); font-family: inherit; font-size: 14px; font-weight: 500; line-height: 20px; cursor: pointer; white-space: nowrap;
+}
+.btn-soft:hover { background: rgba(23,23,23,.14); }
+.btn-solid {
+  padding: 6px 12px; border: none; border-radius: 8px; background: #3A9B9E;
+  color: #fff; font-family: inherit; font-size: 14px; font-weight: 500; line-height: 20px; cursor: pointer; white-space: nowrap;
+}
+.btn-solid:hover { background: #34898C; }
+.status-pill {
+  padding: 6px 12px; border-radius: 8px; background: rgba(227,146,25,.1);
+  color: #D97706; font-size: 14px; font-weight: 500; line-height: 20px; white-space: nowrap;
+}
+.avatars { display: flex; align-items: center; }
+.av { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; margin-right: -10px; flex: 0 0 auto; }
+.av1 { background: #B8C7D9; } .av2 { background: #D9C6B8; } .av3 { background: #BFD9B8; }
+.av-add {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; background: rgba(23,23,23,.08);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer;
+}
+.nav-ic {
+  width: 32px; height: 32px; border: none; border-radius: 8px; background: rgba(23,23,23,.06);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--primary, #171717); cursor: pointer; flex: 0 0 auto;
+}
+.nav-ic:hover { background: rgba(23,23,23,.12); }
+.nav-ic--ghost { background: transparent; }
+.nav-ic--ghost:hover { background: rgba(23,23,23,.08); }
+.nav-ic--folder { color: #3A9B9E; background: #E9F6F7; }
+.nav-ic--folder:hover { background: #DCF0F1; }
+
+/* ---------- Painel "Arquivos da Licitação" (accordions) ---------- */
+.modal.arquivos-modal { width: min(680px, 100%); max-height: min(80vh, 720px); }
+.arquivos-modal .modal-head { gap: 12px; }
+.arquivos-modal .btn-baixar-todos { margin-left: auto; }
+.arquivos-body { padding: 4px 16px 12px; overflow-y: auto; }
+.acc { border-bottom: 1px solid var(--border-soft); }
+.acc:last-child { border-bottom: none; }
+.acc-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 4px;
+  border: none; background: transparent; cursor: pointer; font-family: inherit; text-align: left;
+}
+.acc-chev { display: inline-flex; color: var(--text-mute); transition: transform .15s ease; }
+.acc.is-collapsed .acc-chev { transform: rotate(-90deg); }
+.acc.is-collapsed .acc-body { display: none; }
+.acc-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.acc-count {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 18px; padding: 1px 6px;
+  border-radius: 6px; background: rgba(23,23,23,.08); color: var(--text-mute); font-size: 12px; font-weight: 500; line-height: 16px;
+}
+.acc-body { padding: 0 4px 12px; }
+.acc-note { font-size: 12.5px; line-height: 1.5; color: var(--text-mute); margin: 0 0 8px; }
+.acc--destaque .acc-title { color: #A26053; }
+.acc--destaque .acc-count { background: rgba(162,96,83,.12); color: #A26053; }
 
 /* ===== Sidebar "Arquivos da licitação" — Figma 7321-32554 (Sheet) ===== */
 .aux {
