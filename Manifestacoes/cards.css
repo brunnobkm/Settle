@@ -80,14 +80,15 @@ body.aux-open .page { margin-left: 24px; margin-right: 464px; }
   display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 4px;
   border: none; background: transparent; cursor: pointer; font-family: inherit; text-align: left;
 }
-.acc-chev { display: inline-flex; margin-left: auto; color: var(--text-mute); transition: transform .15s ease; }
+.acc-head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.acc-chev { display: inline-flex; color: var(--text-mute); transition: transform .15s ease; }
 .acc.is-collapsed .acc-chev { transform: rotate(-90deg); }
 .acc.is-collapsed .acc-body { display: none; }
-/* Agrupamento por manifestação dentro da seção "Manifestações" */
-.mani-group { margin-bottom: 14px; }
-.mani-group:last-child { margin-bottom: 0; }
-.mani-group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.mani-group-title { font-size: 13px; font-weight: 500; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Accordions aninhados (por categoria) dentro de "Manifestações" */
+.acc--sub { border-bottom: none; }
+.acc--sub + .acc--sub { border-top: 1px solid var(--border-soft); }
+.acc--sub .acc-head { padding: 8px 2px; }
+.acc--sub .acc-body { padding: 0 2px 8px; }
 .acc-title { font-size: 14px; font-weight: 600; color: var(--text); }
 .acc-count {
   display: inline-flex; align-items: center; justify-content: center; min-width: 18px; padding: 1px 6px;

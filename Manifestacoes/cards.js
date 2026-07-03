@@ -419,25 +419,28 @@ function openArquivos() {
   const flat = [];
   const fileRow = (nome, sub) => { const i = idx++; flat.push({ nome, tamanho: '' }); return fileRowHtml(nome, sub, i); };
 
-  // Accordion genérico (chevron à direita).
-  const acc = (title, count, bodyHtml, opts = {}) => `
-    <div class="acc${opts.destaque ? ' acc--destaque' : ''}" data-acc>
+  // Accordion genérico: cabeçalho à esquerda; contador + chevron à direita
+  // (contador imediatamente à esquerda do chevron).
+  const acc = (headHtml, count, bodyHtml, opts = {}) => `
+    <div class="acc${opts.sub ? ' acc--sub' : ''}" data-acc>
       <button class="acc-head" data-acc-toggle>
-        <span class="acc-title">${title}</span>
-        <span class="acc-count">${count}</span>
-        <span class="acc-chev">${ICON_CHEVRON_DOWN}</span>
+        ${headHtml}
+        <span class="acc-head-right">
+          <span class="acc-count">${count}</span>
+          <span class="acc-chev">${ICON_CHEVRON_DOWN}</span>
+        </span>
       </button>
       <div class="acc-body">${opts.note ? `<p class="acc-note">${opts.note}</p>` : ''}${bodyHtml}</div>
     </div>`;
+  const accTitle = (t) => `<span class="acc-title">${t}</span>`;
 
   // 1) Edital
   const editalHtml = `<div class="anexo-list">${ARQUIVOS_EDITAL.map((a) => fileRow(a.nome, a.tamanho)).join('')}</div>`;
 
-  // 2) Manifestações: AGRUPADAS por manifestação, com badge + assunto, para o
-  //    usuário identificar de qual manifestação é cada arquivo.
+  // 2) Manifestações: agrupadas por categoria; cada categoria é um accordion
+  //    próprio (um tipo pode ter um número grande de anexos).
   const manis = items.filter((it) => it.anexos && it.anexos.length);
   const maniCount = manis.reduce((n, it) => n + it.anexos.length, 0);
-  // Agrupa por CATEGORIA (sem identificador por manifestação por enquanto).
   const porCategoria = {};
   const ordemCat = [];
   manis.forEach((it) => {
@@ -447,23 +450,16 @@ function openArquivos() {
   const manisHtml = ordemCat.map((catKey) => {
     const cat = NCData.CATEGORIAS[catKey];
     const rows = porCategoria[catKey].map((a) => fileRow(a.nome, a.tamanho || '')).join('');
-    return `
-      <div class="mani-group">
-        <div class="mani-group-head">
-          <span class="badge badge--${catKey}">${cat.label}</span>
-          <span class="acc-count">${porCategoria[catKey].length}</span>
-        </div>
-        <div class="anexo-list">${rows}</div>
-      </div>`;
+    return acc(`<span class="badge badge--${catKey}">${cat.label}</span>`, porCategoria[catKey].length, `<div class="anexo-list">${rows}</div>`, { sub: true });
   }).join('');
 
   // 3) Sem vínculo (o ponto do debate)
   const semvHtml = `<div class="anexo-list">${ARQUIVOS_SEM_VINCULO.map((a) => fileRow(a.nome, `Enviado em ${formatTimestamp(a.data)}`)).join('')}</div>`;
 
   const accHtml = [
-    acc('Edital e anexos', ARQUIVOS_EDITAL.length, editalHtml),
-    manis.length ? acc('Manifestações', maniCount, manisHtml) : '',
-    acc('Manifestações sem vínculo', ARQUIVOS_SEM_VINCULO.length, semvHtml, {
+    acc(accTitle('Edital e anexos'), ARQUIVOS_EDITAL.length, editalHtml),
+    manis.length ? acc(accTitle('Manifestações'), maniCount, manisHtml) : '',
+    acc(accTitle('Manifestações sem vínculo'), ARQUIVOS_SEM_VINCULO.length, semvHtml, {
       note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
     }),
   ].join('');
