@@ -80,9 +80,14 @@ body.aux-open .page { margin-left: 24px; margin-right: 464px; }
   display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 4px;
   border: none; background: transparent; cursor: pointer; font-family: inherit; text-align: left;
 }
-.acc-chev { display: inline-flex; color: var(--text-mute); transition: transform .15s ease; }
+.acc-chev { display: inline-flex; margin-left: auto; color: var(--text-mute); transition: transform .15s ease; }
 .acc.is-collapsed .acc-chev { transform: rotate(-90deg); }
 .acc.is-collapsed .acc-body { display: none; }
+/* Agrupamento por manifestação dentro da seção "Manifestações" */
+.mani-group { margin-bottom: 14px; }
+.mani-group:last-child { margin-bottom: 0; }
+.mani-group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.mani-group-title { font-size: 13px; font-weight: 500; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acc-title { font-size: 14px; font-weight: 600; color: var(--text); }
 .acc-count {
   display: inline-flex; align-items: center; justify-content: center; min-width: 18px; padding: 1px 6px;

@@ -415,41 +415,53 @@ function fileRowHtml(nome, sub, idx) {
  * É aqui que os arquivos de manifestação SEM VÍNCULO ganham um lar honesto. */
 function openArquivos() {
   closeAux();
-  // Vinculados: anexos que já pertencem a uma manifestação (mostra de qual).
-  const vinculados = [];
-  items.forEach((it) => (it.anexos || []).forEach((a) => {
-    const cat = NCData.CATEGORIAS[it.categoria];
-    vinculados.push({ nome: a.nome, sub: `${cat.label} · ${a.tamanho || ''}` });
-  }));
-
-  const groups = [
-    { title: 'Edital e anexos', files: ARQUIVOS_EDITAL.map((a) => ({ nome: a.nome, sub: a.tamanho })) },
-    { title: 'Manifestações', files: vinculados },
-    {
-      title: 'Manifestações sem vínculo',
-      note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
-      files: ARQUIVOS_SEM_VINCULO.map((a) => ({ nome: a.nome, sub: `Enviado em ${formatTimestamp(a.data)}` })),
-      destaque: true,
-    },
-  ].filter((g) => g.files.length);
-
   let idx = 0;
   const flat = [];
-  const accHtml = groups.map((g) => {
-    const rows = g.files.map((f) => { const i = idx++; flat.push({ nome: f.nome, tamanho: '' }); return fileRowHtml(f.nome, f.sub, i); }).join('');
+  const fileRow = (nome, sub) => { const i = idx++; flat.push({ nome, tamanho: '' }); return fileRowHtml(nome, sub, i); };
+
+  // Accordion genérico (chevron à direita).
+  const acc = (title, count, bodyHtml, opts = {}) => `
+    <div class="acc${opts.destaque ? ' acc--destaque' : ''}" data-acc>
+      <button class="acc-head" data-acc-toggle>
+        <span class="acc-title">${title}</span>
+        <span class="acc-count">${count}</span>
+        <span class="acc-chev">${ICON_CHEVRON_DOWN}</span>
+      </button>
+      <div class="acc-body">${opts.note ? `<p class="acc-note">${opts.note}</p>` : ''}${bodyHtml}</div>
+    </div>`;
+
+  // 1) Edital
+  const editalHtml = `<div class="anexo-list">${ARQUIVOS_EDITAL.map((a) => fileRow(a.nome, a.tamanho)).join('')}</div>`;
+
+  // 2) Manifestações: AGRUPADAS por manifestação, com badge + assunto, para o
+  //    usuário identificar de qual manifestação é cada arquivo.
+  const manis = items.filter((it) => it.anexos && it.anexos.length);
+  const maniCount = manis.reduce((n, it) => n + it.anexos.length, 0);
+  const manisHtml = manis.map((it) => {
+    const cat = NCData.CATEGORIAS[it.categoria];
+    const assunto = it.assunto || truncar(it.mensagem || '');
+    const rows = it.anexos.map((a) => fileRow(a.nome, a.tamanho || '')).join('');
     return `
-      <div class="acc${g.destaque ? ' acc--destaque' : ''}" data-acc>
-        <button class="acc-head" data-acc-toggle>
-          <span class="acc-chev">${ICON_CHEVRON_DOWN}</span>
-          <span class="acc-title">${g.title}</span>
-          <span class="acc-count">${g.files.length}</span>
-        </button>
-        <div class="acc-body">
-          ${g.note ? `<p class="acc-note">${g.note}</p>` : ''}
-          <div class="anexo-list">${rows}</div>
+      <div class="mani-group">
+        <div class="mani-group-head">
+          <span class="badge badge--${it.categoria}">${cat.label}</span>
+          <span class="mani-group-title">${escapeHtml(assunto)}</span>
         </div>
+        <div class="anexo-list">${rows}</div>
       </div>`;
   }).join('');
+
+  // 3) Sem vínculo (o ponto do debate)
+  const semvHtml = `<div class="anexo-list">${ARQUIVOS_SEM_VINCULO.map((a) => fileRow(a.nome, `Enviado em ${formatTimestamp(a.data)}`)).join('')}</div>`;
+
+  const accHtml = [
+    acc('Edital e anexos', ARQUIVOS_EDITAL.length, editalHtml),
+    manis.length ? acc('Manifestações', maniCount, manisHtml) : '',
+    acc('Manifestações sem vínculo', ARQUIVOS_SEM_VINCULO.length, semvHtml, {
+      destaque: true,
+      note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
+    }),
+  ].join('');
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
