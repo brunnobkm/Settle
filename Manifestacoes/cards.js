@@ -47,6 +47,28 @@ const ICON_INBOX = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" 
 const ICON_GLOBE = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
 const ICON_EXTLINK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
 const ICON_CHECK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+// Ícones do header (navbar) da licitação.
+const ICON_SIDEBAR = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>';
+const ICON_CHEVRON_RIGHT = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+const ICON_LINK2 = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+const ICON_SHARE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"/></svg>';
+const ICON_DOC2 = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+const ICON_FOLDER = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z"/></svg>';
+const ICON_CHAT = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+const ICON_PLUS = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+
+// Arquivos de demonstração para o painel "Arquivos da Licitação".
+const ARQUIVOS_EDITAL = [
+  { nome: 'Edital_Pregao_Eletronico_12-2026.pdf', tamanho: '2.4 MB' },
+  { nome: 'Termo_de_Referencia.pdf', tamanho: '890 KB' },
+  { nome: 'Minuta_do_Contrato.pdf', tamanho: '512 KB' },
+];
+// O caso do debate: arquivos de manifestação sem vínculo (só título + data de upload).
+const ARQUIVOS_SEM_VINCULO = [
+  { nome: 'Impugnacao_item_4-2_capacidade_tecnica.pdf', data: new Date(2026, 5, 9, 16, 20), tamanho: '318 KB' },
+  { nome: 'Resposta_pregoeiro_documento_digitalizado.pdf', data: new Date(2026, 5, 10, 9, 5), tamanho: '204 KB' },
+  { nome: 'Manifestacao_sem_identificacao_0873.pdf', data: new Date(2026, 5, 8, 14, 2), tamanho: '1.2 MB' },
+];
 
 // Status do recurso -> reaproveita os chips existentes (.chip--*)
 const STATUS_RECURSO = {
@@ -122,10 +144,16 @@ function render() {
     : `<section class="panel panel--ph">Conteúdo de “${WS_TABS.find((t) => t.id === wsActive).label}” — fora do escopo deste protótipo.</section>`;
 
   app.innerHTML = `
-    <header class="app-head">
-      <nav class="ws-tabs" aria-label="Seções da licitação">${wsTabsHtml}</nav>
-    </header>
-    ${conteudo}`;
+    ${navbarHtml()}
+    <div class="page">
+      <header class="app-head">
+        <nav class="ws-tabs" aria-label="Seções da licitação">${wsTabsHtml}</nav>
+      </header>
+      ${conteudo}
+    </div>`;
+
+  // Header: a pasta "Visualizar arquivos" abre o painel consolidado (vale em qualquer aba).
+  app.querySelector('[data-arquivos]')?.addEventListener('click', (e) => { e.stopPropagation(); openArquivos(); });
 
   // Tabs do workspace: ao SAIR de Manifestações, os novos exibidos viram "vistos".
   app.querySelectorAll('[data-ws]').forEach((b) =>
@@ -332,6 +360,122 @@ function closeAnexoMenus() {
 /* Fecha o menu do botão "Ordenar". */
 function closeSortMenu() {
   document.querySelectorAll('.sort-menu').forEach((m) => m.setAttribute('hidden', ''));
+}
+
+/* ---------- Header (navbar) da licitação ---------- */
+function navbarHtml() {
+  return `
+    <div class="navbar">
+      <div class="nav-left">
+        <button class="nav-ic nav-ic--ghost" title="Recolher menu">${ICON_SIDEBAR}</button>
+        <span class="nav-div"></span>
+        <nav class="breadcrumb" aria-label="Trilha">
+          <span class="bc-muted">Licitações</span>${ICON_CHEVRON_RIGHT}
+          <span class="bc-muted">Em andamento</span>${ICON_CHEVRON_RIGHT}
+          <span class="bc-current">Pregão Eletrônico nº 12/2026</span>
+        </nav>
+      </div>
+      <div class="nav-right">
+        <button class="btn-soft">Ignorar</button>
+        <button class="btn-solid">Enviar para Workflow</button>
+        <span class="nav-div"></span>
+        <span class="status-pill">Em disputa ou Homologação</span>
+        <span class="nav-div"></span>
+        <div class="avatars">
+          <span class="av av1"></span><span class="av av2"></span><span class="av av3"></span>
+          <button class="av-add" title="Adicionar responsável">${ICON_PLUS}</button>
+        </div>
+        <span class="nav-div"></span>
+        <button class="nav-ic" title="Link da licitação">${ICON_LINK2}</button>
+        <button class="nav-ic" title="Compartilhar">${ICON_SHARE}</button>
+        <button class="nav-ic" title="Atalho do edital">${ICON_DOC2}</button>
+        <button class="nav-ic nav-ic--folder" data-arquivos title="Visualizar arquivos">${ICON_FOLDER}</button>
+        <button class="nav-ic" title="Comentários">${ICON_CHAT}</button>
+      </div>
+    </div>`;
+}
+
+/* Linha de arquivo no painel consolidado (reaproveita o padrão de anexo). */
+function fileRowHtml(nome, sub, idx) {
+  return `
+    <div class="anexo-row">
+      <span class="anexo-chip-ic">${ICON_FILE}</span>
+      <span class="anexo-chip-txt">
+        <span class="anexo-chip-name" title="${escapeHtml(nome)}">${escapeHtml(nome)}</span>
+        <span class="anexo-chip-size">${escapeHtml(sub)}</span>
+      </span>
+      <span class="anexo-chip-actions">
+        <button class="ic-btn ic-btn--solid" data-file-eye="${idx}" title="Visualizar">${ICON_EYE}</button>
+        <button class="ic-btn ic-btn--solid" title="Baixar" onclick="event.stopPropagation();return false;">${ICON_DL}</button>
+      </span>
+    </div>`;
+}
+
+/* Painel "Arquivos da Licitação": consolida tudo num lugar, organizado em accordions.
+ * É aqui que os arquivos de manifestação SEM VÍNCULO ganham um lar honesto. */
+function openArquivos() {
+  closeAux();
+  // Vinculados: anexos que já pertencem a uma manifestação (mostra de qual).
+  const vinculados = [];
+  items.forEach((it) => (it.anexos || []).forEach((a) => {
+    const cat = NCData.CATEGORIAS[it.categoria];
+    vinculados.push({ nome: a.nome, sub: `${cat.label} · ${a.tamanho || ''}` });
+  }));
+
+  const groups = [
+    { title: 'Edital e anexos', files: ARQUIVOS_EDITAL.map((a) => ({ nome: a.nome, sub: a.tamanho })) },
+    { title: 'Manifestações', files: vinculados },
+    {
+      title: 'Manifestações sem vínculo',
+      note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
+      files: ARQUIVOS_SEM_VINCULO.map((a) => ({ nome: a.nome, sub: `Enviado em ${formatTimestamp(a.data)}` })),
+      destaque: true,
+    },
+  ].filter((g) => g.files.length);
+
+  let idx = 0;
+  const flat = [];
+  const accHtml = groups.map((g) => {
+    const rows = g.files.map((f) => { const i = idx++; flat.push({ nome: f.nome, tamanho: '' }); return fileRowHtml(f.nome, f.sub, i); }).join('');
+    return `
+      <div class="acc${g.destaque ? ' acc--destaque' : ''}" data-acc>
+        <button class="acc-head" data-acc-toggle>
+          <span class="acc-chev">${ICON_CHEVRON_DOWN}</span>
+          <span class="acc-title">${g.title}</span>
+          <span class="acc-count">${g.files.length}</span>
+        </button>
+        <div class="acc-body">
+          ${g.note ? `<p class="acc-note">${g.note}</p>` : ''}
+          <div class="anexo-list">${rows}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal arquivos-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h2 class="modal-title">Arquivos da Licitação</h2>
+        <button class="btn-baixar-todos" title="Baixar todos os arquivos" onclick="event.stopPropagation();return false;">Baixar todos</button>
+        <button class="modal-close" data-close title="Fechar">${ICON_X}</button>
+      </div>
+      <div class="modal-body arquivos-body">${accHtml}</div>
+    </div>`;
+
+  document.body.appendChild(backdrop);
+  const close = () => backdrop.remove();
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+  backdrop.querySelector('[data-close]').addEventListener('click', close);
+  // Accordions: expande/colapsa.
+  backdrop.querySelectorAll('[data-acc-toggle]').forEach((h) =>
+    h.addEventListener('click', () => h.closest('.acc').classList.toggle('is-collapsed')));
+  // 👁 abre a pré-visualização empilhada (o painel já é um modal).
+  backdrop.querySelectorAll('[data-file-eye]').forEach((b) =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); openPreviewModal(flat, Number(b.dataset.fileEye)); }));
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+  });
 }
 
 /* ---------- Sidebar auxiliar: Arquivos da licitação (padrão Multitasking) ----------

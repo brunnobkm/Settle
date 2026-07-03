@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR" data-preview="licitacoes-recomendadas">
+<html lang="pt-BR" data-preview="orgaos-favoritos">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Licitações — Recomendadas · Selecione quais deseja analisar</title>
+<title>Licitações — Órgãos favoritos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -559,10 +559,6 @@
       <div class="toolbar">
         <div class="tabs" role="tablist">
           <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas <span class="cnt">300</span></button>
-          <button class="tab" role="tab" data-tab="Ativas">Ativas <span class="cnt">248</span></button>
-          <button class="tab" role="tab" data-tab="Chegou hoje">Chegou hoje <span class="cnt">12</span></button>
-          <button class="tab" role="tab" data-tab="Vencendo em breve">Vencendo em breve <span class="cnt">87</span></button>
-          <button class="tab" role="tab" data-tab="Exemplo">Exemplo <span class="cnt">3</span></button>
           <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos <span class="cnt">2</span></button>
         </div>
         <div class="actions" id="actions">
@@ -815,20 +811,6 @@ const ORGAOS = [
 ];
 const TAB_BADGES = {
   'Todas': [],
-  'Ativas':            [{label:'Situação', type:'list', options:SITUACAO, value:['Ativas']}],
-  'Chegou hoje':       [{label:'Data de adição', type:'date', mode:'past', value:{date:'19/06/2026'}}],
-  'Vencendo em breve': [{label:'Envio da proposta', type:'date', mode:'future', value:{preset:'7d'}}],
-  // tab de demonstração: TODOS os filtros aplicados de uma vez
-  'Exemplo': [
-    {label:'Situação',           type:'list', options:SITUACAO,  value:['Ativas']},
-    {label:'Segmento',           type:'list', options:SEGMENTOS, value:['Software']},
-    {label:'Estado',             type:'list', options:ESTADOS,   value:['SP']},
-    {label:'Cidade',             type:'list', options:CIDADES,   value:['Campinas']},
-    {label:'Valor global',       type:'list', options:VALORES,   value:['R$ 1 mi – 10 mi']},
-    {label:'Data de adição',     type:'date', mode:'past',   value:{preset:'7d'}},
-    {label:'Data de atualização',type:'date', mode:'past',   value:{date:'19/06/2026'}},
-    {label:'Envio da proposta',  type:'date', mode:'future', value:{preset:'7d'}},
-  ],
   // monitoramento: filtro fixo por órgão (multi-seleção). Clicar na badge gerencia os órgãos.
   'Órgãos favoritos': [
     {label:'Órgão', type:'list', options:ORGAOS, value:[ORGAOS[0], ORGAOS[1]]},
