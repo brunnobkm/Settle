@@ -248,6 +248,19 @@ body.aux-open .aux { transform: translateX(0); }
   display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--text);
 }
 
+/* Bloco de sinalização "sem vínculo" no fim da lista */
+.sv-block { border: 1px dashed #D4D4D8; border-radius: 14px; padding: 12px 14px; margin-top: 12px; }
+.sv-block-head { display: flex; align-items: center; gap: 8px; }
+.sv-block-ic { display: inline-flex; color: var(--text-mute); }
+.sv-block-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.sv-block-head .acc-count { margin-left: 2px; }
+.sv-block-note { font-size: 12.5px; line-height: 1.5; color: var(--text-mute); margin: 6px 0 10px; }
+.sv-tag {
+  display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto;
+  padding: 2px 8px; border-radius: 6px; background: rgba(217,119,6,.1); color: #B45309;
+  font-size: 11.5px; font-weight: 500; white-space: nowrap;
+}
+
 /* Cards */
 .cards { display: flex; flex-direction: column; gap: 8px; }
 .card {

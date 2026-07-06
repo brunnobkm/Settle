@@ -56,6 +56,7 @@ const ICON_DOC2 = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" s
 const ICON_FOLDER = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z"/></svg>';
 const ICON_CHAT = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 const ICON_PLUS = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+const ICON_ALERT = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
 
 // Arquivos de demonstração para o painel "Arquivos da Licitação".
 const ARQUIVOS_EDITAL = [
@@ -134,7 +135,7 @@ function render() {
   let panelInner;
   if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
   else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
-  else panelInner = `<div class="cards">${lista.map(cardHtml).join('')}</div>`;
+  else panelInner = `<div class="cards">${lista.map(cardHtml).join('')}</div>${activeTab === 'todas' ? semVinculoBlockHtml() : ''}`;
 
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
@@ -183,6 +184,10 @@ function render() {
   }
   app.querySelectorAll('[data-sort]').forEach((b) =>
     b.addEventListener('click', (e) => { e.stopPropagation(); sortMode = b.dataset.sort; render(); }));
+
+  // Bloco "sem vínculo": 👁 abre a pré-visualização.
+  app.querySelectorAll('[data-sv-eye]').forEach((b) =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); openPreviewModal(ARQUIVOS_SEM_VINCULO, Number(b.dataset.svEye)); }));
   // Card clicável, MAS permitindo selecionar texto: se houve arrasto (seleção)
   // ou existe texto selecionado, não abre o modal.
   app.querySelectorAll('.card.is-clickable').forEach((c) => {
@@ -349,6 +354,36 @@ function cardAnexosHtml(item) {
         ${baixarTodos}
       </div>
       <div class="anexos-row">${chips}${mais}</div>
+    </div>`;
+}
+
+/* Bloco de sinalização no fim da lista: arquivos de manifestação capturados
+ * mas SEM vínculo com uma manifestação específica. Cada linha é um anexo com
+ * uma tag comunicando que a manifestação não foi identificada. */
+function semVinculoBlockHtml() {
+  if (!ARQUIVOS_SEM_VINCULO.length) return '';
+  const rows = ARQUIVOS_SEM_VINCULO.map((a, i) => `
+    <div class="anexo-row">
+      <span class="anexo-chip-ic">${ICON_FILE}</span>
+      <span class="anexo-chip-txt">
+        <span class="anexo-chip-name" title="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}</span>
+        <span class="anexo-chip-size">Enviado em ${formatTimestamp(a.data)}</span>
+      </span>
+      <span class="sv-tag" title="Não foi possível identificar a qual manifestação este arquivo pertence">${ICON_ALERT} Manifestação não identificada</span>
+      <span class="anexo-chip-actions">
+        <button class="ic-btn ic-btn--solid" data-sv-eye="${i}" title="Visualizar">${ICON_EYE}</button>
+        <button class="ic-btn ic-btn--solid" title="Baixar" onclick="event.stopPropagation();return false;">${ICON_DL}</button>
+      </span>
+    </div>`).join('');
+  return `
+    <div class="sv-block">
+      <div class="sv-block-head">
+        <span class="sv-block-ic">${ICON_FILE}</span>
+        <span class="sv-block-title">Arquivos de manifestação sem vínculo</span>
+        <span class="acc-count">${ARQUIVOS_SEM_VINCULO.length}</span>
+      </div>
+      <p class="sv-block-note">Capturamos estes arquivos como manifestação desta licitação, mas não foi possível identificar a qual manifestação cada um pertence.</p>
+      <div class="anexo-list">${rows}</div>
     </div>`;
 }
 
