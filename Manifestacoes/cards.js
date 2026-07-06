@@ -381,7 +381,7 @@ function exemploCardHtml() {
       <div class="card-box-date">${formatTimestamp(date)}</div>
       <div class="card-box-text"><strong>${label}</strong> ${escapeHtml(texto)}</div>
     </div>`;
-  const legenda = { label: 'Possíveis anexos', tooltip: 'Os anexos listados são possíveis anexos associados a esta manifestação.' };
+  const legenda = { label: 'Possíveis anexos', tooltip: 'Estes arquivos foram publicados no portal associados à licitação, e não a uma manifestação específica. Como não é possível confirmar a qual manifestação cada um pertence, eles aparecem aqui como possíveis anexos desta manifestação.' };
   return `
     <article class="card card--esclarecimento">
       <div class="card-top">
