@@ -70,6 +70,20 @@ const ARQUIVOS_SEM_VINCULO = [
   { nome: 'Resposta_pregoeiro_documento_digitalizado.pdf', data: new Date(2026, 5, 10, 9, 5), tamanho: '204 KB' },
   { nome: 'Manifestacao_sem_identificacao_0873.pdf', data: new Date(2026, 5, 8, 14, 2), tamanho: '1.2 MB' },
 ];
+// Anexos-candidatos do CARD DE EXEMPLO (possíveis anexos desta manifestação).
+const ANEXOS_EXEMPLO = [
+  { nome: 'Resposta_questionamento_01.pdf', tamanho: '182 KB' },
+  { nome: 'Esclarecimento_consolidado.pdf', tamanho: '512 KB' },
+  { nome: 'Ata_sessao_publica.pdf', tamanho: '338 KB' },
+  { nome: 'Anexo_tecnico_complementar.pdf', tamanho: '1.1 MB' },
+  { nome: 'Parecer_juridico.pdf', tamanho: '276 KB' },
+  { nome: 'Errata_edital.pdf', tamanho: '96 KB' },
+  { nome: 'Documento_anexo_PNCP.pdf', tamanho: '154 KB' },
+  { nome: 'Comunicado_licitantes.pdf', tamanho: '88 KB' },
+  { nome: 'Quadro_respostas.pdf', tamanho: '223 KB' },
+];
+// Registro de anexos por id fora de `items` (ex.: o card de exemplo), para o 👁 achar.
+const anexosRegistry = { __exemplo__: ANEXOS_EXEMPLO };
 
 // Status do recurso -> reaproveita os chips existentes (.chip--*)
 const STATUS_RECURSO = {
@@ -135,7 +149,7 @@ function render() {
   let panelInner;
   if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
   else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
-  else panelInner = `<div class="cards">${lista.map(cardHtml).join('')}</div>${activeTab === 'todas' ? semVinculoBlockHtml() : ''}`;
+  else panelInner = `<div class="cards">${activeTab === 'todas' ? exemploCardHtml() : ''}${lista.map(cardHtml).join('')}</div>`;
 
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
@@ -185,9 +199,6 @@ function render() {
   app.querySelectorAll('[data-sort]').forEach((b) =>
     b.addEventListener('click', (e) => { e.stopPropagation(); sortMode = b.dataset.sort; render(); }));
 
-  // Bloco "sem vínculo": 👁 abre a pré-visualização.
-  app.querySelectorAll('[data-sv-eye]').forEach((b) =>
-    b.addEventListener('click', (e) => { e.stopPropagation(); openPreviewModal(ARQUIVOS_SEM_VINCULO, Number(b.dataset.svEye)); }));
   // Card clicável, MAS permitindo selecionar texto: se houve arrasto (seleção)
   // ou existe texto selecionado, não abre o modal.
   app.querySelectorAll('.card.is-clickable').forEach((c) => {
@@ -302,7 +313,7 @@ function anexoActions(itemId, idx) {
 
 /* Seção de anexos inline no card (Figma 8486-6904): label + chips com ícone,
  * nome/tamanho e ações (visualizar / baixar). "+N" quando excede o limite. */
-function cardAnexosHtml(item) {
+function cardAnexosHtml(item, caption) {
   if (!item.anexos || !item.anexos.length) return '';
   const MAX = 3;
   const visiveis = item.anexos.slice(0, MAX);
@@ -351,40 +362,37 @@ function cardAnexosHtml(item) {
     <div class="anexos-sec">
       <div class="anexos-head">
         <span class="anexos-label">Anexos</span>
+        ${caption ? `<span class="anexos-caption">${escapeHtml(caption)}</span>` : ''}
         ${baixarTodos}
       </div>
       <div class="anexos-row">${chips}${mais}</div>
     </div>`;
 }
 
-/* Bloco de sinalização no fim da lista: arquivos de manifestação capturados
- * mas SEM vínculo com uma manifestação específica. Cada linha é um anexo com
- * uma tag comunicando que a manifestação não foi identificada. */
-function semVinculoBlockHtml() {
-  if (!ARQUIVOS_SEM_VINCULO.length) return '';
-  const rows = ARQUIVOS_SEM_VINCULO.map((a, i) => `
-    <div class="anexo-row">
-      <span class="anexo-chip-ic">${ICON_FILE}</span>
-      <span class="anexo-chip-txt">
-        <span class="anexo-chip-name" title="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}</span>
-        <span class="anexo-chip-size">Enviado em ${formatTimestamp(a.data)}</span>
-      </span>
-      <span class="sv-tag" title="Não foi possível identificar a qual manifestação este arquivo pertence">${ICON_ALERT} Manifestação não identificada</span>
-      <span class="anexo-chip-actions">
-        <button class="ic-btn ic-btn--solid" data-sv-eye="${i}" title="Visualizar">${ICON_EYE}</button>
-        <button class="ic-btn ic-btn--solid" title="Baixar" onclick="event.stopPropagation();return false;">${ICON_DL}</button>
-      </span>
-    </div>`).join('');
-  return `
-    <div class="sv-block">
-      <div class="sv-block-head">
-        <span class="sv-block-ic">${ICON_FILE}</span>
-        <span class="sv-block-title">Arquivos de manifestação sem vínculo</span>
-        <span class="acc-count">${ARQUIVOS_SEM_VINCULO.length}</span>
-      </div>
-      <p class="sv-block-note">Capturamos estes arquivos como manifestação desta licitação, mas não foi possível identificar a qual manifestação cada um pertence.</p>
-      <div class="anexo-list">${rows}</div>
+/* Card de EXEMPLO (badge preta "Exemplo"): manifestação cujo anexo veio da
+ * licitação, não da manifestação. Mostra os anexos-candidatos na área de Anexos
+ * com a legenda de que são POSSÍVEIS anexos desta manifestação. */
+function exemploCardHtml() {
+  const dMsg = new Date(2026, 6, 3, 13, 22);
+  const dResp = new Date(2026, 6, 3, 14, 40);
+  const box = (date, label, texto) => `
+    <div class="card-box">
+      <div class="card-box-date">${formatTimestamp(date)}</div>
+      <div class="card-box-text"><strong>${label}</strong> ${escapeHtml(texto)}</div>
     </div>`;
+  const legenda = 'Os anexos listados são possíveis anexos associados a esta manifestação.';
+  return `
+    <article class="card card--esclarecimento">
+      <div class="card-top">
+        <span class="badge badge--esclarecimento">Questionamento</span>
+        <span class="badge badge--success">Respondido</span>
+        <span class="badge badge--exemplo">Exemplo</span>
+      </div>
+      <div class="card-captured"><span class="cap-hi">Atualizado</span> em <span class="cap-hi">${formatTimestamp(dResp)}</span></div>
+      ${box(dMsg, 'Mensagem:', 'Pedido de esclarecimento sobre a forma de comprovação da qualificação técnica exigida no item 4.2 do Termo de Referência.')}
+      ${box(dResp, 'Resposta:', 'Prezados, segue em anexo a resposta ao questionamento apresentado, com os esclarecimentos pertinentes.')}
+      ${cardAnexosHtml({ id: '__exemplo__', anexos: ANEXOS_EXEMPLO }, legenda)}
+    </article>`;
 }
 
 /* Fecha qualquer dropdown de anexos aberto. */
@@ -530,7 +538,8 @@ function openArquivos() {
  * Abre pelo 👁 de um anexo. Mostra um seletor de arquivo + visualizador (mock).
  * Reprodução simplificada — o engine responsivo completo vive no projeto Codex. */
 function openAux(itemId, idx) {
-  const item = items.find((i) => i.id === itemId);
+  const item = items.find((i) => i.id === itemId)
+    || (anexosRegistry[itemId] ? { id: itemId, anexos: anexosRegistry[itemId] } : null);
   if (!item || !item.anexos || !item.anexos.length) return;
   // Dentro do modal a sidebar ficaria ATRÁS dele: abrimos a pré-visualização
   // como modal empilhado. Fora do modal (pelo card), abrimos a sidebar.
