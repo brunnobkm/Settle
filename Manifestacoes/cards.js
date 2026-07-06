@@ -57,6 +57,7 @@ const ICON_FOLDER = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none"
 const ICON_CHAT = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 const ICON_PLUS = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
 const ICON_ALERT = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+const ICON_INFO = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
 
 // Arquivos de demonstração para o painel "Arquivos da Licitação".
 const ARQUIVOS_EDITAL = [
@@ -362,7 +363,7 @@ function cardAnexosHtml(item, caption) {
     <div class="anexos-sec">
       <div class="anexos-head">
         <span class="anexos-label">Anexos</span>
-        ${caption ? `<span class="anexos-caption">${escapeHtml(caption)}</span>` : ''}
+        ${caption ? `<span class="anexos-caption" title="${escapeHtml(caption.tooltip)}">${ICON_INFO}${escapeHtml(caption.label)}</span>` : ''}
         ${baixarTodos}
       </div>
       <div class="anexos-row">${chips}${mais}</div>
@@ -380,13 +381,13 @@ function exemploCardHtml() {
       <div class="card-box-date">${formatTimestamp(date)}</div>
       <div class="card-box-text"><strong>${label}</strong> ${escapeHtml(texto)}</div>
     </div>`;
-  const legenda = 'Os anexos listados são possíveis anexos associados a esta manifestação.';
+  const legenda = { label: 'Possíveis anexos', tooltip: 'Os anexos listados são possíveis anexos associados a esta manifestação.' };
   return `
     <article class="card card--esclarecimento">
       <div class="card-top">
+        <span class="badge badge--exemplo">Exemplo</span>
         <span class="badge badge--esclarecimento">Questionamento</span>
         <span class="badge badge--success">Respondido</span>
-        <span class="badge badge--exemplo">Exemplo</span>
       </div>
       <div class="card-captured"><span class="cap-hi">Atualizado</span> em <span class="cap-hi">${formatTimestamp(dResp)}</span></div>
       ${box(dMsg, 'Mensagem:', 'Pedido de esclarecimento sobre a forma de comprovação da qualificação técnica exigida no item 4.2 do Termo de Referência.')}
