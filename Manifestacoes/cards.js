@@ -381,7 +381,7 @@ function exemploCardHtml() {
       <div class="card-box-date">${formatTimestamp(date)}</div>
       <div class="card-box-text"><strong>${label}</strong> ${escapeHtml(texto)}</div>
     </div>`;
-  const legenda = { label: 'Possíveis anexos', tooltip: 'Estes arquivos foram publicados no portal associados à licitação, e não a uma manifestação específica. Como não é possível confirmar a qual manifestação cada um pertence, eles aparecem aqui como possíveis anexos desta manifestação.' };
+  const legenda = { label: 'Possíveis anexos', tooltip: 'Estes arquivos foram publicados no portal associados à licitação, e não a uma manifestação específica. Como não é possível confirmar a qual manifestação cada um pertence, eles aparecem aqui de forma consolidada.' };
   return `
     <article class="card card--esclarecimento">
       <div class="card-top">
@@ -498,13 +498,13 @@ function openArquivos() {
   }).join('');
 
   // 3) Sem vínculo (o ponto do debate)
-  const semvHtml = `<div class="anexo-list">${ARQUIVOS_SEM_VINCULO.map((a) => fileRow(a.nome, `Enviado em ${formatTimestamp(a.data)}`)).join('')}</div>`;
+  const semvHtml = `<div class="anexo-list">${ARQUIVOS_SEM_VINCULO.map((a) => fileRow(a.nome, a.tamanho || '')).join('')}</div>`;
 
   const accHtml = [
     acc(accTitle('Edital e anexos'), ARQUIVOS_EDITAL.length, editalHtml),
     manis.length ? acc(accTitle('Manifestações'), maniCount, manisHtml) : '',
     acc(accTitle('Manifestações sem vínculo'), ARQUIVOS_SEM_VINCULO.length, semvHtml, {
-      note: 'Arquivos capturados como manifestação desta licitação, sem vínculo identificado com uma manifestação específica.',
+      note: 'Arquivos capturados nesta licitação que não puderam ser associados a uma manifestação específica.',
     }),
   ].join('');
 
