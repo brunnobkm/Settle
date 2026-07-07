@@ -158,11 +158,12 @@
   .sticky-toolbar .filter-badges::-webkit-scrollbar-track{background:transparent;}
   /* rolando p/ baixo (navbar escondida): as badges colapsam suavemente (sem pulo brusco) */
   body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:hidden; pointer-events:none;}
-  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:nowrap;}
   .tabs{
-    display:inline-flex;align-items:center;gap:0;
+    display:inline-flex;align-items:center;gap:0;flex:0 0 auto;min-width:0;overflow:hidden;
     background:rgba(23,23,23,.08);border-radius:10px;padding:3px;
   }
+  .actions{flex:0 0 auto;}
   .tab{
     display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
     padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--foreground);opacity:.6;
@@ -500,6 +501,48 @@
   }
   .tab-add:hover{background:var(--muted);color:var(--foreground);}
 
+  /* botão "Mais N" (tabs que não couberam) */
+  .tab-more{
+    flex:none;white-space:nowrap;border:none;background:transparent;border-radius:8px;
+    padding:6px 12px;font-size:14px;font-weight:500;color:var(--foreground);opacity:.6;font-family:inherit;
+  }
+  .tab-more:hover{opacity:1;background:rgba(23,23,23,.06);}
+
+  /* dropdown de visualizações (estilo Notion) */
+  .views-menu{
+    position:fixed;z-index:70;width:288px;padding:8px;
+    background:#fff;border:1px solid var(--border);border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.13),0 2px 8px rgba(0,0,0,.06);
+    animation:tm-in .12s ease;
+  }
+  .vm-search input{
+    width:100%;box-sizing:border-box;padding:8px 10px;margin-bottom:6px;
+    border:1px solid var(--border);border-radius:8px;background:#fff;
+    font-family:inherit;font-size:14px;color:var(--foreground);outline:none;
+  }
+  .vm-search input:focus{border-color:#2f6df6;box-shadow:0 0 0 3px rgba(47,109,246,.12);}
+  .vm-list{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;}
+  .vm-item{
+    display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;
+    padding:7px 8px;border:none;background:transparent;border-radius:7px;
+    font-family:inherit;font-size:14px;color:var(--foreground);text-align:left;line-height:20px;
+  }
+  .vm-item:hover{background:var(--muted);}
+  .vm-item.active{background:var(--muted);}
+  .vm-item .vm-ico{width:16px;height:16px;flex:none;color:#525252;display:flex;align-items:center;justify-content:center;}
+  .vm-item .vm-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vm-item .vm-check{flex:none;color:#2f6df6;opacity:0;}
+  .vm-item.active .vm-check{opacity:1;}
+  .vm-empty{padding:12px 8px;color:var(--muted-foreground);font-size:13px;text-align:center;}
+  .vm-sep{height:1px;background:var(--border);margin:6px 4px;}
+  .vm-new{
+    display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;
+    padding:7px 8px;border:none;background:transparent;border-radius:7px;
+    font-family:inherit;font-size:14px;color:var(--muted-foreground);text-align:left;
+  }
+  .vm-new:hover{background:var(--muted);color:var(--foreground);}
+  .vm-new .vm-ico{width:16px;height:16px;flex:none;display:flex;align-items:center;justify-content:center;}
+
   /* ============ MENU DA TAB (estilo Notion) ============ */
   .tab.active{cursor:pointer;}
   .tm-item.disabled{opacity:.38;cursor:not-allowed;}
@@ -811,6 +854,8 @@ list.addEventListener('click', e=>{
 document.querySelector('.tabs').addEventListener('click', e=>{
   if(e.target.closest('.tab-rename')) return;           // clicando no input de rename: ignora
   if(e.target.closest('.tab-add')){ closeTabMenu(); createTab(); return; }   // "+" cria nova visualização
+  const moreEl = e.target.closest('.tab-more');
+  if(moreEl){ closeTabMenu(); (viewsMenuEl?closeViewsMenu():openViewsMenu(moreEl)); return; }   // "Mais N" abre o dropdown de views
   const t = e.target.closest('.tab'); if(!t) return;
   if(t.classList.contains('active')){                   // clicar de novo na tab ativa → abre o menu (estilo Notion)
     (tabMenuFor===t) ? closeTabMenu() : openTabMenu(t);
@@ -821,6 +866,7 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   t.classList.add('active'); t.setAttribute('aria-selected','true');
   renderTabFilters(t.dataset.tab);
   persistTabs();
+  layoutTabs();
 });
 
 /* ============ CRIAÇÃO + PERSISTÊNCIA DAS TABS ============ */
@@ -847,9 +893,10 @@ function createTab(){
   const key = 'view-' + Date.now();
   TAB_BADGES[key] = [];                    // filtros próprios (isolados) e vazios
   const el = makeTabEl(key, 'Nova visualização');
-  const add = document.querySelector('.tabs .tab-add');
-  document.querySelector('.tabs').insertBefore(el, add);
-  el.click();                              // ativa a nova tab
+  const tabsEl = document.querySelector('.tabs');
+  const anchor = tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
+  tabsEl.insertBefore(el, anchor);         // antes do "Mais N" e do "+"
+  el.click();                              // ativa a nova tab (dispara layoutTabs)
   persistTabs();
   // abre o menu no próximo tick p/ o clique do "+" não fechá-lo ao borbulhar
   setTimeout(()=> openTabMenu(el), 0);
@@ -884,6 +931,100 @@ function restoreTabs(){
   renderTabFilters(active.dataset.tab);
   return true;
 }
+
+/* ============ COLAPSO DAS TABS ("Mais N") + DROPDOWN DE VIEWS ============ */
+const VM_GRID = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/></svg>';
+const VM_PLUS = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.5v9M3.5 8h9"/></svg>';
+const VM_CHECK = '<svg class="vm-check" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>';
+let viewsMenuEl = null;
+
+function ensureMoreBtn(){
+  const tabsEl = document.querySelector('.tabs');
+  let more = tabsEl.querySelector('.tab-more');
+  if(!more){
+    more = document.createElement('button');
+    more.className = 'tab-more'; more.type = 'button';
+    more.style.display = 'none';
+  }
+  const add = tabsEl.querySelector('.tab-add');
+  add ? tabsEl.insertBefore(more, add) : tabsEl.appendChild(more);   // fica antes do "+"
+}
+// esconde as tabs que excedem o espaço e mostra "Mais N" (a ativa é sempre preservada)
+function layoutTabs(){
+  const toolbar = document.querySelector('.toolbar');
+  const tabsEl = document.querySelector('.tabs');
+  const actions = document.querySelector('.actions');
+  const more = tabsEl.querySelector('.tab-more');
+  if(!more) return;
+  const allTabs = [...tabsEl.querySelectorAll('.tab')];
+  allTabs.forEach(t=> t.style.display = '');
+  more.style.display = 'none';
+  const avail = toolbar.clientWidth - actions.offsetWidth - 16;   // espaço p/ o bloco .tabs (uma linha)
+  if(tabsEl.offsetWidth <= avail) return;                         // cabe tudo
+  more.style.display = '';
+  more.textContent = 'Mais 0';                                    // reserva a largura do botão
+  const hideable = allTabs.filter(t=> !t.classList.contains('active')).reverse();
+  let hidden = 0;
+  for(const t of hideable){
+    if(tabsEl.offsetWidth <= avail) break;
+    t.style.display = 'none'; hidden++;
+  }
+  if(hidden === 0){ more.style.display = 'none'; return; }
+  more.textContent = 'Mais ' + hidden;
+}
+let _layoutRAF = 0;
+window.addEventListener('resize', ()=>{ cancelAnimationFrame(_layoutRAF); _layoutRAF = requestAnimationFrame(layoutTabs); });
+
+function closeViewsMenu(){ if(viewsMenuEl){ viewsMenuEl.remove(); viewsMenuEl = null; } }
+function renderViewsList(m, q){
+  q = (q||'').toLowerCase();
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const nq = norm(q);
+  const tabs = [...document.querySelectorAll('.tabs .tab')];
+  const list = m.querySelector('.vm-list');
+  const rows = tabs.filter(t=> norm(t.textContent.trim()).includes(nq)).map(t=>{
+    const active = t.classList.contains('active');
+    const key = t.dataset.tab.replace(/"/g,'&quot;');
+    return `<button class="vm-item${active?' active':''}" data-key="${key}"><span class="vm-ico">${VM_GRID}</span><span class="vm-label">${t.textContent.trim()}</span>${VM_CHECK}</button>`;
+  }).join('');
+  list.innerHTML = rows || '<div class="vm-empty">Nenhuma visualização</div>';
+  list.querySelectorAll('.vm-item').forEach(it=>{
+    it.addEventListener('click', ()=>{
+      const key = it.dataset.key;
+      const tab = [...document.querySelectorAll('.tabs .tab')].find(t=> t.dataset.tab === key);
+      closeViewsMenu();
+      if(tab && !tab.classList.contains('active')) tab.click();
+      layoutTabs();
+    });
+  });
+}
+function openViewsMenu(anchor){
+  closeViewsMenu();
+  const m = document.createElement('div');
+  m.className = 'views-menu';
+  m.innerHTML = `
+    <div class="vm-search"><input type="text" placeholder="Buscar visualização..." /></div>
+    <div class="vm-list"></div>
+    <div class="vm-sep"></div>
+    <button class="vm-new" type="button"><span class="vm-ico">${VM_PLUS}</span>Nova visualização</button>`;
+  document.body.appendChild(m);
+  renderViewsList(m, '');
+  const r = anchor.getBoundingClientRect();
+  let left = r.left;
+  if(left + m.offsetWidth > window.innerWidth - 12) left = window.innerWidth - 12 - m.offsetWidth;
+  m.style.left = Math.max(12, left) + 'px';
+  m.style.top = (r.bottom + 6) + 'px';
+  const si = m.querySelector('.vm-search input');
+  si.addEventListener('input', ()=> renderViewsList(m, si.value));
+  m.querySelector('.vm-new').addEventListener('click', ()=>{ closeViewsMenu(); createTab(); });
+  setTimeout(()=> si.focus(), 0);
+  viewsMenuEl = m;
+}
+document.addEventListener('click', e=>{
+  if(viewsMenuEl && !e.target.closest('.views-menu') && !e.target.closest('.tab-more')) closeViewsMenu();
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeViewsMenu(); });
+window.addEventListener('scroll', ()=>{ if(viewsMenuEl) closeViewsMenu(); }, {passive:true});
 
 /* ============ MENU DA TAB (estilo Notion) ============ */
 const TM_ICO = {
@@ -924,7 +1065,7 @@ function openTabMenu(tab){
   // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
   const nameInp = m.querySelector('.tm-name');
   const orig = tab.textContent.trim();
-  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); });
+  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); layoutTabs(); });
   nameInp.addEventListener('keydown', ev=>{
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
     if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; persistTabs(); closeTabMenu(); }
@@ -994,6 +1135,7 @@ function deleteTab(tab){
   tab.remove();
   if(wasActive && fallback){ fallback.click(); }
   persistTabs();
+  layoutTabs();
   showToast('Visualização excluída', {icon:TM_ICO.trash});
 }
 // fecha o menu ao clicar fora ou com Esc / rolar
@@ -1209,6 +1351,8 @@ document.addEventListener('click', e=>{
 // init das tabs: restaura do localStorage (persistência entre sessões) ou usa o padrão
 if(!restoreTabs()){ renderTabFilters('Todas'); }
 ensureAddBtn();
+ensureMoreBtn();
+layoutTabs();
 
 /* ============ BUSCA (componente) ============ */
 const actions   = document.getElementById('actions');
