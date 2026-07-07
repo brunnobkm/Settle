@@ -981,6 +981,7 @@ let _layoutRAF = 0;
 window.addEventListener('resize', ()=>{ cancelAnimationFrame(_layoutRAF); _layoutRAF = requestAnimationFrame(layoutTabs); });
 
 function closeViewsMenu(){ if(viewsMenuEl){ viewsMenuEl.remove(); viewsMenuEl = null; } }
+function refreshViewsMenu(){ if(viewsMenuEl){ const si = viewsMenuEl.querySelector('.vm-search input'); renderViewsList(viewsMenuEl, si ? si.value : ''); } }
 function renderViewsList(m, q){
   q = (q||'').toLowerCase();
   const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -1010,13 +1011,16 @@ function renderViewsList(m, q){
       if(tab && !tab.classList.contains('active')) tab.click();
       layoutTabs();
     });
-    // "..." → abre o mesmo menu de quando clica na tab, ancorado no botão
+    // "..." → abre o mesmo menu da tab AO LADO da lista (a lista continua aberta)
     it.querySelector('.vm-dots').addEventListener('click', e=>{
       e.stopPropagation();
-      const rect = e.currentTarget.getBoundingClientRect();
+      const dotsRect = e.currentTarget.getBoundingClientRect();
+      const viewsRect = viewsMenuEl.getBoundingClientRect();
       const tab = findTab(it.dataset.key);
-      closeViewsMenu();
-      openTabMenu(tab, rect);
+      const W = 264;                                   // largura do .tab-menu
+      let left = viewsRect.left - W - 6;               // à esquerda da lista
+      if(left < 12) left = viewsRect.right + 6;        // se não couber, à direita
+      openTabMenu(tab, { left, top: dotsRect.top });
     });
     // drag & drop para reordenar
     if(dragEnabled){
@@ -1065,7 +1069,8 @@ function openViewsMenu(anchor){
   viewsMenuEl = m;
 }
 document.addEventListener('click', e=>{
-  if(viewsMenuEl && !e.target.closest('.views-menu') && !e.target.closest('.tab-more')) closeViewsMenu();
+  // a lista de views não fecha ao clicar no submenu "..." (tab-menu) que abre ao lado dela
+  if(viewsMenuEl && !e.target.closest('.views-menu') && !e.target.closest('.tab-more') && !e.target.closest('.tab-menu')) closeViewsMenu();
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeViewsMenu(); });
 window.addEventListener('scroll', ()=>{ if(viewsMenuEl) closeViewsMenu(); }, {passive:true});
@@ -1087,7 +1092,7 @@ function closeTabMenu(){
   if(tabMenuEl){ tabMenuEl.remove(); tabMenuEl = null; }
   if(tabMenuFor){ tabMenuFor.classList.remove('menu-open'); tabMenuFor = null; }
 }
-function openTabMenu(tab, anchorRect){
+function openTabMenu(tab, position){
   closeTabMenu();
   tabMenuFor = tab; tab.classList.add('menu-open');
   const m = document.createElement('div');
@@ -1099,9 +1104,11 @@ function openTabMenu(tab, anchorRect){
     <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
     <button class="tm-item danger${tab.dataset.tab===MANDATORY_TAB?' disabled':''}" data-act="delete"${tab.dataset.tab===MANDATORY_TAB?' title="A visualização Todas não pode ser excluída"':''}><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
   document.body.appendChild(m);
-  const r = anchorRect || tab.getBoundingClientRect();   // ancora no "..." quando vem do dropdown de views
-  let left = r.left, top = r.bottom + 6;
+  let left, top;
+  if(position){ left = position.left; top = position.top; }               // posição explícita (submenu do "...")
+  else { const r = tab.getBoundingClientRect(); left = r.left; top = r.bottom + 6; }
   if(left + m.offsetWidth > window.innerWidth - 12) left = window.innerWidth - 12 - m.offsetWidth;
+  if(top + m.offsetHeight > window.innerHeight - 12) top = Math.max(12, window.innerHeight - 12 - m.offsetHeight);
   m.style.left = Math.max(12, left) + 'px';
   m.style.top = top + 'px';
   tabMenuEl = m;
@@ -1109,7 +1116,7 @@ function openTabMenu(tab, anchorRect){
   // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
   const nameInp = m.querySelector('.tm-name');
   const orig = tab.textContent.trim();
-  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); layoutTabs(); });
+  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); layoutTabs(); refreshViewsMenu(); });
   nameInp.addEventListener('keydown', ev=>{
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
     if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; persistTabs(); closeTabMenu(); }
@@ -1166,6 +1173,8 @@ function duplicateTab(tab){
   tab.after(nt);
   nt.click();   // já ativa a cópia
   persistTabs();
+  layoutTabs();
+  refreshViewsMenu();
   showToast('Visualização duplicada', {icon:TM_ICO.duplicate});
 }
 function deleteTab(tab){
@@ -1180,6 +1189,7 @@ function deleteTab(tab){
   if(wasActive && fallback){ fallback.click(); }
   persistTabs();
   layoutTabs();
+  refreshViewsMenu();
   showToast('Visualização excluída', {icon:TM_ICO.trash});
 }
 // fecha o menu ao clicar fora ou com Esc / rolar
