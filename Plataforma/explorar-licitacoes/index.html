@@ -508,11 +508,10 @@
   }
   .tab-more:hover{opacity:1;background:rgba(23,23,23,.06);}
 
-  /* arrastar tabs para reordenar */
-  .tab[draggable="true"]{cursor:grab;}
-  .tab.tab-dragging{opacity:.4;}
-  .tab.tab-over-left{box-shadow:inset 3px 0 0 0 var(--accent);}
-  .tab.tab-over-right{box-shadow:inset -3px 0 0 0 var(--accent);}
+  /* arrastar tabs para reordenar (reordenação ao vivo) */
+  .tab.tab-dragging{opacity:.4;transform:scale(.96);}
+  body.tabs-dragging, body.tabs-dragging .tab, body.tabs-dragging .tab-more, body.tabs-dragging .tab-add{cursor:grabbing;}
+  body.tabs-dragging{user-select:none;}
 
   /* dropdown de visualizações (estilo Notion) */
   .views-menu{
@@ -879,43 +878,59 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   layoutTabs();
 });
 
-/* ---- arrastar tabs visíveis para reordenar ---- */
+/* ---- arrastar tabs visíveis para reordenar (reordenação ao vivo + FLIP) ---- */
 (function(){
   const tabsEl = document.querySelector('.tabs');
-  let dragKey = null;
-  const clearInd = ()=> tabsEl.querySelectorAll('.tab-over-left,.tab-over-right').forEach(x=> x.classList.remove('tab-over-left','tab-over-right'));
+  let dragged = null, moved = false;
+
+  const others = ()=> [...tabsEl.querySelectorAll('.tab')].filter(t=> t.style.display!=='none' && t!==dragged);
+  // tab antes da qual inserir p/ a posição X do cursor (ou "Mais N"/"+" = fim das tabs)
+  function anchorFor(x){
+    for(const el of others()){ const r = el.getBoundingClientRect(); if(x < r.left + r.width/2) return el; }
+    return tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
+  }
+  // FLIP: anima as outras tabs deslizando para a nova posição
+  function flip(doMove){
+    const els = others();
+    const before = els.map(el=> [el, el.getBoundingClientRect().left]);
+    doMove();
+    for(const [el, x0] of before){
+      const dx = x0 - el.getBoundingClientRect().left;
+      if(!dx) continue;
+      el.style.transition = 'none';
+      el.style.transform = `translateX(${dx}px)`;
+      requestAnimationFrame(()=>{ el.style.transition = 'transform .18s cubic-bezier(.2,.7,.3,1)'; el.style.transform = ''; });
+    }
+  }
+  function clearFx(){ tabsEl.querySelectorAll('.tab').forEach(t=>{ t.style.transition=''; t.style.transform=''; }); }
+
   tabsEl.addEventListener('dragstart', e=>{
     const t = e.target.closest('.tab');
     if(!t){ e.preventDefault(); return; }
     closeTabMenu(); closeViewsMenu();
-    dragKey = t.dataset.tab; t.classList.add('tab-dragging');
+    dragged = t; moved = false;
     e.dataTransfer.effectAllowed = 'move';
-    try{ e.dataTransfer.setData('text/plain', dragKey); }catch(_){}
+    try{ e.dataTransfer.setData('text/plain', t.dataset.tab); }catch(_){}
+    // adia p/ o "ghost" do arraste ser capturado antes do esmaecer/scale
+    requestAnimationFrame(()=>{ if(dragged){ dragged.classList.add('tab-dragging'); document.body.classList.add('tabs-dragging'); } });
   });
   tabsEl.addEventListener('dragover', e=>{
-    if(dragKey == null) return;
-    const t = e.target.closest('.tab');
-    if(!t || t.dataset.tab === dragKey) return;
-    e.preventDefault();
-    const r = t.getBoundingClientRect(); const before = e.clientX < r.left + r.width/2;
-    clearInd(); t.classList.add(before ? 'tab-over-left' : 'tab-over-right');
-  });
-  tabsEl.addEventListener('drop', e=>{
-    if(dragKey == null) return;
-    const t = e.target.closest('.tab'); if(!t){ clearInd(); return; }
-    e.preventDefault();
-    const dragged = [...tabsEl.querySelectorAll('.tab')].find(x=> x.dataset.tab === dragKey);
-    if(dragged && dragged !== t){
-      const r = t.getBoundingClientRect(); const before = e.clientX < r.left + r.width/2;
-      tabsEl.insertBefore(dragged, before ? t : t.nextSibling);
-      persistTabs(); layoutTabs();
+    if(!dragged) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    const anchor = anchorFor(e.clientX);
+    if(anchor !== dragged && dragged.nextSibling !== anchor){
+      flip(()=> tabsEl.insertBefore(dragged, anchor));
+      moved = true;
     }
-    clearInd();
   });
+  tabsEl.addEventListener('drop', e=>{ if(dragged) e.preventDefault(); });
   tabsEl.addEventListener('dragend', ()=>{
-    clearInd();
-    const d = tabsEl.querySelector('.tab-dragging'); if(d) d.classList.remove('tab-dragging');
-    dragKey = null;
+    if(!dragged) return;
+    dragged.classList.remove('tab-dragging');
+    document.body.classList.remove('tabs-dragging');
+    clearFx();
+    dragged = null;
+    if(moved){ persistTabs(); layoutTabs(); }
   });
 })();
 
