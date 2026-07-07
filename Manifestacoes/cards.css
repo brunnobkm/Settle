@@ -250,6 +250,16 @@ body.aux-open .aux { transform: translateX(0); }
 
 /* Cards */
 .cards { display: flex; flex-direction: column; gap: 16px; }
+
+/* Bloco consolidado "sem associação" no topo da listagem (caminho ii) */
+.sa-block { background: #FAFAFA; border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+.sa-head { display: flex; align-items: center; gap: 8px; }
+.sa-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.sa-baixar { margin-left: auto; }
+.sa-note { font-size: 12.5px; line-height: 1.5; color: var(--text-mute); margin: 8px 0 0; }
+.sa-group { margin-top: 16px; }
+.sa-group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.badge--sem-tipo { background: #F1F1F2; color: #71717A; }
 .card {
   background: #fff; border: 1px solid var(--border); border-radius: 14px;
   padding: 16px;

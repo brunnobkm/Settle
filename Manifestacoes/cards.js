@@ -66,25 +66,15 @@ const ARQUIVOS_EDITAL = [
   { nome: 'Minuta_do_Contrato.pdf', tamanho: '512 KB' },
 ];
 // O caso do debate: arquivos de manifestação sem vínculo (só título + data de upload).
+// Arquivos de manifestação capturados na licitação, SEM associação a uma
+// manifestação específica. O tipo é derivado do nome do arquivo (PNCP:
+// esclarecimento/impugnação/recurso). Fase 1 = todos com tipo conhecido.
 const ARQUIVOS_SEM_VINCULO = [
-  { nome: 'Impugnacao_item_4-2_capacidade_tecnica.pdf', data: new Date(2026, 5, 9, 16, 20), tamanho: '318 KB' },
-  { nome: 'Resposta_pregoeiro_documento_digitalizado.pdf', data: new Date(2026, 5, 10, 9, 5), tamanho: '204 KB' },
-  { nome: 'Manifestacao_sem_identificacao_0873.pdf', data: new Date(2026, 5, 8, 14, 2), tamanho: '1.2 MB' },
+  { nome: 'Respostas_aos_questionamentos.pdf', tamanho: '412 KB', tipo: 'esclarecimento' },
+  { nome: 'Esclarecimentos_complementares.pdf', tamanho: '188 KB', tipo: 'esclarecimento' },
+  { nome: 'Decisao_impugnacao_capital_social.pdf', tamanho: '256 KB', tipo: 'impugnacao' },
+  { nome: 'Analise_impugnacao_prazo_entrega.pdf', tamanho: '174 KB', tipo: 'impugnacao' },
 ];
-// Anexos-candidatos do CARD DE EXEMPLO (possíveis anexos desta manifestação).
-const ANEXOS_EXEMPLO = [
-  { nome: 'Resposta_questionamento_01.pdf', tamanho: '182 KB' },
-  { nome: 'Esclarecimento_consolidado.pdf', tamanho: '512 KB' },
-  { nome: 'Ata_sessao_publica.pdf', tamanho: '338 KB' },
-  { nome: 'Anexo_tecnico_complementar.pdf', tamanho: '1.1 MB' },
-  { nome: 'Parecer_juridico.pdf', tamanho: '276 KB' },
-  { nome: 'Errata_edital.pdf', tamanho: '96 KB' },
-  { nome: 'Documento_anexo_PNCP.pdf', tamanho: '154 KB' },
-  { nome: 'Comunicado_licitantes.pdf', tamanho: '88 KB' },
-  { nome: 'Quadro_respostas.pdf', tamanho: '223 KB' },
-];
-// Registro de anexos por id fora de `items` (ex.: o card de exemplo), para o 👁 achar.
-const anexosRegistry = { __exemplo__: ANEXOS_EXEMPLO };
 
 // Status do recurso -> reaproveita os chips existentes (.chip--*)
 const STATUS_RECURSO = {
@@ -150,7 +140,7 @@ function render() {
   let panelInner;
   if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
   else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
-  else panelInner = `<div class="cards">${activeTab === 'todas' ? exemploCardHtml() : ''}${lista.map(cardHtml).join('')}</div>`;
+  else panelInner = `<div class="cards">${activeTab === 'todas' ? anexosSemAssociacaoHtml() : ''}${lista.map(cardHtml).join('')}</div>`;
 
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
@@ -199,6 +189,10 @@ function render() {
   }
   app.querySelectorAll('[data-sort]').forEach((b) =>
     b.addEventListener('click', (e) => { e.stopPropagation(); sortMode = b.dataset.sort; render(); }));
+
+  // Bloco "sem associação": 👁 abre a pré-visualização.
+  app.querySelectorAll('[data-sa-eye]').forEach((b) =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); openPreviewModal(ARQUIVOS_SEM_VINCULO, Number(b.dataset.saEye)); }));
 
   // Card clicável, MAS permitindo selecionar texto: se houve arrasto (seleção)
   // ou existe texto selecionado, não abre o modal.
@@ -370,30 +364,54 @@ function cardAnexosHtml(item, caption) {
     </div>`;
 }
 
-/* Card de EXEMPLO (badge preta "Exemplo"): manifestação cujo anexo veio da
- * licitação, não da manifestação. Mostra os anexos-candidatos na área de Anexos
- * com a legenda de que são POSSÍVEIS anexos desta manifestação. */
-function exemploCardHtml() {
-  const dMsg = new Date(2026, 6, 3, 13, 22);
-  const dResp = new Date(2026, 6, 3, 14, 40);
-  const box = (date, label, texto) => `
-    <div class="card-box">
-      <div class="card-box-date">${formatTimestamp(date)}</div>
-      <div class="card-box-text"><strong>${label}</strong> ${escapeHtml(texto)}</div>
-    </div>`;
-  const legenda = { label: 'Possíveis anexos', tooltip: 'Estes arquivos foram publicados no portal associados à licitação, e não a uma manifestação específica. Como não é possível confirmar a qual manifestação cada um pertence, eles aparecem aqui de forma consolidada.' };
+/* Bloco consolidado no TOPO da listagem (caminho ii): arquivos de manifestação
+ * capturados na licitação sem associação a uma manifestação específica.
+ * Agrupados por tipo (derivado do nome do arquivo) + aviso explicativo.
+ * Não são atrelados a nenhuma manifestação (evita fingir vínculo). */
+function anexosSemAssociacaoHtml() {
+  if (!ARQUIVOS_SEM_VINCULO.length) return '';
+  const porTipo = {};
+  const ordem = [];
+  ARQUIVOS_SEM_VINCULO.forEach((a) => {
+    const t = a.tipo || 'sem-tipo';
+    if (!porTipo[t]) { porTipo[t] = []; ordem.push(t); }
+    porTipo[t].push(a);
+  });
+  const grupos = ordem.map((t) => {
+    const cat = NCData.CATEGORIAS[t];
+    const label = cat ? cat.label : 'Sem tipo';
+    const badgeCls = cat ? `badge--${t}` : 'badge--sem-tipo';
+    const rows = porTipo[t].map((a) => {
+      const i = ARQUIVOS_SEM_VINCULO.indexOf(a);
+      return `
+        <div class="anexo-row">
+          <span class="anexo-chip-ic">${ICON_FILE}</span>
+          <span class="anexo-chip-txt">
+            <span class="anexo-chip-name" title="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}</span>
+            <span class="anexo-chip-size">${escapeHtml(a.tamanho || '')}</span>
+          </span>
+          <span class="anexo-chip-actions">
+            <button class="ic-btn ic-btn--solid" data-sa-eye="${i}" title="Visualizar">${ICON_EYE}</button>
+            <button class="ic-btn ic-btn--solid" title="Baixar" onclick="event.stopPropagation();return false;">${ICON_DL}</button>
+          </span>
+        </div>`;
+    }).join('');
+    return `
+      <div class="sa-group">
+        <div class="sa-group-head"><span class="badge ${badgeCls}">${label}</span><span class="acc-count">${porTipo[t].length}</span></div>
+        <div class="anexo-list">${rows}</div>
+      </div>`;
+  }).join('');
   return `
-    <article class="card card--esclarecimento">
-      <div class="card-top">
-        <span class="badge badge--exemplo">Exemplo</span>
-        <span class="badge badge--esclarecimento">Questionamento</span>
-        <span class="badge badge--success">Respondido</span>
+    <section class="sa-block">
+      <div class="sa-head">
+        <span class="sa-title">Arquivos de manifestação sem associação</span>
+        <span class="acc-count">${ARQUIVOS_SEM_VINCULO.length}</span>
+        <button class="btn-baixar-todos sa-baixar" title="Baixar todos" onclick="event.stopPropagation();return false;">Baixar todos</button>
       </div>
-      <div class="card-captured"><span class="cap-hi">Atualizado</span> em <span class="cap-hi">${formatTimestamp(dResp)}</span></div>
-      ${box(dMsg, 'Mensagem:', 'Pedido de esclarecimento sobre a forma de comprovação da qualificação técnica exigida no item 4.2 do Termo de Referência.')}
-      ${box(dResp, 'Resposta:', 'Prezados, segue em anexo a resposta ao questionamento apresentado, com os esclarecimentos pertinentes.')}
-      ${cardAnexosHtml({ id: '__exemplo__', anexos: ANEXOS_EXEMPLO }, legenda)}
-    </article>`;
+      <p class="sa-note">Arquivos de manifestação desta licitação que não foi possível associar a uma manifestação específica. Também disponíveis em Visualizar arquivos.</p>
+      ${grupos}
+    </section>`;
 }
 
 /* Fecha qualquer dropdown de anexos aberto. */
@@ -539,8 +557,7 @@ function openArquivos() {
  * Abre pelo 👁 de um anexo. Mostra um seletor de arquivo + visualizador (mock).
  * Reprodução simplificada — o engine responsivo completo vive no projeto Codex. */
 function openAux(itemId, idx) {
-  const item = items.find((i) => i.id === itemId)
-    || (anexosRegistry[itemId] ? { id: itemId, anexos: anexosRegistry[itemId] } : null);
+  const item = items.find((i) => i.id === itemId);
   if (!item || !item.anexos || !item.anexos.length) return;
   // Dentro do modal a sidebar ficaria ATRÁS dele: abrimos a pré-visualização
   // como modal empilhado. Fora do modal (pelo card), abrimos a sidebar.
