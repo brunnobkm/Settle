@@ -140,13 +140,17 @@ function render() {
   let panelInner;
   if (activeTab === 'demo-vazio') panelInner = emptyStateHtml('vazio');
   else if (activeTab === 'demo-portal') panelInner = emptyStateHtml('portal');
-  else panelInner = `<div class="cards">${activeTab === 'todas' ? anexosSemAssociacaoHtml() : ''}${lista.map(cardHtml).join('')}</div>`;
+  else panelInner = `<div class="cards">${lista.map(cardHtml).join('')}</div>`;
 
   const wsTabsHtml = WS_TABS.map((t) => `
     <button class="ws-tab${wsActive === t.id ? ' is-active' : ''}" data-ws="${t.id}">${t.label}${t.beta ? '<span class="ws-badge">Versão beta</span>' : ''}</button>`).join('');
 
+  // Aviso (banner) logo após as tabs: sinaliza arquivos de manifestação sem
+  // associação. Os arquivos ficam na modal "Visualizar arquivos", não na lista.
+  const banner = (!isDemo && ARQUIVOS_SEM_VINCULO.length) ? avisoSemAssocHtml() : '';
+
   const conteudo = wsActive === 'manifestacoes'
-    ? `<section class="panel"><div class="tabs-row"><nav class="tabs">${tabsHtml}</nav>${sortWrap}</div>${panelInner}</section>`
+    ? `<section class="panel"><div class="tabs-row"><nav class="tabs">${tabsHtml}</nav>${sortWrap}</div>${banner}${panelInner}</section>`
     : `<section class="panel panel--ph">Conteúdo de “${WS_TABS.find((t) => t.id === wsActive).label}” — fora do escopo deste protótipo.</section>`;
 
   app.innerHTML = `
@@ -190,9 +194,9 @@ function render() {
   app.querySelectorAll('[data-sort]').forEach((b) =>
     b.addEventListener('click', (e) => { e.stopPropagation(); sortMode = b.dataset.sort; render(); }));
 
-  // Bloco "sem associação": 👁 abre a pré-visualização.
-  app.querySelectorAll('[data-sa-eye]').forEach((b) =>
-    b.addEventListener('click', (e) => { e.stopPropagation(); openPreviewModal(ARQUIVOS_SEM_VINCULO, Number(b.dataset.saEye)); }));
+  // Banner "sem associação": o link abre a modal "Visualizar arquivos".
+  app.querySelectorAll('[data-abrir-arquivos]').forEach((b) =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); openArquivos(); }));
 
   // Card clicável, MAS permitindo selecionar texto: se houve arrasto (seleção)
   // ou existe texto selecionado, não abre o modal.
@@ -364,54 +368,19 @@ function cardAnexosHtml(item, caption) {
     </div>`;
 }
 
-/* Bloco consolidado no TOPO da listagem (caminho ii): arquivos de manifestação
- * capturados na licitação sem associação a uma manifestação específica.
- * Agrupados por tipo (derivado do nome do arquivo) + aviso explicativo.
- * Não são atrelados a nenhuma manifestação (evita fingir vínculo). */
-function anexosSemAssociacaoHtml() {
-  if (!ARQUIVOS_SEM_VINCULO.length) return '';
-  const porTipo = {};
-  const ordem = [];
-  ARQUIVOS_SEM_VINCULO.forEach((a) => {
-    const t = a.tipo || 'sem-tipo';
-    if (!porTipo[t]) { porTipo[t] = []; ordem.push(t); }
-    porTipo[t].push(a);
-  });
-  const grupos = ordem.map((t) => {
-    const cat = NCData.CATEGORIAS[t];
-    const label = cat ? cat.label : 'Sem tipo';
-    const badgeCls = cat ? `badge--${t}` : 'badge--sem-tipo';
-    const rows = porTipo[t].map((a) => {
-      const i = ARQUIVOS_SEM_VINCULO.indexOf(a);
-      return `
-        <div class="anexo-row">
-          <span class="anexo-chip-ic">${ICON_FILE}</span>
-          <span class="anexo-chip-txt">
-            <span class="anexo-chip-name" title="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}</span>
-            <span class="anexo-chip-size">${escapeHtml(a.tamanho || '')}</span>
-          </span>
-          <span class="anexo-chip-actions">
-            <button class="ic-btn ic-btn--solid" data-sa-eye="${i}" title="Visualizar">${ICON_EYE}</button>
-            <button class="ic-btn ic-btn--solid" title="Baixar" onclick="event.stopPropagation();return false;">${ICON_DL}</button>
-          </span>
-        </div>`;
-    }).join('');
-    return `
-      <div class="sa-group">
-        <div class="sa-group-head"><span class="badge ${badgeCls}">${label}</span><span class="acc-count">${porTipo[t].length}</span></div>
-        <div class="anexo-list">${rows}</div>
-      </div>`;
-  }).join('');
+/* Banner (caminho i): logo após as tabs, sinaliza que a licitação tem arquivos
+ * de manifestação sem associação a uma manifestação específica. Não lista os
+ * arquivos (eles ficam na modal "Visualizar arquivos"); só avisa e aponta.
+ * É a colocação honesta: como não dá pra saber em qual card está o problema,
+ * o aviso é da seção, não de um card. */
+function avisoSemAssocHtml() {
+  const n = ARQUIVOS_SEM_VINCULO.length;
   return `
-    <section class="sa-block">
-      <div class="sa-head">
-        <span class="sa-title">Arquivos de manifestação sem associação</span>
-        <span class="acc-count">${ARQUIVOS_SEM_VINCULO.length}</span>
-        <button class="btn-baixar-todos sa-baixar" title="Baixar todos" onclick="event.stopPropagation();return false;">Baixar todos</button>
-      </div>
-      <p class="sa-note">Arquivos de manifestação desta licitação que não foi possível associar a uma manifestação específica. Também disponíveis em Visualizar arquivos.</p>
-      ${grupos}
-    </section>`;
+    <div class="aviso-sa">
+      <span class="aviso-sa-ic">${ICON_INFO}</span>
+      <span class="aviso-sa-text">Esta licitação tem <strong>${n}</strong> ${n === 1 ? 'arquivo de manifestação' : 'arquivos de manifestação'} sem associação a uma manifestação específica.</span>
+      <button class="aviso-sa-link" data-abrir-arquivos>Ver em Visualizar arquivos</button>
+    </div>`;
 }
 
 /* Fecha qualquer dropdown de anexos aberto. */
