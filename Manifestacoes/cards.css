@@ -265,12 +265,12 @@ body.aux-open .aux { transform: translateX(0); }
 .aviso-sa-link:hover { text-decoration: underline; }
 .card {
   background: #fff; border: 1px solid var(--border); border-radius: 14px;
-  padding: 16px;
+  padding: 12px;
   box-shadow: rgba(0,0,0,0.1) 0px 1px 3px 0px, rgba(0,0,0,0.1) 0px 1px 2px -1px;
   transition: transform .15s ease-out, box-shadow .25s ease-in-out;
 }
 
-.card-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.card-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 /* Indicador de "novo" (Figma 8486-6993): bolinha 10px destructive */
 .new-dot { width: 10px; height: 10px; border-radius: 50%; background: #DC2626; flex: 0 0 10px; }
 .card-top-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
@@ -312,11 +312,11 @@ body.aux-open .aux { transform: translateX(0); }
 
 .card-meta { font-size: 12.5px; color: var(--text-mute); margin-bottom: 4px; }
 /* Data de captura: data principal do card (muted) — Figma 8526-34300 */
-.card-captured { font-size: 13px; line-height: 20px; color: var(--text-mute); margin: 0 0 8px; }
-.cap-hi { color: #0A0A0A; } /* "Capturado" e a data em destaque (Figma 8526-34300) */
+.card-captured { font-size: 14px; line-height: 20px; color: var(--text-mute); margin: 0; }
+.cap-hi { color: #0A0A0A; } /* "Atualizado" e a data em destaque */
 /* Blocos de conteúdo (mensagem/resposta/etapa) SEM caixa: separados por hairline */
-.card-box { border: none; border-radius: 0; padding: 16px 0 0; margin-top: 16px; border-top: 1px solid var(--border-soft); }
-.card-box-date { font-size: 12.5px; line-height: 18px; color: var(--text-mute); margin-bottom: 8px; }
+.card-box { border: none; border-radius: 0; padding: 12px 0 0; margin-top: 12px; border-top: 1px solid var(--border-soft); }
+.card-box-date { font-size: 14px; line-height: 20px; color: #0A0A0A; margin-bottom: 4px; }
 .card-box-text { font-size: 14px; line-height: 1.55; color: var(--text); white-space: pre-wrap; }
 .card-box-text strong { font-weight: 700; }
 .meta-clip { display: inline-flex; align-items: center; gap: 3px; }
@@ -328,11 +328,11 @@ body.aux-open .aux { transform: translateX(0); }
 
 /* Separador + seção de anexos inline no card (Figma 8486-6904) */
 .card-sep { height: 1px; background: var(--border); margin: 10px 4px; }
-.anexos-sec { border: none; border-radius: 0; padding: 16px 0 0; margin-top: 16px; border-top: 1px solid var(--border-soft); }
+.anexos-sec { border: none; border-radius: 0; padding: 12px 0 0; margin-top: 12px; border-top: 1px solid var(--border-soft); }
 .anexos-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .anexos-head .btn-baixar-todos { margin-left: auto; }
 .anexos-label {
-  font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--text-mute);
+  font-size: 12px; font-weight: 700; color: #0A0A0A;
 }
 .btn-baixar-todos {
   flex: 0 0 auto; border: 0; background: #3A9B9E; color: #fff; cursor: pointer;
