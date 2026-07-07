@@ -508,6 +508,12 @@
   }
   .tab-more:hover{opacity:1;background:rgba(23,23,23,.06);}
 
+  /* arrastar tabs para reordenar */
+  .tab[draggable="true"]{cursor:grab;}
+  .tab.tab-dragging{opacity:.4;}
+  .tab.tab-over-left{box-shadow:inset 3px 0 0 0 var(--accent);}
+  .tab.tab-over-right{box-shadow:inset -3px 0 0 0 var(--accent);}
+
   /* dropdown de visualizações (estilo Notion) */
   .views-menu{
     position:fixed;z-index:70;width:288px;padding:8px;
@@ -647,8 +653,8 @@
       <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas</button>
-          <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos</button>
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas" draggable="true">Todas</button>
+          <button class="tab" role="tab" data-tab="Órgãos favoritos" draggable="true">Órgãos favoritos</button>
           <button class="tab-add" type="button" title="Nova visualização" aria-label="Nova visualização">+</button>
         </div>
         <div class="actions" id="actions">
@@ -873,6 +879,46 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   layoutTabs();
 });
 
+/* ---- arrastar tabs visíveis para reordenar ---- */
+(function(){
+  const tabsEl = document.querySelector('.tabs');
+  let dragKey = null;
+  const clearInd = ()=> tabsEl.querySelectorAll('.tab-over-left,.tab-over-right').forEach(x=> x.classList.remove('tab-over-left','tab-over-right'));
+  tabsEl.addEventListener('dragstart', e=>{
+    const t = e.target.closest('.tab');
+    if(!t){ e.preventDefault(); return; }
+    closeTabMenu(); closeViewsMenu();
+    dragKey = t.dataset.tab; t.classList.add('tab-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try{ e.dataTransfer.setData('text/plain', dragKey); }catch(_){}
+  });
+  tabsEl.addEventListener('dragover', e=>{
+    if(dragKey == null) return;
+    const t = e.target.closest('.tab');
+    if(!t || t.dataset.tab === dragKey) return;
+    e.preventDefault();
+    const r = t.getBoundingClientRect(); const before = e.clientX < r.left + r.width/2;
+    clearInd(); t.classList.add(before ? 'tab-over-left' : 'tab-over-right');
+  });
+  tabsEl.addEventListener('drop', e=>{
+    if(dragKey == null) return;
+    const t = e.target.closest('.tab'); if(!t){ clearInd(); return; }
+    e.preventDefault();
+    const dragged = [...tabsEl.querySelectorAll('.tab')].find(x=> x.dataset.tab === dragKey);
+    if(dragged && dragged !== t){
+      const r = t.getBoundingClientRect(); const before = e.clientX < r.left + r.width/2;
+      tabsEl.insertBefore(dragged, before ? t : t.nextSibling);
+      persistTabs(); layoutTabs();
+    }
+    clearInd();
+  });
+  tabsEl.addEventListener('dragend', ()=>{
+    clearInd();
+    const d = tabsEl.querySelector('.tab-dragging'); if(d) d.classList.remove('tab-dragging');
+    dragKey = null;
+  });
+})();
+
 /* ============ CRIAÇÃO + PERSISTÊNCIA DAS TABS ============ */
 const LS_TABS = 'settle.explorar.tabs.v1';
 const MANDATORY_TAB = 'Todas';   // não pode ser excluída
@@ -880,6 +926,7 @@ const MANDATORY_TAB = 'Todas';   // não pode ser excluída
 function makeTabEl(key, label){
   const b = document.createElement('button');
   b.className = 'tab'; b.type = 'button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected','false');
+  b.setAttribute('draggable','true');
   b.dataset.tab = key; b.textContent = label;
   return b;
 }
