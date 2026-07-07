@@ -492,8 +492,18 @@
     .grid-main{grid-template-columns:repeat(3,1fr);}
   }
 
+  /* botão "+" de nova visualização */
+  .tab-add{
+    flex:none;width:30px;height:30px;border:none;background:transparent;border-radius:7px;
+    color:var(--muted-foreground);font-size:20px;line-height:1;font-family:inherit;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .tab-add:hover{background:var(--muted);color:var(--foreground);}
+
   /* ============ MENU DA TAB (estilo Notion) ============ */
   .tab.active{cursor:pointer;}
+  .tm-item.disabled{opacity:.38;cursor:not-allowed;}
+  .tm-item.disabled:hover{background:transparent;}
   .tab.menu-open{background:var(--muted);}
   .tab-menu{
     position:fixed; z-index:70; width:264px; padding:6px;
@@ -592,6 +602,7 @@
         <div class="tabs" role="tablist">
           <button class="tab active" role="tab" aria-selected="true" data-tab="Todas">Todas</button>
           <button class="tab" role="tab" data-tab="Órgãos favoritos">Órgãos favoritos</button>
+          <button class="tab-add" type="button" title="Nova visualização" aria-label="Nova visualização">+</button>
         </div>
         <div class="actions" id="actions">
           <button class="act" id="filtrarBtn">Filtrar <span class="pill-cnt" id="filtrarCount" hidden>0</span></button>
@@ -799,6 +810,7 @@ list.addEventListener('click', e=>{
 /* ---- tabs ---- */
 document.querySelector('.tabs').addEventListener('click', e=>{
   if(e.target.closest('.tab-rename')) return;           // clicando no input de rename: ignora
+  if(e.target.closest('.tab-add')){ closeTabMenu(); createTab(); return; }   // "+" cria nova visualização
   const t = e.target.closest('.tab'); if(!t) return;
   if(t.classList.contains('active')){                   // clicar de novo na tab ativa → abre o menu (estilo Notion)
     (tabMenuFor===t) ? closeTabMenu() : openTabMenu(t);
@@ -808,7 +820,70 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
   t.classList.add('active'); t.setAttribute('aria-selected','true');
   renderTabFilters(t.dataset.tab);
+  persistTabs();
 });
+
+/* ============ CRIAÇÃO + PERSISTÊNCIA DAS TABS ============ */
+const LS_TABS = 'settle.explorar.tabs.v1';
+const MANDATORY_TAB = 'Todas';   // não pode ser excluída
+
+function makeTabEl(key, label){
+  const b = document.createElement('button');
+  b.className = 'tab'; b.type = 'button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected','false');
+  b.dataset.tab = key; b.textContent = label;
+  return b;
+}
+function ensureAddBtn(){
+  const tabsEl = document.querySelector('.tabs');
+  let add = tabsEl.querySelector('.tab-add');
+  if(!add){
+    add = document.createElement('button');
+    add.className = 'tab-add'; add.type = 'button'; add.title = 'Nova visualização'; add.setAttribute('aria-label','Nova visualização');
+    add.textContent = '+';
+  }
+  tabsEl.appendChild(add);   // sempre por último
+}
+function createTab(){
+  const key = 'view-' + Date.now();
+  TAB_BADGES[key] = [];                    // filtros próprios (isolados) e vazios
+  const el = makeTabEl(key, 'Nova visualização');
+  const add = document.querySelector('.tabs .tab-add');
+  document.querySelector('.tabs').insertBefore(el, add);
+  el.click();                              // ativa a nova tab
+  persistTabs();
+  // abre o menu no próximo tick p/ o clique do "+" não fechá-lo ao borbulhar
+  setTimeout(()=> openTabMenu(el), 0);
+}
+
+function serializeTabs(){
+  const tabs = [...document.querySelectorAll('.tabs .tab')].map(t=>({
+    key: t.dataset.tab, label: t.textContent.trim(), badges: TAB_BADGES[t.dataset.tab] || []
+  }));
+  const activeEl = document.querySelector('.tab.active');
+  return { activeKey: activeEl ? activeEl.dataset.tab : (tabs[0] && tabs[0].key), tabs };
+}
+function persistTabs(){
+  try{ localStorage.setItem(LS_TABS, JSON.stringify(serializeTabs())); }catch(e){}
+}
+function restoreTabs(){
+  let data; try{ data = JSON.parse(localStorage.getItem(LS_TABS)); }catch(e){}
+  if(!data || !Array.isArray(data.tabs) || !data.tabs.length) return false;
+  const tabsEl = document.querySelector('.tabs');
+  [...tabsEl.querySelectorAll('.tab')].forEach(t=> t.remove());
+  Object.keys(TAB_BADGES).forEach(k=> delete TAB_BADGES[k]);
+  const add = tabsEl.querySelector('.tab-add');
+  data.tabs.forEach(td=>{
+    TAB_BADGES[td.key] = Array.isArray(td.badges) ? td.badges : [];
+    const el = makeTabEl(td.key, td.label);
+    add ? tabsEl.insertBefore(el, add) : tabsEl.appendChild(el);
+  });
+  const tabsNow = [...tabsEl.querySelectorAll('.tab')];
+  const active = tabsNow.find(t=> t.dataset.tab === data.activeKey) || tabsNow[0];
+  tabsNow.forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  active.classList.add('active'); active.setAttribute('aria-selected','true');
+  renderTabFilters(active.dataset.tab);
+  return true;
+}
 
 /* ============ MENU DA TAB (estilo Notion) ============ */
 const TM_ICO = {
@@ -841,7 +916,7 @@ function openTabMenu(tab){
     <button class="tm-item" data-act="copy"><span class="tm-ico">${TM_ICO.link}</span><span class="tm-label">Copiar link da visualização</span></button>
     <div class="tm-sep"></div>
     <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
-    <button class="tm-item danger" data-act="delete"><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
+    <button class="tm-item danger${tab.dataset.tab===MANDATORY_TAB?' disabled':''}" data-act="delete"${tab.dataset.tab===MANDATORY_TAB?' title="A visualização Todas não pode ser excluída"':''}><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
   document.body.appendChild(m);
   const r = tab.getBoundingClientRect();
   let left = r.left, top = r.bottom + 6;
@@ -853,15 +928,15 @@ function openTabMenu(tab){
   // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
   const nameInp = m.querySelector('.tm-name');
   const orig = tab.textContent.trim();
-  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; });
+  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); });
   nameInp.addEventListener('keydown', ev=>{
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
-    if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; closeTabMenu(); }
+    if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; persistTabs(); closeTabMenu(); }
   });
   setTimeout(()=>{ nameInp.focus(); nameInp.select(); }, 0);
 
   m.addEventListener('click', e=>{
-    const it = e.target.closest('.tm-item'); if(!it) return;
+    const it = e.target.closest('.tm-item'); if(!it || it.classList.contains('disabled')) return;
     tabMenuAction(it.dataset.act, tab);
   });
 }
@@ -898,27 +973,31 @@ function startTabRename(tab){
   inp.addEventListener('blur', commit);
 }
 function duplicateTab(tab){
-  const baseKey = tab.dataset.tab;
-  let key = baseKey + ' (cópia)', n = 2;
-  while(TAB_BADGES[key] !== undefined){ key = baseKey + ' (cópia ' + n + ')'; n++; }
-  // copia os filtros da tab de origem (deep-ish o suficiente p/ o protótipo)
-  TAB_BADGES[key] = (TAB_BADGES[baseKey]||[]).map(b=>({...b, value: Array.isArray(b.value)?[...b.value]:{...b.value}}));
-  const nt = document.createElement('button');
-  nt.className = 'tab'; nt.setAttribute('role','tab'); nt.setAttribute('aria-selected','false');
-  nt.dataset.tab = key; nt.textContent = key;
+  const key = 'view-' + Date.now();
+  const label = tab.textContent.trim() + ' (cópia)';
+  // copia os filtros da tab de origem, isolando value e options (não compartilha referência)
+  TAB_BADGES[key] = (TAB_BADGES[tab.dataset.tab]||[]).map(b=>({
+    ...b,
+    options: Array.isArray(b.options) ? [...b.options] : b.options,
+    value: Array.isArray(b.value) ? [...b.value] : {...b.value}
+  }));
+  const nt = makeTabEl(key, label);
   tab.after(nt);
   nt.click();   // já ativa a cópia
+  persistTabs();
   showToast('Visualização duplicada', {icon:TM_ICO.duplicate});
 }
 function deleteTab(tab){
-  const tabs = [...document.querySelectorAll('.tab')];
-  if(tabs.length <= 1){ showToast('Não é possível excluir a única visualização', {icon:TM_ICO.trash}); return; }
+  if(tab.dataset.tab === MANDATORY_TAB){ showToast('A visualização “Todas” não pode ser excluída', {icon:TM_ICO.trash}); return; }
+  const tabsList = [...document.querySelectorAll('.tabs .tab')];
+  if(tabsList.length <= 1){ showToast('Não é possível excluir a única visualização', {icon:TM_ICO.trash}); return; }
   const wasActive = tab.classList.contains('active');
-  const fallback = tab.previousElementSibling && tab.previousElementSibling.classList.contains('tab')
-    ? tab.previousElementSibling
-    : tab.nextElementSibling;
+  const idx = tabsList.indexOf(tab);
+  const fallback = tabsList[idx-1] || tabsList[idx+1];
+  delete TAB_BADGES[tab.dataset.tab];
   tab.remove();
   if(wasActive && fallback){ fallback.click(); }
+  persistTabs();
   showToast('Visualização excluída', {icon:TM_ICO.trash});
 }
 // fecha o menu ao clicar fora ou com Esc / rolar
@@ -1010,6 +1089,7 @@ function refreshBadges(){
     const b=badges[i]; el.querySelector('.v').textContent = b.type==='date'?dateLabel(b):listLabel(b);
   });
   applyOrgaoView(currentTab);   // re-filtra a lista quando os órgãos mudam no popover
+  persistTabs();                // salva os filtros alterados (persistência entre sessões)
 }
 
 /* ---- popover ---- */
@@ -1130,7 +1210,9 @@ document.addEventListener('click', e=>{
   if(fbOpen!==null && !e.target.closest('.fbadge') && !e.target.closest('.fb-pop')) closeFbPop();
 });
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
-renderTabFilters('Todas');
+// init das tabs: restaura do localStorage (persistência entre sessões) ou usa o padrão
+if(!restoreTabs()){ renderTabFilters('Todas'); }
+ensureAddBtn();
 
 /* ============ BUSCA (componente) ============ */
 const actions   = document.getElementById('actions');
