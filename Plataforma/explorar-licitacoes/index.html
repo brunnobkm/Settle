@@ -491,6 +491,38 @@
   @media (max-width:1100px){
     .grid-main{grid-template-columns:repeat(3,1fr);}
   }
+
+  /* ============ MENU DA TAB (estilo Notion) ============ */
+  .tab.active{cursor:pointer;}
+  .tab.menu-open{background:var(--muted);}
+  .tab-menu{
+    position:fixed; z-index:70; width:264px; padding:6px;
+    background:#fff; border:1px solid var(--border); border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.13), 0 2px 8px rgba(0,0,0,.06);
+    font-size:14px; color:var(--foreground);
+    animation:tm-in .12s ease;
+  }
+  @keyframes tm-in{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+  .tm-item{
+    display:flex; align-items:center; gap:10px; width:100%; box-sizing:border-box;
+    padding:7px 8px; border:none; background:transparent; border-radius:7px;
+    font-family:inherit; font-size:14px; color:var(--foreground); text-align:left; line-height:20px;
+  }
+  .tm-item:hover{background:var(--muted);}
+  .tm-item .tm-ico{width:16px;height:16px;flex:none;display:flex;align-items:center;justify-content:center;color:#525252;}
+  .tm-item .tm-ico svg{width:16px;height:16px;}
+  .tm-item .tm-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tm-item .tm-val{color:var(--muted-foreground);max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tm-item .tm-chev{flex:none;color:#a3a3a3;}
+  .tm-item.danger{color:#dc2626;}
+  .tm-item.danger .tm-ico{color:#dc2626;}
+  .tm-item.danger:hover{background:#fef2f2;}
+  .tm-sep{height:1px;background:var(--border);margin:6px 4px;}
+  /* input de rename inline no lugar do texto da tab */
+  .tab .tab-rename{
+    border:none;background:transparent;font-family:inherit;font-size:inherit;font-weight:inherit;
+    color:inherit;outline:none;width:auto;min-width:40px;padding:0;margin:0;
+  }
 </style>
 </head>
 <body>
@@ -763,11 +795,125 @@ list.addEventListener('click', e=>{
 
 /* ---- tabs ---- */
 document.querySelector('.tabs').addEventListener('click', e=>{
+  if(e.target.closest('.tab-rename')) return;           // clicando no input de rename: ignora
   const t = e.target.closest('.tab'); if(!t) return;
+  if(t.classList.contains('active')){                   // clicar de novo na tab ativa → abre o menu (estilo Notion)
+    (tabMenuFor===t) ? closeTabMenu() : openTabMenu(t);
+    return;
+  }
+  closeTabMenu();
   document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
   t.classList.add('active'); t.setAttribute('aria-selected','true');
   renderTabFilters(t.dataset.tab);
 });
+
+/* ============ MENU DA TAB (estilo Notion) ============ */
+const TM_ICO = {
+  rename:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 12.5h7M9.6 3.4l2 2L6 11l-2.6.6L4 9z" stroke-linejoin="round"/></svg>',
+  display:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="5" height="5" rx="1"/><rect x="8.5" y="2.5" width="5" height="5" rx="1"/><rect x="2.5" y="8.5" width="5" height="5" rx="1"/><rect x="8.5" y="8.5" width="5" height="5" rx="1"/></svg>',
+  edit:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 5h7M11.5 5h2M2.5 11h2M6.5 11h7"/><circle cx="10" cy="5" r="1.6"/><circle cx="5" cy="11" r="1.6"/></svg>',
+  source:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="4.5" r="1.7"/><circle cx="12" cy="11.5" r="1.7"/><path d="M5.7 4.5h3.3a2 2 0 0 1 2 2v3.3"/></svg>',
+  link:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9a2.5 2.5 0 0 0 3.5 0l1.8-1.8a2.5 2.5 0 0 0-3.5-3.5l-.9.9" stroke-linecap="round"/><path d="M9.5 7a2.5 2.5 0 0 0-3.5 0L4.2 8.8a2.5 2.5 0 0 0 3.5 3.5l.9-.9" stroke-linecap="round"/></svg>',
+  duplicate:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/></svg>',
+  trash:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5h10M6 4.5V3.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M4.5 4.5l.5 8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1l.5-8" stroke-linejoin="round"/></svg>',
+  chev:'<svg class="tm-chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+let tabMenuEl = null, tabMenuFor = null;
+
+function closeTabMenu(){
+  if(tabMenuEl){ tabMenuEl.remove(); tabMenuEl = null; }
+  if(tabMenuFor){ tabMenuFor.classList.remove('menu-open'); tabMenuFor = null; }
+}
+function openTabMenu(tab){
+  closeTabMenu();
+  tabMenuFor = tab; tab.classList.add('menu-open');
+  const m = document.createElement('div');
+  m.className = 'tab-menu';
+  m.innerHTML = `
+    <button class="tm-item" data-act="rename"><span class="tm-ico">${TM_ICO.rename}</span><span class="tm-label">Renomear</span></button>
+    <button class="tm-item" data-act="display"><span class="tm-ico">${TM_ICO.display}</span><span class="tm-label">Exibir como</span>${TM_ICO.chev}</button>
+    <button class="tm-item" data-act="edit"><span class="tm-ico">${TM_ICO.edit}</span><span class="tm-label">Editar visualização</span></button>
+    <button class="tm-item" data-act="source"><span class="tm-ico">${TM_ICO.source}</span><span class="tm-label">Origem</span><span class="tm-val">Licitações</span>${TM_ICO.chev}</button>
+    <div class="tm-sep"></div>
+    <button class="tm-item" data-act="copy"><span class="tm-ico">${TM_ICO.link}</span><span class="tm-label">Copiar link da visualização</span></button>
+    <div class="tm-sep"></div>
+    <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
+    <button class="tm-item danger" data-act="delete"><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
+  document.body.appendChild(m);
+  const r = tab.getBoundingClientRect();
+  let left = r.left, top = r.bottom + 6;
+  if(left + m.offsetWidth > window.innerWidth - 12) left = window.innerWidth - 12 - m.offsetWidth;
+  m.style.left = Math.max(12, left) + 'px';
+  m.style.top = top + 'px';
+  tabMenuEl = m;
+
+  m.addEventListener('click', e=>{
+    const it = e.target.closest('.tm-item'); if(!it) return;
+    tabMenuAction(it.dataset.act, tab);
+  });
+}
+function tabMenuAction(act, tab){
+  switch(act){
+    case 'rename': closeTabMenu(); startTabRename(tab); break;
+    case 'copy':
+      closeTabMenu();
+      showToast('Link da visualização copiado', {icon:TM_ICO.link});
+      break;
+    case 'duplicate': closeTabMenu(); duplicateTab(tab); break;
+    case 'delete': closeTabMenu(); deleteTab(tab); break;
+    default: // display / edit / source: submenus (em construção no protótipo)
+      closeTabMenu();
+      showToast('Em construção', {icon:TM_ICO.edit});
+  }
+}
+function startTabRename(tab){
+  const old = tab.textContent.trim();
+  const inp = document.createElement('input');
+  inp.className = 'tab-rename'; inp.value = old;
+  inp.size = Math.max(old.length, 4);
+  tab.textContent = ''; tab.appendChild(inp);
+  inp.focus(); inp.select();
+  const commit = ()=>{
+    const v = inp.value.trim() || old;
+    tab.textContent = v;   // muda só o rótulo visível; a chave data-tab continua a mesma (filtros seguem funcionando)
+  };
+  inp.addEventListener('keydown', ev=>{
+    if(ev.key==='Enter'){ ev.preventDefault(); inp.blur(); }
+    if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = old; }
+  });
+  inp.addEventListener('input', ()=> inp.size = Math.max(inp.value.length, 4));
+  inp.addEventListener('blur', commit);
+}
+function duplicateTab(tab){
+  const baseKey = tab.dataset.tab;
+  let key = baseKey + ' (cópia)', n = 2;
+  while(TAB_BADGES[key] !== undefined){ key = baseKey + ' (cópia ' + n + ')'; n++; }
+  // copia os filtros da tab de origem (deep-ish o suficiente p/ o protótipo)
+  TAB_BADGES[key] = (TAB_BADGES[baseKey]||[]).map(b=>({...b, value: Array.isArray(b.value)?[...b.value]:{...b.value}}));
+  const nt = document.createElement('button');
+  nt.className = 'tab'; nt.setAttribute('role','tab'); nt.setAttribute('aria-selected','false');
+  nt.dataset.tab = key; nt.textContent = key;
+  tab.after(nt);
+  nt.click();   // já ativa a cópia
+  showToast('Visualização duplicada', {icon:TM_ICO.duplicate});
+}
+function deleteTab(tab){
+  const tabs = [...document.querySelectorAll('.tab')];
+  if(tabs.length <= 1){ showToast('Não é possível excluir a única visualização', {icon:TM_ICO.trash}); return; }
+  const wasActive = tab.classList.contains('active');
+  const fallback = tab.previousElementSibling && tab.previousElementSibling.classList.contains('tab')
+    ? tab.previousElementSibling
+    : tab.nextElementSibling;
+  tab.remove();
+  if(wasActive && fallback){ fallback.click(); }
+  showToast('Visualização excluída', {icon:TM_ICO.trash});
+}
+// fecha o menu ao clicar fora ou com Esc / rolar
+document.addEventListener('click', e=>{
+  if(tabMenuEl && !e.target.closest('.tab-menu') && !e.target.closest('.tab.menu-open')) closeTabMenu();
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTabMenu(); });
+window.addEventListener('scroll', ()=>{ if(tabMenuEl) closeTabMenu(); }, {passive:true});
 
 /* ============ FILTROS DA TAB (badges estilo Notion) ============ */
 const SITUACAO = ['Ativas','Em disputa','Homologação','Encerradas','Descartadas'];
@@ -1199,6 +1345,7 @@ document.addEventListener('keydown', e=>{
     const undo = t.querySelector('.toast-undo');
     if(undo) undo.addEventListener('click', ()=>{ opts.onUndo && opts.onUndo(); close(); });
   }
+  window.showToast = showToast;   // expõe p/ o menu da tab (fora desta IIFE)
   function setBookmarkUI(card, saved){
     const bm = card.querySelector('.ia.bookmark');
     if(bm){ bm.setAttribute('aria-pressed', saved?'true':'false'); bm.title = saved ? 'Remover de Salvos para depois' : 'Salvar para depois'; }
