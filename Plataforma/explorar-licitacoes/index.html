@@ -518,11 +518,14 @@
   .tm-item.danger .tm-ico{color:#dc2626;}
   .tm-item.danger:hover{background:#fef2f2;}
   .tm-sep{height:1px;background:var(--border);margin:6px 4px;}
-  /* input de rename inline no lugar do texto da tab */
-  .tab .tab-rename{
-    border:none;background:transparent;font-family:inherit;font-size:inherit;font-weight:inherit;
-    color:inherit;outline:none;width:auto;min-width:40px;padding:0;margin:0;
+  /* campo de renomear (input) no topo do dropdown, estilo Notion */
+  .tm-name{
+    display:block; width:100%; box-sizing:border-box; margin:2px 0 6px;
+    padding:8px 10px; border:1px solid var(--border); border-radius:8px;
+    background:var(--muted); font-family:inherit; font-size:14px; font-weight:500; color:var(--foreground);
+    outline:none;
   }
+  .tm-name:focus{background:#fff; border-color:#c8c8c8; box-shadow:0 0 0 3px rgba(0,0,0,.04);}
 </style>
 </head>
 <body>
@@ -830,7 +833,7 @@ function openTabMenu(tab){
   const m = document.createElement('div');
   m.className = 'tab-menu';
   m.innerHTML = `
-    <button class="tm-item" data-act="rename"><span class="tm-ico">${TM_ICO.rename}</span><span class="tm-label">Renomear</span></button>
+    <input class="tm-name" type="text" value="${tab.textContent.trim().replace(/"/g,'&quot;')}" aria-label="Renomear visualização" />
     <button class="tm-item" data-act="display"><span class="tm-ico">${TM_ICO.display}</span><span class="tm-label">Exibir como</span>${TM_ICO.chev}</button>
     <button class="tm-item" data-act="edit"><span class="tm-ico">${TM_ICO.edit}</span><span class="tm-label">Editar visualização</span></button>
     <button class="tm-item" data-act="source"><span class="tm-ico">${TM_ICO.source}</span><span class="tm-label">Origem</span><span class="tm-val">Licitações</span>${TM_ICO.chev}</button>
@@ -846,6 +849,16 @@ function openTabMenu(tab){
   m.style.left = Math.max(12, left) + 'px';
   m.style.top = top + 'px';
   tabMenuEl = m;
+
+  // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
+  const nameInp = m.querySelector('.tm-name');
+  const orig = tab.textContent.trim();
+  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; });
+  nameInp.addEventListener('keydown', ev=>{
+    if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
+    if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; closeTabMenu(); }
+  });
+  setTimeout(()=>{ nameInp.focus(); nameInp.select(); }, 0);
 
   m.addEventListener('click', e=>{
     const it = e.target.closest('.tm-item'); if(!it) return;
