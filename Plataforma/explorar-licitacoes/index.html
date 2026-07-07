@@ -168,7 +168,7 @@
     display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;
     padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--foreground);opacity:.6;
   }
-  .tab:hover{opacity:1;}
+  .tab:hover{opacity:1;background:var(--primary-foreground);}   /* hover = #fafafa (Figma) */
   .tab.active{background:#fff;opacity:1;}
   .tab .cnt{
     font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
@@ -509,8 +509,8 @@
   .tab-more:hover{opacity:1;background:rgba(23,23,23,.06);}
 
   /* arrastar tabs para reordenar (reordenação ao vivo) */
-  /* a tab arrastada assume o shape da ativa (pílula branca) + leve elevação, p/ demarcar melhor */
-  .tab.tab-dragging{opacity:1;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.14);}
+  /* a tab arrastada assume o fundo do estado hover (#fafafa), p/ demarcar melhor */
+  .tab.tab-dragging{opacity:1;background:var(--primary-foreground);}
   body.tabs-dragging, body.tabs-dragging .tab, body.tabs-dragging .tab-more, body.tabs-dragging .tab-add{cursor:grabbing;}
   body.tabs-dragging{user-select:none;}
 
