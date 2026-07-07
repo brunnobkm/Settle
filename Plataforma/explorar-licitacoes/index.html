@@ -509,7 +509,8 @@
   .tab-more:hover{opacity:1;background:rgba(23,23,23,.06);}
 
   /* arrastar tabs para reordenar (reordenação ao vivo) */
-  .tab.tab-dragging{opacity:.4;transform:scale(.96);}
+  /* a tab arrastada assume o shape da ativa (pílula branca) + leve elevação, p/ demarcar melhor */
+  .tab.tab-dragging{opacity:1;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.14);}
   body.tabs-dragging, body.tabs-dragging .tab, body.tabs-dragging .tab-more, body.tabs-dragging .tab-add{cursor:grabbing;}
   body.tabs-dragging{user-select:none;}
 
