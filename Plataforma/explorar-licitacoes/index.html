@@ -523,16 +523,20 @@
   .vm-search input:focus{border-color:#2f6df6;box-shadow:0 0 0 3px rgba(47,109,246,.12);}
   .vm-list{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;}
   .vm-item{
-    display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;
-    padding:7px 8px;border:none;background:transparent;border-radius:7px;
-    font-family:inherit;font-size:14px;color:var(--foreground);text-align:left;line-height:20px;
+    display:flex;align-items:center;gap:7px;width:100%;box-sizing:border-box;
+    padding:6px 6px;border:none;background:transparent;border-radius:7px;cursor:pointer;
+    font-family:inherit;font-size:14px;color:var(--foreground);text-align:left;line-height:20px;position:relative;
   }
   .vm-item:hover{background:var(--muted);}
-  .vm-item.active{background:var(--muted);}
+  .vm-item .vm-grip{flex:none;width:16px;height:16px;display:flex;align-items:center;justify-content:center;color:#cfcfcf;cursor:grab;}
+  .vm-item:hover .vm-grip{color:#b0b0b0;}
   .vm-item .vm-ico{width:16px;height:16px;flex:none;color:#525252;display:flex;align-items:center;justify-content:center;}
   .vm-item .vm-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .vm-item .vm-check{flex:none;color:#2f6df6;opacity:0;}
-  .vm-item.active .vm-check{opacity:1;}
+  .vm-item .vm-dots{flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:6px;color:#9a9a9a;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .vm-item .vm-dots:hover{background:rgba(0,0,0,.08);color:var(--foreground);}
+  .vm-item.vm-dragging{opacity:.4;}
+  .vm-item.vm-over-top{box-shadow:inset 0 2px 0 0 #2f6df6;}
+  .vm-item.vm-over-bot{box-shadow:inset 0 -2px 0 0 #2f6df6;}
   .vm-empty{padding:12px 8px;color:var(--muted-foreground);font-size:13px;text-align:center;}
   .vm-sep{height:1px;background:var(--border);margin:6px 4px;}
   .vm-new{
@@ -935,7 +939,8 @@ function restoreTabs(){
 /* ============ COLAPSO DAS TABS ("Mais N") + DROPDOWN DE VIEWS ============ */
 const VM_GRID = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/></svg>';
 const VM_PLUS = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3.5v9M3.5 8h9"/></svg>';
-const VM_CHECK = '<svg class="vm-check" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>';
+const VM_GRIP = '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><circle cx="6" cy="4" r="1.15"/><circle cx="10" cy="4" r="1.15"/><circle cx="6" cy="8" r="1.15"/><circle cx="10" cy="8" r="1.15"/><circle cx="6" cy="12" r="1.15"/><circle cx="10" cy="12" r="1.15"/></svg>';
+const VM_DOTS = '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg>';
 let viewsMenuEl = null;
 
 function ensureMoreBtn(){
@@ -982,20 +987,59 @@ function renderViewsList(m, q){
   const nq = norm(q);
   const tabs = [...document.querySelectorAll('.tabs .tab')];
   const list = m.querySelector('.vm-list');
+  const dragEnabled = !nq;   // arrastar só faz sentido na lista completa (sem busca)
   const rows = tabs.filter(t=> norm(t.textContent.trim()).includes(nq)).map(t=>{
-    const active = t.classList.contains('active');
     const key = t.dataset.tab.replace(/"/g,'&quot;');
-    return `<button class="vm-item${active?' active':''}" data-key="${key}"><span class="vm-ico">${VM_GRID}</span><span class="vm-label">${t.textContent.trim()}</span>${VM_CHECK}</button>`;
+    return `<div class="vm-item" data-key="${key}" draggable="${dragEnabled}">`+
+      `<span class="vm-grip" title="Arraste para reordenar">${VM_GRIP}</span>`+
+      `<span class="vm-ico">${VM_GRID}</span>`+
+      `<span class="vm-label">${t.textContent.trim()}</span>`+
+      `<button class="vm-dots" title="Opções da visualização" aria-label="Opções">${VM_DOTS}</button>`+
+    `</div>`;
   }).join('');
   list.innerHTML = rows || '<div class="vm-empty">Nenhuma visualização</div>';
+
+  const findTab = key => [...document.querySelectorAll('.tabs .tab')].find(t=> t.dataset.tab === key);
+
   list.querySelectorAll('.vm-item').forEach(it=>{
-    it.addEventListener('click', ()=>{
-      const key = it.dataset.key;
-      const tab = [...document.querySelectorAll('.tabs .tab')].find(t=> t.dataset.tab === key);
+    // clicar na linha → ativa a view (menos quando clica no grip ou nos "...")
+    it.addEventListener('click', e=>{
+      if(e.target.closest('.vm-dots') || e.target.closest('.vm-grip')) return;
+      const tab = findTab(it.dataset.key);
       closeViewsMenu();
       if(tab && !tab.classList.contains('active')) tab.click();
       layoutTabs();
     });
+    // "..." → abre o mesmo menu de quando clica na tab, ancorado no botão
+    it.querySelector('.vm-dots').addEventListener('click', e=>{
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const tab = findTab(it.dataset.key);
+      closeViewsMenu();
+      openTabMenu(tab, rect);
+    });
+    // drag & drop para reordenar
+    if(dragEnabled){
+      it.addEventListener('dragstart', e=>{ it.classList.add('vm-dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', it.dataset.key); });
+      it.addEventListener('dragend', ()=>{ it.classList.remove('vm-dragging'); list.querySelectorAll('.vm-over-top,.vm-over-bot').forEach(x=>x.classList.remove('vm-over-top','vm-over-bot')); });
+      it.addEventListener('dragover', e=>{
+        e.preventDefault();
+        const r = it.getBoundingClientRect(); const before = e.clientY < r.top + r.height/2;
+        it.classList.toggle('vm-over-top', before); it.classList.toggle('vm-over-bot', !before);
+      });
+      it.addEventListener('dragleave', ()=> it.classList.remove('vm-over-top','vm-over-bot'));
+      it.addEventListener('drop', e=>{
+        e.preventDefault();
+        const dragKey = e.dataTransfer.getData('text/plain'); const dropKey = it.dataset.key;
+        if(dragKey === dropKey) return;
+        const dragged = findTab(dragKey), target = findTab(dropKey);
+        const r = it.getBoundingClientRect(); const before = e.clientY < r.top + r.height/2;
+        const tabsEl = document.querySelector('.tabs');
+        tabsEl.insertBefore(dragged, before ? target : target.nextSibling);
+        persistTabs(); layoutTabs();
+        renderViewsList(m, m.querySelector('.vm-search input').value);
+      });
+    }
   });
 }
 function openViewsMenu(anchor){
@@ -1043,7 +1087,7 @@ function closeTabMenu(){
   if(tabMenuEl){ tabMenuEl.remove(); tabMenuEl = null; }
   if(tabMenuFor){ tabMenuFor.classList.remove('menu-open'); tabMenuFor = null; }
 }
-function openTabMenu(tab){
+function openTabMenu(tab, anchorRect){
   closeTabMenu();
   tabMenuFor = tab; tab.classList.add('menu-open');
   const m = document.createElement('div');
@@ -1055,7 +1099,7 @@ function openTabMenu(tab){
     <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
     <button class="tm-item danger${tab.dataset.tab===MANDATORY_TAB?' disabled':''}" data-act="delete"${tab.dataset.tab===MANDATORY_TAB?' title="A visualização Todas não pode ser excluída"':''}><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
   document.body.appendChild(m);
-  const r = tab.getBoundingClientRect();
+  const r = anchorRect || tab.getBoundingClientRect();   // ancora no "..." quando vem do dropdown de views
   let left = r.left, top = r.bottom + 6;
   if(left + m.offsetWidth > window.innerWidth - 12) left = window.innerWidth - 12 - m.offsetWidth;
   m.style.left = Math.max(12, left) + 'px';
