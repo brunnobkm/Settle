@@ -254,7 +254,7 @@ function emptyStateHtml(tipo) {
     <div class="empty-state">
       <span class="empty-ic">${ICON_INBOX}</span>
       <div class="empty-title">Nenhuma manifestação ainda</div>
-      <p class="empty-text">Não há avisos, questionamentos ou impugnações registrados para esta licitação até o momento. Assim que algo for publicado, aparece aqui automaticamente.</p>
+      <p class="empty-text">Não há avisos, questionamentos ou impugnações registrados para esta licitação até o momento. Assim que algo for publicado, iremos exibir nessa seção.</p>
     </div>`;
 }
 
