@@ -170,6 +170,14 @@
   }
   .tab:hover{opacity:1;background:var(--primary-foreground);}   /* hover = #fafafa (Figma) */
   .tab.active{background:#fff;opacity:1;}
+  /* "..." de opções: aparece no hover e fica fixo na tab ativa (discoverability) */
+  .tab .tab-dots{
+    width:18px;height:18px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+    color:#8a8a8a;border-radius:5px;margin:-1px -5px -1px -1px;opacity:0;transition:opacity .12s;
+  }
+  .tab .tab-dots svg{width:15px;height:15px;}
+  .tab:hover .tab-dots, .tab.active .tab-dots{opacity:1;}
+  .tab .tab-dots:hover{background:rgba(0,0,0,.09);color:var(--foreground);}
   .tab .cnt{
     font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
     background:rgba(23,23,23,.1);padding:1px 6px;border-radius:6px;
@@ -866,11 +874,10 @@ document.querySelector('.tabs').addEventListener('click', e=>{
   if(e.target.closest('.tab-add')){ closeTabMenu(); createTab(); return; }   // "+" cria nova visualização
   const moreEl = e.target.closest('.tab-more');
   if(moreEl){ closeTabMenu(); (viewsMenuEl?closeViewsMenu():openViewsMenu(moreEl)); return; }   // "Mais N" abre o dropdown de views
+  const dotsEl = e.target.closest('.tab-dots');
+  if(dotsEl){ const dt = dotsEl.closest('.tab'); (tabMenuFor===dt) ? closeTabMenu() : openTabMenu(dt); return; }   // "..." abre o menu de opções
   const t = e.target.closest('.tab'); if(!t) return;
-  if(t.classList.contains('active')){                   // clicar de novo na tab ativa → abre o menu (estilo Notion)
-    (tabMenuFor===t) ? closeTabMenu() : openTabMenu(t);
-    return;
-  }
+  if(t.classList.contains('active')){ return; }         // já ativa: só o "..." abre o menu
   closeTabMenu();
   document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
   t.classList.add('active'); t.setAttribute('aria-selected','true');
@@ -939,11 +946,19 @@ document.querySelector('.tabs').addEventListener('click', e=>{
 const LS_TABS = 'settle.explorar.tabs.v1';
 const MANDATORY_TAB = 'Todas';   // não pode ser excluída
 
+const TAB_DOTS = '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg>';
+function decorateTab(el){
+  if(el.querySelector('.tab-label')) return;              // já decorada
+  const label = el.textContent.trim();
+  el.innerHTML = `<span class="tab-label"></span><span class="tab-dots" role="button" tabindex="-1" aria-label="Opções da visualização">${TAB_DOTS}</span>`;
+  el.querySelector('.tab-label').textContent = label;
+}
 function makeTabEl(key, label){
   const b = document.createElement('button');
   b.className = 'tab'; b.type = 'button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected','false');
   b.setAttribute('draggable','true');
   b.dataset.tab = key; b.textContent = label;
+  decorateTab(b);
   return b;
 }
 function ensureAddBtn(){
@@ -1190,10 +1205,10 @@ function openTabMenu(tab, position){
   // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
   const nameInp = m.querySelector('.tm-name');
   const orig = tab.textContent.trim();
-  nameInp.addEventListener('input', ()=>{ tab.textContent = nameInp.value || orig; persistTabs(); layoutTabs(); refreshViewsMenu(); });
+  nameInp.addEventListener('input', ()=>{ (tab.querySelector('.tab-label')||tab).textContent = nameInp.value || orig; persistTabs(); layoutTabs(); refreshViewsMenu(); });
   nameInp.addEventListener('keydown', ev=>{
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
-    if(ev.key==='Escape'){ ev.preventDefault(); tab.textContent = orig; persistTabs(); closeTabMenu(); }
+    if(ev.key==='Escape'){ ev.preventDefault(); (tab.querySelector('.tab-label')||tab).textContent = orig; persistTabs(); closeTabMenu(); }
   });
   setTimeout(()=>{ nameInp.focus(); nameInp.select(); }, 0);
 
@@ -1494,6 +1509,7 @@ document.addEventListener('click', e=>{
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
 // init das tabs: sempre no estado padrão (sem persistência — reseta ao atualizar, igual aos outros demos)
 try{ localStorage.removeItem(LS_TABS); }catch(e){}   // limpa qualquer estado salvo por versões anteriores
+document.querySelectorAll('.tabs .tab').forEach(decorateTab);   // adiciona label + "..." nas tabs padrão
 renderTabFilters('Todas');
 ensureAddBtn();
 ensureMoreBtn();
