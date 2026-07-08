@@ -977,7 +977,7 @@ function serializeTabs(){
   return { activeKey: activeEl ? activeEl.dataset.tab : (tabs[0] && tabs[0].key), tabs };
 }
 function persistTabs(){
-  try{ localStorage.setItem(LS_TABS, JSON.stringify(serializeTabs())); }catch(e){}
+  /* persistência desativada no protótipo: as tabs resetam ao atualizar a página (igual aos outros demos) */
 }
 function restoreTabs(){
   let data; try{ data = JSON.parse(localStorage.getItem(LS_TABS)); }catch(e){}
@@ -1482,8 +1482,9 @@ document.addEventListener('click', e=>{
   if(fbOpen!==null && !e.target.closest('.fbadge') && !e.target.closest('.fb-pop')) closeFbPop();
 });
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
-// init das tabs: restaura do localStorage (persistência entre sessões) ou usa o padrão
-if(!restoreTabs()){ renderTabFilters('Todas'); }
+// init das tabs: sempre no estado padrão (sem persistência — reseta ao atualizar, igual aos outros demos)
+try{ localStorage.removeItem(LS_TABS); }catch(e){}   // limpa qualquer estado salvo por versões anteriores
+renderTabFilters('Todas');
 ensureAddBtn();
 ensureMoreBtn();
 layoutTabs();
