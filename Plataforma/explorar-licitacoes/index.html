@@ -1194,9 +1194,9 @@ function openTabMenu(tab, position){
   m.innerHTML = `
     <input class="tm-name" type="text" value="${tabLabel(tab).replace(/"/g,'&quot;')}" aria-label="Renomear visualização" />
     <div class="tm-sep"></div>
-    <button class="tm-item" data-act="copy"><span class="tm-ico">${TM_ICO.link}</span><span class="tm-label">Copiar link da visualização</span></button>
-    <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
-    <button class="tm-item danger${tab.dataset.tab===MANDATORY_TAB?' disabled':''}" data-act="delete"${tab.dataset.tab===MANDATORY_TAB?' title="A visualização Todas não pode ser excluída"':''}><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir visualização</span></button>`;
+    <button class="tm-item" data-act="copy"><span class="tm-ico">${TM_ICO.link}</span><span class="tm-label">Copiar link</span></button>
+    <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar</span></button>
+    <button class="tm-item danger${tab.dataset.tab===MANDATORY_TAB?' disabled':''}" data-act="delete"${tab.dataset.tab===MANDATORY_TAB?' title="A visualização “Todas” não pode ser excluída"':''}><span class="tm-ico">${TM_ICO.trash}</span><span class="tm-label">Excluir</span></button>`;
   document.body.appendChild(m);
   let left, top;
   if(position){ left = position.left; top = position.top; }               // posição explícita (submenu do "...")
