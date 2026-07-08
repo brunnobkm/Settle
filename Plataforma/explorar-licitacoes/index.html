@@ -172,11 +172,12 @@
   .tab.active{background:#fff;opacity:1;}
   /* "..." de opções: aparece no hover e fica fixo na tab ativa (discoverability) */
   .tab .tab-dots{
-    width:18px;height:18px;flex:none;display:inline-flex;align-items:center;justify-content:center;
-    color:#8a8a8a;border-radius:5px;margin:-1px -5px -1px -1px;opacity:0;transition:opacity .12s;
+    width:18px;height:18px;flex:none;display:none;align-items:center;justify-content:center;
+    color:#8a8a8a;border-radius:5px;margin:-1px -5px -1px -1px;
   }
   .tab .tab-dots svg{width:15px;height:15px;}
-  .tab:hover .tab-dots, .tab.active .tab-dots{opacity:1;}
+  /* inativa não ocupa espaço do "..."; só aparece no hover. Ativa mantém fixo. */
+  .tab:hover .tab-dots, .tab.active .tab-dots{display:inline-flex;}
   .tab .tab-dots:hover{background:rgba(0,0,0,.09);color:var(--foreground);}
   .tab .cnt{
     font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
@@ -568,7 +569,7 @@
   /* menu aberto pelo "...": a tab mantém o status atual (a ativa continua branca) */
   .tab.menu-open{background:var(--primary-foreground);opacity:1;}
   .tab.active.menu-open{background:#fff;}
-  .tab.menu-open .tab-dots{opacity:1;}
+  .tab.menu-open .tab-dots{display:inline-flex;}
   .tab-menu{
     position:fixed; z-index:70; width:264px; padding:6px;
     background:#fff; border:1px solid var(--border); border-radius:12px;
