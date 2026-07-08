@@ -956,10 +956,11 @@ function ensureAddBtn(){
   }
   tabsEl.appendChild(add);   // sempre por último
 }
+let newViewSeq = 0;                         // numera cada nova visualização criada
 function createTab(){
   const key = 'view-' + Date.now();
   TAB_BADGES[key] = [];                    // filtros próprios (isolados) e vazios
-  const el = makeTabEl(key, 'Nova visualização');
+  const el = makeTabEl(key, 'Nova visualização ' + (++newViewSeq));
   const tabsEl = document.querySelector('.tabs');
   const anchor = tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
   tabsEl.insertBefore(el, anchor);         // antes do "Mais N" e do "+"
