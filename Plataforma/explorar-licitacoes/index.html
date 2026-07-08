@@ -967,29 +967,13 @@ function createTab(){
   layoutTabs();                            // sem ativar ainda: se não couber, a nova vai p/ "Mais N"
   const collapsed = el.style.display === 'none';
   persistTabs();
-  // abre no próximo tick p/ o clique do "+" não fechar os menus ao borbulhar
-  setTimeout(()=>{
-    if(collapsed){
-      // overflow: nova tab ficou colapsada → abre o dropdown "Mais N" + o menu de renomear dela ao lado
-      const moreBtn = tabsEl.querySelector('.tab-more');
-      openViewsMenu(moreBtn);
-      const row = viewsMenuEl && [...viewsMenuEl.querySelectorAll('.vm-item')].find(r=> r.dataset.key === key);
-      if(row){
-        const dotsRect = row.querySelector('.vm-dots').getBoundingClientRect();
-        const viewsRect = viewsMenuEl.getBoundingClientRect();
-        const W = 264;                     // largura do .tab-menu
-        let left = viewsRect.left - W - 6; // à esquerda da lista
-        if(left < 12) left = viewsRect.right + 6;
-        openTabMenu(el, { left, top: dotsRect.top });
-      } else {
-        openTabMenu(el);
-      }
-    } else {
-      // coube na barra: ativa e abre o menu de renomear ancorado na própria tab
-      el.click();
-      openTabMenu(el);
-    }
-  }, 0);
+  if(collapsed){
+    // overflow: mostra a nova no dropdown das colapsadas (sem abrir a modal de renomear)
+    setTimeout(()=>{ const moreBtn = tabsEl.querySelector('.tab-more'); if(moreBtn) openViewsMenu(moreBtn); }, 0);
+  } else {
+    // coube na barra: só ativa a nova tab (renomear fica disponível clicando na tab / no "...")
+    el.click();
+  }
 }
 
 function serializeTabs(){
