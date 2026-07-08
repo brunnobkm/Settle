@@ -565,7 +565,10 @@
   .tab.active{cursor:pointer;}
   .tm-item.disabled{opacity:.38;cursor:not-allowed;}
   .tm-item.disabled:hover{background:transparent;}
-  .tab.menu-open{background:var(--muted);}
+  /* menu aberto pelo "...": a tab mantém o status atual (a ativa continua branca) */
+  .tab.menu-open{background:var(--primary-foreground);opacity:1;}
+  .tab.active.menu-open{background:#fff;}
+  .tab.menu-open .tab-dots{opacity:1;}
   .tab-menu{
     position:fixed; z-index:70; width:264px; padding:6px;
     background:#fff; border:1px solid var(--border); border-radius:12px;
@@ -947,18 +950,20 @@ const LS_TABS = 'settle.explorar.tabs.v1';
 const MANDATORY_TAB = 'Todas';   // não pode ser excluída
 
 const TAB_DOTS = '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg>';
-function decorateTab(el){
+const tabLabel = el => { const l = el.querySelector('.tab-label'); return (l ? l.textContent : el.textContent).trim(); };
+function decorateTab(el, count){
   if(el.querySelector('.tab-label')) return;              // já decorada
   const label = el.textContent.trim();
-  el.innerHTML = `<span class="tab-label"></span><span class="tab-dots" role="button" tabindex="-1" aria-label="Opções da visualização">${TAB_DOTS}</span>`;
+  const c = count == null ? 0 : count;
+  el.innerHTML = `<span class="tab-label"></span><span class="cnt">${c}</span><span class="tab-dots" role="button" tabindex="-1" aria-label="Opções da visualização">${TAB_DOTS}</span>`;
   el.querySelector('.tab-label').textContent = label;
 }
-function makeTabEl(key, label){
+function makeTabEl(key, label, count){
   const b = document.createElement('button');
   b.className = 'tab'; b.type = 'button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected','false');
   b.setAttribute('draggable','true');
   b.dataset.tab = key; b.textContent = label;
-  decorateTab(b);
+  decorateTab(b, count || 0);
   return b;
 }
 function ensureAddBtn(){
@@ -975,7 +980,7 @@ let newViewSeq = 0;                         // numera cada nova visualização c
 function createTab(){
   const key = 'view-' + Date.now();
   TAB_BADGES[key] = [];                    // filtros próprios (isolados) e vazios
-  const el = makeTabEl(key, 'Nova visualização ' + (++newViewSeq));
+  const el = makeTabEl(key, 'Nova visualização ' + (++newViewSeq), 0);
   const tabsEl = document.querySelector('.tabs');
   const anchor = tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
   tabsEl.insertBefore(el, anchor);         // antes do "Mais N" e do "+"
@@ -993,7 +998,7 @@ function createTab(){
 
 function serializeTabs(){
   const tabs = [...document.querySelectorAll('.tabs .tab')].map(t=>({
-    key: t.dataset.tab, label: t.textContent.trim(), badges: TAB_BADGES[t.dataset.tab] || []
+    key: t.dataset.tab, label: tabLabel(t), badges: TAB_BADGES[t.dataset.tab] || []
   }));
   const activeEl = document.querySelector('.tab.active');
   return { activeKey: activeEl ? activeEl.dataset.tab : (tabs[0] && tabs[0].key), tabs };
@@ -1077,12 +1082,12 @@ function renderViewsList(m, q){
   const tabs = [...document.querySelectorAll('.tabs .tab')];
   const list = m.querySelector('.vm-list');
   const dragEnabled = !nq;   // arrastar só faz sentido na lista completa (sem busca)
-  const rows = tabs.filter(t=> norm(t.textContent.trim()).includes(nq)).map(t=>{
+  const rows = tabs.filter(t=> norm(tabLabel(t)).includes(nq)).map(t=>{
     const key = t.dataset.tab.replace(/"/g,'&quot;');
     return `<div class="vm-item" data-key="${key}" draggable="${dragEnabled}">`+
       `<span class="vm-grip" title="Arraste para reordenar">${VM_GRIP}</span>`+
       `<span class="vm-ico">${VM_GRID}</span>`+
-      `<span class="vm-label">${t.textContent.trim()}</span>`+
+      `<span class="vm-label">${tabLabel(t)}</span>`+
       `<button class="vm-dots" title="Opções da visualização" aria-label="Opções">${VM_DOTS}</button>`+
     `</div>`;
   }).join('');
@@ -1187,7 +1192,7 @@ function openTabMenu(tab, position){
   const m = document.createElement('div');
   m.className = 'tab-menu';
   m.innerHTML = `
-    <input class="tm-name" type="text" value="${tab.textContent.trim().replace(/"/g,'&quot;')}" aria-label="Renomear visualização" />
+    <input class="tm-name" type="text" value="${tabLabel(tab).replace(/"/g,'&quot;')}" aria-label="Renomear visualização" />
     <div class="tm-sep"></div>
     <button class="tm-item" data-act="copy"><span class="tm-ico">${TM_ICO.link}</span><span class="tm-label">Copiar link da visualização</span></button>
     <button class="tm-item" data-act="duplicate"><span class="tm-ico">${TM_ICO.duplicate}</span><span class="tm-label">Duplicar visualização</span></button>
@@ -1204,7 +1209,7 @@ function openTabMenu(tab, position){
 
   // input de renomear no topo: renomeia a tab ao vivo (chave data-tab permanece)
   const nameInp = m.querySelector('.tm-name');
-  const orig = tab.textContent.trim();
+  const orig = tabLabel(tab);
   nameInp.addEventListener('input', ()=>{ (tab.querySelector('.tab-label')||tab).textContent = nameInp.value || orig; persistTabs(); layoutTabs(); refreshViewsMenu(); });
   nameInp.addEventListener('keydown', ev=>{
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
@@ -1251,15 +1256,16 @@ function startTabRename(tab){
 }
 function duplicateTab(tab){
   const key = 'view-' + Date.now();
-  const orig = tab.textContent.trim();
+  const orig = tabLabel(tab);
   const label = orig + ' (cópia)';
+  const srcCount = (tab.querySelector('.cnt')||{}).textContent || 0;
   // copia os filtros da tab de origem, isolando value e options (não compartilha referência)
   TAB_BADGES[key] = (TAB_BADGES[tab.dataset.tab]||[]).map(b=>({
     ...b,
     options: Array.isArray(b.options) ? [...b.options] : b.options,
     value: Array.isArray(b.value) ? [...b.value] : {...b.value}
   }));
-  const nt = makeTabEl(key, label);
+  const nt = makeTabEl(key, label, srcCount);
   tab.after(nt);
   nt.click();   // já ativa a cópia
   persistTabs();
@@ -1272,7 +1278,8 @@ function deleteTab(tab){
   const tabsList = [...document.querySelectorAll('.tabs .tab')];
   if(tabsList.length <= 1){ showToast('Não é possível excluir a única visualização', {icon:TM_ICO.trash}); return; }
   // captura o estado p/ o "Desfazer"
-  const key = tab.dataset.tab, label = tab.textContent.trim(), badges = TAB_BADGES[key];
+  const key = tab.dataset.tab, label = tabLabel(tab), badges = TAB_BADGES[key];
+  const count = (tab.querySelector('.cnt')||{}).textContent || 0;
   const nextTab = tab.nextElementSibling && tab.nextElementSibling.classList.contains('tab') ? tab.nextElementSibling.dataset.tab : null;
   const wasActive = tab.classList.contains('active');
   const idx = tabsList.indexOf(tab);
@@ -1290,7 +1297,7 @@ function deleteTab(tab){
       const tabsEl = document.querySelector('.tabs');
       const nextEl = nextTab ? [...tabsEl.querySelectorAll('.tab')].find(t=> t.dataset.tab === nextTab) : null;
       const anchor = nextEl || tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
-      const el = makeTabEl(key, label);
+      const el = makeTabEl(key, label, count);
       tabsEl.insertBefore(el, anchor);
       if(wasActive) el.click();
       persistTabs(); layoutTabs(); refreshViewsMenu();
@@ -1509,7 +1516,8 @@ document.addEventListener('click', e=>{
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
 // init das tabs: sempre no estado padrão (sem persistência — reseta ao atualizar, igual aos outros demos)
 try{ localStorage.removeItem(LS_TABS); }catch(e){}   // limpa qualquer estado salvo por versões anteriores
-document.querySelectorAll('.tabs .tab').forEach(decorateTab);   // adiciona label + "..." nas tabs padrão
+const DEFAULT_COUNTS = { 'Todas': 300, 'Órgãos favoritos': 2 };
+document.querySelectorAll('.tabs .tab').forEach(t=> decorateTab(t, DEFAULT_COUNTS[t.dataset.tab] || 0));   // label + contador + "..."
 renderTabFilters('Todas');
 ensureAddBtn();
 ensureMoreBtn();
