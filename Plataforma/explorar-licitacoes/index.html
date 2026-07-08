@@ -1046,13 +1046,16 @@ function layoutTabs(){
   const tabsEl = document.querySelector('.tabs');
   const actions = document.querySelector('.actions');
   const more = tabsEl.querySelector('.tab-more');
+  const add = tabsEl.querySelector('.tab-add');
   if(!more) return;
   const allTabs = [...tabsEl.querySelectorAll('.tab')];
   allTabs.forEach(t=> t.style.display = '');
   more.style.display = 'none';
+  if(add) add.style.display = '';                                 // "+" visível quando cabe tudo
   const avail = toolbar.clientWidth - actions.offsetWidth - 16;   // espaço p/ o bloco .tabs (uma linha)
   if(tabsEl.offsetWidth <= avail) return;                         // cabe tudo
   more.style.display = '';
+  if(add) add.style.display = 'none';                             // modelo Notion: "+" da barra some no colapso (vira "Nova visualização" na lista)
   more.textContent = 'Mais 0';                                    // reserva a largura do botão
   const hideable = allTabs.filter(t=> !t.classList.contains('active')).reverse();
   let hidden = 0;
@@ -1060,7 +1063,7 @@ function layoutTabs(){
     if(tabsEl.offsetWidth <= avail) break;
     t.style.display = 'none'; hidden++;
   }
-  if(hidden === 0){ more.style.display = 'none'; return; }
+  if(hidden === 0){ more.style.display = 'none'; if(add) add.style.display = ''; return; }
   more.textContent = 'Mais ' + hidden;
 }
 let _layoutRAF = 0;
