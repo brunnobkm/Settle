@@ -1149,6 +1149,7 @@ const TM_ICO = {
   trash:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5h10M6 4.5V3.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M4.5 4.5l.5 8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1l.5-8" stroke-linejoin="round"/></svg>',
   chev:'<svg class="tm-chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
+const TM_OK = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l3.4 3.4L16 5.5"/></svg>';
 let tabMenuEl = null, tabMenuFor = null;
 
 function closeTabMenu(){
@@ -1196,7 +1197,7 @@ function tabMenuAction(act, tab){
     case 'rename': closeTabMenu(); startTabRename(tab); break;
     case 'copy':
       closeTabMenu();
-      showToast('Link da visualização copiado', {icon:TM_ICO.link});
+      showToast('Link da visualização copiado', {icon:TM_OK});
       break;
     case 'duplicate': closeTabMenu(); duplicateTab(tab); break;
     case 'delete': closeTabMenu(); deleteTab(tab); break;
@@ -1225,7 +1226,8 @@ function startTabRename(tab){
 }
 function duplicateTab(tab){
   const key = 'view-' + Date.now();
-  const label = tab.textContent.trim() + ' (cópia)';
+  const orig = tab.textContent.trim();
+  const label = orig + ' (cópia)';
   // copia os filtros da tab de origem, isolando value e options (não compartilha referência)
   TAB_BADGES[key] = (TAB_BADGES[tab.dataset.tab]||[]).map(b=>({
     ...b,
@@ -1238,22 +1240,37 @@ function duplicateTab(tab){
   persistTabs();
   layoutTabs();
   refreshViewsMenu();
-  showToast('Visualização duplicada', {icon:TM_ICO.duplicate});
+  showToast(`“${orig}” duplicada`, {icon:TM_ICO.duplicate});
 }
 function deleteTab(tab){
   if(tab.dataset.tab === MANDATORY_TAB){ showToast('A visualização “Todas” não pode ser excluída', {icon:TM_ICO.trash}); return; }
   const tabsList = [...document.querySelectorAll('.tabs .tab')];
   if(tabsList.length <= 1){ showToast('Não é possível excluir a única visualização', {icon:TM_ICO.trash}); return; }
+  // captura o estado p/ o "Desfazer"
+  const key = tab.dataset.tab, label = tab.textContent.trim(), badges = TAB_BADGES[key];
+  const nextTab = tab.nextElementSibling && tab.nextElementSibling.classList.contains('tab') ? tab.nextElementSibling.dataset.tab : null;
   const wasActive = tab.classList.contains('active');
   const idx = tabsList.indexOf(tab);
   const fallback = tabsList[idx-1] || tabsList[idx+1];
-  delete TAB_BADGES[tab.dataset.tab];
+  delete TAB_BADGES[key];
   tab.remove();
   if(wasActive && fallback){ fallback.click(); }
-  persistTabs();
-  layoutTabs();
-  refreshViewsMenu();
-  showToast('Visualização excluída', {icon:TM_ICO.trash});
+  persistTabs(); layoutTabs(); refreshViewsMenu();
+  showToast(`“${label}” excluída`, {
+    icon: TM_ICO.trash,
+    undoLabel: 'Desfazer',
+    onUndo: ()=>{
+      if(TAB_BADGES[key] !== undefined) return;   // já existe (ex.: recriada), não duplica
+      TAB_BADGES[key] = badges;
+      const tabsEl = document.querySelector('.tabs');
+      const nextEl = nextTab ? [...tabsEl.querySelectorAll('.tab')].find(t=> t.dataset.tab === nextTab) : null;
+      const anchor = nextEl || tabsEl.querySelector('.tab-more') || tabsEl.querySelector('.tab-add');
+      const el = makeTabEl(key, label);
+      tabsEl.insertBefore(el, anchor);
+      if(wasActive) el.click();
+      persistTabs(); layoutTabs(); refreshViewsMenu();
+    }
+  });
 }
 // fecha o menu ao clicar fora ou com Esc / rolar
 document.addEventListener('click', e=>{
