@@ -173,11 +173,10 @@
   /* "..." de opções: aparece no hover e fica fixo na tab ativa (discoverability) */
   .tab .tab-dots{
     width:16px;height:18px;flex:none;display:inline-flex;align-items:center;justify-content:center;
-    color:#8a8a8a;border-radius:5px;margin:-1px -4px -1px -1px;opacity:0;transition:opacity .12s;
+    color:#8a8a8a;border-radius:5px;margin:-1px -4px -1px -1px;opacity:1;
   }
   .tab .tab-dots svg{width:15px;height:15px;}
-  /* espaço do "..." fica sempre reservado (sem balançar); aparece no hover / fixo na ativa */
-  .tab:hover .tab-dots, .tab.active .tab-dots{opacity:1;}
+  /* "..." sempre visível (inclusive na tab inativa; nela fica mais discreto pela opacidade da própria tab) */
   .tab .tab-dots:hover{background:rgba(0,0,0,.09);color:var(--foreground);}
   .tab .cnt{
     font-size:12px;line-height:16px;font-weight:500;color:var(--primary);
