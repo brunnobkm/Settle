@@ -1211,10 +1211,32 @@ button {
   height: 18px;
 }
 
+.sub-body.is-reviewing .source-option.is-placeholder {
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
 .source-option.is-placeholder .extract-placeholder-text {
   color: #888;
   font-weight: 500;
-  font-style: italic;
+}
+
+.extract-cancel-btn {
+  border: 0;
+  border-radius: 8px;
+  background: #111;
+  color: #fff;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  align-self: center;
+}
+
+.extract-cancel-btn:hover {
+  background: #333;
 }
 
 .source-option.is-loading .extract-skeleton {

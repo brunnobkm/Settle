@@ -29,6 +29,7 @@ let sourceSelectionRange = null;
 let activeSourceRow = null;
 let activeSourceView = null;
 let activeExtractionBody = null;
+let activeSwapOption = null;
 let sourceClickStartedWithSelection = false;
 let sidebarResizeMode = null;
 let flatGroupCounter = 0;
@@ -806,6 +807,7 @@ function clearActiveSourceContext({ clearHighlight = true } = {}) {
     activeExtractionBody = null;
     resetNewOption(body);
   }
+  activeSwapOption = null;
   activeSourceView = null;
 
   if (clearHighlight) {
@@ -1647,6 +1649,13 @@ function createPlaceholderOption(body) {
   wrap.innerHTML = `<strong class="extract-placeholder-text">Selecione um trecho no edital para extrair a informação.</strong>`;
   option.append(wrap);
 
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "extract-cancel-btn";
+  cancelBtn.dataset.cancelExtract = "";
+  cancelBtn.textContent = "Cancelar";
+  option.append(cancelBtn);
+
   if (footer) body.insertBefore(option, footer);
   else body.append(option);
   return option;
@@ -1666,9 +1675,7 @@ function showNewOption(button) {
   body.classList.add("is-extracting");
 
   const addBtn = body.querySelector("[data-add-option]");
-  const cancelBtn = body.querySelector("[data-cancel-extract]");
   if (addBtn) addBtn.hidden = true;
-  if (cancelBtn) cancelBtn.hidden = false;
 
   createPlaceholderOption(body);
 
@@ -1693,9 +1700,7 @@ function resetNewOption(body) {
   body.classList.remove("is-extracting");
 
   const addBtn = body.querySelector("[data-add-option]");
-  const cancelBtn = body.querySelector("[data-cancel-extract]");
   if (addBtn) { addBtn.hidden = false; addBtn.disabled = false; }
-  if (cancelBtn) cancelBtn.hidden = true;
 
   if (activeExtractionBody === body) activeExtractionBody = null;
 }
@@ -1993,7 +1998,7 @@ function pointerIsOverSourceText(event) {
 }
 
 function showSourceCursorTooltip(event) {
-  if ((!activeSourceRow && !activeExtractionBody) || !pointerIsOverSourceText(event)) {
+  if ((!activeSourceRow && !activeExtractionBody && !activeSwapOption) || !pointerIsOverSourceText(event)) {
     hideSourceCursorTooltip();
     return;
   }
@@ -2005,7 +2010,7 @@ function showSourceCursorTooltip(event) {
   }
 
   const spacing = 8;
-  sourceCursorTooltip.textContent = activeSourceRow && rowHasSource(activeSourceRow)
+  sourceCursorTooltip.textContent = (activeSourceRow && rowHasSource(activeSourceRow)) || activeSwapOption
     ? "Selecione um novo trecho"
     : "Selecione um trecho";
   sourceCursorTooltip.style.left = `${Math.min(event.clientX + spacing, window.innerWidth - sourceCursorTooltip.offsetWidth - 8)}px`;
@@ -2036,7 +2041,7 @@ function showSourceSelectionTooltip(range) {
   sourceSelectionRange = range.cloneRange();
   if (activeExtractionBody) {
     sourceSelectionTooltip.textContent = "Extrair como informação";
-  } else if (activeSourceRow) {
+  } else if (activeSourceRow || activeSwapOption) {
     sourceSelectionTooltip.textContent = "Usar este trecho";
   } else {
     sourceSelectionTooltip.textContent = "Adicionar como fonte";
@@ -2113,6 +2118,8 @@ function fillExtractedOption(placeholder, selectedText, documentKey) {
     searchText: getSourceSearchText(selectedText),
   });
 
+  placeholder.querySelector("[data-cancel-extract]")?.remove();
+
   const wrap = placeholder.querySelector("span");
   if (wrap) {
     wrap.innerHTML = `
@@ -2120,6 +2127,8 @@ function fillExtractedOption(placeholder, selectedText, documentKey) {
       <small>Fonte: ${escapeHTML(documentLabel(documentKey))}</small>
     `;
   }
+
+  addReviewOptionSourceAction(placeholder);
 }
 
 function showExtractionSkeleton(placeholder) {
@@ -2176,6 +2185,19 @@ function addSelectionAsSource() {
     return;
   }
 
+  if (activeSwapOption && selectedText) {
+    const select = sourceView?.querySelector("[data-source-document]");
+    const documentKey = select?.value || "edital";
+    fillExtractedOption(activeSwapOption, selectedText, documentKey);
+    sourceView.dataset.highlightText = sourceSearchText;
+    activeSwapOption = null;
+    selection?.removeAllRanges();
+    sourceSelectionRange = null;
+    hideSourceSelectionTooltip();
+    showToast("Trecho atualizado!");
+    return;
+  }
+
   if (activeExtractionBody && selectedText) {
     const body = activeExtractionBody;
     const select = sourceView?.querySelector("[data-source-document]");
@@ -2190,10 +2212,6 @@ function addSelectionAsSource() {
     window.setTimeout(() => {
       fillExtractedOption(placeholder, selectedText, documentKey);
       body.classList.remove("is-extracting");
-      const addBtn = body.querySelector("[data-add-option]");
-      const cancelBtn = body.querySelector("[data-cancel-extract]");
-      if (addBtn) addBtn.hidden = false;
-      if (cancelBtn) cancelBtn.hidden = true;
       if (activeExtractionBody === body) activeExtractionBody = null;
       showToast("Informação extraída!");
     }, 550);
@@ -2450,6 +2468,21 @@ function openSourceTarget(panel, target) {
 function openReviewOptionSource(button) {
   const option = button.closest(".source-option");
   const panel = button.closest("[data-panel]");
+  const trechoRaw = option?.dataset.trecho;
+
+  if (trechoRaw) {
+    try {
+      const trecho = JSON.parse(trechoRaw);
+      openSourceTarget(panel, {
+        documentKey: trecho.document || "edital",
+        text: trecho.searchText || trecho.text || "",
+      });
+      activeSwapOption = option;
+      activeSourceView = panel?.querySelector("[data-source-view]") || null;
+      return;
+    } catch {}
+  }
+
   openSourceTarget(panel, findReviewOptionSourceTarget(option));
 }
 
@@ -2799,9 +2832,10 @@ document.addEventListener("click", (event) => {
   if (closeButton) closeOwningPanel(closeButton);
 
   if (
-    (activeSourceRow || activeExtractionBody)
+    (activeSourceRow || activeExtractionBody || activeSwapOption)
     && !target.closest(".accordion-row.is-source-active")
     && !target.closest(".sub-body.is-extracting")
+    && !target.closest(".source-option[data-trecho]")
     && !target.closest(".source-selection-tooltip")
     && !target.closest(".source-body")
   ) {
@@ -2927,14 +2961,14 @@ document.addEventListener("mouseup", () => {
 
 document.addEventListener("pointerdown", (event) => {
   sourceClickStartedWithSelection = Boolean(
-    (activeSourceRow || activeExtractionBody)
+    (activeSourceRow || activeExtractionBody || activeSwapOption)
     && event.target.closest(".source-body")
     && (sourceSelectionRange || sourceSelectionTooltip.classList.contains("is-visible"))
   );
 });
 
 document.addEventListener("click", (event) => {
-  if ((!activeSourceRow && !activeExtractionBody) || !event.target.closest(".source-body")) return;
+  if ((!activeSourceRow && !activeExtractionBody && !activeSwapOption) || !event.target.closest(".source-body")) return;
 
   window.setTimeout(() => {
     const selection = window.getSelection();
