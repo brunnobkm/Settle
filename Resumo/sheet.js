@@ -28,7 +28,7 @@ document.body.append(sourceCursorTooltip);
 let sourceSelectionRange = null;
 let activeSourceRow = null;
 let activeSourceView = null;
-let activeManualSourceEditor = null;
+let activeExtractionBody = null;
 let sourceClickStartedWithSelection = false;
 let sidebarResizeMode = null;
 let flatGroupCounter = 0;
@@ -801,8 +801,12 @@ function clearActiveSourceContext({ clearHighlight = true } = {}) {
     activeSourceRow.querySelectorAll('[data-row-action="link"]').forEach((btn) => btn.classList.remove("is-active"));
     activeSourceRow = null;
   }
+  if (activeExtractionBody) {
+    const body = activeExtractionBody;
+    activeExtractionBody = null;
+    resetNewOption(body);
+  }
   activeSourceView = null;
-  activeManualSourceEditor = null;
 
   if (clearHighlight) {
     document.querySelectorAll("[data-source-view]").forEach((sourceView) => {
@@ -1624,48 +1628,41 @@ function openReview(button) {
 
 function showNewOption(button) {
   const body = button.closest(".sub-body");
-  const editor = body?.querySelector(".review-editor");
-  if (!editor) return;
+  const panel = button.closest("[data-panel]");
+  const sourceView = panel?.querySelector("[data-source-view]");
+  const banner = body?.querySelector("[data-extract-banner]");
+  if (!body || !panel || !sourceView || !banner) return;
 
+  if (activeExtractionBody && activeExtractionBody !== body) resetNewOption(activeExtractionBody);
   clearActiveSourceContext();
-  editor.hidden = false;
+
+  activeExtractionBody = body;
+  activeSourceView = sourceView;
+  body.classList.add("is-extracting");
+  banner.hidden = false;
   button.hidden = true;
   button.closest(".review-footer").hidden = true;
-  const radioName = body.querySelector("[data-review-radio]")?.name || `review-${Date.now()}`;
-  const radio = document.createElement("input");
-  radio.type = "radio";
-  radio.name = radioName;
-  radio.checked = true;
-  radio.dataset.reviewRadio = "";
-  editor.prepend(radio);
-  editor.classList.add("has-radio");
-  editor.querySelector("textarea")?.focus();
+
+  const currentDoc = sourceView.querySelector("[data-source-document]")?.value || "edital";
+  sourceView.dataset.highlightText = "";
+  renderSourceDocument(sourceView, currentDoc);
+  panel.classList.add("is-source-open");
+  panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
+  appShell.classList.toggle("source-sidebar-open", panel.dataset.panel === "sidebar");
+  sourceView.hidden = false;
+  sourceView.querySelector(".source-body")?.scrollTo({ top: 0, behavior: "auto" });
+  updateSidebarWorkspaceMode();
+  if (panel.dataset.panel === "sidebar" && panel.classList.contains("is-compact-workspace")) {
+    setWorkspaceTab(panel, "source");
+  }
 }
 
 function resetNewOption(body) {
-  const editor = body?.querySelector(".review-editor");
-  if (!editor) return;
+  if (!body) return;
 
-  editor.querySelector("[data-review-radio]")?.remove();
-  editor.hidden = true;
-  editor.classList.remove("has-radio");
-
-  const textarea = editor.querySelector("textarea");
-  if (textarea) {
-    textarea.value = "";
-    textarea.removeAttribute("aria-invalid");
-  }
-  editor.querySelector(".review-editor-error")?.remove();
-  delete editor.dataset.sourceText;
-  delete editor.dataset.sourceSearchText;
-  delete editor.dataset.sourceDocument;
-
-  const linkButton = editor.querySelector("[data-link-source]");
-  if (linkButton) {
-    linkButton.classList.remove("is-linked", "is-selecting");
-    linkButton.textContent = "Vincular trecho do edital (opcional)";
-    linkButton.setAttribute("aria-label", "Vincular trecho do edital");
-  }
+  const banner = body.querySelector("[data-extract-banner]");
+  if (banner) banner.hidden = true;
+  body.classList.remove("is-extracting");
 
   const addButton = body.querySelector("[data-add-option]");
   if (addButton) {
@@ -1673,67 +1670,8 @@ function resetNewOption(body) {
     addButton.disabled = false;
     addButton.closest(".review-footer").hidden = false;
   }
-}
 
-function linkSource(button) {
-  const panel = button.closest("[data-panel]");
-  const editor = button.closest(".review-editor");
-  const sourceView = panel?.querySelector("[data-source-view]");
-  if (!panel || !sourceView || !editor) return;
-
-  if (editor.dataset.sourceText) {
-    openSourceTarget(panel, {
-      documentKey: editor.dataset.sourceDocument || "edital",
-      text: editor.dataset.sourceSearchText || editor.dataset.sourceText,
-    });
-    activeManualSourceEditor = editor;
-    activeSourceView = sourceView;
-    button.classList.add("is-linked");
-    button.textContent = "Trecho vinculado";
-    button.setAttribute("aria-label", "Abrir trecho vinculado");
-    return;
-  }
-
-  clearActiveSourceContext();
-  activeManualSourceEditor = editor;
-  activeSourceView = sourceView;
-  sourceView.dataset.highlightText = "";
-  renderSourceDocument(sourceView, "edital");
-  panel.classList.add("is-source-open");
-  panel.parentElement?.classList.toggle("is-source-open", panel.dataset.panel === "sheet");
-  appShell.classList.toggle("source-sidebar-open", panel.dataset.panel === "sidebar");
-  sourceView.hidden = false;
-  sourceView.querySelector("[data-source-document]").value = "edital";
-  sourceView.querySelector(".source-body")?.scrollTo({ top: 0, behavior: "auto" });
-  updateSidebarWorkspaceMode();
-  if (panel.dataset.panel === "sidebar" && panel.classList.contains("is-compact-workspace")) {
-    setWorkspaceTab(panel, "source");
-  }
-
-  button.classList.remove("is-linked");
-  button.classList.add("is-selecting");
-  button.textContent = "Selecione um trecho no edital";
-  button.setAttribute("aria-label", "Selecionar trecho do edital");
-}
-
-function setManualInfoError(editor, message) {
-  const textarea = editor?.querySelector("textarea");
-  if (!editor || !textarea) return;
-
-  textarea.setAttribute("aria-invalid", "true");
-  let error = editor.querySelector(".review-editor-error");
-  if (!error) {
-    error = document.createElement("span");
-    error.className = "review-editor-error";
-    textarea.after(error);
-  }
-  error.textContent = message;
-  textarea.focus();
-}
-
-function clearManualInfoError(editor) {
-  editor?.querySelector("textarea")?.removeAttribute("aria-invalid");
-  editor?.querySelector(".review-editor-error")?.remove();
+  if (activeExtractionBody === body) activeExtractionBody = null;
 }
 
 function cancelReview(button) {
@@ -1759,37 +1697,37 @@ function confirmReview(button) {
   const body = header?.nextElementSibling;
   if (!body || !header) return;
 
-  const selected = body.querySelector("[data-review-radio]:checked");
-  const editor = body.querySelector(".review-editor");
-  const manualText = editor?.querySelector("textarea")?.value.trim();
-  const isManualSelected = Boolean(selected?.closest(".review-editor"));
-  if (isManualSelected && !manualText) {
-    setManualInfoError(editor, "Preencha a nova informação.");
-    return;
-  }
-  clearManualInfoError(editor);
+  if (activeExtractionBody === body) resetNewOption(body);
 
+  const selected = body.querySelector("[data-review-radio]:checked");
   const selectedOption = selected?.closest(".source-option");
-  const selectedText = manualText || selectedOption?.querySelector("strong")?.textContent || "Informação resolvida";
+  const selectedText = selectedOption?.querySelector("strong")?.textContent || "Informação resolvida";
   const resolvedLabel = header.querySelector(".sub-label")?.textContent || "Informação";
-  const isManualInformation = Boolean(manualText);
-  const manualSourceOptions = isManualInformation && editor?.dataset.sourceText
-    ? {
-        sourceText: editor.dataset.sourceText,
-        sourceSearchText: editor.dataset.sourceSearchText,
-        sourceDocument: editor.dataset.sourceDocument,
-      }
-    : { noSource: isManualInformation };
+  const isExtractedInformation = Boolean(selectedOption?.dataset.extractedInformation);
+
+  let resolvedOptions = { noSource: true };
+  if (selectedOption?.dataset.trecho) {
+    try {
+      const trecho = JSON.parse(selectedOption.dataset.trecho);
+      resolvedOptions = {
+        sourceText: trecho.text,
+        sourceSearchText: trecho.searchText || trecho.text,
+        sourceDocument: trecho.document,
+      };
+    } catch {}
+  } else if (selectedOption) {
+    resolvedOptions = { noSource: false };
+  }
 
   const list = body.nextElementSibling;
   if (list?.classList.contains("accordion-list")) {
-    list.prepend(createResolvedRow(resolvedLabel, selectedText, manualSourceOptions));
+    list.prepend(createResolvedRow(resolvedLabel, selectedText, resolvedOptions));
   }
 
   header.dataset.historyStatus = "resolved";
   header.dataset.historyChoice = selectedText;
-  header.dataset.historySource = String(Boolean(selectedOption || manualSourceOptions.sourceText));
-  header.dataset.historyKind = isManualInformation ? "manual" : "selected";
+  header.dataset.historySource = String(Boolean(selectedOption));
+  header.dataset.historyKind = isExtractedInformation ? "extracted" : "selected";
   renderHistory(header.closest("[data-panel]"));
   header.hidden = true;
   body.hidden = true;
@@ -1813,9 +1751,17 @@ function clamp(value, min, max) {
 }
 
 function setSidebarWidth(mode, value) {
+  const vw = window.innerWidth;
+  // Pisos em pixels: garantem mínimo legível em qualquer viewport.
+  // Source: 900px (≈ 2 colunas de 440px + handle). Summary: 420px (leitura confortável).
+  const sourceMinPercent = Math.max(64, (900 / vw) * 100);
+  const summaryMinPercent = Math.max(34, (420 / vw) * 100);
+  // Tetos em pixels: evitam sidebar gigante desnecessária em telas muito largas.
+  const sourceMaxPercent = Math.min(78, (1280 / vw) * 100);
+  const summaryMaxPercent = Math.min(45, (720 / vw) * 100);
   const nextValue = mode === "source"
-    ? clamp(value, 64, 78)
-    : clamp(value, 34, 45);
+    ? clamp(value, sourceMinPercent, Math.max(sourceMinPercent, sourceMaxPercent))
+    : clamp(value, summaryMinPercent, Math.max(summaryMinPercent, summaryMaxPercent));
 
   sidebarWidth[mode] = nextValue;
   appShell.style.setProperty(
@@ -1845,7 +1791,12 @@ function updateSidebarWorkspaceMode() {
     return;
   }
 
-  const isCompact = sidebarShell.getBoundingClientRect().width < 760;
+  // Compact mode = vira abas (Resumo/Edital alternam, não lado a lado).
+  // Dispara em 2 situações:
+  //  (a) sidebar ficou abaixo de 900px (cada coluna ficaria com <440px = ilegível)
+  //  (b) viewport < 1100px (mesmo no máximo da sidebar, não dá pra side-by-side confortável)
+  const sidebarShellWidth = sidebarShell.getBoundingClientRect().width;
+  const isCompact = sidebarShellWidth < 900 || window.innerWidth < 1100;
   sidebarPanel.classList.toggle("is-compact-workspace", isCompact);
   if (isCompact && !wasCompact) {
     setWorkspaceTab(sidebarPanel, activeSourceView ? "source" : "summary");
@@ -1949,26 +1900,6 @@ function hideSourceCursorTooltip() {
   sourceCursorTooltip.classList.remove("is-visible");
 }
 
-function findSelectedManualSourceEditor(panel) {
-  if (!panel) return null;
-
-  return [...panel.querySelectorAll(".review-editor.has-radio")].find((editor) => {
-    const radio = editor.querySelector("[data-review-radio]");
-    return !editor.hidden && radio?.checked;
-  }) || null;
-}
-
-function ensureManualSourceContext(sourceView) {
-  if (activeSourceRow || activeManualSourceEditor) return;
-
-  const panel = sourceView?.closest("[data-panel]");
-  const editor = findSelectedManualSourceEditor(panel);
-  if (!editor) return;
-
-  activeManualSourceEditor = editor;
-  activeSourceView = sourceView;
-}
-
 function getCaretRangeFromPoint(x, y) {
   if (document.caretRangeFromPoint) {
     return document.caretRangeFromPoint(x, y);
@@ -2036,9 +1967,7 @@ function pointerIsOverSourceText(event) {
 }
 
 function showSourceCursorTooltip(event) {
-  ensureManualSourceContext(event.target.closest("[data-source-view]"));
-
-  if ((!activeSourceRow && !activeManualSourceEditor) || !pointerIsOverSourceText(event)) {
+  if ((!activeSourceRow && !activeExtractionBody) || !pointerIsOverSourceText(event)) {
     hideSourceCursorTooltip();
     return;
   }
@@ -2050,10 +1979,7 @@ function showSourceCursorTooltip(event) {
   }
 
   const spacing = 8;
-  sourceCursorTooltip.textContent = (
-    (activeSourceRow && rowHasSource(activeSourceRow))
-    || activeManualSourceEditor?.dataset.sourceText
-  )
+  sourceCursorTooltip.textContent = activeSourceRow && rowHasSource(activeSourceRow)
     ? "Selecione um novo trecho"
     : "Selecione um trecho";
   sourceCursorTooltip.style.left = `${Math.min(event.clientX + spacing, window.innerWidth - sourceCursorTooltip.offsetWidth - 8)}px`;
@@ -2082,9 +2008,13 @@ function positionSourceSelectionTooltip(range) {
 
 function showSourceSelectionTooltip(range) {
   sourceSelectionRange = range.cloneRange();
-  sourceSelectionTooltip.textContent = activeSourceRow || activeManualSourceEditor
-    ? "Usar este trecho"
-    : "Adicionar como fonte";
+  if (activeExtractionBody) {
+    sourceSelectionTooltip.textContent = "Extrair como informação";
+  } else if (activeSourceRow) {
+    sourceSelectionTooltip.textContent = "Usar este trecho";
+  } else {
+    sourceSelectionTooltip.textContent = "Adicionar como fonte";
+  }
   hideSourceCursorTooltip();
   sourceSelectionTooltip.classList.add("is-visible");
   positionSourceSelectionTooltip(range);
@@ -2139,6 +2069,45 @@ function highlightSelectionRange(sourceView, range) {
   return textNodes.length > 0;
 }
 
+function documentLabel(documentKey) {
+  return sourceDocuments[documentKey]?.label || "Edital";
+}
+
+function createExtractedOption(body, selectedText, documentKey) {
+  const banner = body.querySelector("[data-extract-banner]");
+  const radioName = body.querySelector("[data-review-radio]")?.name || `review-${Date.now()}`;
+
+  body.querySelectorAll("[data-review-radio]").forEach((radio) => { radio.checked = false; });
+
+  const option = document.createElement("label");
+  option.className = "source-option is-extracted";
+  option.dataset.extractedInformation = "true";
+  option.dataset.trecho = JSON.stringify({
+    label: documentLabel(documentKey),
+    document: documentKey,
+    text: selectedText,
+    searchText: getSourceSearchText(selectedText),
+  });
+
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.name = radioName;
+  radio.checked = true;
+  radio.dataset.reviewRadio = "";
+  option.append(radio);
+
+  const wrap = document.createElement("span");
+  wrap.innerHTML = `
+    <strong>${escapeHTML(selectedText)}</strong>
+    <small>Fonte: ${escapeHTML(documentLabel(documentKey))}</small>
+  `;
+  option.append(wrap);
+
+  if (banner) body.insertBefore(option, banner);
+  else body.append(option);
+  return option;
+}
+
 function addSelectionAsSource() {
   const selection = window.getSelection();
   const range = sourceSelectionRange;
@@ -2149,7 +2118,6 @@ function addSelectionAsSource() {
       ? range.commonAncestorContainer.closest?.("[data-source-view]")
       : range.commonAncestorContainer.parentElement?.closest("[data-source-view]")
   );
-  ensureManualSourceContext(sourceView);
   const sourceSearchText = getSourceSearchText(selectedText);
 
   try {
@@ -2173,27 +2141,30 @@ function addSelectionAsSource() {
     delete activeSourceRow.dataset.noSource;
     sourceView.dataset.highlightText = sourceSearchText;
     updateRowSourceState(activeSourceRow);
+    selection?.removeAllRanges();
+    sourceSelectionRange = null;
+    hideSourceSelectionTooltip();
+    showToast("Trecho vinculado!");
+    return;
   }
 
-  if (activeManualSourceEditor && selectedText) {
+  if (activeExtractionBody && selectedText) {
     const select = sourceView?.querySelector("[data-source-document]");
-    const linkButton = activeManualSourceEditor.querySelector("[data-link-source]");
-    activeManualSourceEditor.dataset.sourceText = selectedText;
-    activeManualSourceEditor.dataset.sourceSearchText = sourceSearchText;
-    activeManualSourceEditor.dataset.sourceDocument = select?.value || "edital";
+    const documentKey = select?.value || "edital";
+    createExtractedOption(activeExtractionBody, selectedText, documentKey);
     sourceView.dataset.highlightText = sourceSearchText;
-    if (linkButton) {
-      linkButton.classList.remove("is-selecting");
-      linkButton.classList.add("is-linked");
-      linkButton.textContent = "Trecho vinculado";
-      linkButton.setAttribute("aria-label", "Abrir trecho vinculado");
-    }
+    resetNewOption(activeExtractionBody);
+    selection?.removeAllRanges();
+    sourceSelectionRange = null;
+    hideSourceSelectionTooltip();
+    showToast("Informação extraída!");
+    return;
   }
 
   selection?.removeAllRanges();
   sourceSelectionRange = null;
   hideSourceSelectionTooltip();
-  showToast(activeSourceRow || activeManualSourceEditor ? "Trecho vinculado!" : "Trecho adicionado como fonte!");
+  showToast("Trecho adicionado como fonte!");
 }
 
 async function writeClipboard(text) {
@@ -2650,6 +2621,17 @@ sidebarResizeHandle?.addEventListener("pointercancel", stopSidebarResize);
 
 new ResizeObserver(updateSidebarWorkspaceMode).observe(sidebarShell);
 
+// Window resize: re-aplica clamps pra garantir que o sidebar respeite os pisos/tetos
+// em pixels quando o viewport muda (ex: redimensionar a janela do navegador).
+let _resizeFrame = null;
+window.addEventListener("resize", () => {
+  if (_resizeFrame) cancelAnimationFrame(_resizeFrame);
+  _resizeFrame = requestAnimationFrame(() => {
+    setSidebarWidth("summary", sidebarWidth.summary);
+    setSidebarWidth("source", sidebarWidth.source);
+  });
+});
+
 document.addEventListener("click", (event) => {
   const target = event.target;
   const accordionToggle = target.closest("[data-accordion-toggle]");
@@ -2724,7 +2706,10 @@ document.addEventListener("click", (event) => {
   if (subToggle) togglePanel(subToggle);
   if (target.closest(".review-btn") && !target.closest("[data-vivo-panel]")) openReview(target.closest(".review-btn"));
   if (target.closest("[data-add-option]")) showNewOption(target.closest("[data-add-option]"));
-  if (target.closest("[data-link-source]")) linkSource(target.closest("[data-link-source]"));
+  if (target.closest("[data-cancel-extract]")) {
+    const body = target.closest(".sub-body");
+    if (body) resetNewOption(body);
+  }
   if (target.closest("[data-confirm-review]")) confirmReview(target.closest("[data-confirm-review]"));
   if (target.closest("[data-save-edit]")) closeRowEdit(target.closest(".accordion-row"), true);
   if (target.closest("[data-cancel-edit]")) closeRowEdit(target.closest(".accordion-row"), false);
@@ -2775,9 +2760,9 @@ document.addEventListener("click", (event) => {
   if (closeButton) closeOwningPanel(closeButton);
 
   if (
-    (activeSourceRow || activeManualSourceEditor)
+    (activeSourceRow || activeExtractionBody)
     && !target.closest(".accordion-row.is-source-active")
-    && !target.closest(".review-editor")
+    && !target.closest(".sub-body.is-extracting")
     && !target.closest(".source-selection-tooltip")
     && !target.closest(".source-body")
   ) {
@@ -2815,17 +2800,12 @@ document.addEventListener("change", (event) => {
   }
 
   const radio = event.target.closest(".source-option [data-review-radio]");
-  const editorField = event.target.closest(".review-editor textarea");
-  if (editorField) clearManualInfoError(editorField.closest(".review-editor"));
   if (!radio) return;
 
   resetNewOption(radio.closest(".sub-body"));
 });
 
 document.addEventListener("input", (event) => {
-  const editorField = event.target.closest(".review-editor textarea");
-  if (editorField) clearManualInfoError(editorField.closest(".review-editor"));
-
   const rowEditField = event.target.closest(".row-edit-input");
   if (rowEditField) clearRowEditError(rowEditField.closest(".accordion-row"));
 });
@@ -2908,14 +2888,14 @@ document.addEventListener("mouseup", () => {
 
 document.addEventListener("pointerdown", (event) => {
   sourceClickStartedWithSelection = Boolean(
-    (activeSourceRow || activeManualSourceEditor)
+    (activeSourceRow || activeExtractionBody)
     && event.target.closest(".source-body")
     && (sourceSelectionRange || sourceSelectionTooltip.classList.contains("is-visible"))
   );
 });
 
 document.addEventListener("click", (event) => {
-  if ((!activeSourceRow && !activeManualSourceEditor) || !event.target.closest(".source-body")) return;
+  if ((!activeSourceRow && !activeExtractionBody) || !event.target.closest(".source-body")) return;
 
   window.setTimeout(() => {
     const selection = window.getSelection();

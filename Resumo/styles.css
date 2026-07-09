@@ -696,8 +696,7 @@ button {
 .sub-chevron-button,
 .review-btn,
 .add-option-btn,
-.confirm-review-btn,
-.link-source-btn {
+.confirm-review-btn {
   border: 0;
   cursor: pointer;
   font-family: inherit;
@@ -1212,94 +1211,43 @@ button {
   height: 18px;
 }
 
-.review-editor {
-  padding: 12px 16px;
-  background: inherit;
-}
-
-.review-editor.has-radio {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  column-gap: 8px;
-  align-items: start;
-}
-
-.review-editor.has-radio > input {
-  grid-column: 1;
-  grid-row: 1;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-  accent-color: #111;
-}
-
-.review-editor.has-radio > label,
-.review-editor.has-radio > .link-source-btn {
-  grid-column: 2;
-}
-
-.review-editor label {
-  display: grid;
-  gap: 10px;
-  color: #1a1a1a;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.review-editor textarea {
-  width: 100%;
-  resize: vertical;
-  border: 0.5px solid #d6d6d6;
+.extract-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 16px 4px;
+  padding: 10px 12px;
+  border: 1px dashed #3aa5a5;
   border-radius: 8px;
-  background: #fff;
+  background: rgba(58, 165, 165, 0.06);
+}
+
+.extract-banner-msg {
   color: #1a1a1a;
-  padding: 9px 10px;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.review-editor textarea:focus {
-  outline: 2px solid rgba(17, 17, 17, 0.16);
-  outline-offset: 1px;
-}
-
-.review-editor textarea[aria-invalid="true"] {
-  border-color: #dc2626;
-}
-
-.review-editor textarea[aria-invalid="true"]:focus {
-  outline-color: rgba(220, 38, 38, 0.2);
-}
-
-.review-editor-error {
-  margin-top: -4px;
-  color: #dc2626;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.35;
 }
 
-.link-source-btn {
-  justify-self: start;
-  margin-top: 8px;
+.extract-cancel-btn {
+  flex: 0 0 auto;
   background: transparent;
+  border: 0;
   color: #555;
   font-size: 12px;
-  text-align: left;
-  text-decoration: underline;
-}
-
-.link-source-btn.is-linked {
-  color: #3aa5a5;
-  text-decoration: underline;
   font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  text-decoration: underline;
 }
 
-.link-source-btn.is-selecting {
-  color: #555;
-  text-decoration: none;
-  font-weight: 500;
+.extract-cancel-btn:hover {
+  color: #111;
+}
+
+.sub-body.is-extracting {
+  background: rgba(58, 165, 165, 0.02);
 }
 
 .review-footer {
@@ -2747,3 +2695,22 @@ button.row-edit-source-link:focus-visible {
     gap: 10px;
   }
 }
+
+/* ============================================================
+ * Viewport baixo (altura < 700px) — header compacto
+ * Recupera ~50-70px de espaço útil pra o conteúdo
+ * ============================================================ */
+@media (max-height: 700px) {
+  .review-header {
+    min-height: 48px;
+    padding: 8px 16px;
+  }
+  .beta-badge {
+    display: none;
+  }
+  .review-title-row {
+    gap: 4px;
+  }
+  /* Acordeões mantém estado padrão (não forçamos fechar) — só economizamos chrome */
+}
+
