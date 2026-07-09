@@ -1646,15 +1646,8 @@ function createPlaceholderOption(body) {
   option.append(radio);
 
   const wrap = document.createElement("span");
-  wrap.innerHTML = `<strong class="extract-placeholder-text">Selecione um trecho no edital para extrair a informação.</strong>`;
+  wrap.innerHTML = `<strong class="extract-placeholder-text">Selecione um trecho no edital para extrair</strong>`;
   option.append(wrap);
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "extract-cancel-btn";
-  cancelBtn.dataset.cancelExtract = "";
-  cancelBtn.textContent = "Cancelar";
-  option.append(cancelBtn);
 
   if (footer) body.insertBefore(option, footer);
   else body.append(option);
