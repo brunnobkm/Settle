@@ -995,7 +995,12 @@ button {
 }
 
 .sub-accordion-header.is-reviewing .review-btn {
-  background: #111;
+  background: #e5e5e5;
+  color: #1a1a1a;
+}
+
+.sub-accordion-header.is-reviewing .review-btn:hover {
+  background: #d6d6d6;
 }
 
 .sub-chevron {
@@ -1171,7 +1176,7 @@ button {
   width: 16px;
   height: 16px;
   margin-top: 2px;
-  accent-color: #111;
+  accent-color: #3aa5a5;
 }
 
 .review-source-btn {
@@ -1225,8 +1230,8 @@ button {
 .extract-cancel-btn {
   border: 0;
   border-radius: 8px;
-  background: #111;
-  color: #fff;
+  background: #e5e5e5;
+  color: #1a1a1a;
   padding: 5px 9px;
   font-size: 12px;
   font-weight: 600;
@@ -1236,7 +1241,7 @@ button {
 }
 
 .extract-cancel-btn:hover {
-  background: #333;
+  background: #d6d6d6;
 }
 
 .source-option.is-loading .extract-skeleton {
@@ -1301,9 +1306,14 @@ button {
 .add-option-btn span {
   display: inline-flex;
   border-radius: 8px;
-  background: #fff;
-  padding: 7px 10px;
+  background: #e5e5e5;
+  color: #1a1a1a;
+  padding: 5px 9px;
   transition: background 150ms ease;
+}
+
+.add-option-btn:hover span {
+  background: #d6d6d6;
 }
 
 .sub-body.is-reviewing .review-footer:hover,
@@ -1323,12 +1333,16 @@ button {
 .confirm-review-btn {
   display: none;
   border-radius: 8px;
-  background: #111;
-  color: #fff;
+  background: #e5e5e5;
+  color: #1a1a1a;
   padding: 5px 9px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.confirm-review-btn:hover {
+  background: #d6d6d6;
 }
 
 .sub-accordion-header.is-reviewing .confirm-review-btn {
