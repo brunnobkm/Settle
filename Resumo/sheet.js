@@ -1626,12 +1626,37 @@ function openReview(button) {
   button.textContent = "Cancelar";
 }
 
+function createPlaceholderOption(body) {
+  const footer = body.querySelector(".review-footer");
+  const radioName = body.querySelector("[data-review-radio]")?.name || `review-${Date.now()}`;
+
+  body.querySelectorAll("[data-review-radio]").forEach((radio) => { radio.checked = false; });
+
+  const option = document.createElement("label");
+  option.className = "source-option is-placeholder";
+  option.dataset.extractPlaceholder = "true";
+
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.name = radioName;
+  radio.checked = true;
+  radio.dataset.reviewRadio = "";
+  option.append(radio);
+
+  const wrap = document.createElement("span");
+  wrap.innerHTML = `<strong class="extract-placeholder-text">Selecione um trecho no edital para extrair a informação.</strong>`;
+  option.append(wrap);
+
+  if (footer) body.insertBefore(option, footer);
+  else body.append(option);
+  return option;
+}
+
 function showNewOption(button) {
   const body = button.closest(".sub-body");
   const panel = button.closest("[data-panel]");
   const sourceView = panel?.querySelector("[data-source-view]");
-  const banner = body?.querySelector("[data-extract-banner]");
-  if (!body || !panel || !sourceView || !banner) return;
+  if (!body || !panel || !sourceView) return;
 
   if (activeExtractionBody && activeExtractionBody !== body) resetNewOption(activeExtractionBody);
   clearActiveSourceContext();
@@ -1639,9 +1664,13 @@ function showNewOption(button) {
   activeExtractionBody = body;
   activeSourceView = sourceView;
   body.classList.add("is-extracting");
-  banner.hidden = false;
-  button.hidden = true;
-  button.closest(".review-footer").hidden = true;
+
+  const addBtn = body.querySelector("[data-add-option]");
+  const cancelBtn = body.querySelector("[data-cancel-extract]");
+  if (addBtn) addBtn.hidden = true;
+  if (cancelBtn) cancelBtn.hidden = false;
+
+  createPlaceholderOption(body);
 
   const currentDoc = sourceView.querySelector("[data-source-document]")?.value || "edital";
   sourceView.dataset.highlightText = "";
@@ -1660,16 +1689,13 @@ function showNewOption(button) {
 function resetNewOption(body) {
   if (!body) return;
 
-  const banner = body.querySelector("[data-extract-banner]");
-  if (banner) banner.hidden = true;
+  body.querySelector("[data-extract-placeholder]")?.remove();
   body.classList.remove("is-extracting");
 
-  const addButton = body.querySelector("[data-add-option]");
-  if (addButton) {
-    addButton.hidden = false;
-    addButton.disabled = false;
-    addButton.closest(".review-footer").hidden = false;
-  }
+  const addBtn = body.querySelector("[data-add-option]");
+  const cancelBtn = body.querySelector("[data-cancel-extract]");
+  if (addBtn) { addBtn.hidden = false; addBtn.disabled = false; }
+  if (cancelBtn) cancelBtn.hidden = true;
 
   if (activeExtractionBody === body) activeExtractionBody = null;
 }
@@ -2073,39 +2099,41 @@ function documentLabel(documentKey) {
   return sourceDocuments[documentKey]?.label || "Edital";
 }
 
-function createExtractedOption(body, selectedText, documentKey) {
-  const banner = body.querySelector("[data-extract-banner]");
-  const radioName = body.querySelector("[data-review-radio]")?.name || `review-${Date.now()}`;
+function fillExtractedOption(placeholder, selectedText, documentKey) {
+  if (!placeholder) return;
 
-  body.querySelectorAll("[data-review-radio]").forEach((radio) => { radio.checked = false; });
-
-  const option = document.createElement("label");
-  option.className = "source-option is-extracted";
-  option.dataset.extractedInformation = "true";
-  option.dataset.trecho = JSON.stringify({
+  placeholder.classList.remove("is-placeholder", "is-loading");
+  placeholder.classList.add("is-extracted");
+  delete placeholder.dataset.extractPlaceholder;
+  placeholder.dataset.extractedInformation = "true";
+  placeholder.dataset.trecho = JSON.stringify({
     label: documentLabel(documentKey),
     document: documentKey,
     text: selectedText,
     searchText: getSourceSearchText(selectedText),
   });
 
-  const radio = document.createElement("input");
-  radio.type = "radio";
-  radio.name = radioName;
-  radio.checked = true;
-  radio.dataset.reviewRadio = "";
-  option.append(radio);
+  const wrap = placeholder.querySelector("span");
+  if (wrap) {
+    wrap.innerHTML = `
+      <strong>${escapeHTML(selectedText)}</strong>
+      <small>Fonte: ${escapeHTML(documentLabel(documentKey))}</small>
+    `;
+  }
+}
 
-  const wrap = document.createElement("span");
-  wrap.innerHTML = `
-    <strong>${escapeHTML(selectedText)}</strong>
-    <small>Fonte: ${escapeHTML(documentLabel(documentKey))}</small>
-  `;
-  option.append(wrap);
-
-  if (banner) body.insertBefore(option, banner);
-  else body.append(option);
-  return option;
+function showExtractionSkeleton(placeholder) {
+  if (!placeholder) return;
+  placeholder.classList.add("is-loading");
+  const wrap = placeholder.querySelector("span");
+  if (wrap) {
+    wrap.innerHTML = `
+      <span class="extract-skeleton">
+        <span class="skeleton-line" style="width: 92%"></span>
+        <span class="skeleton-line" style="width: 68%"></span>
+      </span>
+    `;
+  }
 }
 
 function addSelectionAsSource() {
@@ -2149,15 +2177,26 @@ function addSelectionAsSource() {
   }
 
   if (activeExtractionBody && selectedText) {
+    const body = activeExtractionBody;
     const select = sourceView?.querySelector("[data-source-document]");
     const documentKey = select?.value || "edital";
-    createExtractedOption(activeExtractionBody, selectedText, documentKey);
+    const placeholder = body.querySelector("[data-extract-placeholder]");
     sourceView.dataset.highlightText = sourceSearchText;
-    resetNewOption(activeExtractionBody);
     selection?.removeAllRanges();
     sourceSelectionRange = null;
     hideSourceSelectionTooltip();
-    showToast("Informação extraída!");
+
+    showExtractionSkeleton(placeholder);
+    window.setTimeout(() => {
+      fillExtractedOption(placeholder, selectedText, documentKey);
+      body.classList.remove("is-extracting");
+      const addBtn = body.querySelector("[data-add-option]");
+      const cancelBtn = body.querySelector("[data-cancel-extract]");
+      if (addBtn) addBtn.hidden = false;
+      if (cancelBtn) cancelBtn.hidden = true;
+      if (activeExtractionBody === body) activeExtractionBody = null;
+      showToast("Informação extraída!");
+    }, 550);
     return;
   }
 
