@@ -1215,7 +1215,7 @@ function openTabMenu(tab, position){
     if(ev.key==='Enter'){ ev.preventDefault(); closeTabMenu(); }
     if(ev.key==='Escape'){ ev.preventDefault(); (tab.querySelector('.tab-label')||tab).textContent = orig; persistTabs(); closeTabMenu(); }
   });
-  setTimeout(()=>{ nameInp.focus(); nameInp.select(); }, 0);
+  // não dá foco/seleção automática: o input abre no estado normal (usuário clica p/ renomear)
 
   m.addEventListener('click', e=>{
     const it = e.target.closest('.tm-item'); if(!it || it.classList.contains('disabled')) return;
