@@ -392,6 +392,49 @@
     .viewer, .sidebar { height: auto; }
     .pdf-scroll { max-height: 60vh; }
   }
+
+  /* ---------- documento: dropdown + extração sob demanda ---------- */
+  .doc-select {
+    position: relative; display: inline-flex; align-items: center; gap: 8px;
+    height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px;
+    background: #fafafa; max-width: 340px; flex: 0 0 auto;
+  }
+  .doc-select .doc-ico { color: var(--faint); flex: 0 0 auto; }
+  .doc-select select {
+    border: 0; background: transparent; font: inherit; font-size: 13.5px; color: #374151;
+    padding: 0 20px 0 0; appearance: none; -webkit-appearance: none; cursor: pointer;
+    max-width: 270px; text-overflow: ellipsis;
+  }
+  .doc-select .chev { position: absolute; right: 8px; pointer-events: none; color: var(--faint); }
+
+  .btn-group { display: inline-flex; align-items: center; border-radius: 8px; overflow: hidden; flex: 0 0 auto; }
+  .soft-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; font-size: 13.5px; font-weight: 500; color: #171717;
+    background: rgba(23,23,23,0.06); white-space: nowrap; transition: background .12s;
+  }
+  .soft-btn + .soft-btn { border-left: 1px solid rgba(23,23,23,0.08); }
+  .soft-btn:hover { background: rgba(23,23,23,0.12); }
+  .soft-btn-primary { color: var(--green-strong); }
+
+  .workspace.no-sidebar { grid-template-columns: 1fr; }
+  .workspace.no-sidebar .sidebar { display: none; }
+
+  .extract-loading {
+    position: fixed; inset: 0; z-index: 90; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(255,255,255,.55); backdrop-filter: blur(2px);
+  }
+  .extract-loading.is-visible { display: flex; }
+  .extract-loading .el-box {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px 40px; box-shadow: var(--shadow-lg); text-align: center;
+  }
+  .extract-loading .spinner { width: 34px; height: 34px; border: 3px solid #e5e7eb; border-top-color: var(--green-strong); border-radius: 50%; animation: spin .8s linear infinite; }
+  .extract-loading strong { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+  .extract-loading span { font-size: 12.5px; color: var(--muted); }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -410,15 +453,30 @@
       <!-- ===================== VIEWER ===================== -->
       <section class="viewer" aria-label="Visualizador de PDF">
         <div class="viewer-bar">
-          <span class="file-pill">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-            <span class="name">edital_preg_o_004.16_plataform</span>
-          </span>
+          <label class="doc-select" title="Documento da licitação">
+            <svg class="doc-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <select id="docSelect" aria-label="Documento" onchange="switchDoc(this.value)">
+              <option value="edital">edital_preg_o_004.16_plataform</option>
+              <option value="etp">estudo_tecnico_preliminar_080</option>
+              <option value="tr">termo_de_referencia_004</option>
+              <option value="contrato">minuta_de_contrato_004</option>
+            </select>
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </label>
           <span class="spacer"></span>
           <button class="btn-ghost" type="button" onclick="toast('Download iniciado')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
             Baixar
           </button>
+          <div class="btn-group">
+            <button class="soft-btn" type="button" onclick="toast('Análise concluída')">Concluir análise</button>
+            <button class="soft-btn" type="button" onclick="toast('Importar documento')">Importar</button>
+            <button class="soft-btn" type="button" onclick="toast('Exportar análise')">Exportar</button>
+            <button class="soft-btn soft-btn-primary" id="extrairReqBtn" type="button" onclick="runExtraction()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+              Extrair requisitos
+            </button>
+          </div>
         </div>
 
         <div class="pdf-tools">
@@ -462,6 +520,7 @@
         <div class="pdf-scroll" id="pdfScroll">
           <article class="page" id="page">
             <div class="doc" id="doc">
+              <div class="doc-body" data-doc="edital">
               <div class="center">
                 <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
                   <circle cx="50" cy="50" r="46" fill="#0b6b3a"/>
@@ -512,6 +571,35 @@
 
               <div class="heading">2. DOS RECURSOS ORÇAMENTÁRIOS</div>
               <p>2.1. As despesas decorrentes da presente contratação correrão à conta de recursos específicos consignados no orçamento vigente da Câmara Municipal de Petrolina.</p>
+              </div><!-- /doc-body edital -->
+
+              <div class="doc-body" data-doc="etp" hidden>
+                <div class="center"><h2>ESTUDO TÉCNICO PRELIMINAR</h2><div class="sub">Câmara Municipal de Petrolina</div><div class="edital-tag">ETP Nº 080/2026</div></div>
+                <div class="heading">1. DESCRIÇÃO DA NECESSIDADE</div>
+                <p>1.1. A contratação visa modernizar a gestão eletrônica de documentos e processos administrativos da Câmara Municipal de Petrolina, reduzindo o uso de papel e o tempo de tramitação.</p>
+                <div class="heading">2. REQUISITOS DA SOLUÇÃO</div>
+                <p>2.1. A solução deverá ser ofertada em regime de Software as a Service (SaaS), com disponibilidade mínima de 99,5% e suporte técnico em horário comercial.</p>
+                <p>2.2. Deverá contemplar gestão eletrônica de documentos, processos administrativos, comunicação institucional e atendimento digital ao cidadão.</p>
+                <div class="heading">3. ESTIMATIVA DE CUSTOS</div>
+                <p>3.1. O valor estimado da contratação foi obtido por meio de pesquisa de mercado junto a fornecedores do ramo.</p>
+              </div>
+
+              <div class="doc-body" data-doc="tr" hidden>
+                <div class="center"><h2>TERMO DE REFERÊNCIA</h2><div class="sub">Câmara Municipal de Petrolina</div><div class="edital-tag">TR Nº 004/2026</div></div>
+                <div class="heading">1. DO OBJETO</div>
+                <p>1.1. Contratação de plataforma informatizada, em regime de SaaS, para gestão eletrônica de documentos e processos administrativos.</p>
+                <div class="heading">2. ESPECIFICAÇÕES TÉCNICAS</div>
+                <p>2.1. O sistema deverá permitir assinatura eletrônica, controle de versões e trilha de auditoria completa.</p>
+                <p>2.2. Deverá integrar-se ao Portal de Compras Públicas e ao PNCP.</p>
+              </div>
+
+              <div class="doc-body" data-doc="contrato" hidden>
+                <div class="center"><h2>MINUTA DE CONTRATO</h2><div class="sub">Câmara Municipal de Petrolina</div><div class="edital-tag">Contrato Nº 004/2026</div></div>
+                <div class="heading">CLÁUSULA PRIMEIRA — DO OBJETO</div>
+                <p>1.1. O presente contrato tem por objeto o fornecimento de plataforma SaaS de gestão eletrônica de documentos, conforme especificações do edital.</p>
+                <div class="heading">CLÁUSULA SEGUNDA — DA VIGÊNCIA</div>
+                <p>2.1. O prazo de vigência é de 12 (doze) meses, contado da assinatura, prorrogável na forma da lei.</p>
+              </div>
             </div>
           </article>
         </div>
@@ -570,6 +658,15 @@
     </button>
   </div>
 
+  <!-- overlay de carregamento da extração -->
+  <div class="extract-loading" id="extractLoading">
+    <div class="el-box">
+      <div class="spinner"></div>
+      <strong>Extraindo requisitos…</strong>
+      <span>A IA da Settle está analisando o documento.</span>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Marcação adicionada</div>
 
 <script>
@@ -591,6 +688,45 @@
   let pendingText = '';
   let pendingRange = null;
   let hasSelection = false;
+
+  /* ---------- documentos + extração sob demanda ---------- */
+  const documents = [
+    { id: 'edital', nome: 'edital_preg_o_004.16_plataform' },
+    { id: 'etp', nome: 'estudo_tecnico_preliminar_080' },
+    { id: 'tr', nome: 'termo_de_referencia_004' },
+    { id: 'contrato', nome: 'minuta_de_contrato_004' },
+  ];
+  let viewedDocId = 'edital';
+  let extractedDocId = null;                       // documento que tem a extração ativa (só um por vez)
+  function docBody(id) { return docEl.querySelector(`.doc-body[data-doc="${id}"]`); }
+  function extractionActive() { return extractedDocId && extractedDocId === viewedDocId; }
+  function updateWorkspace() {
+    document.querySelector('.workspace').classList.toggle('no-sidebar', !extractionActive());
+  }
+  function switchDoc(id) {
+    viewedDocId = id;
+    docEl.querySelectorAll('.doc-body').forEach(b => { b.hidden = (b.dataset.doc !== id); });
+    clearSelectionState();
+    updateWorkspace();
+    document.getElementById('pdfScroll').scrollTop = 0;
+    setZoom(document.getElementById('zoomSelect').value);
+  }
+  const extractLoading = document.getElementById('extractLoading');
+  function runExtraction() {
+    extractLoading.classList.add('is-visible');
+    setTimeout(() => {
+      modules = []; activeItemId = null; linkingModuleId = null;
+      seedDoc(viewedDocId);
+      extractedDocId = viewedDocId;                // a extração "se move" para o documento atual
+      rebuildHighlights();
+      updateWorkspace();
+      render();
+      setZoom(document.getElementById('zoomSelect').value);
+      extractLoading.classList.remove('is-visible');
+      const d = documents.find(x => x.id === viewedDocId);
+      toast('Requisitos extraídos de ' + (d ? d.nome : 'documento'));
+    }, 900);
+  }
 
   /* ---------- realce dos trechos (CSS Custom Highlight API) ---------- */
   const supportsHighlight = typeof Highlight !== 'undefined' && typeof CSS !== 'undefined' && CSS.highlights;
@@ -707,7 +843,7 @@
   }
   document.addEventListener('selectionchange', () => {
     const found = currentSelectionInDoc();
-    if (found) {
+    if (found && extractionActive()) {
       pendingText = found.text; pendingRange = found.range.cloneRange();
       hasSelection = true; hideCursorHint(); showFab();
     } else {
@@ -715,7 +851,7 @@
     }
   });
   page.addEventListener('mousemove', (e) => {
-    if (hasSelection) { hideCursorHint(); return; }
+    if (hasSelection || !extractionActive()) { hideCursorHint(); return; }
     cursorHint.textContent = 'Selecione um trecho';
     cursorHint.style.left = (e.clientX + 14) + 'px';
     cursorHint.style.top = e.clientY + 'px';
@@ -944,18 +1080,28 @@
     modules = next;
   }
 
-  /* ---------- IA pré-popula o PDF (backend simulado) ---------- */
+  /* ---------- extração (IA simulada) ---------- */
   function rangeOf(el) { const r = document.createRange(); r.selectNodeContents(el); return r; }
   function txt(el) { return el.textContent.replace(/\s+/g, ' ').trim(); }
-  function tdWith(sub) { return [...docEl.querySelectorAll('.doc-table td')].find(td => td.textContent.includes(sub)); }
-  function pWith(prefix) { return [...docEl.querySelectorAll('p')].find(p => p.textContent.trim().startsWith(prefix)); }
-  function headingWith(sub) { return [...docEl.querySelectorAll('.heading')].find(h => h.textContent.includes(sub)); }
-  function seed() {
-    const mk = (el) => el ? { id: newId(), text: txt(el).slice(0, 360), range: rangeOf(el), ia: true } : null;
-    const M = (nome, anchor, els) => { const m = createModule(nome); if (anchor) m.range = rangeOf(anchor); m.items = els.map(mk).filter(Boolean); };
-    M('Objeto e escopo', tdWith('OBJETO:'), [tdWith('OBJETO:')]);
-    M('Critério de julgamento', tdWith('CRITÉRIO DE JULGAMENTO'), [tdWith('CRITÉRIO DE JULGAMENTO'), tdWith('MODO DE DISPUTA')]);
-    M('Requisitos gerais', headingWith('DO OBJETO'), [pWith('1.1.'), pWith('1.2.'), pWith('2.1.')]);
+  function mkItem(el) { return el ? { id: newId(), text: txt(el).slice(0, 360), range: rangeOf(el), ia: true } : null; }
+  function seedDoc(docId) {
+    const body = docBody(docId);
+    if (!body) return;
+    if (docId === 'edital') {
+      const td = (s) => [...body.querySelectorAll('.doc-table td')].find(x => x.textContent.includes(s));
+      const p = (pre) => [...body.querySelectorAll('p')].find(x => x.textContent.trim().startsWith(pre));
+      const h = (s) => [...body.querySelectorAll('.heading')].find(x => x.textContent.includes(s));
+      const M = (nome, anchor, els) => { const m = createModule(nome); if (anchor) m.range = rangeOf(anchor); m.items = els.map(mkItem).filter(Boolean); };
+      M('Objeto e escopo', td('OBJETO:'), [td('OBJETO:')]);
+      M('Critério de julgamento', td('CRITÉRIO DE JULGAMENTO'), [td('CRITÉRIO DE JULGAMENTO'), td('MODO DE DISPUTA')]);
+      M('Requisitos gerais', h('DO OBJETO'), [p('1.1.'), p('1.2.'), p('2.1.')]);
+    } else {
+      let cur = null;
+      [...body.children].forEach(el => {
+        if (el.classList.contains('heading')) { cur = createModule(txt(el).slice(0, 60)); cur.range = rangeOf(el); }
+        else if (el.tagName === 'P' && cur) { cur.items.push(mkItem(el)); }
+      });
+    }
     targetModuleId = modules[0] ? modules[0].id : null;
   }
 
@@ -1015,8 +1161,8 @@
     toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
   }
 
-  seed();
-  rebuildHighlights();
+  // primeira tela: documento sem sidebar (nada extraído ainda)
+  switchDoc('edital');
   render();
   setZoom('fit');
 </script>
