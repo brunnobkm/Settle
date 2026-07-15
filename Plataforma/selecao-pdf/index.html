@@ -730,14 +730,10 @@
     rebuildHighlights(); updateWorkspace(); render();
     setZoom(document.getElementById('zoomSelect').value);
   }
-  function runExtraction() {                         // "Refazer extração" (na tela de extração)
-    extractLoading.classList.add('is-visible');
-    setTimeout(() => {
-      doExtraction(viewedDocId);
-      extractLoading.classList.remove('is-visible');
-      const d = documents.find(x => x.id === viewedDocId);
-      toast('Requisitos extraídos de ' + (d ? d.nome : 'documento'));
-    }, 900);
+  function runExtraction() {                         // botão de extração na tela do PDF (Extrair requisitos / Refazer extração)
+    doExtraction(viewedDocId);
+    const d = documents.find(x => x.id === viewedDocId);
+    toast('Requisitos extraídos de ' + (d ? d.nome : 'documento'));
   }
   function openExtraction() {                        // botão da tela inicial -> abre a tela de extração
     document.getElementById('startScreen').hidden = true;
