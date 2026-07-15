@@ -472,10 +472,10 @@
           <label class="doc-select" title="Documento da licitação">
             <svg class="doc-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
             <select id="docSelect" aria-label="Documento" onchange="switchDoc(this.value)">
-              <option value="edital">edital_preg_o_004.16_plataform</option>
-              <option value="etp">estudo_tecnico_preliminar_080</option>
-              <option value="tr">termo_de_referencia_004</option>
-              <option value="contrato">minuta_de_contrato_004</option>
+              <option value="edital">arquivo-errado.pdf</option>
+              <option value="etp">arquivo-errado.pdf</option>
+              <option value="tr">arquivo-errado.pdf</option>
+              <option value="contrato">arquivo-correto.pdf</option>
             </select>
             <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </label>
@@ -484,7 +484,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
             Baixar
           </button>
-          <button class="btn-ghost" id="refazerBtn" type="button" onclick="runExtraction()">Refazer extração</button>
+          <button class="btn-ghost" id="refazerBtn" type="button" onclick="runExtraction()">Extrair requisitos</button>
         </div>
 
         <div class="pdf-tools">
@@ -699,17 +699,20 @@
 
   /* ---------- documentos + extração sob demanda ---------- */
   const documents = [
-    { id: 'edital', nome: 'edital_preg_o_004.16_plataform' },
-    { id: 'etp', nome: 'estudo_tecnico_preliminar_080' },
-    { id: 'tr', nome: 'termo_de_referencia_004' },
-    { id: 'contrato', nome: 'minuta_de_contrato_004' },
+    { id: 'edital', nome: 'arquivo-errado.pdf' },
+    { id: 'etp', nome: 'arquivo-errado.pdf' },
+    { id: 'tr', nome: 'arquivo-errado.pdf' },
+    { id: 'contrato', nome: 'arquivo-correto.pdf' },
   ];
   let viewedDocId = 'edital';
   let extractedDocId = null;                       // documento que tem a extração ativa (só um por vez)
   function docBody(id) { return docEl.querySelector(`.doc-body[data-doc="${id}"]`); }
   function extractionActive() { return extractedDocId && extractedDocId === viewedDocId; }
   function updateWorkspace() {
-    document.querySelector('.workspace').classList.toggle('no-sidebar', !extractionActive());
+    const active = extractionActive();
+    document.querySelector('.workspace').classList.toggle('no-sidebar', !active);
+    const btn = document.getElementById('refazerBtn');
+    if (btn) btn.textContent = active ? 'Refazer extração' : 'Extrair requisitos';
   }
   function switchDoc(id) {
     viewedDocId = id;
@@ -741,7 +744,7 @@
     document.getElementById('mainScreen').hidden = false;
     switchDoc('edital');
     doExtraction('edital');
-    toast('Requisitos extraídos do edital');
+    toast('Requisitos extraídos de arquivo-errado.pdf');
   }
 
   /* ---------- realce dos trechos (CSS Custom Highlight API) ---------- */
