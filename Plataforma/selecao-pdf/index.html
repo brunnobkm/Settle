@@ -737,15 +737,11 @@
     }, 900);
   }
   function openExtraction() {                        // botão da tela inicial -> abre a tela de extração
-    extractLoading.classList.add('is-visible');
-    setTimeout(() => {
-      document.getElementById('startScreen').hidden = true;
-      document.getElementById('mainScreen').hidden = false;
-      switchDoc('edital');
-      doExtraction('edital');
-      extractLoading.classList.remove('is-visible');
-      toast('Requisitos extraídos do edital');
-    }, 900);
+    document.getElementById('startScreen').hidden = true;
+    document.getElementById('mainScreen').hidden = false;
+    switchDoc('edital');
+    doExtraction('edital');
+    toast('Requisitos extraídos do edital');
   }
 
   /* ---------- realce dos trechos (CSS Custom Highlight API) ---------- */
