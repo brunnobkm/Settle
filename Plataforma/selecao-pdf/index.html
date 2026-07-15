@@ -410,12 +410,20 @@
   .btn-group { display: inline-flex; align-items: center; border-radius: 8px; overflow: hidden; flex: 0 0 auto; }
   .soft-btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 12px; font-size: 13.5px; font-weight: 500; color: #171717;
+    padding: 8px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: #171717;
     background: rgba(23,23,23,0.06); white-space: nowrap; transition: background .12s;
   }
   .soft-btn + .soft-btn { border-left: 1px solid rgba(23,23,23,0.08); }
   .soft-btn:hover { background: rgba(23,23,23,0.12); }
   .soft-btn-primary { color: var(--green-strong); }
+
+  /* tela inicial: só o grupo de botões centralizado */
+  .start-screen {
+    position: fixed; inset: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .start-screen .btn-group { box-shadow: var(--shadow); }
 
   .workspace.no-sidebar { grid-template-columns: 1fr; }
   .workspace.no-sidebar .sidebar { display: none; }
@@ -438,7 +446,20 @@
 </style>
 </head>
 <body>
-  <div class="screen">
+  <!-- ===================== TELA INICIAL (só o grupo de botões) ===================== -->
+  <div class="start-screen" id="startScreen">
+    <div class="btn-group">
+      <button class="soft-btn" type="button" onclick="toast('Análise concluída')">Concluir análise</button>
+      <button class="soft-btn" type="button" onclick="toast('Importar documento')">Importar</button>
+      <button class="soft-btn" type="button" onclick="toast('Exportar análise')">Exportar</button>
+      <button class="soft-btn soft-btn-primary" type="button" onclick="openExtraction()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+        Extrair requisitos
+      </button>
+    </div>
+  </div>
+
+  <div class="screen" id="mainScreen" hidden>
     <header class="screen-head">
       <div class="screen-head-text">
         <h1>Title</h1>
@@ -468,15 +489,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
             Baixar
           </button>
-          <div class="btn-group">
-            <button class="soft-btn" type="button" onclick="toast('Análise concluída')">Concluir análise</button>
-            <button class="soft-btn" type="button" onclick="toast('Importar documento')">Importar</button>
-            <button class="soft-btn" type="button" onclick="toast('Exportar análise')">Exportar</button>
-            <button class="soft-btn soft-btn-primary" id="extrairReqBtn" type="button" onclick="runExtraction()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
-              Extrair requisitos
-            </button>
-          </div>
+          <button class="soft-btn soft-btn-primary" id="refazerBtn" type="button" onclick="runExtraction()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+            Refazer extração
+          </button>
         </div>
 
         <div class="pdf-tools">
@@ -712,19 +728,31 @@
     setZoom(document.getElementById('zoomSelect').value);
   }
   const extractLoading = document.getElementById('extractLoading');
-  function runExtraction() {
+  function doExtraction(docId) {
+    modules = []; activeItemId = null; linkingModuleId = null;
+    seedDoc(docId);
+    extractedDocId = docId;                         // a extração "se move" para o documento atual
+    rebuildHighlights(); updateWorkspace(); render();
+    setZoom(document.getElementById('zoomSelect').value);
+  }
+  function runExtraction() {                         // "Refazer extração" (na tela de extração)
     extractLoading.classList.add('is-visible');
     setTimeout(() => {
-      modules = []; activeItemId = null; linkingModuleId = null;
-      seedDoc(viewedDocId);
-      extractedDocId = viewedDocId;                // a extração "se move" para o documento atual
-      rebuildHighlights();
-      updateWorkspace();
-      render();
-      setZoom(document.getElementById('zoomSelect').value);
+      doExtraction(viewedDocId);
       extractLoading.classList.remove('is-visible');
       const d = documents.find(x => x.id === viewedDocId);
       toast('Requisitos extraídos de ' + (d ? d.nome : 'documento'));
+    }, 900);
+  }
+  function openExtraction() {                        // botão da tela inicial -> abre a tela de extração
+    extractLoading.classList.add('is-visible');
+    setTimeout(() => {
+      document.getElementById('startScreen').hidden = true;
+      document.getElementById('mainScreen').hidden = false;
+      switchDoc('edital');
+      doExtraction('edital');
+      extractLoading.classList.remove('is-visible');
+      toast('Requisitos extraídos do edital');
     }, 900);
   }
 
@@ -1145,6 +1173,7 @@
 
   // mantém o documento ajustado à área ao redimensionar a janela
   window.addEventListener('resize', () => {
+    if (document.getElementById('mainScreen').hidden) return;
     if (document.getElementById('zoomSelect').value === 'fit') applyScale(fitScale());
   });
   function setTool(t) {
@@ -1161,10 +1190,8 @@
     toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
   }
 
-  // primeira tela: documento sem sidebar (nada extraído ainda)
-  switchDoc('edital');
+  // começa na tela inicial (grupo de botões); a tela de extração abre no botão "Extrair requisitos"
   render();
-  setZoom('fit');
 </script>
 </body>
 </html>
