@@ -107,6 +107,8 @@
     transition: background .15s, border-color .15s;
   }
   .btn-ghost:hover { background: #f7f7f8; border-color: var(--line-strong); }
+  .btn-ghost.is-primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-ghost.is-primary:hover { background: var(--green-strong); border-color: var(--green-strong); }
 
   .icon-btn {
     width: 36px; height: 36px; display: inline-grid; place-items: center;
@@ -441,6 +443,37 @@
   .extract-loading strong { font-size: 14.5px; font-weight: 700; color: var(--ink); }
   .extract-loading span { font-size: 12.5px; color: var(--muted); }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* modal de confirmação da extração */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 95; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(23,23,23,.34); backdrop-filter: blur(2px); padding: 24px;
+  }
+  .modal-overlay.is-visible { display: flex; }
+  .modal-card {
+    width: 100%; max-width: 440px; background: #fff;
+    border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow-lg); overflow: hidden;
+  }
+  .modal-body { padding: 24px 24px 20px; }
+  .modal-card h2 { font-size: 17px; font-weight: 700; color: var(--ink); margin: 0 0 8px; }
+  .modal-card > .modal-body > p { font-size: 13.5px; color: var(--muted); margin: 0 0 16px; line-height: 1.5; }
+  .modal-impacts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .modal-impacts li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--ink); line-height: 1.45; }
+  .modal-impacts svg { flex: 0 0 auto; margin-top: 2px; color: var(--green-strong); }
+  .modal-foot {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 24px; border-top: 1px solid var(--line); background: #fafafa;
+  }
+  .modal-foot .btn-ghost { padding: 8px 16px; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border: 1px solid var(--green); border-radius: 9px;
+    background: var(--green); color: #fff; font-size: 13.5px; font-weight: 600;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-primary:hover { background: var(--green-strong); border-color: var(--green-strong); }
 </style>
 </head>
 <body>
@@ -450,7 +483,7 @@
       <button class="soft-btn" type="button" onclick="toast('Análise concluída')">Concluir análise</button>
       <button class="soft-btn" type="button" onclick="toast('Importar documento')">Importar</button>
       <button class="soft-btn" type="button" onclick="toast('Exportar análise')">Exportar</button>
-      <button class="soft-btn" type="button" onclick="openExtraction()">Extrair requisitos</button>
+      <button class="soft-btn" type="button" onclick="openExtraction()">Revisar requisitos</button>
     </div>
   </div>
 
@@ -675,6 +708,34 @@
     </div>
   </div>
 
+  <!-- modal de confirmação da extração -->
+  <div class="modal-overlay" id="extractModal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="extractModalTitle">
+      <div class="modal-body">
+        <h2 id="extractModalTitle">Extrair requisitos deste documento?</h2>
+        <p id="extractModalText">A Settle vai analisar o documento aberto e gerar os requisitos automaticamente.</p>
+        <ul class="modal-impacts">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            <span id="extractModalReplace">A extração ativa passa a ser deste documento. O documento anterior deixa de ter requisitos associados.</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Requisitos e ajustes manuais feitos antes serão substituídos pela nova extração.</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span>Leva alguns segundos até os requisitos ficarem prontos.</span>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-ghost" type="button" onclick="closeExtractModal()">Cancelar</button>
+        <button class="btn-primary" id="extractModalConfirm" type="button" onclick="confirmExtraction()">Extrair requisitos</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Marcação adicionada</div>
 
 <script>
@@ -712,7 +773,11 @@
     const active = extractionActive();
     document.querySelector('.workspace').classList.toggle('no-sidebar', !active);
     const btn = document.getElementById('refazerBtn');
-    if (btn) btn.textContent = active ? 'Refazer extração' : 'Extrair requisitos';
+    if (btn) {
+      btn.textContent = active ? 'Refazer extração' : 'Extrair requisitos';
+      // verde enquanto o documento aberto ainda não foi extraído (sinaliza o próximo passo)
+      btn.classList.toggle('is-primary', !active);
+    }
   }
   function switchDoc(id) {
     viewedDocId = id;
@@ -730,7 +795,25 @@
     rebuildHighlights(); updateWorkspace(); render();
     setZoom(document.getElementById('zoomSelect').value);
   }
-  function runExtraction() {                         // botão de extração na tela do PDF (Extrair requisitos / Refazer extração)
+  const extractModal = document.getElementById('extractModal');
+  function runExtraction() {                          // botão de extração na tela do PDF -> abre o modal de confirmação
+    const refazer = extractionActive();               // já existe extração deste documento?
+    document.getElementById('extractModalTitle').textContent = refazer ? 'Refazer a extração deste documento?' : 'Extrair requisitos deste documento?';
+    document.getElementById('extractModalText').textContent = refazer
+      ? 'A Settle vai analisar novamente o documento aberto e gerar os requisitos do zero.'
+      : 'A Settle vai analisar o documento aberto e gerar os requisitos automaticamente.';
+    const replaceEl = document.getElementById('extractModalReplace');
+    replaceEl.textContent = refazer
+      ? 'A extração atual deste documento será substituída pela nova.'
+      : 'A extração ativa passa a ser deste documento. O documento anterior deixa de ter requisitos associados.';
+    document.getElementById('extractModalConfirm').textContent = refazer ? 'Refazer extração' : 'Extrair requisitos';
+    extractModal.classList.add('is-visible');
+  }
+  function closeExtractModal() { extractModal.classList.remove('is-visible'); }
+  extractModal.addEventListener('click', e => { if (e.target === extractModal) closeExtractModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && extractModal.classList.contains('is-visible')) closeExtractModal(); });
+  function confirmExtraction() {                       // confirma no modal -> roda a extração
+    closeExtractModal();
     doExtraction(viewedDocId);
     const d = documents.find(x => x.id === viewedDocId);
     toast('Requisitos extraídos de ' + (d ? d.nome : 'documento'));
