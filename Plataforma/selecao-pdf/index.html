@@ -517,7 +517,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
             Baixar
           </button>
-          <button class="btn-ghost" id="refazerBtn" type="button" onclick="runExtraction()">Extrair requisitos</button>
+          <button class="btn-ghost is-primary" id="refazerBtn" type="button" onclick="runExtraction()">Extrair requisitos</button>
         </div>
 
         <div class="pdf-tools">
@@ -775,8 +775,8 @@
     const btn = document.getElementById('refazerBtn');
     if (btn) {
       btn.textContent = active ? 'Refazer extração' : 'Extrair requisitos';
-      // verde enquanto o documento aberto ainda não foi extraído (sinaliza o próximo passo)
-      btn.classList.toggle('is-primary', !active);
+      // sempre verde para chamar atenção para a ação de extração/revisão
+      btn.classList.add('is-primary');
     }
   }
   function switchDoc(id) {
