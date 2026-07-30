@@ -1589,10 +1589,9 @@ const ENTRADA_INICIAL = {
   edIrrelTexto: "", edIrrelAnexos: [], edRelTexto: "", edRelAnexos: [], materiais: [], planilhas: [],
 };
 
-// persistência protegida — funciona fora do preview; no sandbox de artifact o acesso a localStorage é bloqueado e o try/catch simplesmente não faz nada
-const LS = (k) => "settle_onb_v2_" + k;
-const loadLS = (k, fb) => { try { const v = window.localStorage.getItem(LS(k)); return v != null ? JSON.parse(v) : fb; } catch { return fb; } };
-const saveLS = (k, val) => { try { window.localStorage.setItem(LS(k), JSON.stringify(val)); } catch {} };
+// teste de usabilidade: sem persistência — cada atualização da página reinicia do zero
+const loadLS = (k, fb) => fb;
+const saveLS = () => {};
 
 // chat flutuante, aberto por padrão, ancorado no canto inferior direito
 function FloatingAssistant(props) {
