@@ -676,9 +676,8 @@
       <!-- ============ TOOLBAR ============ -->
       <div class="toolbar">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true" data-tab="Todas" draggable="true">Todas</button>
-          <button class="tab" role="tab" data-tab="Órgãos favoritos" draggable="true">Órgãos favoritos</button>
-          <button class="tab" role="tab" data-tab="Relevantes" draggable="true">Relevantes</button>
+          <!-- Todas e Órgãos favoritos ocultas por enquanto -->
+          <button class="tab active" role="tab" aria-selected="true" data-tab="Relevantes" draggable="true">Relevantes</button>
           <button class="tab" role="tab" data-tab="Provável ruído" draggable="true">Provável ruído</button>
           <button class="tab-add" type="button" title="Nova visualização" aria-label="Nova visualização">+</button>
         </div>
@@ -1423,13 +1422,14 @@ function applyOrgaoView(tab){
 }
 // tabs Relevantes / Provável ruído: filtram os cards pelo status de aderência
 function applyAderenciaView(tab){
-  const map = { 'Relevantes':'aderente', 'Provável ruído':'nao_aderente' };
-  const want = map[tab];
+  // Relevantes = aderentes + dúvidas; Provável ruído = não aderentes
+  const groups = { 'Relevantes':['aderente','duvida'], 'Provável ruído':['nao_aderente'] };
+  const want = groups[tab];
   let n = 0;
   document.querySelectorAll('#cardList .card').forEach(c=>{
-    const off = want && c.dataset.aderencia !== want;
-    c.classList.toggle('ader-off', !!off);
-    if(want && c.dataset.aderencia === want) n++;
+    const inGroup = want && want.includes(c.dataset.aderencia);
+    c.classList.toggle('ader-off', !!(want && !inGroup));
+    if(inGroup) n++;
   });
   if(want){ const cntEl = document.querySelector(`.tab[data-tab="${tab}"] .cnt`); if(cntEl) cntEl.textContent = n; }
 }
@@ -1575,9 +1575,9 @@ document.addEventListener('click', e=>{
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
 // init das tabs: sempre no estado padrão (sem persistência — reseta ao atualizar, igual aos outros demos)
 try{ localStorage.removeItem(LS_TABS); }catch(e){}   // limpa qualquer estado salvo por versões anteriores
-const DEFAULT_COUNTS = { 'Todas': 300, 'Órgãos favoritos': 2, 'Relevantes': 2, 'Provável ruído': 2 };
+const DEFAULT_COUNTS = { 'Todas': 300, 'Órgãos favoritos': 2, 'Relevantes': 3, 'Provável ruído': 2 };
 document.querySelectorAll('.tabs .tab').forEach(t=> decorateTab(t, DEFAULT_COUNTS[t.dataset.tab] || 0));   // label + contador + "..."
-renderTabFilters('Todas');
+renderTabFilters('Relevantes');   // Todas/Órgãos favoritos ocultas por enquanto
 ensureAddBtn();
 ensureMoreBtn();
 layoutTabs();
