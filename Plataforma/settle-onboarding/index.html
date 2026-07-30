@@ -39,7 +39,7 @@ import {
   Upload, ThumbsUp, ThumbsDown, Shield, Layers, MapPin, Info, Search, ListFilter,
   Lightbulb, ChevronRight, ChevronDown, CheckCircle2, Pencil, AlertTriangle, Eye, Zap, Trash2,
   MessageSquareText, GitMerge, Square, CheckSquare, BarChart3, Boxes, TrendingUp, Undo2,
-  Bookmark, Compass, PanelLeft, ChevronsUpDown,
+  RefreshCw, Bell, Link2, Share2, Folder, FolderX, Bookmark,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -1511,33 +1511,103 @@ function Validar({ seg, onUpdate, onBack, onOk, ultimo, posicao }) {
 // --- Licitações -------------------------------------------------------------
 
 function confTier(c) { if (c >= 75) return "alta"; if (c >= 30) return "revisar"; return "fora"; }
-function LicitacaoCard({ l, onFeedback, aprendido }) {
-  const tier = confTier(l.confidence);
-  const barCor = tier === "alta" ? "bg-emerald-500" : tier === "revisar" ? "bg-amber-500" : "bg-slate-400";
+// --- Etapa 6: Licitações (layout da tela Recomendadas do anexo) -------------
+const RECOMENDADAS = [
+  { edital: "90001/2026", orgao: "SECRETARIA DE EDUCAÇÃO DO ESTADO DE MINAS GERAIS", objeto: "Aquisição de tablets educacionais 10\", notebooks e desktops para a rede estadual de ensino, incluindo instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.", valor: "47.284.499,63", id: "1078513", modalidade: "Pregão - Eletrônico", julgamento: "Menor preço por item", estado: "MG", cidade: "Belo Horizonte", habitantes: "2.315.560", portal: "compras.mg.gov…", adicionada: "04/02/2026", atualizada: "12/02/2026", envio: "13/02/2026", arquivos: 3, semAnexo: false, updated: true, aderencia: "aderente", motivo: "Objeto casa com o segmento (tablets, notebooks e desktops)." },
+  { edital: "88234/2026", orgao: "TRIBUNAL DE JUSTIÇA DO ESTADO DE SÃO PAULO", objeto: "Fornecimento de notebooks i5/i7 e kits de laboratório de informática para servidores, com suporte e garantia de 48 meses.", valor: "12.640.310,00", id: "1099842", modalidade: "Pregão - Eletrônico", julgamento: "Menor preço por lote", estado: "SP", cidade: "São Paulo", habitantes: "11.451.999", portal: "compras.tjsp.jus…", adicionada: "07/02/2026", atualizada: "14/02/2026", envio: "21/02/2026", arquivos: 3, semAnexo: false, aderencia: "aderente", motivo: "Notebooks e kits de informática dentro do escopo." },
+  { edital: "73/2026", orgao: "PREFEITURA MUNICIPAL DE SOROCABA", objeto: "Aquisição de capas protetoras e películas para tablets da rede municipal, com entrega parcelada.", valor: "85.000,00", id: "1102944", modalidade: "Dispensa", julgamento: "Menor preço global", estado: "SP", cidade: "Sorocaba", habitantes: "687.357", portal: "compras.sorocaba.sp…", adicionada: "09/02/2026", atualizada: "11/02/2026", envio: "24/02/2026", arquivos: 1, semAnexo: false, aderencia: "duvida", motivo: "Bateu em “tablet”, mas parece acessório (capa), não o dispositivo. Requer análise." },
+  { edital: "90455/2025", orgao: "SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ", objeto: "Registro de preços para aquisição de mobiliário hospitalar, macas e equipamentos médico-hospitalares para as unidades de pronto atendimento.", valor: "8.910.770,45", id: "1065217", modalidade: "Pregão - Presencial", julgamento: "Menor preço por item", estado: "CE", cidade: "Fortaleza", habitantes: "2.703.391", portal: "licitacoes.saude.ce…", adicionada: "29/01/2026", atualizada: "10/02/2026", envio: "18/02/2026", arquivos: 2, semAnexo: false, aderencia: "nao_aderente", motivo: "Mobiliário e equipamentos hospitalares, fora do segmento da empresa." },
+  { edital: "204/2025", orgao: "SECRETARIA DE EDUCAÇÃO DO ESTADO DA BAHIA", objeto: "Contratação de treinamento e capacitação de professores no uso de software de gestão escolar.", valor: "320.000,00", id: "1061780", modalidade: "Pregão - Eletrônico", julgamento: "Menor preço por item", estado: "BA", cidade: "Salvador", habitantes: "2.417.678", portal: "comprasnet.ba.gov…", adicionada: "02/02/2026", atualizada: "05/02/2026", envio: "20/02/2026", arquivos: 2, semAnexo: true, aderencia: "nao_aderente", motivo: "Serviço de treinamento, sem fornecimento de equipamento." },
+];
+const ADER = {
+  aderente: { label: "Aderente", cls: "border-emerald-200 bg-emerald-50 text-emerald-700", icon: Check },
+  duvida: { label: "Dúvida", cls: "border-amber-200 bg-amber-50 text-amber-700", icon: AlertTriangle },
+  nao_aderente: { label: "Não aderente", cls: "border-rose-200 bg-rose-50 text-rose-700", icon: X },
+};
+const AV_CORES = ["#6b7280", "#0f766e", "#9333ea"];
+
+function Fld({ k, v, warn }) {
+  return (<div className="min-w-0"><div className="mb-0.5 text-[13px] font-semibold text-slate-900">{k}</div><div className="truncate text-sm" style={{ color: warn ? "#d97706" : "#737373", fontWeight: warn ? 500 : 400 }}>{v}</div></div>);
+}
+
+function RecomendadaCard({ d, segNome }) {
+  const ad = ADER[d.aderencia];
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${aprendido ? "opacity-50" : ""}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0"><h3 className="font-semibold text-slate-900">{l.titulo}</h3><div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500"><span>{l.orgao}</span><span className="font-mono">{l.modalidade}</span><span className="font-mono text-slate-700">{l.valor}</span><span className="font-mono">CAPAG {l.capag}</span></div></div>
-        <div className="shrink-0 text-right"><div className={`text-lg font-bold ${tier === "alta" ? "text-emerald-600" : tier === "revisar" ? "text-amber-600" : "text-slate-400"}`}>{l.confidence}%</div><div className="mt-1 h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><div className={`h-full ${barCor}`} style={{ width: `${l.confidence}%` }} /></div></div>
+    <article className="rounded-[10px] border border-slate-200 bg-white p-4 shadow-sm sm:px-[18px]">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="h-[18px] w-[18px] flex-none rounded-[5px] border-[1.5px] border-slate-300 bg-white" />
+        <span className="whitespace-nowrap text-[15px] font-semibold text-slate-900">Edital <b className="font-bold">{d.edital}</b></span>
+        {d.updated && <span className="inline-flex items-center gap-1.5 rounded-[7px] px-2 py-1 text-xs font-semibold text-white" style={{ backgroundColor: "#d97706" }}><RefreshCw className="h-3 w-3" /> Atualizado</span>}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <button className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-50">Descartar</button>
+          <button className="rounded-lg border px-3.5 py-2 text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: "#3a9b9e", borderColor: "#3a9b9e" }}>Enviar para análise</button>
+          <button className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-medium transition hover:brightness-95" style={{ backgroundColor: "#fdf6ec", borderColor: "#f3e3c8", color: "#d97706" }}><Pencil className="h-3.5 w-3.5" /> Em disputa ou Homologação</button>
+          <div className="flex items-center">
+            {["JS", "MR", "AL"].map((a, i) => (<span key={a} className="-ml-2 flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white first:ml-0" style={{ backgroundColor: AV_CORES[i] }}>{a}</span>))}
+            <span className="-ml-2 flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white bg-slate-100 text-sm font-bold text-slate-500">+</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {[Bookmark, Bell, Link2, Share2].map((Ic, i) => (<button key={i} className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"><Ic className="h-[17px] w-[17px]" /></button>))}
+            <button className="relative flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50">{d.semAnexo ? <FolderX className="h-[17px] w-[17px]" /> : <Folder className="h-[17px] w-[17px]" />}{!d.semAnexo && d.arquivos > 0 && <span className="absolute -right-1.5 -top-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full border-2 border-white px-1 text-[10px] font-bold text-white" style={{ backgroundColor: "#3a9b9e" }}>{d.arquivos}</span>}</button>
+          </div>
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-1.5">{l.motivos.map((m, i) => (<Chip key={i} tone={m.pos ? "emerald" : "rose"}><span className="text-xs uppercase tracking-wide opacity-60">{m.tipo}</span><span className="font-mono">{m.txt}</span></Chip>))}</div>
-      {l.nota && (<p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {l.nota}</p>)}
-      {!aprendido ? (<div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3"><button onClick={() => onFeedback(l, true)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-emerald-300 hover:text-emerald-700"><ThumbsUp className="h-3.5 w-3.5" /> é isso</button><button onClick={() => onFeedback(l, false)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-rose-300 hover:text-rose-700"><ThumbsDown className="h-3.5 w-3.5" /> não é</button><span className="ml-auto text-xs text-slate-400">1 clique vira regra</span></div>) : (<div className="mt-3 flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs font-medium text-emerald-600"><Check className="h-3.5 w-3.5" /> aprendido — movida e aplicada ao segmento</div>)}
-    </div>
+
+      <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
+        <span className={`inline-flex items-center gap-1.5 rounded-[7px] border px-2 py-1 text-xs font-semibold ${ad.cls}`}><ad.icon className="h-3 w-3" /> {ad.label}</span>
+        <span className="min-w-0 text-[13px] text-slate-500"><b className="font-semibold text-slate-900">Motivo:</b> {d.motivo}</span>
+      </div>
+
+      <div className="mb-3 mt-3.5 flex flex-wrap gap-1.5">
+        <span className="rounded-[7px] px-2 py-0.5 text-xs font-semibold text-slate-50" style={{ backgroundColor: "#171717" }}>{segNome}</span>
+      </div>
+
+      <p className="mb-2 text-sm leading-[21px] text-slate-900"><span className="font-semibold">Órgão:</span> {d.orgao} <span className="ml-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">ME - EPP</span></p>
+      <p className="mb-2 text-sm leading-[21px] text-slate-900"><span className="font-semibold">Objeto:</span> {d.objeto}</p>
+      <p className="mb-3.5 mt-2.5 text-[15px] font-bold text-slate-900">Valor global: R$ {d.valor}</p>
+
+      <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 sm:flex-row">
+        <div className="flex flex-none flex-col gap-3.5 border-b border-slate-200 p-4 sm:w-[230px] sm:border-b-0 sm:border-r">
+          <div className="flex gap-6"><Fld k="Adicionada" v={d.adicionada} /><Fld k="Atualizada" v={d.atualizada} /></div>
+          <Fld k="Envio da proposta" v={d.envio} warn />
+        </div>
+        <div className="grid flex-1 grid-cols-2 gap-x-[18px] gap-y-3.5 p-4 sm:grid-cols-5">
+          <Fld k="ID" v={d.id} /><Fld k="UASG" v="–" /><Fld k="Modalidade" v={d.modalidade} /><Fld k="Julgamento" v={d.julgamento} /><Fld k="Estado" v={d.estado} />
+          <Fld k="Cidade" v={d.cidade} /><Fld k="Habitantes" v={d.habitantes} /><Fld k="CAPAG Estadual" v="–" /><Fld k="CAPAG Municipal" v="–" /><Fld k="Portal de disputa" v={d.portal} />
+        </div>
+      </div>
+    </article>
   );
 }
 
 function Licitacoes({ onBack, onAjustar, segNome }) {
-  const [aprendidos, setAprendidos] = useState([]); const [toast, setToast] = useState(null);
-  const feedback = (l, positivo) => { if (!positivo) { setAprendidos((a) => [...a, l.id]); setToast(`Aprendido: “${l.motivos[0].txt}” reforça a negativa. Parecidas foram pra “Fora do escopo”.`); setTimeout(() => setToast(null), 4000); } else { setToast("Confirmado — sobe a confiança de licitações parecidas."); setTimeout(() => setToast(null), 2800); } };
-  const grupos = [{ tier: "alta", titulo: "Alta confiança", sub: "seu feed principal", cor: "bg-emerald-500" }, { tier: "revisar", titulo: "Pra revisar", sub: "a IA ficou em dúvida — nada foi descartado", cor: "bg-amber-500" }, { tier: "fora", titulo: "Fora do escopo", sub: "escondido mas a um clique — nunca some calado", cor: "bg-slate-400" }];
+  const [tab, setTab] = useState("relevantes");
+  const nRelev = RECOMENDADAS.filter((d) => d.aderencia !== "nao_aderente").length;
+  const nRuido = RECOMENDADAS.length - nRelev;
+  const lista = RECOMENDADAS.filter((d) => (tab === "relevantes" ? d.aderencia !== "nao_aderente" : d.aderencia === "nao_aderente"));
   return (
-    <div className="mx-auto max-w-3xl">
-      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"><ArrowLeft className="h-4 w-4" /> voltar</button>
-      <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-xl font-bold text-slate-900">Licitações — {segNome}</h1><button onClick={onAjustar} className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-800"><ListFilter className="h-4 w-4" /> ajustar segmento</button></div>
-      <div className="mt-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><Shield className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" /><div className="text-sm text-emerald-900"><p className="font-semibold">Rede de segurança ativa.</p><p className="mt-0.5 text-emerald-800">Cada licitação recebe uma confiança e é ranqueada. Nada abaixo do corte foi jogado fora — está em “Fora do escopo”, recuperável.</p></div></div>
-      {grupos.map((g) => { const items = LICITACOES.filter((l) => confTier(l.confidence) === g.tier); if (!items.length) return null; return (<div key={g.tier} className="mt-6"><div className="mb-2 flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${g.cor}`} /><h2 className="text-sm font-bold text-slate-800">{g.titulo}</h2><span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">{items.length}</span><span className="text-xs text-slate-400">— {g.sub}</span></div><div className="space-y-2.5">{items.map((l) => (<LicitacaoCard key={l.id} l={l} onFeedback={feedback} aprendido={aprendidos.includes(l.id)} />))}</div></div>); })}
-      {toast && (<div className="fixed inset-x-0 bottom-6 z-50 mx-auto flex max-w-md items-start gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm text-white shadow-lg"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" /><span>{toast}</span></div>)}
+    <div className="mx-auto max-w-full">
+      <div className="mb-5">
+        <p className="text-2xl font-bold tracking-tight text-slate-900 sm:text-[30px]">Licitações recomendadas</p>
+        <p className="mt-1 text-sm text-slate-500">Encontramos {lista.length} {lista.length === 1 ? "licitação" : "licitações"} para o segmento {segNome}.</p>
+      </div>
+
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex items-center rounded-[10px] bg-slate-100 p-[3px]">
+          {[["relevantes", "Relevantes", nRelev], ["ruido", "Provável ruído", nRuido]].map(([id, label, n]) => (
+            <button key={id} onClick={() => setTab(id)} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${tab === id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>{label} <span className="rounded-full bg-slate-200/80 px-1.5 text-xs">{n}</span></button>
+          ))}
+          <button className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-slate-700" title="Nova visualização" aria-label="Nova visualização"><Plus className="h-4 w-4" /></button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"><ListFilter className="h-4 w-4" /> Filtrar</button>
+          <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"><Search className="h-4 w-4" /> Buscar</button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {lista.map((d) => <RecomendadaCard key={d.id} d={d} segNome={segNome} />)}
+      </div>
     </div>
   );
 }
@@ -1555,62 +1625,9 @@ const ENTRADA_INICIAL = {
 };
 
 // persistência protegida — funciona fora do preview; no sandbox de artifact o acesso a localStorage é bloqueado e o try/catch simplesmente não faz nada
-const LS = (k) => "settle_onb_" + k;
+const LS = (k) => "settle_onb_v2_" + k;
 const loadLS = (k, fb) => { try { const v = window.localStorage.getItem(LS(k)); return v != null ? JSON.parse(v) : fb; } catch { return fb; } };
 const saveLS = (k, val) => { try { window.localStorage.setItem(LS(k), JSON.stringify(val)); } catch {} };
-
-// shell da plataforma (sidebar esquerda + navbar) — espelha explorar-licitacoes
-const SB_NAV = [
-  { label: "Recomendadas", icon: CheckCircle2, active: true },
-  { label: "Salvos para depois", icon: Bookmark, count: 1 },
-  { label: "Explorar licitações", icon: Compass },
-  { label: "Em andamento", icon: Layers },
-  { label: "Descartadas", icon: Trash2 },
-];
-function PlataformaShell({ children }) {
-  return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-slate-100">
-        <div className="flex h-16 flex-none items-center gap-2 px-4">
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-sm font-bold" style={{ backgroundColor: "#5DCAA5", color: "#0A1A2F" }}>S</span>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-slate-700">Demos</div>
-            <div className="truncate text-xs text-slate-500">Espaço de trabalho</div>
-          </div>
-          <ChevronsUpDown className="h-4 w-4 flex-none text-slate-400" />
-        </div>
-        <nav className="flex-1 overflow-y-auto p-2">
-          <div className="px-2 py-2 text-xs font-medium text-slate-500">Licitações</div>
-          <div className="flex flex-col gap-1">
-            {SB_NAV.map((it) => (
-              <a key={it.label} href="#" onClick={(e) => e.preventDefault()} className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition ${it.active ? "bg-black/[0.07] font-medium text-slate-800" : "text-slate-600 hover:bg-black/5"}`}>
-                <it.icon className="h-4 w-4 flex-none" />
-                <span className="flex-1 truncate">{it.label}</span>
-                {it.count != null && <span className="flex-none rounded-md bg-slate-200 px-1.5 text-xs font-medium text-slate-600">{it.count}</span>}
-              </a>
-            ))}
-          </div>
-        </nav>
-        <div className="flex flex-none items-center gap-2 p-4">
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-slate-900/10 text-sm text-slate-900">BK</span>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-slate-700">Brunno Krier</div>
-            <div className="truncate text-xs font-light text-slate-500">brunno.krier+demos@settlegov.com</div>
-          </div>
-          <ChevronsUpDown className="h-4 w-4 flex-none text-slate-400" />
-        </div>
-      </aside>
-      <div className="ml-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-6">
-          <button aria-label="Recolher sidebar" className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"><PanelLeft className="h-[18px] w-[18px]" /></button>
-          <span className="h-5 w-px bg-slate-200" />
-          <span className="text-[15px] font-semibold text-slate-900">Olá, Brunno</span>
-        </header>
-        <div className="mx-auto max-w-5xl px-6 py-6 pb-28">{children}</div>
-      </div>
-    </div>
-  );
-}
 
 // chat flutuante, aberto por padrão, ancorado no canto inferior direito
 function FloatingAssistant(props) {
@@ -1683,27 +1700,16 @@ export default function App() {
     if (prox) { setSegAtivoId(prox.id); setStep("ajustar"); } else setStep("segmentos");
   };
 
-  // etapa 6 (Licitações): layout da plataforma — sidebar esquerda + navbar
-  if (step === "licitacoes") return (
-    <div className="text-slate-900" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-      <PlataformaShell>
-        <Licitacoes segNome={segAtivo?.nome || "segmento"} onBack={() => setStep("segmentos")} onAjustar={() => setStep("ajustar")} />
-      </PlataformaShell>
-      <FloatingAssistant step={step} entrada={entrada} setEntrada={setEntrada} escopoApi={escopoApi} />
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900"><span className="flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold" style={{ backgroundColor: "#5DCAA5", color: "#0A1A2F" }}>S</span>Settle</div>
-          {step !== "licitacoes" && <Stepper current={step === "validar" ? "ajustar" : step} onJump={(id) => setStep(id)} />}
+          <Stepper current={step === "validar" ? "ajustar" : step} onJump={(id) => setStep(id)} />
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-8 pb-28 sm:py-12">
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-28 sm:py-12">
         {step === "cadastro" && <Cadastro onNext={irParaEntrada} />}
         {step === "entrada" && <Entrada data={entrada} setData={setEntrada} onNext={irParaConfirmar} />}
         {step === "confirmar" && <Confirmar escopo={escopo} mutarEscopo={mutarEscopo} desfazer={desfazer} podeDesfazer={escopoHist.length > 0} validado={escopoValidado} setValidado={setEscopoValidado} onAplicar={aplicarOrg} onBack={() => setStep("entrada")} onVoltarPreencher={() => setStep("entrada")} />}

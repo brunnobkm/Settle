@@ -15,7 +15,7 @@ Protótipo do **fluxo de onboarding** da Settle: um wizard de 6 etapas que leva 
 - **3. Confirmar & organizar** — escopo (faz / não faz) já montado a partir da etapa 2, mais a escolha de como dividir em segmentos.
 - **4. Segmentos** — segmentos sugeridos; juntar/separar antes de configurar.
 - **5. Ajustar & validar** — palavras-chave, filtros e regras por segmento, com funil de volume reativo.
-- **6. Licitações** — feed final no **layout da plataforma** (sidebar esquerda + navbar), espelhando `explorar-licitacoes`.
+- **6. Licitações** — mantém o header do onboarding (logo + steps) e traz o **layout da tela Recomendadas** (`explorar-licitacoes`): headline, tabs `Relevantes` / `Provável ruído`, ações `Filtrar` / `Buscar` e os **cards ricos** (edital, ações, avatars, aderência + motivo, segmento, órgão/objeto/valor e grid de dados).
 
 ### Modo teste de usabilidade
 
