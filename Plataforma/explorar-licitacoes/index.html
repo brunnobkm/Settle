@@ -260,6 +260,18 @@
   }
 
   /* segments */
+  /* ===== aderência (relevância) ===== */
+  .ader-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 2px;}
+  .ader{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;border:1px solid transparent;}
+  .ader svg{flex:none;}
+  .ader-aderente{background:#e7f6ec;color:#15803d;border-color:#c3e9cf;}
+  .ader-duvida{background:var(--warning-bg);color:var(--warning);border-color:#f3e3c8;}
+  .ader-nao_aderente{background:#fbeaea;color:#b42318;border-color:#f2cfcb;}
+  .ader-motivo{font-size:13px;color:var(--muted-foreground);min-width:0;}
+  .ader-motivo b{font-weight:600;color:var(--foreground);}
+  /* tabs Relevantes / Provável ruído: esconde o que não é do tipo */
+  .card.ader-off{display:none !important;}
+
   .segments{display:flex;gap:6px;margin:14px 0 12px;flex-wrap:wrap;}
   .seg{background:var(--primary);color:#fafafa;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;}
   .seg.sm{padding:2px 7px;font-size:11px;}
@@ -666,6 +678,8 @@
         <div class="tabs" role="tablist">
           <button class="tab active" role="tab" aria-selected="true" data-tab="Todas" draggable="true">Todas</button>
           <button class="tab" role="tab" data-tab="Órgãos favoritos" draggable="true">Órgãos favoritos</button>
+          <button class="tab" role="tab" data-tab="Relevantes" draggable="true">Relevantes</button>
+          <button class="tab" role="tab" data-tab="Provável ruído" draggable="true">Provável ruído</button>
           <button class="tab-add" type="button" title="Nova visualização" aria-label="Nova visualização">+</button>
         </div>
         <div class="actions" id="actions">
@@ -745,6 +759,7 @@ const DATA = [
     estado:'PA', cidade:'Belém', habitantes:'1.303.403', portal:'compras.saobernado.sp…',
     adicionada:'04/02/2026', atualizada:'12/02/2026', envio:'13/02/2026', itens:29, total:300, collapsed:false,
     semAnexo:true, saved:false,
+    aderencia:'aderente', motivo:'Objeto casa com o segmento de TI (computadores, notebooks e periféricos).',
   },
   {
     edital:'88234/2026', orgao:'PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI',
@@ -753,6 +768,7 @@ const DATA = [
     estado:'SP', cidade:'Campinas', habitantes:'1.223.237', portal:'compras.campinas.sp.gov…',
     adicionada:'07/02/2026', atualizada:'14/02/2026', envio:'21/02/2026', itens:14, total:120, collapsed:false,
     semAnexo:false, saved:false, arquivos:3,
+    aderencia:'aderente', motivo:'Equipamentos de rede e cabeamento dentro do escopo de infraestrutura.',
   },
   {
     edital:'90455/2025', orgao:'SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ',
@@ -760,15 +776,40 @@ const DATA = [
     valor:'8.910.770,45', id:'1065217', modalidade:'Pregão - Presencial', julgamento:'Menor preço por item',
     estado:'CE', cidade:'Fortaleza', habitantes:'2.703.391', portal:'licitacoes.saude.ce.gov…',
     adicionada:'29/01/2026', atualizada:'10/02/2026', envio:'18/02/2026', itens:37, total:410, collapsed:true,
-    semAnexo:false, saved:true, updated:true, arquivos:2,   // salvo que já recebeu o anexo → "Atualizado" + qtd de arquivos
+    semAnexo:false, saved:false, arquivos:2,
+    aderencia:'nao_aderente', motivo:'Mobiliário e equipamentos hospitalares, fora do segmento da empresa.',
+  },
+  {
+    edital:'73/2026', orgao:'PREFEITURA MUNICIPAL DE SOROCABA',
+    objeto:'Contratação de empresa para serviços de manutenção predial preventiva e corretiva, incluindo instalações elétricas, hidráulicas e pequenas reformas nos prédios administrativos do município.',
+    valor:'3.480.000,00', id:'1102944', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço global',
+    estado:'SP', cidade:'Sorocaba', habitantes:'687.357', portal:'compras.sorocaba.sp.gov…',
+    adicionada:'09/02/2026', atualizada:'11/02/2026', envio:'24/02/2026', itens:8, total:60, collapsed:true,
+    semAnexo:false, saved:false, arquivos:1,
+    aderencia:'duvida', motivo:'Há itens elétricos, mas o objeto é majoritariamente reforma predial. Requer análise.',
+  },
+  {
+    edital:'204/2025', orgao:'SECRETARIA DE EDUCAÇÃO DO ESTADO DA BAHIA',
+    objeto:'Registro de preços para aquisição de gêneros alimentícios e merenda escolar destinados às unidades da rede estadual de ensino, com entrega programada ao longo do ano letivo.',
+    valor:'15.230.000,00', id:'1061780', modalidade:'Pregão - Eletrônico', julgamento:'Menor preço por item',
+    estado:'BA', cidade:'Salvador', habitantes:'2.417.678', portal:'comprasnet.ba.gov…',
+    adicionada:'02/02/2026', atualizada:'05/02/2026', envio:'20/02/2026', itens:22, total:180, collapsed:true,
+    semAnexo:false, saved:false, arquivos:2,
+    aderencia:'nao_aderente', motivo:'Gêneros alimentícios e merenda, sem relação com o segmento da empresa.',
   },
 ];
 
+const ADER_LBL = { aderente:'Aderente', duvida:'Dúvida', nao_aderente:'Não aderente' };
+const ADER_ICO = {
+  aderente:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+  duvida:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6a2 2 0 1 1 2.6 1.9c-.5.2-.8.6-.8 1.1v.4"/><circle cx="8" cy="12" r=".6" fill="currentColor" stroke="none"/></svg>',
+  nao_aderente:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>',
+};
 function cardHTML(d){
   const search = [d.edital, d.orgao, d.objeto, d.cidade, d.estado, d.modalidade, d.julgamento, d.id]
     .join(' ').toLowerCase();
   return `
-  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-orgao="${d.orgao.replace(/"/g,'')}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
+  <article class="card ${d.collapsed?'collapsed':''}" data-search="${search.replace(/"/g,'')}" data-orgao="${d.orgao.replace(/"/g,'')}" data-aderencia="${d.aderencia||''}" data-saved="${d.saved?'true':'false'}" data-semanexo="${d.semAnexo?'true':'false'}" data-updated="${d.updated?'true':'false'}">
     <div class="card-top">
       <div class="chk" role="checkbox" aria-checked="false">${I.check}</div>
       <span class="edital">Edital <b>${d.edital}</b></span>
@@ -792,6 +833,11 @@ function cardHTML(d){
         </div>
       </div>
     </div>
+
+    ${d.aderencia ? `<div class="ader-row">
+      <span class="ader ader-${d.aderencia}">${ADER_ICO[d.aderencia]}${ADER_LBL[d.aderencia]}</span>
+      <span class="ader-motivo"><b>Motivo:</b> ${d.motivo}</span>
+    </div>` : ''}
 
     <div class="segments">
       <span class="seg">Segmento 1</span>
@@ -1375,9 +1421,22 @@ function applyOrgaoView(tab){
   const cntEl = document.querySelector('.tab[data-tab="Órgãos favoritos"] .cnt');
   if(cntEl) cntEl.textContent = n;
 }
+// tabs Relevantes / Provável ruído: filtram os cards pelo status de aderência
+function applyAderenciaView(tab){
+  const map = { 'Relevantes':'aderente', 'Provável ruído':'nao_aderente' };
+  const want = map[tab];
+  let n = 0;
+  document.querySelectorAll('#cardList .card').forEach(c=>{
+    const off = want && c.dataset.aderencia !== want;
+    c.classList.toggle('ader-off', !!off);
+    if(want && c.dataset.aderencia === want) n++;
+  });
+  if(want){ const cntEl = document.querySelector(`.tab[data-tab="${tab}"] .cnt`); if(cntEl) cntEl.textContent = n; }
+}
 function renderTabFilters(tab){
   currentTab = tab; closeFbPop();
   applyOrgaoView(tab);
+  applyAderenciaView(tab);
   const badges = TAB_BADGES[tab] || [];
   if(badges.length){ filtrarCount.hidden=false; filtrarCount.textContent=badges.length; }
   else filtrarCount.hidden=true;
@@ -1516,7 +1575,7 @@ document.addEventListener('click', e=>{
 // Filtrar também só fecha o popover de badge (e abriria o sheet completo no produto real)
 // init das tabs: sempre no estado padrão (sem persistência — reseta ao atualizar, igual aos outros demos)
 try{ localStorage.removeItem(LS_TABS); }catch(e){}   // limpa qualquer estado salvo por versões anteriores
-const DEFAULT_COUNTS = { 'Todas': 300, 'Órgãos favoritos': 2 };
+const DEFAULT_COUNTS = { 'Todas': 300, 'Órgãos favoritos': 2, 'Relevantes': 2, 'Provável ruído': 2 };
 document.querySelectorAll('.tabs .tab').forEach(t=> decorateTab(t, DEFAULT_COUNTS[t.dataset.tab] || 0));   // label + contador + "..."
 renderTabFilters('Todas');
 ensureAddBtn();
