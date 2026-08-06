@@ -102,6 +102,17 @@
     .cs-pts .pts{font-size:12px;font-weight:600;color:var(--muted-foreground);}
     .cs-pts .ok{font-size:12px;font-weight:600;color:var(--success);background:rgba(22,163,74,.1);padding:2px 7px;border-radius:6px;}
 
+    /* ---- A4 / B4: faixa acima do card ---- */
+    .card-with-banner{display:flex;flex-direction:column;gap:8px;}
+    .score-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:14px;padding:12px 18px;background:var(--tbg);}
+    .score-banner.neutral{background:var(--muted);}
+    .sbn-left{display:flex;align-items:center;gap:8px;color:var(--tc);font-size:18px;font-weight:700;line-height:1;}
+    .score-banner.neutral .sbn-left{color:var(--foreground);}
+    .sbn-left svg{width:20px;height:20px;}
+    .sbn-left .den{font-weight:500;opacity:.7;font-size:15px;}
+    .sbn-label{font-size:15px;font-weight:600;}
+    .sbn-badge{background:var(--warning);color:var(--primary-foreground);font-size:13px;font-weight:600;padding:5px 12px;border-radius:8px;white-space:nowrap;}
+
     @media (max-width:900px){
       .mh-row{flex-direction:column;} .score-mini,.resumo-mini{width:100%;}
       .score-band{flex-wrap:wrap;} .sb-rev{text-align:left;align-items:flex-start;}
@@ -291,7 +302,10 @@
         fullCard({headerAside: scoreMini})) +
       proposal('A3','Módulo faixa no topo','preview',
         'Uma faixa no topo do conteúdo com número grande, barra de progresso do score parcial e ação de revisar. Máxima evidência.',
-        fullCard({topModule: scoreBand}));
+        fullCard({topModule: scoreBand})) +
+      proposal('A4','Faixa acima do card','destacar + revisão',
+        'O score vira uma faixa de largura cheia acima do card, tingida pela temperatura, com o total e os itens a revisar.',
+        `<div class="card-with-banner"><div class="score-banner temp-frio"><div class="sbn-left">${I.gauge}<b>39</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>${fullCard({})}</div>`);
 
     /* ---------- CHECKLIST ---------- */
     const checklistEntry = `<button class="checklist-entry" type="button">${I.doc}Checklist<span class="chip-rev">3</span></button>`;
@@ -326,7 +340,10 @@
         fullCard({headerAside: resumoMini})) +
       proposal('B3','Seção embutida no card','preview',
         'O resumo aparece como uma seção do card, já expandida e clara (sem escurecer). O conteúdo é o foco; a revisão é um selo condicional.',
-        fullCard({preItems: checklistSection}));
+        fullCard({preItems: checklistSection})) +
+      proposal('B4','Faixa acima do card','destacar + revisão',
+        'Equivalente à faixa do Score. Como o Checklist não tem temperatura, a faixa é neutra e destaca a revisão pendente (condicional).',
+        `<div class="card-with-banner"><div class="score-banner neutral"><div class="sbn-left">${I.doc}<span class="sbn-label">Checklist</span></div><span class="sbn-badge">3 itens para Revisar</span></div>${fullCard({})}</div>`);
 
     /* ---------- tabs ---------- */
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
