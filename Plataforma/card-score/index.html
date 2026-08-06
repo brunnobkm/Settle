@@ -43,10 +43,10 @@
     .score-chip .den{font-weight:500;opacity:.75;}
     .score-chip .sep-dot{opacity:.5;}
 
-    /* ---- A2 / B2: bloco compacto no cabeçalho ---- */
-    .mh-row{display:flex;gap:16px;align-items:flex-start;}
-    .mh-main{flex:1;min-width:0;}
-    .score-mini{flex:none;width:220px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;background:var(--card);}
+    /* ---- A2 / B2: caixa ao lado do cabeçalho (dois módulos lado a lado) ---- */
+    .lc-headrow{display:flex;gap:8px;align-items:stretch;}
+    .lc-headrow > .module{flex:1;min-width:0;}
+    .score-mini{flex:none;width:220px;border:1px solid var(--border);border-radius:var(--radius-box);padding:10px 12px;display:flex;gap:10px;align-items:center;background:var(--card);}
     .sm-ring{flex:none;position:relative;width:44px;height:44px;}
     .sm-ring .sm-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--tc);}
     .sm-body{min-width:0;}
@@ -58,9 +58,10 @@
 
     /* ---- A3: módulo faixa de score no topo ---- */
     .score-band{display:flex;align-items:center;gap:20px;border:1px solid var(--border);border-radius:var(--radius-box);padding:12px 16px;border-left:4px solid var(--tc);background:var(--card);}
-    .sb-score{display:flex;align-items:baseline;gap:2px;color:var(--tc);}
-    .sb-score .big{font-size:34px;font-weight:700;line-height:1;letter-spacing:-.5px;}
-    .sb-score .den{font-size:16px;font-weight:600;opacity:.7;}
+    .sb-ring{flex:none;position:relative;width:66px;height:66px;}
+    .sb-ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;color:var(--tc);}
+    .sb-ring .num b{font-size:20px;font-weight:700;}
+    .sb-ring .num small{font-size:9px;font-weight:600;opacity:.7;margin-top:1px;}
     .sb-mid{flex:1;min-width:120px;}
     .sb-temp{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
     .sb-temp .muted{font-size:13px;color:var(--muted-foreground);}
@@ -75,7 +76,7 @@
     .chip-rev{display:inline-flex;align-items:center;font-size:12px;font-weight:600;line-height:16px;padding:2px 7px;border-radius:6px;background:var(--warning-bg);color:var(--warning);}
 
     /* ---- B2: bloco compacto de resumo ---- */
-    .resumo-mini{flex:none;width:340px;border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--card);}
+    .resumo-mini{flex:none;width:340px;border:1px solid var(--border);border-radius:var(--radius-box);padding:12px 14px;background:var(--card);}
     .rm-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
     .rm-head svg{width:16px;height:16px;color:var(--muted-foreground);}
     .rm-head b{font-size:14px;font-weight:600;}
@@ -181,7 +182,8 @@
       <p class="lc-valor">Valor global: R$ 47.284.499,63</p>`;
 
     const header = () => `<div class="module">${headerInner}</div>`;
-    const headerWith = (rightBlock) => `<div class="module"><div class="mh-row"><div class="mh-main">${headerInner}</div>${rightBlock}</div></div>`;
+    /* header + caixa ao lado, como as duas caixas de metadados */
+    const headerAsideRow = (aside) => `<div class="lc-headrow">${header()}${aside}</div>`;
 
     const propGrid = `
       <div class="lc-props">
@@ -233,12 +235,12 @@
       </div>`;
 
     /* card completo com o tratamento aplicado */
-    const fullCard = ({topEntry='', headerRight='', topModule='', preItems=''}) => `
+    const fullCard = ({topEntry='', headerAside='', topModule='', preItems=''}) => `
       <article class="lic-card">
         ${topBar(topEntry)}
         <div class="lc-content">
           ${topModule}
-          ${headerRight ? headerWith(headerRight) : header()}
+          ${headerAside ? headerAsideRow(headerAside) : header()}
           ${propGrid}
           ${preItems}
           ${itemsTable}
@@ -262,7 +264,10 @@
       </div>`;
     const scoreBand = `
       <div class="score-band temp-frio">
-        <div class="sb-score">${I.gauge}<span class="big">39</span><span class="den">/100</span></div>
+        <div class="sb-ring">
+          <svg viewBox="0 0 66 66" width="66" height="66"><circle cx="33" cy="33" r="27" fill="none" stroke="var(--muted)" stroke-width="6"/><circle cx="33" cy="33" r="27" fill="none" stroke="var(--tc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="104" transform="rotate(-90 33 33)"/></svg>
+          <span class="num"><b>39</b><small>/100</small></span>
+        </div>
         <div class="sb-mid">
           <div class="sb-temp"><span class="chip">Frio</span><span class="muted">Score parcial calculado</span></div>
           <div class="sb-bar"><i style="width:39%"></i></div>
@@ -276,7 +281,7 @@
         fullCard({topEntry: scoreChip})) +
       proposal('A2','Bloco compacto no cabeçalho','preview',
         'Um bloco ao lado do cabeçalho com anel, número, temperatura e os campos a revisar. Preview sem ocupar o card todo.',
-        fullCard({headerRight: scoreMini})) +
+        fullCard({headerAside: scoreMini})) +
       proposal('A3','Módulo faixa no topo','preview',
         'Uma faixa no topo do conteúdo com número grande, barra de progresso do score parcial e ação de revisar. Máxima evidência.',
         fullCard({topModule: scoreBand}));
@@ -311,7 +316,7 @@
         fullCard({topEntry: checklistEntry})) +
       proposal('B2','Bloco compacto no cabeçalho','preview',
         'Um bloco com uma amostra do resumo (campos-chave) e link para o conteúdo completo. O selo de revisão é condicional.',
-        fullCard({headerRight: resumoMini})) +
+        fullCard({headerAside: resumoMini})) +
       proposal('B3','Seção embutida no card','preview',
         'O resumo aparece como uma seção do card, já expandida e clara (sem escurecer). O conteúdo é o foco; a revisão é um selo condicional.',
         fullCard({preItems: checklistSection}));
