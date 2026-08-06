@@ -102,9 +102,9 @@
     .cs-pts .pts{font-size:12px;font-weight:600;color:var(--muted-foreground);}
     .cs-pts .ok{font-size:12px;font-weight:600;color:var(--success);background:rgba(22,163,74,.1);padding:2px 7px;border-radius:6px;}
 
-    /* ---- A4 / B4: faixa acima do card ---- */
-    .card-with-banner{display:flex;flex-direction:column;gap:8px;}
-    .score-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:14px;padding:12px 18px;background:var(--tbg);}
+    /* ---- A4 / B4: faixa no topo do MESMO card (não dois cards) ---- */
+    .lic-card.has-banner{overflow:hidden;}
+    .score-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--tbg);border-bottom:1px solid var(--border);}
     .score-banner.neutral{background:var(--muted);}
     .sbn-left{display:flex;align-items:center;gap:8px;color:var(--tc);font-size:18px;font-weight:700;line-height:1;}
     .score-banner.neutral .sbn-left{color:var(--foreground);}
@@ -247,8 +247,9 @@
       </div>`;
 
     /* card completo com o tratamento aplicado */
-    const fullCard = ({topEntry='', headerAside='', topModule='', preItems=''}) => `
-      <article class="lic-card">
+    const fullCard = ({topEntry='', headerAside='', topModule='', preItems='', topBanner=''}) => `
+      <article class="lic-card${topBanner ? ' has-banner' : ''}">
+        ${topBanner}
         ${topBar(topEntry)}
         <div class="lc-content">
           ${topModule}
@@ -303,9 +304,9 @@
       proposal('A3','Módulo faixa no topo','preview',
         'Uma faixa no topo do conteúdo com número grande, barra de progresso do score parcial e ação de revisar. Máxima evidência.',
         fullCard({topModule: scoreBand})) +
-      proposal('A4','Faixa acima do card','destacar + revisão',
-        'O score vira uma faixa de largura cheia acima do card, tingida pela temperatura, com o total e os itens a revisar.',
-        `<div class="card-with-banner"><div class="score-banner temp-frio"><div class="sbn-left">${I.gauge}<b>39</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>${fullCard({})}</div>`);
+      proposal('A4','Faixa no topo do card','destacar + revisão',
+        'O score vira uma faixa de largura cheia no topo do próprio card, tingida pela temperatura, com o total e os itens a revisar.',
+        fullCard({topBanner: `<div class="score-banner temp-frio"><div class="sbn-left">${I.gauge}<b>39</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`}));
 
     /* ---------- CHECKLIST ---------- */
     const checklistEntry = `<button class="checklist-entry" type="button">${I.doc}Checklist<span class="chip-rev">3</span></button>`;
@@ -341,9 +342,9 @@
       proposal('B3','Seção embutida no card','preview',
         'O resumo aparece como uma seção do card, já expandida e clara (sem escurecer). O conteúdo é o foco; a revisão é um selo condicional.',
         fullCard({preItems: checklistSection})) +
-      proposal('B4','Faixa acima do card','destacar + revisão',
+      proposal('B4','Faixa no topo do card','destacar + revisão',
         'Equivalente à faixa do Score. Como o Checklist não tem temperatura, a faixa é neutra e destaca a revisão pendente (condicional).',
-        `<div class="card-with-banner"><div class="score-banner neutral"><div class="sbn-left">${I.doc}<span class="sbn-label">Checklist</span></div><span class="sbn-badge">3 itens para Revisar</span></div>${fullCard({})}</div>`);
+        fullCard({topBanner: `<div class="score-banner neutral"><div class="sbn-left">${I.doc}<span class="sbn-label">Checklist</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`}));
 
     /* ---------- tabs ---------- */
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
