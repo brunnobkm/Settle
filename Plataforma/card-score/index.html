@@ -51,6 +51,12 @@
     }
     .soft-ia:hover{background:rgba(23,23,23,.14);}
     .soft-ia svg{width:16px;height:16px;}
+    .soft-ia.accent{color:var(--accent);}
+    .soft-ia.bell{position:relative;}
+
+    /* botão secundário (Descartar) — fundo cinza suave */
+    .btn-secondary{background:var(--muted);border-color:var(--muted);color:var(--foreground);}
+    .btn-secondary:hover{background:var(--border);}
 
     /* badge de score (0/100) — suave destrutivo */
     .score-btn{
@@ -67,8 +73,9 @@
       display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--primary-foreground);
     }
     .lc-av:first-child{margin-left:0;}
-    .lc-av.add{background:rgba(23,23,23,.1);color:var(--foreground);}
-    .lc-av.add svg{width:16px;height:16px;}
+    .lc-av.ph{background:var(--border-strong);color:var(--muted-foreground);}
+    .lc-av.ph svg{width:22px;height:22px;}
+    .lc-av.add{background:rgba(23,23,23,.1);color:var(--foreground);font-size:17px;font-weight:500;line-height:0;}
 
     /* botões âmbar / teal reaproveitam .btn do settle.css (btn-status / btn-primary) */
     .btn-status svg,.btn-primary svg,.btn-outline svg{width:16px;height:16px;}
@@ -165,7 +172,7 @@
         </div>
 
         <div class="lc-top-actions">
-          <button class="btn btn-outline" type="button">Descartar</button>
+          <button class="btn btn-secondary" type="button">Descartar</button>
           <button class="btn btn-primary" type="button">Enviar para análise</button>
 
           <span class="vsep" aria-hidden="true"></span>
@@ -180,21 +187,18 @@
           <span class="vsep" aria-hidden="true"></span>
 
           <span class="lc-avatars" aria-label="Responsáveis">
-            <span class="lc-av" style="background:#8b6cae" aria-hidden="true">JS</span>
-            <span class="lc-av" style="background:#3f8f6f" aria-hidden="true">MA</span>
-            <span class="lc-av" style="background:#c07a4b" aria-hidden="true">RL</span>
-            <button class="lc-av add" type="button" aria-label="Adicionar responsável">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9.5a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM2 13a4 4 0 0 1 8 0M12 5.3v3.4M13.7 7h-3.4"/>
-              </svg>
-            </button>
+            <span class="lc-av ph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0z"/></svg></span>
+            <span class="lc-av ph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0z"/></svg></span>
+            <span class="lc-av ph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0z"/></svg></span>
+            <button class="lc-av add" type="button" aria-label="Adicionar responsável">+</button>
           </span>
 
           <span class="vsep" aria-hidden="true"></span>
 
-          <button class="soft-ia" type="button" aria-label="Notificações">
+          <button class="soft-ia bell" type="button" aria-label="Notificações">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 2a3.5 3.5 0 0 0-3.5 3.5c0 3-1.3 4-1.3 4h9.6s-1.3-1-1.3-4A3.5 3.5 0 0 0 8 2zM6.8 12.5a1.4 1.4 0 0 0 2.4 0"/>
+              <path d="M11 5.2a3.2 3.2 0 0 0-6.4 0c0 3-1.3 4-1.3 4h9.6s-1.1-.8-1.3-3M6.8 12.5a1.4 1.4 0 0 0 2.4 0"/>
+              <circle cx="12" cy="3.6" r="1.7" fill="currentColor" stroke="none"/>
             </svg>
           </button>
           <button class="soft-ia" type="button" aria-label="Salvar">
@@ -202,7 +206,7 @@
               <path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z"/>
             </svg>
           </button>
-          <button class="soft-ia" type="button" aria-label="Copiar link">
+          <button class="soft-ia accent" type="button" aria-label="Copiar link">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M6.5 9.5a2.4 2.4 0 0 0 3.4 0l2-2a2.4 2.4 0 0 0-3.4-3.4l-.9.9"/>
               <path d="M9.5 6.5a2.4 2.4 0 0 0-3.4 0l-2 2a2.4 2.4 0 0 0 3.4 3.4l.9-.9"/>
