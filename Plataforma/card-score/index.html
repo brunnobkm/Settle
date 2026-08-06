@@ -32,6 +32,8 @@
     .lc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;}
     .lc-top-left{display:flex;align-items:center;gap:8px;}
     .lc-top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+    /* Figma: todos os botões da barra têm 32px (padding vertical 6px) */
+    .lc-top-actions .btn{padding:6px 12px;}
     .lc-title{font-size:14px;color:var(--foreground);white-space:nowrap;}
     .lc-title b{font-size:18px;font-weight:700;line-height:28px;}
     .lc-title .num{font-size:18px;font-weight:400;line-height:28px;}
@@ -62,7 +64,7 @@
     .score-btn{
       display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;
       background:rgba(220,38,38,.1);color:var(--destructive);
-      font-size:14px;font-weight:500;padding:6px 12px;white-space:nowrap;
+      font-size:14px;font-weight:500;line-height:20px;padding:6px 12px;white-space:nowrap;
     }
     .score-btn svg{width:16px;height:16px;}
 
@@ -90,7 +92,7 @@
     .lc-org b{font-weight:700;}
     .lc-obj{font-size:14px;line-height:20px;color:var(--foreground);margin:0 0 8px;}
     .lc-obj b{font-weight:700;}
-    .lc-valor{font-size:16px;font-weight:700;line-height:24px;text-align:center;margin:0;}
+    .lc-valor{font-size:16px;font-weight:700;line-height:24px;margin:0;}
 
     /* ---- metadados: duas caixas lado a lado ---- */
     .lc-props{display:flex;gap:8px;align-items:stretch;}
@@ -227,10 +229,9 @@
           <span class="vsep" aria-hidden="true"></span>
 
           <button class="score-btn" type="button" aria-label="Score 0 de 100">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M2.5 12a6 6 0 1 1 11 0"/>
-              <path d="M8 10.5 10.5 6"/>
-              <circle cx="8" cy="10.5" r=".6" fill="currentColor" stroke="none"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m12 14 4-4"/>
+              <path d="M3.34 19a10 10 0 1 1 17.32 0"/>
             </svg>
             0/100
           </button>
