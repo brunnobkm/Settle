@@ -377,6 +377,59 @@ body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:h
 
 
 /* ==========================================================================
+   8b. CARD DE LICITAÇÃO (shell reutilizável)
+   Componente do card de edital: barra de ações + conteúdo + módulo.
+   Usado por card-score e card-score-propostas. Largura/contexto ficam na
+   tela (ex.: card-score fixa 1356px; propostas usa largura total).
+   ========================================================================== */
+
+.lic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-card);}
+
+/* barra de ações (topo) */
+.lc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;}
+.lc-top-left{display:flex;align-items:center;gap:8px;min-width:0;}
+.lc-top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.lc-top-actions .btn{padding:6px 12px;}          /* Figma: botões da barra em 32px */
+.lic-card .btn svg{width:16px;height:16px;}
+.lc-title{font-size:14px;color:var(--foreground);white-space:nowrap;}
+.lc-title b{font-size:18px;font-weight:700;line-height:28px;}
+.lc-title .num{font-size:18px;font-weight:400;line-height:28px;}
+.vsep{width:1px;height:32px;background:var(--border);flex:none;}
+
+/* checkbox vazio */
+.lc-chk{width:20px;height:20px;border:1px solid var(--border);border-radius:4px;background:var(--background);box-shadow:var(--shadow-xs);flex:none;cursor:pointer;}
+
+/* botão suave de ícone (soft icon button) */
+.soft-ia{width:32px;height:32px;border:none;border-radius:8px;background:rgba(23,23,23,.08);display:inline-flex;align-items:center;justify-content:center;color:var(--foreground);flex:none;}
+.soft-ia:hover{background:rgba(23,23,23,.14);}
+.soft-ia svg{width:16px;height:16px;}
+.soft-ia.accent{color:var(--accent);}
+.soft-ia.bell{position:relative;}
+
+/* botão secundário (ex.: Descartar) */
+.btn-secondary{background:var(--muted);border-color:var(--muted);color:var(--foreground);}
+.btn-secondary:hover{background:var(--border);}
+
+/* avatares empilhados (placeholder + adicionar) */
+.lc-avatars{display:inline-flex;align-items:center;}
+.lc-av{width:32px;height:32px;border-radius:50%;border:2px solid var(--background);margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--primary-foreground);}
+.lc-av:first-child{margin-left:0;}
+.lc-av.ph{background:var(--border-strong);color:var(--muted-foreground);}
+.lc-av.ph svg{width:22px;height:22px;}
+.lc-av.add{background:rgba(23,23,23,.1);color:var(--foreground);font-size:17px;font-weight:500;line-height:0;}
+
+/* conteúdo e módulo */
+.lc-content{display:flex;flex-direction:column;gap:8px;padding:0 8px 8px;}
+.module{border:1px solid var(--border);border-radius:var(--radius-box);padding:8px;}
+.lc-segments{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.lc-org{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:14px;}
+.lc-org b{font-weight:700;}
+.lc-obj{font-size:14px;line-height:20px;color:var(--foreground);margin:0 0 8px;}
+.lc-obj b{font-weight:700;}
+.lc-valor{font-size:16px;font-weight:700;line-height:24px;margin:0;}
+
+
+/* ==========================================================================
    9. GRID DE METADADOS
    ========================================================================== */
 
