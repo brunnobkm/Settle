@@ -428,6 +428,44 @@ body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:h
 .lc-obj b{font-weight:700;}
 .lc-valor{font-size:16px;font-weight:700;line-height:24px;margin:0;}
 
+/* metadados do card (duas caixas: datas + grade de 5 colunas) */
+.lc-props{display:flex;gap:8px;align-items:stretch;}
+.prop-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+.prop-left{flex:none;display:flex;gap:32px;}
+.prop-right{flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,1fr);gap:16px 24px;align-content:start;}
+.prop-col{display:flex;flex-direction:column;gap:16px;}
+.lic-card .fld .k{font-size:14px;font-weight:600;color:var(--foreground);margin-bottom:4px;line-height:20px;}
+.lic-card .fld .v{font-size:14px;color:var(--muted-foreground);line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lic-card .fld .v.warn{color:var(--warning);}
+.cap{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;line-height:16px;padding:2px 6px;border-radius:6px;}
+.cap.ok{background:rgba(22,163,74,.1);color:var(--success);}
+.cap.warn{background:rgba(217,119,6,.1);color:var(--warning);}
+
+/* tabela de itens do card */
+.datatable{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;background:var(--card);}
+.dt-top{display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border);}
+.dt-title{display:flex;align-items:center;gap:6px;}
+.dt-title h3{margin:0;font-size:16px;font-weight:600;line-height:24px;}
+.dt-chip{background:rgba(23,23,23,.1);color:var(--primary);font-size:12px;font-weight:500;line-height:16px;padding:2px 6px;border-radius:6px;}
+.dt-total{font-size:14px;color:var(--muted-foreground);}
+table.dt{width:100%;border-collapse:collapse;table-layout:auto;}
+table.dt th{text-align:left;font-size:14px;font-weight:500;color:var(--foreground);padding:8px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
+table.dt th:last-child{border-right:none;}
+table.dt td{font-size:12px;line-height:16px;color:var(--muted-foreground);padding:8px;height:36px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
+table.dt td:last-child{border-right:none;}
+table.dt tbody tr:last-child td{border-bottom:none;}
+.dt .c-lote{width:56px;}
+.dt .c-nome{width:100%;}
+.dt .c-seg{white-space:nowrap;}
+.dt .c-un{width:90px;white-space:nowrap;}
+.dt .c-vu{width:150px;white-space:nowrap;}
+.dt .c-vt{width:170px;white-space:nowrap;}
+.dt-seg{display:flex;gap:8px;}
+.dt-seg .seg{white-space:nowrap;flex:none;}
+
+@media (max-width:1200px){ .lc-props{flex-direction:column;} .prop-right{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:820px){ .prop-right{grid-template-columns:repeat(2,1fr);} .prop-left{flex-wrap:wrap;gap:16px 32px;} table.dt{display:block;overflow-x:auto;} }
+
 
 /* ==========================================================================
    9. GRID DE METADADOS
