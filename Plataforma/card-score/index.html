@@ -28,16 +28,8 @@
     .tabbar{margin:0 0 22px;}
     .panel{display:none;}
     .panel.active{display:block;}
-    .panel-intro{font-size:13px;color:var(--muted-foreground);margin:0 0 18px;max-width:860px;line-height:19px;}
-    .panel-intro b{color:var(--foreground);font-weight:600;}
-
-    /* item da lista de propostas */
-    .proposal{margin-bottom:32px;}
-    .proposal-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
-    .proposal-tag{flex:none;background:var(--primary);color:var(--primary-foreground);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;line-height:16px;}
-    .proposal-name{font-size:15px;font-weight:600;line-height:20px;}
-    .proposal-desc{font-size:13px;color:var(--muted-foreground);line-height:18px;}
-    .philo{font-size:11px;font-weight:600;color:var(--accent-600);text-transform:uppercase;letter-spacing:.03em;margin-left:6px;}
+    /* espaçamento entre os cards */
+    .proposal{margin-bottom:24px;}
 
     /* ===================== TEMPERATURA ===================== */
     .temp-frio{--tc:var(--destructive);--tbg:rgba(220,38,38,.1);}
@@ -125,12 +117,10 @@
     </div>
 
     <section class="panel active" id="panel-score" role="tabpanel">
-      <p class="panel-intro">Cliente que contratou o <b>Score</b>. Exemplo: 39/100, temperatura <b>Frio</b>, parcial porque há campos pendentes de revisão.</p>
       <div id="scoreList"></div>
     </section>
 
     <section class="panel" id="panel-checklist" role="tabpanel">
-      <p class="panel-intro">Cliente que contratou o <b>Checklist</b> (o antigo "Resumo"). O valor é o <b>conteúdo</b> do resumo estruturado; a revisão é condicional (nem toda licitação tem itens a revisar).</p>
       <div id="checklistList"></div>
     </section>
   </div>
@@ -255,14 +245,7 @@
         </div>
       </article>`;
 
-    const proposal = (tag, name, philo, desc, cardHtml) => `
-      <div class="proposal">
-        <div class="proposal-head">
-          <span class="proposal-tag">${tag}</span>
-          <div><div class="proposal-name">${name}<span class="philo">${philo}</span></div><div class="proposal-desc">${desc}</div></div>
-        </div>
-        ${cardHtml}
-      </div>`;
+    const proposal = (tag, name, philo, desc, cardHtml) => `<div class="proposal">${cardHtml}</div>`;
 
     /* ---------- SCORE (39/100, Frio) ---------- */
     const scoreChip = `<button class="score-chip temp-frio" type="button" aria-label="Score 39 de 100, Frio">${I.gauge}<b>39</b><span class="den">/100</span><span class="sep-dot">·</span>Frio</button>`;
