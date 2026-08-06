@@ -183,8 +183,8 @@
       <p class="lc-valor">Valor global: R$ 47.284.499,63</p>`;
 
     const header = () => `<div class="module">${headerInner}</div>`;
-    /* header + caixa ao lado, como as duas caixas de metadados */
-    const headerAsideRow = (aside) => `<div class="lc-headrow">${header()}${aside}</div>`;
+    /* caixa (score/resumo) à esquerda + módulo do cabeçalho à direita */
+    const headerAsideRow = (aside) => `<div class="lc-headrow">${aside}${header()}</div>`;
 
     const propGrid = `
       <div class="lc-props">
