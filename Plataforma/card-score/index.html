@@ -119,9 +119,10 @@
     .cdd-group + .cdd-group{border-top:1px solid var(--border);margin-top:4px;padding-top:8px;}
     .cdd-group-head{display:flex;align-items:center;gap:8px;padding:2px 2px 6px;}
     .cdd-title{font-size:12px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.03em;}
-    .cdd-field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 2px;font-size:14px;}
-    .cdd-f-name{color:var(--foreground);}
-    .cdd-f-val{color:var(--muted-foreground);text-align:right;}
+    .cdd-field{padding:6px 2px;font-size:14px;}
+    .cdd-f-name{display:block;color:var(--foreground);}
+    .cdd-f-val{display:block;color:var(--muted-foreground);margin-top:2px;}
+    .cdd-field .cl-rev{display:block;margin-top:2px;}
     .cdd-full{width:100%;justify-content:center;margin-top:8px;}
 
     /* ---- carousel de variações de status ---- */
@@ -287,18 +288,38 @@
 
     const proposal = (tag, name, philo, desc, cardHtml) => `<div class="proposal">${cardHtml}</div>`;
 
-    /* ---------- SCORE (39/100, Frio) ---------- */
-    const scoreChip = `<button class="score-chip temp-frio" type="button" aria-label="Score 39 de 100, Frio">${I.gauge}<b>39</b><span class="den">/100</span></button>`;
-    const scoreMini = `
-      <div class="score-mini temp-frio">
+    /* ---------- carousel (compartilhado) ---------- */
+    const carousel = (slides, labels) => `
+      <div class="carousel" data-labels='${JSON.stringify(labels)}'>
+        <div class="carousel-nav">
+          <button class="car-prev" type="button" aria-label="Variação anterior">‹</button>
+          <span class="car-label"></span>
+          <button class="car-next" type="button" aria-label="Próxima variação">›</button>
+        </div>
+        ${slides.map(s => `<div class="carousel-slide">${s}</div>`).join('')}
+      </div>`;
+    const CAR_LABELS = ['Com itens a revisar','Tudo certo'];
+    const ringOffset = (circ, val) => Math.round(circ * (1 - val / 100));
+
+    /* ---------- SCORE (3 temperaturas) ---------- */
+    const TEMPS = [
+      {cls:'temp-frio',   label:'Frio',   val:39},
+      {cls:'temp-morno',  label:'Morno',  val:65},
+      {cls:'temp-quente', label:'Quente', val:88},
+    ];
+    const TEMP_LABELS = TEMPS.map(t => t.label);
+
+    const scoreChip = t => `<button class="score-chip ${t.cls}" type="button" aria-label="Score ${t.val} de 100, ${t.label}">${I.gauge}<b>${t.val}</b><span class="den">/100</span></button>`;
+    const scoreMini = t => `
+      <div class="score-mini ${t.cls}">
         <div class="sm-head">
           <div class="sm-ring">
-            <svg viewBox="0 0 52 52" width="52" height="52"><circle cx="26" cy="26" r="21" fill="none" stroke="var(--muted)" stroke-width="5"/><circle cx="26" cy="26" r="21" fill="none" stroke="var(--tc)" stroke-width="5" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="81" transform="rotate(-90 26 26)"/></svg>
-            <span class="sm-val">39</span>
+            <svg viewBox="0 0 52 52" width="52" height="52"><circle cx="26" cy="26" r="21" fill="none" stroke="var(--muted)" stroke-width="5"/><circle cx="26" cy="26" r="21" fill="none" stroke="var(--tc)" stroke-width="5" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="${ringOffset(132, t.val)}" transform="rotate(-90 26 26)"/></svg>
+            <span class="sm-val">${t.val}</span>
           </div>
           <div class="sm-info">
-            <span class="sm-num">39<span class="den">/100</span></span>
-            <span class="chip">Frio</span>
+            <span class="sm-num">${t.val}<span class="den">/100</span></span>
+            <span class="chip">${t.label}</span>
           </div>
         </div>
         <div class="sm-foot">
@@ -306,32 +327,27 @@
           <a class="sm-link" href="#">Revisar campos</a>
         </div>
       </div>`;
-    const scoreBand = `
-      <div class="score-band temp-frio">
+    const scoreBand = t => `
+      <div class="score-band ${t.cls}">
         <div class="sb-ring">
-          <svg viewBox="0 0 66 66" width="66" height="66"><circle cx="33" cy="33" r="27" fill="none" stroke="var(--muted)" stroke-width="6"/><circle cx="33" cy="33" r="27" fill="none" stroke="var(--tc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="104" transform="rotate(-90 33 33)"/></svg>
-          <span class="num"><b>39</b><small>/100</small></span>
+          <svg viewBox="0 0 66 66" width="66" height="66"><circle cx="33" cy="33" r="27" fill="none" stroke="var(--muted)" stroke-width="6"/><circle cx="33" cy="33" r="27" fill="none" stroke="var(--tc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="${ringOffset(170, t.val)}" transform="rotate(-90 33 33)"/></svg>
+          <span class="num"><b>${t.val}</b><small>/100</small></span>
         </div>
         <div class="sb-mid">
-          <div class="sb-temp"><span class="chip">Frio</span><span class="muted">Score parcial calculado</span></div>
-          <div class="sb-bar"><i style="width:39%"></i></div>
+          <div class="sb-temp"><span class="chip">${t.label}</span><span class="muted">Score parcial calculado</span></div>
+          <div class="sb-bar"><i style="width:${t.val}%"></i></div>
         </div>
         <div class="sb-rev"><span class="muted">3 campos a revisar</span><button class="btn btn-status" type="button">${I.pencil} Revisar</button></div>
       </div>`;
+    const scoreBanner = t => `<div class="score-banner ${t.cls}"><div class="sbn-left">${I.gauge}<b>${t.val}</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`;
+
+    const scoreCarousel = build => carousel(TEMPS.map(t => fullCard(build(t))), TEMP_LABELS);
 
     document.getElementById('scoreList').innerHTML =
-      proposal('A1','Chip na barra de ações','destacar entrada',
-        'O acesso ao sheet vira um chip forte com número e temperatura, no lugar do iconezinho. Não traz conteúdo para o card.',
-        fullCard({topEntry: scoreChip})) +
-      proposal('A2','Bloco compacto no cabeçalho','preview',
-        'Um bloco ao lado do cabeçalho com anel, número, temperatura e os campos a revisar. Preview sem ocupar o card todo.',
-        fullCard({headerAside: scoreMini})) +
-      proposal('A3','Módulo faixa no topo','preview',
-        'Uma faixa no topo do conteúdo com número grande, barra de progresso do score parcial e ação de revisar. Máxima evidência.',
-        fullCard({topModule: scoreBand})) +
-      proposal('A4','Faixa no topo do card','destacar + revisão',
-        'O score vira uma faixa de largura cheia no topo do próprio card, tingida pela temperatura, com o total e os itens a revisar.',
-        fullCard({topBanner: `<div class="score-banner temp-frio"><div class="sbn-left">${I.gauge}<b>39</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`}));
+      proposal('A1','Chip na barra de ações','', '', scoreCarousel(t => ({topEntry: scoreChip(t)}))) +
+      proposal('A2','Bloco compacto no cabeçalho','', '', scoreCarousel(t => ({headerAside: scoreMini(t)}))) +
+      proposal('A3','Módulo faixa no topo','', '', scoreCarousel(t => ({topModule: scoreBand(t)}))) +
+      proposal('A4','Faixa no topo do card','', '', scoreCarousel(t => ({topBanner: scoreBanner(t)})));
 
     /* ---------- CHECKLIST ----------
        Lista de campos configurada pelo cliente; os valores são extraídos do
@@ -423,31 +439,13 @@
       </details>`;
     };
 
-    /* carousel: variações de status do mesmo modelo */
-    const CAR_LABELS = ['Com itens a revisar','Tudo certo'];
-    const carousel = slides => `
-      <div class="carousel" data-labels='${JSON.stringify(CAR_LABELS)}'>
-        <div class="carousel-nav">
-          <button class="car-prev" type="button" aria-label="Variação anterior">‹</button>
-          <span class="car-label"></span>
-          <button class="car-next" type="button" aria-label="Próxima variação">›</button>
-        </div>
-        ${slides.map(s => `<div class="carousel-slide">${s}</div>`).join('')}
-      </div>`;
+    const clCarousel = build => carousel([ fullCard(build(clData)), fullCard(build(clDataOk)) ], CAR_LABELS);
 
     document.getElementById('checklistList').innerHTML =
-      proposal('B1','Botão de acesso','estado',
-        '',
-        carousel([ fullCard({topEntry: renderEntry(clData)}), fullCard({topEntry: renderEntry(clDataOk)}) ])) +
-      proposal('B2','Grade dos campos por seção','trazer conteúdo',
-        '',
-        carousel([ fullCard({preItems: renderGrid(clData)}), fullCard({preItems: renderGrid(clDataOk)}) ])) +
-      proposal('B3','Acordeão por seção','trazer conteúdo',
-        '',
-        carousel([ fullCard({preItems: renderAcc(clData)}), fullCard({preItems: renderAcc(clDataOk)}) ])) +
-      proposal('B4','Botão Checklist com dropdown','destacar + conteúdo',
-        '',
-        carousel([ fullCard({topEntry: renderDropdown(clData)}), fullCard({topEntry: renderDropdown(clDataOk)}) ]));
+      proposal('B1','Botão de acesso','', '', clCarousel(d => ({topEntry: renderEntry(d)}))) +
+      proposal('B2','Grade dos campos por seção','', '', clCarousel(d => ({preItems: renderGrid(d)}))) +
+      proposal('B3','Acordeão por seção','', '', clCarousel(d => ({preItems: renderAcc(d)}))) +
+      proposal('B4','Botão Checklist com dropdown','', '', clCarousel(d => ({topEntry: renderDropdown(d)})));
 
     /* ---------- carousel ---------- */
     document.querySelectorAll('.carousel').forEach(car => {
