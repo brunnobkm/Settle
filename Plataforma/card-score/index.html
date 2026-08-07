@@ -303,9 +303,9 @@
 
     /* ---------- SCORE (3 temperaturas) ---------- */
     const TEMPS = [
-      {cls:'temp-frio',   label:'Frio',   val:39},
-      {cls:'temp-morno',  label:'Morno',  val:65},
-      {cls:'temp-quente', label:'Quente', val:88},
+      {cls:'temp-frio',   label:'Frio',   val:39, rev:3},
+      {cls:'temp-morno',  label:'Morno',  val:65, rev:0},
+      {cls:'temp-quente', label:'Quente', val:88, rev:0},
     ];
     const TEMP_LABELS = TEMPS.map(t => t.label);
 
@@ -323,8 +323,9 @@
           </div>
         </div>
         <div class="sm-foot">
-          <span class="sm-sub">Parcial · 3 campos a revisar</span>
-          <a class="sm-link" href="#">Revisar campos</a>
+          ${t.rev
+            ? `<span class="sm-sub">Parcial · ${t.rev} campos a revisar</span><a class="sm-link" href="#">Revisar campos</a>`
+            : `<span class="sm-sub">Score consolidado</span>`}
         </div>
       </div>`;
     const scoreBand = t => `
@@ -334,12 +335,12 @@
           <span class="num"><b>${t.val}</b><small>/100</small></span>
         </div>
         <div class="sb-mid">
-          <div class="sb-temp"><span class="chip">${t.label}</span><span class="muted">Score parcial calculado</span></div>
+          <div class="sb-temp"><span class="chip">${t.label}</span><span class="muted">${t.rev ? 'Score parcial calculado' : 'Score consolidado'}</span></div>
           <div class="sb-bar"><i style="width:${t.val}%"></i></div>
         </div>
-        <div class="sb-rev"><span class="muted">3 campos a revisar</span><button class="btn btn-status" type="button">${I.pencil} Revisar</button></div>
+        ${t.rev ? `<div class="sb-rev"><span class="muted">${t.rev} campos a revisar</span><button class="btn btn-status" type="button">${I.pencil} Revisar</button></div>` : ''}
       </div>`;
-    const scoreBanner = t => `<div class="score-banner ${t.cls}"><div class="sbn-left">${I.gauge}<b>${t.val}</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`;
+    const scoreBanner = t => `<div class="score-banner ${t.cls}"><div class="sbn-left">${I.gauge}<b>${t.val}</b><span class="den">/100</span></div>${t.rev ? `<span class="sbn-badge">${t.rev} itens para Revisar</span>` : ''}</div>`;
 
     const scoreCarousel = build => carousel(TEMPS.map(t => fullCard(build(t))), TEMP_LABELS);
 
