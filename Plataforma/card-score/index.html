@@ -123,8 +123,6 @@
     /* carousel de variações de status: CSS no settle.css */
 
     /* ---- Filtro (simulação): chip de score visível no card ---- */
-    .panel-intro{font-size:13px;color:var(--muted-foreground);margin:0 0 16px;max-width:900px;line-height:19px;}
-    .panel-intro b{color:var(--foreground);font-weight:600;}
     .fl-score{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--tbg);color:var(--tc);white-space:nowrap;}
     .fl-score svg{width:16px;height:16px;}
     .fl-review{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning);white-space:nowrap;}
@@ -168,14 +166,7 @@
     </section>
 
     <section class="panel" id="panel-filtro" role="tabpanel">
-      <p class="panel-intro">Simulação no padrão de produção: o <b>"Precisa de revisão"</b> é um <b>toggle dentro do "Filtrar"</b> (sem tab nova). O score fica visível no card; os pendentes mostram <b>"Precisa de revisão"</b> no lugar do score. Ordenado por Maior score, os pendentes ficam no fim; abra <b>Filtrar</b> e ligue o toggle para trazê-los à tona.</p>
       <div class="fp-bar">
-        <div class="fp-tabs">
-          <button class="fp-tab active" type="button">Todas <span class="fp-c">5</span></button>
-          <button class="fp-tab" type="button">Ativas <span class="fp-c">3</span></button>
-          <button class="fp-tab" type="button">Chegou hoje <span class="fp-c">1</span></button>
-          <button class="fp-tab" type="button">Vencendo em breve <span class="fp-c">2</span></button>
-        </div>
         <div class="fp-actions">
           <button class="fp-btn" id="fpFiltrar" type="button">Filtrar</button>
           <button class="fp-btn" type="button">Ordenar</button>
