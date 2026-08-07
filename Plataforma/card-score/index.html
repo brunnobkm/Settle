@@ -268,14 +268,14 @@
       </div>`;
 
     /* card completo com o tratamento aplicado */
-    const fullCard = ({topEntry='', headerAside='', topModule='', preItems='', topBanner=''}) => `
+    const fullCard = ({topEntry='', headerAside='', topModule='', preItems='', topBanner='', metaOverride=''}) => `
       <article class="lic-card${topBanner ? ' has-banner' : ''}">
         ${topBanner}
         ${topBar(topEntry)}
         <div class="lc-content">
           ${topModule}
           ${headerAside ? headerAsideRow(headerAside) : header()}
-          ${propGrid}
+          ${metaOverride || propGrid}
           ${preItems}
           ${itemsTable}
         </div>
@@ -327,13 +327,35 @@
       </div>`;
     const scoreBanner = t => `<div class="score-banner ${t.cls}"><div class="sbn-left">${I.gauge}<b>${t.val}</b><span class="den">/100</span></div>${t.rev ? `<span class="sbn-badge">${t.rev} itens para Revisar</span>` : ''}</div>`;
 
+    /* A5: score na linha de metadados, no lugar da caixa de datas; datas vão para a grade */
+    const scoreMeta = t => `
+      <div class="lc-props">
+        ${scoreMini(t)}
+        <div class="prop-box prop-right">
+          <div class="fld"><div class="k">Adicionada</div><div class="v">04/02/2026</div></div>
+          <div class="fld"><div class="k">Atualizada</div><div class="v">12/02/2026</div></div>
+          <div class="fld"><div class="k">Envio da proposta</div><div class="v warn">13/02/2026</div></div>
+          <div class="fld"><div class="k">ID</div><div class="v">1078513</div></div>
+          <div class="fld"><div class="k">UASG</div><div class="v">-</div></div>
+          <div class="fld"><div class="k">Modalidade</div><div class="v">Pregão - Eletrônico</div></div>
+          <div class="fld"><div class="k">Julgamento</div><div class="v">Menor preço por item</div></div>
+          <div class="fld"><div class="k">Estado</div><div class="v">PA</div></div>
+          <div class="fld"><div class="k">Cidade</div><div class="v">Belém</div></div>
+          <div class="fld"><div class="k">Habitantes</div><div class="v">1.303.403</div></div>
+          <div class="fld"><div class="k">CAPAG Estadual</div><div class="v"><span class="cap ok">A</span></div></div>
+          <div class="fld"><div class="k">CAPAG Municipal</div><div class="v"><span class="cap warn">C</span></div></div>
+          <div class="fld"><div class="k">Portal de disputa</div><div class="v">compras.saobernado.sp...</div></div>
+        </div>
+      </div>`;
+
     const scoreCarousel = build => carousel(TEMPS.map(t => fullCard(build(t))), TEMP_LABELS);
 
     document.getElementById('scoreList').innerHTML =
       proposal('A1','Chip na barra de ações','', '', scoreCarousel(t => ({topEntry: scoreChip(t)}))) +
       proposal('A2','Bloco compacto no cabeçalho','', '', scoreCarousel(t => ({headerAside: scoreMini(t)}))) +
       proposal('A3','Módulo faixa no topo','', '', scoreCarousel(t => ({topModule: scoreBand(t)}))) +
-      proposal('A4','Faixa no topo do card','', '', scoreCarousel(t => ({topBanner: scoreBanner(t)})));
+      proposal('A4','Faixa no topo do card','', '', scoreCarousel(t => ({topBanner: scoreBanner(t)}))) +
+      proposal('A5','Score na linha de metadados','', '', scoreCarousel(t => ({metaOverride: scoreMeta(t)})));
 
     /* ---------- CHECKLIST ----------
        Lista de campos configurada pelo cliente; os valores são extraídos do
