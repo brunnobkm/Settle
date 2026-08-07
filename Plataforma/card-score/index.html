@@ -76,20 +76,19 @@
     .checklist-entry svg{width:16px;height:16px;}
     .chip-rev{display:inline-flex;align-items:center;font-size:12px;font-weight:600;line-height:16px;padding:2px 7px;border-radius:6px;background:var(--warning-bg);color:var(--warning);}
 
-    /* ---- B2: bloco compacto de resumo ---- */
-    .resumo-mini{flex:none;width:340px;border:1px solid var(--border);border-radius:var(--radius-box);padding:12px 14px;background:var(--card);}
-    .rm-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-    .rm-head svg{width:16px;height:16px;color:var(--muted-foreground);}
-    .rm-head b{font-size:14px;font-weight:600;}
-    .rm-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
-    .rm-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted-foreground);}
-    .rm-list li b{color:var(--foreground);font-weight:600;}
-    .rm-list li .rev{font-style:normal;color:var(--warning);font-weight:600;}
-    .rm-more{display:inline-block;margin-top:10px;font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;}
+    /* ---- B2: grade dos campos do checklist no card ---- */
+    .checklist-mod{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);}
+    .clg-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);}
+    .clg-head svg{width:16px;height:16px;color:var(--muted-foreground);}
+    .clg-head b{font-size:15px;font-weight:600;}
+    .clg-count{font-size:13px;color:var(--muted-foreground);}
+    .clg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 20px;padding:12px;}
+    .cl-rev{color:var(--warning);font-weight:600;}
 
     /* ---- B3: checklist embutido como seção ---- */
     .checklist-section{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;background:var(--card);}
     .cs-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);}
+    .cs-head svg{width:16px;height:16px;color:var(--muted-foreground);}
     .cs-head b{font-size:15px;font-weight:600;}
     .cs-copy{margin-left:auto;font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;}
     .cs-group-title{font-size:12px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.03em;padding:10px 12px 4px;}
@@ -114,7 +113,8 @@
     .sbn-badge{background:var(--warning);color:var(--primary-foreground);font-size:13px;font-weight:600;padding:5px 12px;border-radius:8px;white-space:nowrap;}
 
     @media (max-width:900px){
-      .mh-row{flex-direction:column;} .score-mini,.resumo-mini{width:100%;}
+      .lc-headrow{flex-direction:column;} .score-mini{width:100%;}
+      .clg-grid{grid-template-columns:repeat(2,1fr);}
       .score-band{flex-wrap:wrap;} .sb-rev{text-align:left;align-items:flex-start;}
     }
   </style>
@@ -308,43 +308,60 @@
         'O score vira uma faixa de largura cheia no topo do próprio card, tingida pela temperatura, com o total e os itens a revisar.',
         fullCard({topBanner: `<div class="score-banner temp-frio"><div class="sbn-left">${I.gauge}<b>39</b><span class="den">/100</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`}));
 
-    /* ---------- CHECKLIST ---------- */
-    const checklistEntry = `<button class="checklist-entry" type="button">${I.doc}Checklist<span class="chip-rev">3</span></button>`;
-    const resumoMini = `
-      <div class="resumo-mini">
-        <div class="rm-head">${I.doc}<b>Checklist</b><span class="chip-rev">3 a revisar</span></div>
-        <ul class="rm-list">
-          <li><span>Encaixa em segmento de interesse?</span><em class="rev">Revisar</em></li>
-          <li><span>Exige certidão específica na habilitação?</span><em class="rev">Revisar</em></li>
-          <li><span>Menciona Intelbras?</span><b>Não</b></li>
-        </ul>
-        <a class="rm-more" href="#">Ver resumo completo</a>
+    /* ---------- CHECKLIST ----------
+       Lista de campos configurada pelo cliente; os valores são extraídos do
+       edital (por isso há campos em revisão). Nenhum campo é mais importante
+       que outro. O objetivo é dar visibilidade a essa lista/valores no card. */
+    const clData = [
+      {g:'Variáveis para cálculo do Score', items:[
+        ['Encaixa em segmento de interesse?','Sim'],
+        ['Exige certidão específica na habilitação?',null],
+        ['Exige certificado do fabricante?','Sim'],
+        ['Exige Prova de Conceito?','Não'],
+        ['Menciona Intelbras?','Não'],
+      ]},
+      {g:'Condições de Participação', items:[
+        ['Permite Consórcio?','Sim'],
+        ['Permite Subcontratação?','Não'],
+        ['Garantia Contratual?',null],
+      ]},
+      {g:'Dados Básicos', items:[
+        ['Portal de Disputa','compras.saobernado.sp...'],
+        ['Legislação','Lei nº 14.133/2021'],
+        ['Ata de Registro de Preços?',null],
+        ['Código no Portal','90001/2026'],
+      ]},
+    ];
+    const clFlat = clData.flatMap(s => s.items);
+    const clPending = clFlat.filter(i => i[1] === null).length;
+    const clTotal = clFlat.length;
+
+    const checklistEntry = `<button class="checklist-entry" type="button">${I.doc}Checklist<span class="chip-rev">${clPending} a revisar</span></button>`;
+
+    const checklistGrid = `
+      <div class="checklist-mod">
+        <div class="clg-head">${I.doc}<b>Checklist</b><span class="clg-count">${clTotal} campos</span><span class="chip-rev">${clPending} a revisar</span></div>
+        <div class="clg-grid">
+          ${clFlat.map(i => `<div class="fld"><div class="k">${i[0]}</div><div class="v">${i[1]===null ? '<span class="cl-rev">Revisar</span>' : i[1]}</div></div>`).join('')}
+        </div>
       </div>`;
-    const checklistSection = `
+
+    const checklistFull = `
       <div class="checklist-section">
-        <div class="cs-head">${I.doc}<b>Checklist</b><span class="chip-rev">3 a revisar</span><a class="cs-copy" href="#">Copiar conteúdo</a></div>
-        <div class="cs-group-title">Variáveis para cálculo do Score</div>
-        <div class="cs-row"><span class="k">Encaixa em segmento de interesse?</span><button class="btn-rev" type="button">Revisar</button></div>
-        <div class="cs-row"><span class="k">Exige certidão específica na habilitação?</span><button class="btn-rev" type="button">Revisar</button></div>
-        <div class="cs-row"><span class="k">Menciona Intelbras?</span><span class="cs-pts"><span class="pts">Não</span><span class="ok">Atende</span></span></div>
-        <div class="cs-group-title">Dados Básicos</div>
-        <div class="cs-row"><span class="k">Portal de Disputa</span><span class="v">compras.saobernado.sp.gov.br</span></div>
-        <div class="cs-row"><span class="k">Legislação</span><span class="v">Lei 14.133/2021</span></div>
+        <div class="cs-head">${I.doc}<b>Checklist</b><span class="chip-rev">${clPending} a revisar</span><a class="cs-copy" href="#">Copiar conteúdo</a></div>
+        ${clData.map(s => `<div class="cs-group-title">${s.g}</div>` + s.items.map(i => `<div class="cs-row"><span class="k">${i[0]}</span>${i[1]===null ? '<button class="btn-rev" type="button">Revisar</button>' : `<span class="v">${i[1]}</span>`}</div>`).join('')).join('')}
       </div>`;
 
     document.getElementById('checklistList').innerHTML =
-      proposal('B1','Botão na barra de ações','destacar entrada',
-        'O acesso ao Checklist vira um botão rotulado (não um iconezinho), com contador de itens a revisar. Não traz conteúdo para o card.',
+      proposal('B1','Botão de acesso destacado','destacar entrada',
+        'A lista é aberta por um botão rotulado e evidente, com o sinal de quantos campos estão em revisão. Card limpo.',
         fullCard({topEntry: checklistEntry})) +
-      proposal('B2','Bloco compacto no cabeçalho','preview',
-        'Um bloco com uma amostra do resumo (campos-chave) e link para o conteúdo completo. O selo de revisão é condicional.',
-        fullCard({headerAside: resumoMini})) +
-      proposal('B3','Seção embutida no card','preview',
-        'O resumo aparece como uma seção do card, já expandida e clara (sem escurecer). O conteúdo é o foco; a revisão é um selo condicional.',
-        fullCard({preItems: checklistSection})) +
-      proposal('B4','Faixa no topo do card','destacar + revisão',
-        'Equivalente à faixa do Score. Como o Checklist não tem temperatura, a faixa é neutra e destaca a revisão pendente (condicional).',
-        fullCard({topBanner: `<div class="score-banner neutral"><div class="sbn-left">${I.doc}<span class="sbn-label">Checklist</span></div><span class="sbn-badge">3 itens para Revisar</span></div>`}));
+      proposal('B2','Grade dos campos no card','trazer conteúdo',
+        'Todos os campos que o cliente pediu aparecem no card, em grade, com o valor extraído do edital; os pendentes ficam como Revisar.',
+        fullCard({preItems: checklistGrid})) +
+      proposal('B3','Checklist completo embutido','trazer conteúdo',
+        'A lista completa como seção do card, agrupada como no documento, cada campo com seu valor; pendentes com ação de revisar.',
+        fullCard({preItems: checklistFull}));
 
     /* ---------- tabs ---------- */
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
