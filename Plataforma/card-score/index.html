@@ -106,6 +106,18 @@
     .ca-row .k{color:var(--foreground);}
     .ca-row .v{color:var(--muted-foreground);}
 
+    /* ---- B4: botão "Checklist" com dropdown ---- */
+    .checklist-dd{position:relative;display:inline-block;}
+    .cdd-trigger{list-style:none;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:14px;font-weight:600;color:var(--foreground);}
+    .cdd-trigger::-webkit-details-marker{display:none;}
+    .cdd-trigger:hover{background:var(--muted);}
+    .cdd-chev{color:var(--muted-foreground);transition:transform .15s;}
+    .checklist-dd[open] .cdd-chev{transform:rotate(180deg);}
+    .cdd-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:20;width:660px;max-width:calc(100vw - 80px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);}
+    .cdd-panel .clg-sec{padding:12px 14px;}
+    .cdd-panel .clg-sec + .clg-sec{border-top:1px solid var(--border);}
+    .cdd-panel .clg-grid{grid-template-columns:repeat(3,1fr);}
+
     /* ---- A4 / B4: faixa no topo do MESMO card (não dois cards) ---- */
     .lic-card.has-banner{overflow:hidden;}
     .score-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--tbg);border-bottom:1px solid var(--border);}
@@ -368,6 +380,22 @@
           </details>`).join('')}
       </div>`;
 
+    /* B4: botão "Checklist" que abre um dropdown com os campos */
+    const cddChev = '<svg class="cdd-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>';
+    const checklistDropdown = `
+      <details class="checklist-dd">
+        <summary class="cdd-trigger">Checklist${clPending ? `<span class="chip-rev">${clPending} a revisar</span>` : ''}${cddChev}</summary>
+        <div class="cdd-panel">
+          ${clData.map(s => `
+            <div class="clg-sec">
+              <div class="clg-sec-title">${s.g}</div>
+              <div class="clg-grid">
+                ${s.items.map(i => `<div class="fld"><div class="k">${i[0]}</div><div class="v">${i[1]===null ? '<span class="cl-rev">Revisar</span>' : i[1]}</div></div>`).join('')}
+              </div>
+            </div>`).join('')}
+        </div>
+      </details>`;
+
     document.getElementById('checklistList').innerHTML =
       proposal('B1','Botão de acesso destacado','destacar entrada',
         'A lista é aberta por um botão rotulado e evidente, com o sinal de quantos campos estão em revisão. Card limpo.',
@@ -380,7 +408,10 @@
         fullCard({preItems: checklistGrid})) +
       proposal('B3','Acordeão por seção','trazer conteúdo',
         'A lista em seções colapsáveis: cada seção mostra quantos campos e quantos a revisar, e abre para ver os valores. Escala com muitos campos.',
-        fullCard({preItems: checklistAcc}));
+        fullCard({preItems: checklistAcc})) +
+      proposal('B4','Botão Checklist com dropdown','destacar + conteúdo',
+        'Um botão "Checklist" com chevron que abre um dropdown com os campos agrupados. Compacto por padrão; sinaliza os itens a revisar.',
+        fullCard({preItems: checklistDropdown}));
 
     /* ---------- tabs ---------- */
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
