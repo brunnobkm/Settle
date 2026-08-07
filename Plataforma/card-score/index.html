@@ -74,6 +74,7 @@
     /* ---- B1: botão de checklist na barra ---- */
     .checklist-entry{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--warning);background:var(--warning-bg);color:var(--warning);font-size:14px;font-weight:600;white-space:nowrap;}
     .checklist-entry svg{width:16px;height:16px;}
+    .checklist-entry.ok{border-color:var(--success);background:rgba(22,163,74,.1);color:var(--success);}
     .chip-rev{display:inline-flex;align-items:center;font-size:12px;font-weight:600;line-height:16px;padding:2px 7px;border-radius:6px;background:var(--warning-bg);color:var(--warning);}
 
     /* ---- B2: grade dos campos, agrupados por seção ---- */
@@ -342,6 +343,7 @@
     const clTotal = clFlat.length;
 
     const checklistEntry = `<button class="checklist-entry" type="button">${I.listChecks}${clPending} itens para revisar</button>`;
+    const checklistEntryOk = `<button class="checklist-entry ok" type="button">${I.listChecks}Checklist completo</button>`;
 
     const clVal = v => v === null ? '<span class="cl-rev">Revisar</span>' : `<span class="v">${v}</span>`;
     const secRev = s => s.items.filter(i => i[1] === null).length;
@@ -377,6 +379,9 @@
       proposal('B1','Botão de acesso destacado','destacar entrada',
         'A lista é aberta por um botão rotulado e evidente, com o sinal de quantos campos estão em revisão. Card limpo.',
         fullCard({topEntry: checklistEntry})) +
+      proposal('B1b','Botão completo (tudo certo)','estado',
+        'Mesmo botão no estado consolidado: verde, indicando que todos os campos já foram extraídos/revisados.',
+        fullCard({topEntry: checklistEntryOk})) +
       proposal('B2','Grade dos campos por seção','trazer conteúdo',
         'Os campos aparecem no card em grade, agrupados nas seções do cliente, com o valor extraído do edital; os pendentes ficam como Revisar.',
         fullCard({preItems: checklistGrid})) +
