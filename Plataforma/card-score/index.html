@@ -122,29 +122,13 @@
 
     /* carousel de variações de status: CSS no settle.css */
 
-    /* ---- Filtro (simulação da solução) ---- */
+    /* ---- Filtro (simulação): chip de score visível no card ---- */
     .panel-intro{font-size:13px;color:var(--muted-foreground);margin:0 0 16px;max-width:900px;line-height:19px;}
     .panel-intro b{color:var(--foreground);font-weight:600;}
-    .fl-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-    .fl-sort{font-size:14px;color:var(--muted-foreground);}
-    .fl-sort b{color:var(--foreground);font-weight:600;}
-    .fl-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--foreground);cursor:pointer;}
-    .fl-chip:hover{background:var(--muted);}
-    .fl-chip.on{background:var(--warning-bg);border-color:var(--warning);color:var(--warning);}
-    .fl-chip svg{width:16px;height:16px;}
-    .fl-chip .fl-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9999px;background:var(--warning);color:var(--primary-foreground);font-size:11px;font-weight:700;}
-    .fl-list{display:flex;flex-direction:column;gap:10px;}
-    .fl-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-card);padding:14px 16px;}
-    .fl-card[hidden]{display:none;}
-    .fl-main{flex:1;min-width:0;}
-    .fl-title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .fl-title b{font-weight:700;}
-    .fl-org{color:var(--muted-foreground);}
-    .fl-sub{font-size:13px;color:var(--muted-foreground);margin-top:3px;}
-    .fl-right{flex:none;display:flex;align-items:center;gap:10px;}
     .fl-score{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--tbg);color:var(--tc);white-space:nowrap;}
-    .fl-parcial{font-size:12px;color:var(--muted-foreground);}
+    .fl-score svg{width:16px;height:16px;}
     .fl-review{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning);white-space:nowrap;}
+    .fl-review svg{width:16px;height:16px;}
 
     /* ---- A4 / B4: faixa no topo do MESMO card (não dois cards) ---- */
     .lic-card.has-banner{overflow:hidden;}
@@ -184,12 +168,35 @@
     </section>
 
     <section class="panel" id="panel-filtro" role="tabpanel">
-      <p class="panel-intro">Simulação da solução: o score fica <b>visível no card</b> e existe um filtro <b>"Precisa de revisão"</b>. Ordenado por Maior score: repare que os cards que só precisam de revisão ficam no fim (score provisório). Ligue o filtro para trazê-los à tona.</p>
-      <div class="fl-toolbar">
-        <span class="fl-sort">Ordenar: <b>Maior score</b></span>
-        <button class="fl-chip" id="flReviewFilter" type="button" aria-pressed="false" aria-label="Filtrar por precisa de revisão"></button>
+      <p class="panel-intro">Simulação no padrão de produção: o <b>"Precisa de revisão"</b> é um <b>toggle dentro do "Filtrar"</b> (sem tab nova). O score fica visível no card; os pendentes mostram <b>"Precisa de revisão"</b> no lugar do score. Ordenado por Maior score, os pendentes ficam no fim; abra <b>Filtrar</b> e ligue o toggle para trazê-los à tona.</p>
+      <div class="fp-bar">
+        <div class="fp-tabs">
+          <button class="fp-tab active" type="button">Todas <span class="fp-c">5</span></button>
+          <button class="fp-tab" type="button">Ativas <span class="fp-c">3</span></button>
+          <button class="fp-tab" type="button">Chegou hoje <span class="fp-c">1</span></button>
+          <button class="fp-tab" type="button">Vencendo em breve <span class="fp-c">2</span></button>
+        </div>
+        <div class="fp-actions">
+          <button class="fp-btn" id="fpFiltrar" type="button">Filtrar</button>
+          <button class="fp-btn" type="button">Ordenar</button>
+          <button class="fp-btn" type="button">Exportar</button>
+          <button class="fp-btn" type="button">Buscar</button>
+        </div>
       </div>
-      <div id="filtroList" class="fl-list"></div>
+      <div id="filtroList" class="fp-list"></div>
+
+      <div class="fp-overlay" id="fpOverlay" hidden></div>
+      <aside class="fp-sheet" id="fpSheet" hidden aria-label="Filtros">
+        <div class="fp-sheet-head"><b>Filtros</b><button class="fp-close" id="fpClose" type="button" aria-label="Fechar">×</button></div>
+        <p class="fp-sheet-sub">Personalize os filtros da sua busca.</p>
+        <div class="fp-field"><label>Score</label><div class="fp-row"><input class="fp-input" placeholder="Mínimo" aria-label="Score mínimo"><input class="fp-input" placeholder="Máximo" aria-label="Score máximo"></div></div>
+        <div class="fp-toggle-field">
+          <div><div class="fp-label">Precisa de revisão</div><div class="fp-hint">Mostrar só os que precisam de revisão</div></div>
+          <button class="fp-toggle" id="fpToggle" type="button" role="switch" aria-checked="false" aria-label="Precisa de revisão"><span class="fp-knob"></span></button>
+        </div>
+        <div class="fp-field"><label>Estado</label><div class="fp-select">Nenhuma opção selecionada</div></div>
+        <div class="fp-sheet-foot"><button class="btn btn-primary fp-save" type="button">Salvar Alterações</button><button class="btn btn-outline fp-clear" type="button">Limpar Filtros</button></div>
+      </aside>
     </section>
   </div>
 
@@ -483,41 +490,65 @@
       proposal('B3','Acordeão por seção','', '', clCarousel(d => ({preItems: renderAcc(d)}))) +
       proposal('B4','Botão Checklist com dropdown','', '', clCarousel(d => ({topEntry: renderDropdown(d)})));
 
-    /* ---------- Filtro (simulação): score visível no card + filtro "Precisa de revisão" ---------- */
+    /* ---------- Filtro (simulação em padrão de produção): cards completos + Filtrar > toggle "Precisa de revisão" ---------- */
     const flData = [
-      {ed:'026/2026', org:'Prefeitura de Nova Alvorada do Sul', valor:'R$ 81.000,00', score:88, rev:0},
-      {ed:'33/2026', org:'Câmara Municipal de Sorocaba', valor:'R$ 210.000,00', score:73, rev:0},
-      {ed:'90001/2026', org:'EPA - Procuradoria Geral do Estado do Pará', valor:'R$ 47.284.499,63', score:65, rev:0},
-      {ed:'45/2026', org:'Governo do Estado de São Paulo', valor:'R$ 320.000,00', score:41, rev:0},
-      {ed:'28/2026', org:'Município de Atalaia', valor:'R$ 538.825,96', score:0, rev:3},
-      {ed:'12/2026', org:'Prefeitura Municipal de Belém', valor:'R$ 1.204.000,00', score:0, rev:5},
-      {ed:'07/2026', org:'Município de Ibiúna', valor:'R$ 96.000,00', score:0, rev:2},
+      {ed:'026/2026', org:'Prefeitura de Nova Alvorada do Sul', obj:'Contratação de licença de uso de sistema de gestão pública municipal, web nativo, com implantação, treinamento e suporte técnico.', valor:'R$ 81.000,00', score:88, rev:0},
+      {ed:'90001/2026', org:'EPA - Procuradoria Geral do Estado do Pará', obj:'Fornecimento de computadores desktop, notebooks, monitores e periféricos para a rede municipal de ensino, com instalação e garantia.', valor:'R$ 47.284.499,63', score:65, rev:0},
+      {ed:'45/2026', org:'Governo do Estado de São Paulo', obj:'Contratação de software de gestão documental, com implantação, migração de dados, treinamento e manutenção continuada.', valor:'R$ 320.000,00', score:41, rev:0},
+      {ed:'28/2026', org:'Município de Atalaia', obj:'Fornecimento de software de gestão fiscal, contábil e administrativa para a Prefeitura, Câmara e Fundo de Previdência, com suporte.', valor:'R$ 538.825,96', score:0, rev:3},
+      {ed:'12/2026', org:'Prefeitura Municipal de Belém', obj:'Contratação de sistema integrado de gestão pública, com implantação, treinamento e suporte técnico continuado.', valor:'R$ 1.204.000,00', score:0, rev:5},
     ];
     const flTemp = s => s>=75 ? {cls:'temp-quente',label:'Quente'} : s>=50 ? {cls:'temp-morno',label:'Morno'} : {cls:'temp-frio',label:'Frio'};
-    const flCard = d => {
+    const filterCard = d => {
       const t = flTemp(d.score);
-      const right = d.rev
-        ? `<span class="fl-parcial">Score parcial</span><span class="fl-review">${I.listChecks} Precisa de revisão · ${d.rev}</span>`
+      const entry = d.rev
+        ? `<span class="fl-review">${I.listChecks} Precisa de revisão</span>`
         : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100 · ${t.label}</span>`;
-      return `<div class="fl-card" data-rev="${d.rev>0?1:0}">
-        <button class="lc-chk" type="button" aria-label="Selecionar"></button>
-        <div class="fl-main">
-          <div class="fl-title"><b>Edital</b> ${d.ed} · <span class="fl-org">${d.org}</span></div>
-          <div class="fl-sub">Software · ${d.valor}</div>
-        </div>
-        <div class="fl-right">${right}</div>
+      return `<div class="fl-item" data-rev="${d.rev>0?1:0}">
+        <article class="lic-card">
+          <div class="lc-top">
+            <div class="lc-top-left">
+              <button class="lc-chk" type="button" aria-label="Selecionar edital"></button>
+              <span class="lc-title"><b>Edital</b> <span class="num">${d.ed}</span></span>
+            </div>
+            <div class="lc-top-actions">
+              <button class="btn btn-secondary" type="button">Descartar</button>
+              <button class="btn btn-primary" type="button">Enviar para análise</button>
+              <span class="vsep" aria-hidden="true"></span>
+              ${avatars}
+              <span class="vsep" aria-hidden="true"></span>
+              ${softIcons}
+              <span class="vsep" aria-hidden="true"></span>
+              ${entry}
+            </div>
+          </div>
+          <div class="lc-content">
+            <div class="module">
+              <div class="lc-segments"><span class="seg">Software</span></div>
+              <div class="lc-org"><span><b>Órgão:</b> ${d.org}</span><span class="tag-light">ME - EPP</span></div>
+              <p class="lc-obj"><b>Objeto:</b> ${d.obj}</p>
+              <p class="lc-valor">Valor global: ${d.valor}</p>
+            </div>
+            ${propGrid}
+            ${itemsTable}
+          </div>
+        </article>
       </div>`;
     };
-    const flReviewCount = flData.filter(d => d.rev > 0).length;
-    document.getElementById('filtroList').innerHTML = flData.map(flCard).join('');
-    const flChip = document.getElementById('flReviewFilter');
-    flChip.innerHTML = `${I.listChecks} Precisa de revisão <span class="fl-count">${flReviewCount}</span>`;
-    let flOn = false;
-    flChip.addEventListener('click', () => {
-      flOn = !flOn;
-      flChip.classList.toggle('on', flOn);
-      flChip.setAttribute('aria-pressed', flOn ? 'true' : 'false');
-      document.querySelectorAll('#filtroList .fl-card').forEach(c => { c.hidden = flOn && c.dataset.rev !== '1'; });
+    document.getElementById('filtroList').innerHTML = flData.map(filterCard).join('');
+
+    const fpSheet = document.getElementById('fpSheet');
+    const fpOverlay = document.getElementById('fpOverlay');
+    const fpOpen = () => { fpSheet.hidden = false; fpOverlay.hidden = false; };
+    const fpClose = () => { fpSheet.hidden = true; fpOverlay.hidden = true; };
+    document.getElementById('fpFiltrar').addEventListener('click', fpOpen);
+    document.getElementById('fpClose').addEventListener('click', fpClose);
+    fpOverlay.addEventListener('click', fpClose);
+    const fpToggle = document.getElementById('fpToggle');
+    fpToggle.addEventListener('click', () => {
+      const on = fpToggle.getAttribute('aria-checked') !== 'true';
+      fpToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+      document.querySelectorAll('#filtroList .fl-item').forEach(c => { c.hidden = on && c.dataset.rev !== '1'; });
     });
 
     /* ---------- carousel ---------- */
