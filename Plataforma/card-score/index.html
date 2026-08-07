@@ -344,7 +344,7 @@
     /* B2: grade com os campos agrupados dentro de cada seção */
     const checklistGrid = `
       <div class="checklist-mod">
-        <div class="clg-head">${I.listChecks}<b>Checklist</b><span class="clg-count">${clTotal} campos</span><span class="chip-rev">${clPending} a revisar</span></div>
+        <div class="clg-head"><b>Checklist</b><span class="chip-rev">${clPending} a revisar</span></div>
         ${clData.map(s => `
           <div class="clg-sec">
             <div class="clg-sec-title">${s.g}</div>
@@ -358,7 +358,7 @@
     const chev = '<svg class="ca-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>';
     const checklistAcc = `
       <div class="checklist-acc">
-        <div class="ca-head">${I.listChecks}<b>Checklist</b><span class="chip-rev">${clPending} a revisar</span></div>
+        <div class="ca-head"><b>Checklist</b><span class="chip-rev">${clPending} a revisar</span></div>
         ${clData.map((s, idx) => `
           <details class="ca-sec"${idx===0 ? ' open' : ''}>
             <summary class="ca-sum">${s.g}<span class="ca-count">${s.items.length} campos</span>${secRev(s) ? `<span class="chip-rev">${secRev(s)} a revisar</span>` : ''}${chev}</summary>
