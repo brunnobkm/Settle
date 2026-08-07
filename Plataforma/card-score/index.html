@@ -73,8 +73,8 @@
     .chip-rev{display:inline-flex;align-items:center;font-size:12px;font-weight:600;line-height:16px;padding:2px 7px;border-radius:6px;background:var(--warning-bg);color:var(--warning);}
 
     /* ---- B2: grade dos campos, agrupados por seção ---- */
-    .checklist-mod{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);}
-    .clg-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);}
+    .checklist-mod{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);max-height:280px;overflow:hidden auto;}
+    .clg-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1;}
     .clg-head svg{width:16px;height:16px;color:var(--muted-foreground);}
     .clg-head b{font-size:15px;font-weight:600;}
     .clg-count{font-size:13px;color:var(--muted-foreground);}
@@ -85,8 +85,8 @@
     .cl-rev{color:var(--warning);font-weight:600;}
 
     /* ---- B3: checklist em acordeão por seção ---- */
-    .checklist-acc{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;background:var(--card);}
-    .ca-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);}
+    .checklist-acc{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden auto;background:var(--card);max-height:280px;}
+    .ca-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1;}
     .ca-head svg{width:16px;height:16px;color:var(--muted-foreground);}
     .ca-head b{font-size:15px;font-weight:600;}
     .ca-sec{border-top:1px solid var(--border);}
