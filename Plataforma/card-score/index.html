@@ -44,18 +44,13 @@
     .score-chip .sep-dot{opacity:.5;}
 
     /* ---- A2 / B2: caixa ao lado do cabeçalho (compacta, no canto direito) ---- */
-    .lc-headrow{display:flex;gap:8px;align-items:flex-start;}
+    .lc-headrow{display:flex;gap:8px;align-items:stretch;}
     .lc-headrow > .module{flex:1;min-width:0;}
-    .score-mini{flex:none;width:261px;border:1px solid var(--border);border-radius:var(--radius-box);padding:14px 16px;background:var(--card);display:flex;flex-direction:column;gap:14px;}
-    .sm-head{display:flex;align-items:center;gap:14px;}
-    .sm-ring{flex:none;position:relative;width:52px;height:52px;}
-    .sm-ring .sm-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--tc);}
-    .sm-info{min-width:0;display:flex;flex-direction:column;gap:5px;align-items:flex-start;}
-    .sm-num{font-size:22px;font-weight:700;line-height:1;}
-    .sm-num .den{font-size:13px;font-weight:500;color:var(--muted-foreground);}
-    .sm-foot{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--border);}
-    .sm-sub{font-size:13px;color:var(--muted-foreground);line-height:18px;}
-    .sm-link{font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;}
+    .score-mini{flex:none;width:261px;border:1px solid var(--border);border-radius:var(--radius-box);padding:14px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+    .sm-ring{flex:none;position:relative;width:64px;height:64px;}
+    .sm-ring .sm-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;color:var(--tc);}
+    .sm-ring .sm-val b{font-size:20px;font-weight:700;}
+    .sm-ring .sm-val small{font-size:9px;font-weight:600;opacity:.7;margin-top:1px;}
 
     /* ---- A3: módulo faixa de score no topo ---- */
     .score-band{display:flex;align-items:center;gap:20px;border:1px solid var(--border);border-radius:var(--radius-box);padding:12px 16px;background:var(--card);}
@@ -312,21 +307,11 @@
     const scoreChip = t => `<button class="score-chip ${t.cls}" type="button" aria-label="Score ${t.val} de 100, ${t.label}">${I.gauge}<b>${t.val}</b><span class="den">/100</span></button>`;
     const scoreMini = t => `
       <div class="score-mini ${t.cls}">
-        <div class="sm-head">
-          <div class="sm-ring">
-            <svg viewBox="0 0 52 52" width="52" height="52"><circle cx="26" cy="26" r="21" fill="none" stroke="var(--muted)" stroke-width="5"/><circle cx="26" cy="26" r="21" fill="none" stroke="var(--tc)" stroke-width="5" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="${ringOffset(132, t.val)}" transform="rotate(-90 26 26)"/></svg>
-            <span class="sm-val">${t.val}</span>
-          </div>
-          <div class="sm-info">
-            <span class="sm-num">${t.val}<span class="den">/100</span></span>
-            <span class="chip">${t.label}</span>
-          </div>
+        <div class="sm-ring">
+          <svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--muted)" stroke-width="6"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--tc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="${ringOffset(163, t.val)}" transform="rotate(-90 32 32)"/></svg>
+          <span class="sm-val"><b>${t.val}</b><small>/100</small></span>
         </div>
-        <div class="sm-foot">
-          ${t.rev
-            ? `<span class="sm-sub">Parcial · ${t.rev} campos a revisar</span><a class="sm-link" href="#">Revisar campos</a>`
-            : `<span class="sm-sub">Score consolidado</span>`}
-        </div>
+        <span class="chip">${t.label}</span>
       </div>`;
     const scoreBand = t => `
       <div class="score-band ${t.cls}">
