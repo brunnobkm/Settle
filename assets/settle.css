@@ -499,6 +499,29 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .fp-sheet-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;}
 .fp-save,.fp-clear{width:100%;justify-content:center;}
 
+/* dropdown Ordenar */
+.fp-menu-wrap{position:relative;display:inline-flex;}
+.fp-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:200px;background:var(--background);border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);padding:4px;z-index:30;}
+.fp-menu[hidden]{display:none;}
+.fp-menu-item{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;padding:8px 10px;border:0;background:transparent;border-radius:var(--radius-field);font:inherit;font-size:14px;color:var(--foreground);cursor:pointer;}
+.fp-menu-item:hover{background:var(--muted);}
+.fp-menu-item[aria-checked="true"]{font-weight:600;}
+.fp-menu-item[aria-checked="true"]::after{content:"✓";color:var(--accent-600);}
+
+/* toast (sonner) */
+.fp-toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:50;max-width:400px;}
+.fp-toast{display:flex;gap:12px;padding:14px;background:var(--background);border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);}
+.fp-toast-ico{flex:0 0 auto;color:var(--warning);display:flex;}
+.fp-toast-ico svg{width:20px;height:20px;}
+.fp-toast-body{flex:1;min-width:0;}
+.fp-toast-title{font-size:14px;font-weight:600;color:var(--foreground);margin-bottom:2px;}
+.fp-toast-text{font-size:13px;line-height:18px;color:var(--muted-foreground);}
+.fp-toast-actions{display:flex;gap:8px;margin-top:10px;}
+.fp-toast-cta{padding:6px 12px;border:0;border-radius:var(--radius-field);background:var(--primary);color:var(--primary-foreground,#fff);font:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+.fp-toast-dismiss{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-field);background:transparent;color:var(--foreground);font:inherit;font-size:13px;cursor:pointer;}
+.fp-toast-x{flex:0 0 auto;align-self:flex-start;width:22px;height:22px;border:0;background:transparent;color:var(--muted-foreground);font-size:18px;line-height:1;cursor:pointer;border-radius:var(--radius-selector);}
+.fp-toast-x:hover{background:var(--muted);}
+
 /* carousel de variações (protótipos): navega entre slides do mesmo modelo */
 .carousel{position:relative;}
 .carousel-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}

@@ -169,12 +169,21 @@
       <div class="fp-bar">
         <div class="fp-actions">
           <button class="fp-btn" id="fpFiltrar" type="button">Filtrar</button>
-          <button class="fp-btn" type="button">Ordenar</button>
+          <div class="fp-menu-wrap">
+            <button class="fp-btn" id="fpOrdenar" type="button" aria-haspopup="menu" aria-expanded="false">Ordenar</button>
+            <div class="fp-menu" id="fpOrdenarMenu" role="menu" aria-label="Ordenar por" hidden>
+              <button class="fp-menu-item" type="button" role="menuitemradio" aria-checked="true" data-sort="maior">Maior score</button>
+              <button class="fp-menu-item" type="button" role="menuitemradio" aria-checked="false" data-sort="menor">Menor score</button>
+              <button class="fp-menu-item" type="button" role="menuitemradio" aria-checked="false" data-sort="recentes">Mais recentes</button>
+              <button class="fp-menu-item" type="button" role="menuitemradio" aria-checked="false" data-sort="proposta">Envio da proposta</button>
+            </div>
+          </div>
           <button class="fp-btn" type="button">Exportar</button>
           <button class="fp-btn" type="button">Buscar</button>
         </div>
       </div>
       <div id="filtroList" class="fp-list"></div>
+      <div class="fp-toasts" id="fpToasts" aria-live="polite"></div>
 
       <div class="fp-overlay" id="fpOverlay" hidden></div>
       <aside class="fp-sheet" id="fpSheet" hidden aria-label="Filtros">
@@ -526,8 +535,23 @@
         </article>
       </div>`;
     };
-    document.getElementById('filtroList').innerHTML = flData.map(filterCard).join('');
+    const filtroList = document.getElementById('filtroList');
+    const fpToggle = document.getElementById('fpToggle');
+    // ordena mantendo os pendentes (sem score) agrupados; em "Menor score" eles sobem ao topo
+    const sortData = mode => {
+      const scored = flData.filter(d => !d.rev);
+      const pending = flData.filter(d => d.rev);
+      if (mode === 'menor') return [...pending, ...scored.slice().sort((a,b)=>a.score-b.score)];
+      return [...scored.slice().sort((a,b)=>b.score-a.score), ...pending]; // maior/recentes/proposta: pendentes no fim
+    };
+    const applyReviewFilter = () => {
+      const on = fpToggle.getAttribute('aria-checked') === 'true';
+      filtroList.querySelectorAll('.fl-item').forEach(c => { c.hidden = on && c.dataset.rev !== '1'; });
+    };
+    const renderList = mode => { filtroList.innerHTML = sortData(mode).map(filterCard).join(''); applyReviewFilter(); };
+    renderList('maior');
 
+    /* painel Filtros */
     const fpSheet = document.getElementById('fpSheet');
     const fpOverlay = document.getElementById('fpOverlay');
     const fpOpen = () => { fpSheet.hidden = false; fpOverlay.hidden = false; };
@@ -535,11 +559,60 @@
     document.getElementById('fpFiltrar').addEventListener('click', fpOpen);
     document.getElementById('fpClose').addEventListener('click', fpClose);
     fpOverlay.addEventListener('click', fpClose);
-    const fpToggle = document.getElementById('fpToggle');
     fpToggle.addEventListener('click', () => {
       const on = fpToggle.getAttribute('aria-checked') !== 'true';
       fpToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-      document.querySelectorAll('#filtroList .fl-item').forEach(c => { c.hidden = on && c.dataset.rev !== '1'; });
+      applyReviewFilter();
+    });
+
+    /* toast (sonner) */
+    const fpToasts = document.getElementById('fpToasts');
+    const pendingCount = flData.filter(d => d.rev).length;
+    const showReviewToast = () => {
+      const t = document.createElement('div');
+      t.className = 'fp-toast';
+      t.setAttribute('role', 'status');
+      t.innerHTML = `
+        <span class="fp-toast-ico">${I.listChecks}</span>
+        <div class="fp-toast-body">
+          <div class="fp-toast-title">${pendingCount} editais ainda precisam de revisão</div>
+          <div class="fp-toast-text">Eles ainda não têm score calculado e sobem ao topo do "Menor score", podendo se confundir com editais de score baixo. Resolva as revisões para uma ordem confiável.</div>
+          <div class="fp-toast-actions">
+            <button class="fp-toast-cta" type="button" data-act="filtrar">Filtrar pendentes</button>
+            <button class="fp-toast-dismiss" type="button" data-act="fechar">Agora não</button>
+          </div>
+        </div>
+        <button class="fp-toast-x" type="button" aria-label="Fechar aviso">×</button>`;
+      const close = () => t.remove();
+      t.querySelector('.fp-toast-x').addEventListener('click', close);
+      t.querySelector('[data-act="fechar"]').addEventListener('click', close);
+      t.querySelector('[data-act="filtrar"]').addEventListener('click', () => {
+        if (fpToggle.getAttribute('aria-checked') !== 'true') { fpToggle.setAttribute('aria-checked','true'); applyReviewFilter(); }
+        fpOpen();
+        close();
+      });
+      fpToasts.appendChild(t);
+    };
+
+    /* dropdown Ordenar */
+    const fpOrdenar = document.getElementById('fpOrdenar');
+    const fpOrdenarMenu = document.getElementById('fpOrdenarMenu');
+    const closeSort = () => { fpOrdenarMenu.hidden = true; fpOrdenar.setAttribute('aria-expanded','false'); };
+    fpOrdenar.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = fpOrdenarMenu.hidden;
+      fpOrdenarMenu.hidden = !open;
+      fpOrdenar.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', e => { if (!fpOrdenarMenu.hidden && !fpOrdenarMenu.contains(e.target) && e.target !== fpOrdenar) closeSort(); });
+    fpOrdenarMenu.querySelectorAll('.fp-menu-item').forEach(item => {
+      item.addEventListener('click', () => {
+        fpOrdenarMenu.querySelectorAll('.fp-menu-item').forEach(i => i.setAttribute('aria-checked','false'));
+        item.setAttribute('aria-checked','true');
+        renderList(item.dataset.sort);
+        closeSort();
+        if (item.dataset.sort === 'menor' && pendingCount) showReviewToast();
+      });
     });
 
     /* ---------- carousel ---------- */
