@@ -114,15 +114,23 @@
     .cdd-chev{transition:transform .15s;}
     .checklist-dd[open] .cdd-chev{transform:rotate(180deg);}
     .checklist-dd.ok .cdd-trigger{border-color:var(--success);background:rgba(22,163,74,.1);color:var(--success);}
-    .cdd-panel{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:340px;max-width:calc(100vw - 60px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);padding:6px;}
-    .cdd-head{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;}
-    .cdd-title{font-size:14px;font-weight:600;}
-    .cdd-collapse{margin-left:auto;color:var(--muted-foreground);display:inline-flex;}
-    .cdd-item{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:8px;padding:8px;cursor:pointer;font-family:inherit;}
-    .cdd-item:hover{background:var(--muted);}
-    .cdd-item-title{font-size:14px;font-weight:500;color:var(--foreground);}
-    .cdd-item-sub{font-size:12px;color:var(--muted-foreground);margin-top:2px;}
-    .cdd-full{width:100%;justify-content:center;margin-top:6px;}
+    .cdd-panel{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:360px;max-width:calc(100vw - 60px);max-height:440px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);padding:8px;}
+    .cdd-group{padding:2px 2px 8px;}
+    .cdd-group + .cdd-group{border-top:1px solid var(--border);margin-top:4px;padding-top:8px;}
+    .cdd-group-head{display:flex;align-items:center;gap:8px;padding:2px 2px 6px;}
+    .cdd-title{font-size:12px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.03em;}
+    .cdd-field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 2px;font-size:14px;}
+    .cdd-f-name{color:var(--foreground);}
+    .cdd-f-val{color:var(--muted-foreground);text-align:right;}
+    .cdd-full{width:100%;justify-content:center;margin-top:8px;}
+
+    /* ---- carousel de variações de status ---- */
+    .carousel{position:relative;}
+    .carousel-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
+    .car-prev,.car-next{width:28px;height:28px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:var(--foreground);}
+    .car-prev:hover,.car-next:hover{background:var(--muted);}
+    .car-label{font-size:13px;font-weight:600;color:var(--muted-foreground);min-width:170px;text-align:center;}
+    .carousel-slide[hidden]{display:none;}
 
     /* ---- A4 / B4: faixa no topo do MESMO card (não dois cards) ---- */
     .lic-card.has-banner{overflow:hidden;}
@@ -349,21 +357,28 @@
         ['Código no Portal','90001/2026'],
       ]},
     ];
-    const clFlat = clData.flatMap(s => s.items);
-    const clPending = clFlat.filter(i => i[1] === null).length;
-    const clTotal = clFlat.length;
+    /* mesma lista, tudo extraído (sem revisão) */
+    const clDataOk = clData.map(s => ({g:s.g, items:s.items.map(i => [i[0], i[1]===null ? 'Não' : i[1]])}));
 
-    const checklistEntry = `<button class="checklist-entry" type="button">${I.listChecks}${clPending} itens para revisar</button>`;
-    const checklistEntryOk = `<button class="checklist-entry ok" type="button" aria-label="Checklist completo">${I.listChecks}</button>`;
-
-    const clVal = v => v === null ? '<span class="cl-rev">Revisar</span>' : `<span class="v">${v}</span>`;
+    const pendingOf = d => d.flatMap(s => s.items).filter(i => i[1] === null).length;
     const secRev = s => s.items.filter(i => i[1] === null).length;
+    const clVal = v => v === null ? '<span class="cl-rev">Revisar</span>' : `<span class="v">${v}</span>`;
 
-    /* B2: grade com os campos agrupados dentro de cada seção */
-    const checklistGrid = `
+    /* B1: botão laranja com texto quando há revisão; verde só ícone quando ok */
+    const renderEntry = d => {
+      const p = pendingOf(d);
+      return p
+        ? `<button class="checklist-entry" type="button">${I.listChecks}${p} itens para revisar</button>`
+        : `<button class="checklist-entry ok" type="button" aria-label="Checklist completo">${I.listChecks}</button>`;
+    };
+
+    /* B2: grade com os campos agrupados por seção */
+    const renderGrid = d => {
+      const p = pendingOf(d);
+      return `
       <div class="checklist-mod">
-        <div class="clg-head"><b>Checklist</b><span class="chip-rev">${clPending} a revisar</span></div>
-        ${clData.map(s => `
+        <div class="clg-head"><b>Checklist</b>${p ? `<span class="chip-rev">${p} a revisar</span>` : ''}</div>
+        ${d.map(s => `
           <div class="clg-sec">
             <div class="clg-sec-title">${s.g}</div>
             <div class="clg-grid">
@@ -371,50 +386,80 @@
             </div>
           </div>`).join('')}
       </div>`;
+    };
 
-    /* B3: acordeão por seção (colapsável, com contagem e revisão por seção) */
-    const chev = '<svg class="ca-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>';
-    const checklistAcc = `
+    /* B3: acordeão por seção */
+    const accChev = '<svg class="ca-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>';
+    const renderAcc = d => {
+      const p = pendingOf(d);
+      return `
       <div class="checklist-acc">
-        <div class="ca-head"><b>Checklist</b><span class="chip-rev">${clPending} a revisar</span></div>
-        ${clData.map((s, idx) => `
+        <div class="ca-head"><b>Checklist</b>${p ? `<span class="chip-rev">${p} a revisar</span>` : ''}</div>
+        ${d.map((s, idx) => `
           <details class="ca-sec"${idx===0 ? ' open' : ''}>
-            <summary class="ca-sum">${s.g}<span class="ca-count">${s.items.length} campos</span>${secRev(s) ? `<span class="chip-rev">${secRev(s)} a revisar</span>` : ''}${chev}</summary>
+            <summary class="ca-sum">${s.g}<span class="ca-count">${s.items.length} campos</span>${secRev(s) ? `<span class="chip-rev">${secRev(s)} a revisar</span>` : ''}${accChev}</summary>
             <div class="ca-body">
               ${s.items.map(i => `<div class="ca-row"><span class="k">${i[0]}</span>${clVal(i[1])}</div>`).join('')}
             </div>
           </details>`).join('')}
       </div>`;
+    };
 
-    /* B4: botão "Checklist" na barra (verde=ok / laranja=revisar) que abre um dropdown com a lista de seções */
+    /* B4: botão "Checklist" na barra (verde=ok / laranja=revisar); dropdown com as seções (nome) e seus campos+valores */
     const cddChev = '<svg class="cdd-chev" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>';
-    const cddCollapse = '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4-4 4 4"/></svg>';
-    const checklistDropdown = `
-      <details class="checklist-dd${clPending ? '' : ' ok'}">
+    const renderDropdown = d => {
+      const p = pendingOf(d);
+      return `
+      <details class="checklist-dd${p ? '' : ' ok'}">
         <summary class="cdd-trigger">${I.listChecks}Checklist${cddChev}</summary>
         <div class="cdd-panel">
-          <div class="cdd-head"><span class="cdd-title">Checklist</span>${clPending ? `<span class="chip-rev">${clPending} itens para revisar</span>` : ''}<span class="cdd-collapse">${cddCollapse}</span></div>
-          ${clData.map(s => `<button class="cdd-item" type="button"><div class="cdd-item-title">${s.g}</div><div class="cdd-item-sub">${s.items.length} campos${secRev(s) ? ` · ${secRev(s)} a revisar` : ''}</div></button>`).join('')}
+          ${d.map(s => `
+            <div class="cdd-group">
+              <div class="cdd-group-head"><span class="cdd-title">${s.g}</span>${secRev(s) ? `<span class="chip-rev">${secRev(s)} a revisar</span>` : ''}</div>
+              ${s.items.map(i => `<div class="cdd-field"><span class="cdd-f-name">${i[0]}</span>${i[1]===null ? '<span class="cl-rev">Revisar</span>' : `<span class="cdd-f-val">${i[1]}</span>`}</div>`).join('')}
+            </div>`).join('')}
           <button class="btn btn-primary cdd-full" type="button">Ver lista completa</button>
         </div>
       </details>`;
+    };
+
+    /* carousel: variações de status do mesmo modelo */
+    const CAR_LABELS = ['Com itens a revisar','Tudo certo'];
+    const carousel = slides => `
+      <div class="carousel" data-labels='${JSON.stringify(CAR_LABELS)}'>
+        <div class="carousel-nav">
+          <button class="car-prev" type="button" aria-label="Variação anterior">‹</button>
+          <span class="car-label"></span>
+          <button class="car-next" type="button" aria-label="Próxima variação">›</button>
+        </div>
+        ${slides.map(s => `<div class="carousel-slide">${s}</div>`).join('')}
+      </div>`;
 
     document.getElementById('checklistList').innerHTML =
-      proposal('B1','Botão de acesso destacado','destacar entrada',
-        'A lista é aberta por um botão rotulado e evidente, com o sinal de quantos campos estão em revisão. Card limpo.',
-        fullCard({topEntry: checklistEntry})) +
-      proposal('B1b','Botão completo (tudo certo)','estado',
-        'Mesmo botão no estado consolidado: verde, indicando que todos os campos já foram extraídos/revisados.',
-        fullCard({topEntry: checklistEntryOk})) +
+      proposal('B1','Botão de acesso','estado',
+        '',
+        carousel([ fullCard({topEntry: renderEntry(clData)}), fullCard({topEntry: renderEntry(clDataOk)}) ])) +
       proposal('B2','Grade dos campos por seção','trazer conteúdo',
-        'Os campos aparecem no card em grade, agrupados nas seções do cliente, com o valor extraído do edital; os pendentes ficam como Revisar.',
-        fullCard({preItems: checklistGrid})) +
+        '',
+        carousel([ fullCard({preItems: renderGrid(clData)}), fullCard({preItems: renderGrid(clDataOk)}) ])) +
       proposal('B3','Acordeão por seção','trazer conteúdo',
-        'A lista em seções colapsáveis: cada seção mostra quantos campos e quantos a revisar, e abre para ver os valores. Escala com muitos campos.',
-        fullCard({preItems: checklistAcc})) +
+        '',
+        carousel([ fullCard({preItems: renderAcc(clData)}), fullCard({preItems: renderAcc(clDataOk)}) ])) +
       proposal('B4','Botão Checklist com dropdown','destacar + conteúdo',
-        'Botão na barra (verde=ok / laranja=revisar) que abre um dropdown com a lista de seções e o acesso à lista completa.',
-        fullCard({topEntry: checklistDropdown}));
+        '',
+        carousel([ fullCard({topEntry: renderDropdown(clData)}), fullCard({topEntry: renderDropdown(clDataOk)}) ]));
+
+    /* ---------- carousel ---------- */
+    document.querySelectorAll('.carousel').forEach(car => {
+      const slides = [...car.querySelectorAll('.carousel-slide')];
+      const label = car.querySelector('.car-label');
+      const labels = JSON.parse(car.dataset.labels || '[]');
+      let idx = 0;
+      const show = () => { slides.forEach((s, i) => { s.hidden = i !== idx; }); if (label) label.textContent = labels[idx] || ((idx + 1) + '/' + slides.length); };
+      car.querySelector('.car-prev').addEventListener('click', () => { idx = (idx - 1 + slides.length) % slides.length; show(); });
+      car.querySelector('.car-next').addEventListener('click', () => { idx = (idx + 1) % slides.length; show(); });
+      show();
+    });
 
     /* ---------- tabs ---------- */
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
