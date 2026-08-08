@@ -492,14 +492,14 @@
       {ed:'026/2026', org:'Prefeitura de Nova Alvorada do Sul', obj:'Contratação de licença de uso de sistema de gestão pública municipal, web nativo, com implantação, treinamento e suporte técnico.', valor:'R$ 81.000,00', score:88, rev:0},
       {ed:'90001/2026', org:'EPA - Procuradoria Geral do Estado do Pará', obj:'Fornecimento de computadores desktop, notebooks, monitores e periféricos para a rede municipal de ensino, com instalação e garantia.', valor:'R$ 47.284.499,63', score:65, rev:0},
       {ed:'45/2026', org:'Governo do Estado de São Paulo', obj:'Contratação de software de gestão documental, com implantação, migração de dados, treinamento e manutenção continuada.', valor:'R$ 320.000,00', score:41, rev:0},
-      {ed:'28/2026', org:'Município de Atalaia', obj:'Fornecimento de software de gestão fiscal, contábil e administrativa para a Prefeitura, Câmara e Fundo de Previdência, com suporte.', valor:'R$ 538.825,96', score:0, rev:3},
-      {ed:'12/2026', org:'Prefeitura Municipal de Belém', obj:'Contratação de sistema integrado de gestão pública, com implantação, treinamento e suporte técnico continuado.', valor:'R$ 1.204.000,00', score:0, rev:5},
+      {ed:'28/2026', org:'Município de Atalaia', obj:'Fornecimento de software de gestão fiscal, contábil e administrativa para a Prefeitura, Câmara e Fundo de Previdência, com suporte.', valor:'R$ 538.825,96', score:44, rev:3},
+      {ed:'12/2026', org:'Prefeitura Municipal de Belém', obj:'Contratação de sistema integrado de gestão pública, com implantação, treinamento e suporte técnico continuado.', valor:'R$ 1.204.000,00', score:31, rev:5},
     ];
     const flTemp = s => s>=75 ? {cls:'temp-quente',label:'Quente'} : s>=50 ? {cls:'temp-morno',label:'Morno'} : {cls:'temp-frio',label:'Frio'};
     const filterCard = d => {
       const t = flTemp(d.score);
       const entry = d.rev
-        ? `<span class="fl-score review">${I.gauge} Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</span>`
+        ? `<span class="fl-score review">${I.gauge} ${d.score}/100 · Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</span>`
         : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100 · ${t.label}</span>`;
       return `<div class="fl-item" data-rev="${d.rev>0?1:0}">
         <article class="lic-card">
@@ -573,7 +573,7 @@
         <span class="fp-toast-ico">${I.listChecks}</span>
         <div class="fp-toast-body">
           <div class="fp-toast-title">${pendingCount} editais ainda precisam de revisão</div>
-          <div class="fp-toast-text">Eles ainda não têm score calculado e sobem ao topo do "Menor score", podendo se confundir com editais de score baixo. Resolva as revisões para uma ordem confiável.</div>
+          <div class="fp-toast-text">O score deles ainda é parcial, porque há itens a revisar, e pode se confundir com score baixo no "Menor score". Resolva as revisões para o score consolidar e a ordem ficar confiável.</div>
           <div class="fp-toast-actions">
             <button class="fp-toast-cta" type="button" data-act="filtrar">Filtrar pendentes</button>
             <button class="fp-toast-dismiss" type="button" data-act="fechar">Agora não</button>
