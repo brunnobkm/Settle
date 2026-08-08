@@ -180,6 +180,10 @@
 
     <section class="panel" id="panel-filtro" role="tabpanel">
       <div id="filtroList" class="fp-list"></div>
+      <div class="fp-empty" id="fpEmpty" hidden>
+        <div class="fp-empty-title">Nenhuma licitação precisa de revisão</div>
+        <div class="fp-empty-sub">Todos os editais em revisão foram resolvidos. Desligue o filtro em Filtrar para ver todas as licitações.</div>
+      </div>
       <div class="fp-toasts" id="fpToasts" aria-live="polite"></div>
 
       <div class="fp-overlay" id="fpOverlay" hidden></div>
@@ -566,9 +570,14 @@
       return [...scored.slice().sort((a,b)=>b.score-a.score), ...pending]; // maior/recentes/proposta: pendentes no fim
     };
     let reviewApplied = false; // filtro só é aplicado ao clicar em "Salvar Alterações"
+    const syncEmpty = () => {
+      const emptyEl = document.getElementById('fpEmpty');
+      if (emptyEl) emptyEl.hidden = [...filtroList.querySelectorAll('.fl-item')].some(i => !i.hidden);
+    };
     const applyReviewFilter = () => {
       reviewApplied = fpToggle.getAttribute('aria-checked') === 'true';
       filtroList.querySelectorAll('.fl-item').forEach(c => { c.hidden = reviewApplied && c.dataset.rev !== '1'; });
+      syncEmpty();
     };
     const renderList = mode => { filtroList.innerHTML = sortData(mode).map(filterCard).join(''); applyReviewFilter(); };
     renderList('maior');
@@ -598,15 +607,18 @@
 
     /* toast (sonner) */
     const fpToasts = document.getElementById('fpToasts');
-    const pendingCount = flData.filter(d => d.rev).length;
+    const currentPending = () => flData.filter(d => d.rev).length;
     const showReviewToast = () => {
+      const n = currentPending();
+      if (!n) return;              // nada pendente: nada a avisar
+      fpToasts.innerHTML = '';     // evita empilhar avisos repetidos
       const t = document.createElement('div');
       t.className = 'fp-toast';
       t.setAttribute('role', 'status');
       t.innerHTML = `
         <span class="fp-toast-ico">${I.listChecks}</span>
         <div class="fp-toast-body">
-          <div class="fp-toast-title">${pendingCount} editais ainda precisam de revisão</div>
+          <div class="fp-toast-title">${n} ${n > 1 ? 'editais ainda precisam' : 'edital ainda precisa'} de revisão</div>
           <div class="fp-toast-text">O score deles ainda é parcial, porque há itens a revisar, e pode se confundir com score baixo no "Menor score". Resolva as revisões para o score consolidar e a ordem ficar confiável.</div>
           <div class="fp-toast-actions">
             <button class="fp-toast-cta" type="button" data-act="filtrar">Filtrar pendentes</button>
@@ -642,7 +654,7 @@
         item.setAttribute('aria-checked','true');
         renderList(item.dataset.sort);
         closeSort();
-        if (item.dataset.sort === 'menor' && pendingCount) showReviewToast();
+        if (item.dataset.sort === 'menor') showReviewToast();
       });
     });
 
@@ -676,7 +688,7 @@
       if (reviewApplied) {
         // filtro ligado: já não pertence à lista, sai com transição
         itemEl.classList.add('fl-leaving');
-        setTimeout(() => itemEl.remove(), 260);
+        setTimeout(() => { itemEl.remove(); syncEmpty(); }, 260);
       } else {
         // filtro desligado: permanece, chip vira score consolidado no lugar
         const t = flTemp(score);
