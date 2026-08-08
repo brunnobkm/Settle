@@ -194,6 +194,22 @@
         <div class="fp-field"><label>Estado</label><div class="fp-select">Nenhuma opção selecionada</div></div>
         <div class="fp-sheet-foot"><button class="btn btn-primary fp-save" type="button">Salvar Alterações</button><button class="btn btn-outline fp-clear" type="button">Limpar Filtros</button></div>
       </aside>
+
+      <!-- bandeja fixa de revisados (acumula na sessão) -->
+      <div class="fp-tray" id="fpTray" hidden>
+        <div class="fp-tray-head">
+          <span class="fp-tray-title"><b id="fpTrayCount">0</b> <span id="fpTrayWord">edital revisado</span></span>
+          <button class="fp-tray-x" id="fpTrayClose" type="button" aria-label="Dispensar revisados">×</button>
+        </div>
+        <div class="fp-tray-list" id="fpTrayList"></div>
+      </div>
+
+      <!-- painel lateral interno: abre o edital revisado sem tirar o usuário da lista -->
+      <div class="fp-overlay" id="fpDetailOverlay" hidden></div>
+      <aside class="fp-sheet" id="fpDetailSheet" hidden aria-label="Edital revisado">
+        <div class="fp-sheet-head"><b>Edital revisado</b><button class="fp-close" id="fpDetailClose" type="button" aria-label="Fechar">×</button></div>
+        <div id="fpDetailBody"></div>
+      </aside>
     </section>
   </div>
 
@@ -499,9 +515,9 @@
     const filterCard = d => {
       const t = flTemp(d.score);
       const entry = d.rev
-        ? `<span class="fl-score review">${I.gauge} ${d.score}/100 · Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</span>`
+        ? `<button class="fl-score review" type="button" data-resolve title="Simulação: clique para concluir a revisão dos ${d.rev} itens" aria-label="Concluir revisão de ${d.rev} itens (simulação)">${I.gauge} ${d.score}/100 · Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</button>`
         : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100</span>`;
-      return `<div class="fl-item" data-rev="${d.rev>0?1:0}">
+      return `<div class="fl-item" data-rev="${d.rev>0?1:0}" data-ed="${d.ed}" data-score="${d.score}">
         <article class="lic-card">
           <div class="lc-top">
             <div class="lc-top-left">
@@ -611,6 +627,74 @@
         if (item.dataset.sort === 'menor' && pendingCount) showReviewToast();
       });
     });
+
+    /* ---------- concluir revisão + bandeja de revisados + painel lateral ---------- */
+    const fpTray = document.getElementById('fpTray');
+    const fpTrayList = document.getElementById('fpTrayList');
+    const fpTrayCount = document.getElementById('fpTrayCount');
+    const fpTrayWord = document.getElementById('fpTrayWord');
+    const resolved = [];
+
+    const addResolved = (ed, score) => {
+      resolved.push({ ed, score });
+      fpTray.hidden = false;
+      fpTrayCount.textContent = resolved.length;
+      fpTrayWord.textContent = resolved.length > 1 ? 'editais revisados' : 'edital revisado';
+      const row = document.createElement('div');
+      row.className = 'fp-tray-item';
+      row.innerHTML = `<span class="fp-tray-ed"><b>Edital ${ed}</b> · agora ${score}/100</span><button class="fp-tray-open" type="button" data-open="${ed}" data-score="${score}">Abrir</button>`;
+      fpTrayList.appendChild(row);
+    };
+
+    // clique no chip âmbar simula a conclusão da revisão do edital
+    filtroList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-resolve]');
+      if (!btn) return;
+      const itemEl = btn.closest('.fl-item');
+      const ed = itemEl.dataset.ed;
+      const score = +itemEl.dataset.score;
+      const d = flData.find(x => x.ed === ed); if (d) d.rev = 0; // consolida na fonte
+      itemEl.dataset.rev = '0';
+      const filterOn = fpToggle.getAttribute('aria-checked') === 'true';
+      if (filterOn) {
+        // filtro ligado: já não pertence à lista, sai com transição
+        itemEl.classList.add('fl-leaving');
+        setTimeout(() => itemEl.remove(), 260);
+      } else {
+        // filtro desligado: permanece, chip vira score consolidado no lugar
+        const t = flTemp(score);
+        btn.outerHTML = `<span class="fl-score ${t.cls}">${I.gauge} ${score}/100</span>`;
+      }
+      addResolved(ed, score);
+    });
+
+    document.getElementById('fpTrayClose').addEventListener('click', () => {
+      fpTray.hidden = true; fpTrayList.innerHTML = ''; resolved.length = 0;
+    });
+
+    /* painel lateral interno do edital revisado (abre sem tirar da lista) */
+    const fpDetailSheet = document.getElementById('fpDetailSheet');
+    const fpDetailOverlay = document.getElementById('fpDetailOverlay');
+    const fpDetailBody = document.getElementById('fpDetailBody');
+    const openDetail = (ed, score) => {
+      const t = flTemp(score);
+      const d = flData.find(x => x.ed === ed) || {};
+      fpDetailBody.innerHTML = `
+        <span class="fp-detail-score ${t.cls}">${I.gauge} ${score}/100</span>
+        <div class="fp-detail-row"><span class="k">Edital</span><span class="v"><b>${ed}</b></span></div>
+        <div class="fp-detail-row"><span class="k">Órgão</span><span class="v">${d.org || '-'}</span></div>
+        <div class="fp-detail-row"><span class="k">Valor global</span><span class="v">${d.valor || '-'}</span></div>
+        <div class="fp-detail-row"><span class="k">Itens revisados</span><span class="v">todos concluídos</span></div>
+        <p class="fp-detail-note">Todos os itens foram revisados e o score foi consolidado. Abrimos aqui, em painel lateral, para você conferir o resultado sem perder o lugar na lista.</p>`;
+      fpDetailSheet.hidden = false; fpDetailOverlay.hidden = false;
+    };
+    const closeDetail = () => { fpDetailSheet.hidden = true; fpDetailOverlay.hidden = true; };
+    fpTrayList.addEventListener('click', e => {
+      const open = e.target.closest('[data-open]');
+      if (open) openDetail(open.dataset.open, +open.dataset.score);
+    });
+    document.getElementById('fpDetailClose').addEventListener('click', closeDetail);
+    fpDetailOverlay.addEventListener('click', closeDetail);
 
     /* ---------- carousel ---------- */
     document.querySelectorAll('.carousel').forEach(car => {

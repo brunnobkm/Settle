@@ -523,6 +523,36 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .fp-toast-x{flex:0 0 auto;align-self:flex-start;width:22px;height:22px;border:0;background:transparent;color:var(--muted-foreground);font-size:18px;line-height:1;cursor:pointer;border-radius:var(--radius-selector);}
 .fp-toast-x:hover{background:var(--muted);}
 
+/* chip de revisão vira botão de ação (simulação): reset do UA */
+button.fl-score{border:0;cursor:pointer;font:inherit;}
+button.fl-score:hover{filter:brightness(.97);}
+
+/* item saindo da lista ao ser resolvido */
+.fl-item{transition:opacity .25s ease, transform .25s ease;}
+.fl-item.fl-leaving{opacity:0;transform:translateY(-6px);}
+
+/* bandeja fixa de revisados (acumula na sessão) */
+.fp-tray{position:fixed;left:20px;bottom:20px;width:320px;max-width:calc(100vw - 40px);background:var(--background);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:var(--radius-box);box-shadow:var(--shadow-pop);z-index:49;overflow:hidden;}
+.fp-tray[hidden]{display:none;}
+.fp-tray-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);}
+.fp-tray-title{font-size:13px;color:var(--muted-foreground);}
+.fp-tray-title b{color:var(--success);font-size:14px;}
+.fp-tray-x{width:22px;height:22px;border:0;background:transparent;color:var(--muted-foreground);font-size:18px;line-height:1;cursor:pointer;border-radius:var(--radius-selector);}
+.fp-tray-x:hover{background:var(--muted);}
+.fp-tray-list{max-height:200px;overflow-y:auto;}
+.fp-tray-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-top:1px solid var(--border);font-size:13px;}
+.fp-tray-item:first-child{border-top:0;}
+.fp-tray-ed{min-width:0;color:var(--foreground);}
+.fp-tray-open{flex:0 0 auto;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-field);background:transparent;color:var(--foreground);font:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+.fp-tray-open:hover{background:var(--muted);}
+
+/* corpo do painel lateral do edital revisado */
+.fp-detail-score{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;padding:6px 12px;border-radius:8px;background:var(--tbg);color:var(--tc);margin-bottom:12px;}
+.fp-detail-score svg{width:18px;height:18px;}
+.fp-detail-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.fp-detail-row .k{color:var(--muted-foreground);}
+.fp-detail-note{margin-top:14px;font-size:13px;line-height:19px;color:var(--muted-foreground);}
+
 /* carousel de variações (protótipos): navega entre slides do mesmo modelo */
 .carousel{position:relative;}
 .carousel-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
