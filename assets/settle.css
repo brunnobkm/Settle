@@ -516,9 +516,10 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .alert-title{grid-column-start:2;font-weight:500;line-height:1.2;letter-spacing:-.01em;}
 .alert-description{grid-column-start:2;display:grid;justify-items:start;gap:10px;color:var(--muted-foreground);font-size:13px;}
 .alert-description p{margin:0;line-height:1.5;}
-.alert-warning{border-color:var(--warning);background:var(--warning-bg);}
-.alert-warning>svg{color:var(--warning);}
-.alert-warning .alert-title{color:var(--foreground);}
+/* variante Soft Warning (shadcn studio alert-24): fundo âmbar suave, sem borda, texto âmbar */
+.alert-warning{border-color:transparent;background:var(--warning-bg);}
+.alert-warning>svg,.alert-warning .alert-title{color:var(--warning);}
+.alert-warning .alert-description{color:color-mix(in srgb, var(--warning) 85%, transparent);}
 
 /* chip de revisão vira botão de ação (simulação): reset do UA */
 button.fl-score{border:0;cursor:pointer;font:inherit;}
