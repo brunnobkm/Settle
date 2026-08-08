@@ -500,7 +500,7 @@
       const t = flTemp(d.score);
       const entry = d.rev
         ? `<span class="fl-score review">${I.gauge} ${d.score}/100 · Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</span>`
-        : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100 · ${t.label}</span>`;
+        : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100</span>`;
       return `<div class="fl-item" data-rev="${d.rev>0?1:0}">
         <article class="lic-card">
           <div class="lc-top">
