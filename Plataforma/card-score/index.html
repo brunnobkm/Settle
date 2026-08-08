@@ -179,23 +179,29 @@
     </section>
 
     <section class="panel" id="panel-filtro" role="tabpanel">
+      <!-- Alert (shadcn): aviso contextual enquanto o "Menor score" está ativo -->
+      <div class="alert alert-warning" id="fpAlert" role="alert" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <div class="alert-title" id="fpAlertTitle">Editais ainda precisam de revisão</div>
+        <div class="alert-description">
+          <p>O score deles ainda é parcial, porque há itens a revisar, e pode se confundir com score baixo no "Menor score". Resolva as revisões para o score consolidar e a ordem ficar confiável.</p>
+          <button class="btn btn-primary" id="fpAlertCta" type="button">Filtrar pendentes</button>
+        </div>
+      </div>
       <div id="filtroList" class="fp-list"></div>
       <div class="fp-empty" id="fpEmpty" hidden>
         <div class="fp-empty-title">Nenhuma licitação precisa de revisão</div>
         <div class="fp-empty-sub">Todos os editais em revisão foram resolvidos. Desligue o filtro em Filtrar para ver todas as licitações.</div>
       </div>
-      <div class="fp-toasts" id="fpToasts" aria-live="polite"></div>
 
       <div class="fp-overlay" id="fpOverlay" hidden></div>
       <aside class="fp-sheet" id="fpSheet" hidden aria-label="Filtros">
         <div class="fp-sheet-head"><b>Filtros</b><button class="fp-close" id="fpClose" type="button" aria-label="Fechar">×</button></div>
         <p class="fp-sheet-sub">Personalize os filtros da sua busca. Lembre-se de salvar suas alterações.</p>
-        <div class="fp-field"><label>Score</label><div class="fp-row"><input class="fp-input" placeholder="Mínimo" aria-label="Score mínimo"><input class="fp-input" placeholder="Máximo" aria-label="Score máximo"></div></div>
         <div class="fp-toggle-field">
           <div><div class="fp-label">Precisa de revisão</div><div class="fp-hint">Mostrar só os que precisam de revisão</div></div>
           <button class="fp-toggle" id="fpToggle" type="button" role="switch" aria-checked="false" aria-label="Precisa de revisão"><span class="fp-knob"></span></button>
         </div>
-        <div class="fp-field"><label>Estado</label><div class="fp-select">Nenhuma opção selecionada</div></div>
         <div class="fp-sheet-foot"><button class="btn btn-primary fp-save" type="button">Salvar Alterações</button><button class="btn btn-outline fp-clear" type="button">Limpar Filtros</button></div>
       </aside>
 
@@ -586,7 +592,10 @@
     const fpSheet = document.getElementById('fpSheet');
     const fpOverlay = document.getElementById('fpOverlay');
     // ao abrir, o toggle reflete o que está de fato aplicado (mudanças sem salvar não valem)
-    const fpOpen = () => { fpToggle.setAttribute('aria-checked', reviewApplied ? 'true' : 'false'); fpSheet.hidden = false; fpOverlay.hidden = false; };
+    const fpOpen = () => {
+      document.getElementById('fpDetailSheet').hidden = true; document.getElementById('fpDetailOverlay').hidden = true; // fecha o sheet do edital
+      fpToggle.setAttribute('aria-checked', reviewApplied ? 'true' : 'false'); fpSheet.hidden = false; fpOverlay.hidden = false;
+    };
     const fpClose = () => { fpSheet.hidden = true; fpOverlay.hidden = true; };
     document.getElementById('fpFiltrar').addEventListener('click', fpOpen);
     document.getElementById('fpClose').addEventListener('click', fpClose);
@@ -605,37 +614,20 @@
       applyReviewFilter();
     });
 
-    /* toast (sonner) */
-    const fpToasts = document.getElementById('fpToasts');
+    /* Alert (shadcn): aviso inline enquanto o "Menor score" está ativo */
     const currentPending = () => flData.filter(d => d.rev).length;
-    const showReviewToast = () => {
+    const fpAlert = document.getElementById('fpAlert');
+    const fpAlertTitle = document.getElementById('fpAlertTitle');
+    let sortMode = 'maior';
+    const syncAlert = () => {
       const n = currentPending();
-      if (!n) return;              // nada pendente: nada a avisar
-      fpToasts.innerHTML = '';     // evita empilhar avisos repetidos
-      const t = document.createElement('div');
-      t.className = 'fp-toast';
-      t.setAttribute('role', 'status');
-      t.innerHTML = `
-        <span class="fp-toast-ico">${I.listChecks}</span>
-        <div class="fp-toast-body">
-          <div class="fp-toast-title">${n} ${n > 1 ? 'editais ainda precisam' : 'edital ainda precisa'} de revisão</div>
-          <div class="fp-toast-text">O score deles ainda é parcial, porque há itens a revisar, e pode se confundir com score baixo no "Menor score". Resolva as revisões para o score consolidar e a ordem ficar confiável.</div>
-          <div class="fp-toast-actions">
-            <button class="fp-toast-cta" type="button" data-act="filtrar">Filtrar pendentes</button>
-            <button class="fp-toast-dismiss" type="button" data-act="fechar">Agora não</button>
-          </div>
-        </div>
-        <button class="fp-toast-x" type="button" aria-label="Fechar aviso">×</button>`;
-      const close = () => t.remove();
-      t.querySelector('.fp-toast-x').addEventListener('click', close);
-      t.querySelector('[data-act="fechar"]').addEventListener('click', close);
-      t.querySelector('[data-act="filtrar"]').addEventListener('click', () => {
-        fpToggle.setAttribute('aria-checked','true'); applyReviewFilter(); // atalho já aplica
-        fpOpen();
-        close();
-      });
-      fpToasts.appendChild(t);
+      const show = sortMode === 'menor' && n > 0;
+      fpAlert.hidden = !show;
+      if (show) fpAlertTitle.textContent = `${n} ${n > 1 ? 'editais ainda precisam' : 'edital ainda precisa'} de revisão`;
     };
+    document.getElementById('fpAlertCta').addEventListener('click', () => {
+      fpToggle.setAttribute('aria-checked', 'true'); applyReviewFilter(); // atalho já aplica o filtro
+    });
 
     /* dropdown Ordenar */
     const fpOrdenar = document.getElementById('fpOrdenar');
@@ -652,9 +644,10 @@
       item.addEventListener('click', () => {
         fpOrdenarMenu.querySelectorAll('.fp-menu-item').forEach(i => i.setAttribute('aria-checked','false'));
         item.setAttribute('aria-checked','true');
-        renderList(item.dataset.sort);
+        sortMode = item.dataset.sort;
+        renderList(sortMode);
         closeSort();
-        if (item.dataset.sort === 'menor') showReviewToast();
+        syncAlert();
       });
     });
 
@@ -695,6 +688,7 @@
         btn.outerHTML = `<span class="fl-score ${t.cls}">${I.gauge} ${score}/100</span>`;
       }
       addResolved(ed, score);
+      syncAlert(); // atualiza/oculta o Alert conforme o número de pendentes
     });
 
     document.getElementById('fpTrayClose').addEventListener('click', () => {
@@ -706,6 +700,7 @@
     const fpDetailOverlay = document.getElementById('fpDetailOverlay');
     const fpDetailBody = document.getElementById('fpDetailBody');
     const openDetail = (ed, score) => {
+      fpClose(); // sheets mutuamente exclusivos: abrir este fecha o painel Filtros
       // título fixo "Score"; o texto de apoio referencia qual edital é aquele score
       document.getElementById('fpDetailDesc').textContent = `Score consolidado após a revisão do Edital ${ed}`;
       // corpo é um placeholder (dados do edital são stand-in no protótipo)
