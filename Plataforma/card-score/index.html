@@ -125,8 +125,7 @@
     /* ---- Filtro (simulação): chip de score visível no card ---- */
     .fl-score{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--tbg);color:var(--tc);white-space:nowrap;}
     .fl-score svg{width:16px;height:16px;}
-    .fl-review{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning);white-space:nowrap;}
-    .fl-review svg{width:16px;height:16px;}
+    .fl-score.review{--tc:var(--warning);--tbg:var(--warning-bg);}
 
     /* ---- A4 / B4: faixa no topo do MESMO card (não dois cards) ---- */
     .lic-card.has-banner{overflow:hidden;}
@@ -500,7 +499,7 @@
     const filterCard = d => {
       const t = flTemp(d.score);
       const entry = d.rev
-        ? `<span class="fl-review">${I.listChecks} Precisa de revisão</span>`
+        ? `<span class="fl-score review">${I.gauge} Revisar ${d.rev} ${d.rev > 1 ? 'itens' : 'item'}</span>`
         : `<span class="fl-score ${t.cls}">${I.gauge} ${d.score}/100 · ${t.label}</span>`;
       return `<div class="fl-item" data-rev="${d.rev>0?1:0}">
         <article class="lic-card">
