@@ -204,9 +204,9 @@
         <div class="fp-tray-list" id="fpTrayList"></div>
       </div>
 
-      <!-- sheet interno full-width: abre o edital revisado sem tirar o usuário da lista -->
+      <!-- painel lateral interno: abre o edital revisado sem tirar o usuário da lista -->
       <div class="fp-overlay" id="fpDetailOverlay" hidden></div>
-      <aside class="fp-sheet fp-sheet-full" id="fpDetailSheet" hidden aria-label="Edital revisado">
+      <aside class="fp-sheet" id="fpDetailSheet" hidden aria-label="Edital revisado">
         <div class="fp-sheet-head"><b>Edital revisado</b><button class="fp-close" id="fpDetailClose" type="button" aria-label="Fechar">×</button></div>
         <div id="fpDetailBody"></div>
       </aside>
@@ -557,9 +557,10 @@
       if (mode === 'menor') return [...pending, ...scored.slice().sort((a,b)=>a.score-b.score)];
       return [...scored.slice().sort((a,b)=>b.score-a.score), ...pending]; // maior/recentes/proposta: pendentes no fim
     };
+    let reviewApplied = false; // filtro só é aplicado ao clicar em "Salvar Alterações"
     const applyReviewFilter = () => {
-      const on = fpToggle.getAttribute('aria-checked') === 'true';
-      filtroList.querySelectorAll('.fl-item').forEach(c => { c.hidden = on && c.dataset.rev !== '1'; });
+      reviewApplied = fpToggle.getAttribute('aria-checked') === 'true';
+      filtroList.querySelectorAll('.fl-item').forEach(c => { c.hidden = reviewApplied && c.dataset.rev !== '1'; });
     };
     const renderList = mode => { filtroList.innerHTML = sortData(mode).map(filterCard).join(''); applyReviewFilter(); };
     renderList('maior');
@@ -567,19 +568,20 @@
     /* painel Filtros */
     const fpSheet = document.getElementById('fpSheet');
     const fpOverlay = document.getElementById('fpOverlay');
-    const fpOpen = () => { fpSheet.hidden = false; fpOverlay.hidden = false; };
+    // ao abrir, o toggle reflete o que está de fato aplicado (mudanças sem salvar não valem)
+    const fpOpen = () => { fpToggle.setAttribute('aria-checked', reviewApplied ? 'true' : 'false'); fpSheet.hidden = false; fpOverlay.hidden = false; };
     const fpClose = () => { fpSheet.hidden = true; fpOverlay.hidden = true; };
     document.getElementById('fpFiltrar').addEventListener('click', fpOpen);
     document.getElementById('fpClose').addEventListener('click', fpClose);
     fpOverlay.addEventListener('click', fpClose);
+    // o toggle só prepara a escolha; aplicar acontece no "Salvar Alterações"
     fpToggle.addEventListener('click', () => {
       const on = fpToggle.getAttribute('aria-checked') !== 'true';
       fpToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-      applyReviewFilter();
     });
-    // Salvar Alterações: confirma os filtros e fecha o painel
+    // Salvar Alterações: aplica os filtros e fecha o painel
     document.querySelector('.fp-save').addEventListener('click', () => { applyReviewFilter(); fpClose(); });
-    // Limpar Filtros: zera o toggle e os campos, reaplica (mostra tudo) e mantém o painel aberto
+    // Limpar Filtros: zera o toggle e os campos e aplica (mostra tudo), mantendo o painel aberto
     document.querySelector('.fp-clear').addEventListener('click', () => {
       fpToggle.setAttribute('aria-checked', 'false');
       fpSheet.querySelectorAll('.fp-input').forEach(i => { i.value = ''; });
@@ -608,7 +610,7 @@
       t.querySelector('.fp-toast-x').addEventListener('click', close);
       t.querySelector('[data-act="fechar"]').addEventListener('click', close);
       t.querySelector('[data-act="filtrar"]').addEventListener('click', () => {
-        if (fpToggle.getAttribute('aria-checked') !== 'true') { fpToggle.setAttribute('aria-checked','true'); applyReviewFilter(); }
+        fpToggle.setAttribute('aria-checked','true'); applyReviewFilter(); // atalho já aplica
         fpOpen();
         close();
       });
@@ -663,8 +665,7 @@
       const score = +itemEl.dataset.score;
       const d = flData.find(x => x.ed === ed); if (d) d.rev = 0; // consolida na fonte
       itemEl.dataset.rev = '0';
-      const filterOn = fpToggle.getAttribute('aria-checked') === 'true';
-      if (filterOn) {
+      if (reviewApplied) {
         // filtro ligado: já não pertence à lista, sai com transição
         itemEl.classList.add('fl-leaving');
         setTimeout(() => itemEl.remove(), 260);
@@ -693,7 +694,7 @@
         <div class="fp-detail-row"><span class="k">Órgão</span><span class="v">${d.org || '-'}</span></div>
         <div class="fp-detail-row"><span class="k">Valor global</span><span class="v">${d.valor || '-'}</span></div>
         <div class="fp-detail-row"><span class="k">Itens revisados</span><span class="v">todos concluídos</span></div>
-        <p class="fp-detail-note">Todos os itens foram revisados e o score foi consolidado. Abrimos numa tela sobre a lista, sem tirar você do lugar: é só fechar para voltar exatamente de onde parou.</p>`;
+        <p class="fp-detail-note">Todos os itens foram revisados e o score foi consolidado. Abrimos aqui, em painel lateral, para você conferir o resultado sem perder o lugar na lista.</p>`;
       fpDetailSheet.hidden = false; fpDetailOverlay.hidden = false;
     };
     const closeDetail = () => { fpDetailSheet.hidden = true; fpDetailOverlay.hidden = true; };
