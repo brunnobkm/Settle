@@ -577,6 +577,14 @@
       fpToggle.setAttribute('aria-checked', on ? 'true' : 'false');
       applyReviewFilter();
     });
+    // Salvar Alterações: confirma os filtros e fecha o painel
+    document.querySelector('.fp-save').addEventListener('click', () => { applyReviewFilter(); fpClose(); });
+    // Limpar Filtros: zera o toggle e os campos, reaplica (mostra tudo) e mantém o painel aberto
+    document.querySelector('.fp-clear').addEventListener('click', () => {
+      fpToggle.setAttribute('aria-checked', 'false');
+      fpSheet.querySelectorAll('.fp-input').forEach(i => { i.value = ''; });
+      applyReviewFilter();
+    });
 
     /* toast (sonner) */
     const fpToasts = document.getElementById('fpToasts');
