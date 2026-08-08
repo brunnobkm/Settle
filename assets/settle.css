@@ -473,6 +473,7 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .fp-tab.active{background:var(--background);opacity:1;box-shadow:var(--shadow-xs);}
 .fp-c{font-size:12px;font-weight:600;color:var(--muted-foreground);}
 .fp-actions{display:inline-flex;align-items:center;gap:4px;}
+.fp-actions[hidden]{display:none;}
 .fp-btn{border:none;background:transparent;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:14px;font-weight:500;color:var(--foreground);cursor:pointer;}
 .fp-btn:hover{background:var(--muted);}
 .fp-list{display:flex;flex-direction:column;gap:16px;}
