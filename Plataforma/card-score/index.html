@@ -204,9 +204,9 @@
         <div class="fp-tray-list" id="fpTrayList"></div>
       </div>
 
-      <!-- painel lateral interno: abre o edital revisado sem tirar o usuário da lista -->
+      <!-- sheet interno full-width: abre o edital revisado sem tirar o usuário da lista -->
       <div class="fp-overlay" id="fpDetailOverlay" hidden></div>
-      <aside class="fp-sheet" id="fpDetailSheet" hidden aria-label="Edital revisado">
+      <aside class="fp-sheet fp-sheet-full" id="fpDetailSheet" hidden aria-label="Edital revisado">
         <div class="fp-sheet-head"><b>Edital revisado</b><button class="fp-close" id="fpDetailClose" type="button" aria-label="Fechar">×</button></div>
         <div id="fpDetailBody"></div>
       </aside>
@@ -693,7 +693,7 @@
         <div class="fp-detail-row"><span class="k">Órgão</span><span class="v">${d.org || '-'}</span></div>
         <div class="fp-detail-row"><span class="k">Valor global</span><span class="v">${d.valor || '-'}</span></div>
         <div class="fp-detail-row"><span class="k">Itens revisados</span><span class="v">todos concluídos</span></div>
-        <p class="fp-detail-note">Todos os itens foram revisados e o score foi consolidado. Abrimos aqui, em painel lateral, para você conferir o resultado sem perder o lugar na lista.</p>`;
+        <p class="fp-detail-note">Todos os itens foram revisados e o score foi consolidado. Abrimos numa tela sobre a lista, sem tirar você do lugar: é só fechar para voltar exatamente de onde parou.</p>`;
       fpDetailSheet.hidden = false; fpDetailOverlay.hidden = false;
     };
     const closeDetail = () => { fpDetailSheet.hidden = true; fpDetailOverlay.hidden = true; };
