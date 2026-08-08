@@ -482,8 +482,6 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .fp-overlay[hidden]{display:none;}
 .fp-sheet{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:90vw;background:var(--background);border-left:1px solid var(--border);box-shadow:var(--shadow-pop);z-index:41;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
 .fp-sheet[hidden]{display:none;}
-.fp-sheet.fp-sheet-full{left:0;width:100%;max-width:100%;border-left:0;padding:24px 32px;}
-.fp-sheet-full>*{width:100%;max-width:960px;margin-left:auto;margin-right:auto;}
 .fp-sheet-head{display:flex;align-items:center;justify-content:space-between;}
 .fp-sheet-head b{font-size:18px;}
 .fp-close{border:none;background:transparent;font-size:22px;line-height:1;color:var(--muted-foreground);cursor:pointer;}
