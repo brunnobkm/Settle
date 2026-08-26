@@ -1,0 +1,920 @@
+<!doctype html>
+<!--
+  ============================================================================
+  SETTLE — Agentes (V1): autonomia sobre Score e Resumo
+  ----------------------------------------------------------------------------
+  Protótipo do conceito discutido nas reuniões de 21 e 24/08/2026.
+
+  Tese: o cliente deixa de receber a análise pronta e passa a construir a
+  própria regra. A construção é conversacional (elicitação progressiva, no
+  espírito do modo de planejamento), mas o resultado é SEMPRE materializado
+  como artefato revisável — "a conversa é uma coisa, o que ele construiu é
+  outra" (Alice, 08:05 da semanal).
+
+  O que o protótipo demonstra:
+    1. Score e Resumo editáveis pelo cliente, com a fonte de cada linha visível
+    2. Variável como bloco reutilizável, versionado e com custo
+    3. Construtor conversa ↔ artefato, com toggle Fluxo/Texto (debate em aberto)
+    4. Tratamento de valor default e do caso CAPAG (lacuna de cenário)
+    5. Pré-visualização em licitações reais antes de ativar (custo do erro alto)
+    6. Versionamento: o que fazer com as licitações em aberto
+  ============================================================================
+-->
+<html lang="pt-BR" data-preview="AGENTES">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle — Agentes: Score e Resumo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../assets/settle.css" />
+
+  <style>
+    /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
+    .ag-lead{font-size:14px;line-height:21px;color:var(--muted-foreground);max-width:760px;margin:8px 0 0;}
+    .ag-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:20px 0 16px;}
+    .ag-panel[hidden]{display:none;}
+    .ag-total{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--muted-foreground);}
+    .ag-total b{font-size:20px;font-weight:700;color:var(--foreground);}
+    .ag-rows{display:flex;flex-direction:column;gap:8px;}
+    .ag-row{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:12px 14px;}
+    .ag-row.off{background:var(--muted);}
+    .ag-row-main{flex:1;min-width:0;}
+    .ag-row-name{font-size:14px;font-weight:600;color:var(--foreground);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .ag-row-meta{margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted-foreground);}
+    .ag-row-note{margin-top:6px;font-size:12px;line-height:17px;color:var(--muted-foreground);}
+    .ag-row-note b{color:var(--foreground);font-weight:600;}
+    .ag-row-pts{flex:none;text-align:right;min-width:66px;font-size:15px;font-weight:700;}
+    .ag-row-acts{flex:none;display:inline-flex;gap:6px;align-items:center;}
+    .ag-src{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;line-height:16px;padding:2px 7px;border-radius:var(--radius-badge);white-space:nowrap;}
+    .ag-src.var{background:var(--accent-100);color:var(--accent-600);}
+    .ag-src.sys{background:var(--muted);color:var(--muted-foreground);}
+    .ag-src.pend{background:var(--warning-bg);color:var(--warning);}
+    .ag-modal{position:fixed;inset:20px;max-width:1240px;margin:0 auto;background:var(--background);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-pop);z-index:41;display:flex;flex-direction:column;overflow:hidden;}
+    .ag-modal[hidden]{display:none;}
+    .ag-modal-head{flex:none;display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);}
+    .ag-modal-head h2{margin:0;font-size:17px;font-weight:600;}
+    .ag-modal-sub{font-size:13px;color:var(--muted-foreground);}
+    .ag-modal-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(340px,44%) 1fr;}
+    .ag-chat{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--border);}
+    .ag-msgs{flex:1;min-height:0;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;}
+    .ag-msg{max-width:92%;font-size:14px;line-height:21px;border-radius:12px;padding:10px 13px;}
+    .ag-msg.bot{background:var(--muted);color:var(--foreground);}
+    .ag-msg.me{align-self:flex-end;background:var(--primary);color:var(--primary-foreground);}
+    .ag-msg b{font-weight:600;}
+    .ag-chips{display:flex;flex-wrap:wrap;gap:8px;}
+    .ag-chip{border:1px solid var(--border-strong);background:var(--card);color:var(--foreground);border-radius:9999px;padding:7px 13px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:left;}
+    .ag-chip:hover{background:var(--muted);}
+    .ag-chip small{display:block;font-weight:400;color:var(--muted-foreground);font-size:11px;line-height:15px;}
+    .ag-compose{flex:none;border-top:1px solid var(--border);padding:12px 14px;display:flex;gap:8px;align-items:flex-end;}
+    .ag-compose textarea{flex:1;min-height:44px;max-height:120px;resize:vertical;border:1px solid var(--border);border-radius:var(--radius-field);padding:10px 12px;font-family:inherit;font-size:14px;line-height:20px;color:var(--foreground);}
+    .ag-art{display:flex;flex-direction:column;min-height:0;background:var(--muted);}
+    .ag-art-head{flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--background);}
+    .ag-art-head .ttl{font-size:14px;font-weight:600;flex:1;min-width:0;}
+    .ag-art-body{flex:1;min-height:0;overflow-y:auto;padding:16px;}
+    .ag-art-foot{flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);background:var(--background);}
+    .ag-cost{flex:1;min-width:0;font-size:12px;color:var(--muted-foreground);}
+    .ag-cost b{color:var(--foreground);font-weight:600;}
+    .ag-node{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);padding:10px 12px;display:flex;align-items:flex-start;gap:10px;}
+    .ag-node.fresh{border-color:var(--accent);}
+    .ag-node-main{flex:1;min-width:0;}
+    .ag-kind{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:3px;}
+    .ag-node-title{font-size:14px;font-weight:600;line-height:20px;}
+    .ag-node-sub{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:3px;}
+    .ag-adj{flex:none;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-selector);padding:3px 9px;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted-foreground);cursor:pointer;}
+    .ag-adj:hover{background:var(--muted);color:var(--foreground);}
+    .ag-conn{width:1px;height:12px;background:var(--border-strong);margin-left:22px;}
+    .ag-branches{margin-left:22px;padding-left:16px;border-left:1px solid var(--border-strong);display:flex;flex-direction:column;gap:8px;}
+    .ag-branch{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-field);padding:8px 11px;font-size:13px;line-height:19px;}
+    .ag-branch::before{content:"";position:absolute;left:-17px;top:17px;width:13px;height:1px;background:var(--border-strong);}
+    .ag-branch b{font-weight:600;}
+    .ag-branch .out{color:var(--muted-foreground);}
+    .ag-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:s;}
+    .ag-steps li{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-field);padding:10px 12px 10px 38px;position:relative;font-size:13px;line-height:19px;}
+    .ag-steps li::before{counter-increment:s;content:counter(s);position:absolute;left:12px;top:10px;width:18px;height:18px;border-radius:50%;background:var(--muted);color:var(--muted-foreground);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+    .ag-steps li b{font-weight:600;}
+    .ag-art-empty{border:1px dashed var(--border-strong);border-radius:var(--radius-box);padding:40px 24px;text-align:center;color:var(--muted-foreground);font-size:13px;line-height:19px;}
+    .ag-art-empty strong{display:block;color:var(--foreground);font-size:14px;margin-bottom:4px;}
+    .ag-prev{display:flex;flex-direction:column;gap:8px;}
+    .ag-prev-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);padding:11px 13px;display:flex;gap:12px;align-items:flex-start;}
+    .ag-prev-main{flex:1;min-width:0;}
+    .ag-prev-ed{font-size:13px;font-weight:600;}
+    .ag-prev-org{font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+    .ag-prev-why{font-size:12px;color:var(--muted-foreground);margin-top:5px;line-height:17px;}
+    .ag-prev-pts{flex:none;font-size:15px;font-weight:700;text-align:right;min-width:58px;}
+    .ag-mono{font-variant-numeric:tabular-nums;}
+    .ag-dim{color:var(--muted-foreground);}
+    .ag-ok{color:var(--success);}
+    .ag-warn{color:var(--warning);}
+    @media (max-width:1000px){ .ag-modal-body{grid-template-columns:1fr;grid-template-rows:minmax(0,46%) minmax(0,54%);} .ag-chat{border-right:none;border-bottom:1px solid var(--border);} }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====================== SIDEBAR ====================== -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+
+    <div class="sb-head">
+      <div class="sb-logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+          <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+          <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="sb-ws">
+        <div class="sb-ws-name">CS Frotas</div>
+        <div class="sb-ws-sub">Espaço de trabalho</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+    <nav class="sb-content">
+      <div class="sb-section">Licitações</div>
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Recomendadas">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="sb-label">Recomendadas</span>
+          <span class="sb-count">18</span>
+        </a>
+        <a class="sb-item" href="#" title="Explorar licitações">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.3" cy="7.3" r="4.3"/><path d="M10.6 10.6 13.5 13.5" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Explorar licitações</span>
+        </a>
+        <a class="sb-item" href="#" title="Em andamento">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span>
+          <span class="sb-label">Em andamento</span>
+        </a>
+      </div>
+
+      <div class="sb-section">Configuração da análise</div>
+      <div class="sb-group">
+        <a class="sb-item active" href="#" aria-current="page" title="Agentes">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Agentes</span>
+        </a>
+        <a class="sb-item" href="#" title="Segmentos e match">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4.5h11M4.5 8h7M6.5 11.5h3" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Segmentos e match</span>
+        </a>
+        <a class="sb-item" href="#" title="Equipe e permissões">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.5"/><path d="M2 13c.6-2.2 2.1-3.3 4-3.3s3.4 1.1 4 3.3" stroke-linecap="round"/><circle cx="11.6" cy="6.4" r="1.9"/></svg></span>
+          <span class="sb-label">Equipe e permissões</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-avatar" aria-hidden="true">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier</div>
+        <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+  </aside>
+
+  <!-- ====================== SHELL ====================== -->
+  <div class="shell">
+
+    <header class="navbar">
+      <button class="icon-btn" type="button" data-sb-toggle aria-label="Recolher ou expandir a navegação">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
+      </button>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="hello">Olá, Brunno</span>
+    </header>
+
+    <main class="content">
+
+      <div class="page-head">
+        <p class="eyebrow">Agentes</p>
+        <h1 class="title">Score e Resumo</h1>
+        <p class="ag-lead">Aqui você define o que a Settle analisa em cada licitação: quais critérios pontuam,
+          de onde sai cada informação e o que fazer quando ela não é encontrada. O que você configurar vale para
+          todas as licitações do seu espaço de trabalho.</p>
+      </div>
+
+      <div class="alert alert-warning" id="alertVersao">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 5.5v3.2" stroke-linecap="round"/><circle cx="8" cy="11.2" r=".9" fill="currentColor" stroke="none"/><path d="M8 2.2 14.5 13.4H1.5z" stroke-linejoin="round"/></svg>
+        <div class="alert-title">A variável CAPAG mudou e 14 licitações em aberto ainda usam a versão anterior</div>
+        <div class="alert-description">
+          <p>A versão v3 passou a considerar a esfera do órgão. Licitações já analisadas continuam com o resultado antigo até serem recalculadas.</p>
+          <p>
+            <button class="btn btn-outline" type="button" id="btnRecalc">Recalcular as 14 licitações</button>
+            <button class="btn btn-outline" type="button" id="btnIgnorarVersao">Manter como está</button>
+          </p>
+        </div>
+      </div>
+
+      <div class="ag-bar">
+        <div class="fp-tabs" role="tablist" aria-label="Seções da configuração">
+          <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="score">Score <span class="fp-c">7</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="resumo">Resumo <span class="fp-c">10</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c">6</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="execucoes">Execuções <span class="fp-c">148</span></button>
+        </div>
+        <button class="btn btn-primary" type="button" id="btnNovoCriterio">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke-linecap="round"/></svg>
+          Novo critério
+        </button>
+      </div>
+
+      <!-- ============================ SCORE ============================ -->
+      <section class="ag-panel" id="panel-score" role="tabpanel" aria-label="Critérios do score">
+        <div class="ag-bar">
+          <div class="ag-total"><b id="totalPts">100</b> pontos distribuídos em <span id="totalAtivos">6</span> critérios ativos</div>
+          <div class="ag-total ag-dim">Custo médio por licitação analisada: <b class="ag-mono">R$ 0,14</b></div>
+        </div>
+        <div class="ag-rows" id="rowsScore"></div>
+      </section>
+
+      <!-- ============================ RESUMO ============================ -->
+      <section class="ag-panel" id="panel-resumo" role="tabpanel" aria-label="Campos do resumo" hidden>
+        <p class="ag-lead">Os campos abaixo aparecem no Resumo de cada licitação, nesta ordem. Cada linha diz de onde
+          a informação sai e o que acontece quando ela não é encontrada no edital.</p>
+        <div class="ag-rows" id="rowsResumo"></div>
+      </section>
+
+      <!-- ============================ VARIÁVEIS ============================ -->
+      <section class="ag-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
+        <p class="ag-lead">Uma variável é uma informação extraída uma vez e reutilizada em qualquer lugar: no Score,
+          no Resumo, no match ou em um agente próprio. Alterar uma variável afeta todos os lugares que a usam.</p>
+        <div class="datatable">
+          <div class="dt-top">
+            <div class="dt-title"><h3>Variáveis do espaço de trabalho</h3><span class="dt-chip">6</span></div>
+            <div class="dt-total">Custo no mês: <b class="ag-mono">R$ 31,80</b></div>
+          </div>
+          <table class="dt">
+            <thead>
+              <tr>
+                <th scope="col">Variável</th>
+                <th scope="col">Fonte</th>
+                <th scope="col">Usada em</th>
+                <th scope="col">Versão</th>
+                <th scope="col">Custo por extração</th>
+                <th scope="col">Não encontrada</th>
+              </tr>
+            </thead>
+            <tbody id="rowsVars"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================ EXECUÇÕES ============================ -->
+      <section class="ag-panel" id="panel-execucoes" role="tabpanel" aria-label="Execuções" hidden>
+        <p class="ag-lead">Tudo que rodou automaticamente no seu espaço de trabalho, o gatilho que disparou e quanto custou.</p>
+        <div class="datatable">
+          <div class="dt-top">
+            <div class="dt-title"><h3>Últimas execuções</h3><span class="dt-chip">148 no mês</span></div>
+            <div class="dt-total">Total no mês: <b class="ag-mono">R$ 31,80</b></div>
+          </div>
+          <table class="dt">
+            <thead>
+              <tr>
+                <th scope="col">Quando</th>
+                <th scope="col">Gatilho</th>
+                <th scope="col">Licitação</th>
+                <th scope="col">O que rodou</th>
+                <th scope="col">Resultado</th>
+                <th scope="col">Custo</th>
+              </tr>
+            </thead>
+            <tbody id="rowsExec"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ====================== CONSTRUTOR ====================== -->
+  <div class="fp-overlay" id="ovl" hidden></div>
+
+  <div class="ag-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+
+    <div class="ag-modal-head">
+      <div style="flex:1;min-width:0">
+        <h2 id="modalTitle">Novo critério de score</h2>
+        <span class="ag-modal-sub" id="modalSub">Descreva a regra em palavras. Vou te perguntar o que faltar.</span>
+      </div>
+      <span class="tag-light" id="statusRegra">Rascunho</span>
+      <button class="icon-btn" type="button" id="btnFechar" aria-label="Fechar o construtor">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="ag-modal-body">
+
+      <!-- coluna esquerda: a conversa -->
+      <div class="ag-chat">
+        <div class="ag-msgs" id="msgs" aria-live="polite"></div>
+        <form class="ag-compose" id="formMsg">
+          <label class="sr-only" for="inMsg">Escreva o critério ou responda a pergunta</label>
+          <textarea id="inMsg" rows="1" placeholder="Ex.: se a CAPAG do órgão for A ou B, somar 10 pontos"></textarea>
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </form>
+      </div>
+
+      <!-- coluna direita: o artefato -->
+      <div class="ag-art">
+        <div class="ag-art-head">
+          <span class="ttl" id="artTitle">A regra que estou construindo</span>
+          <div class="fp-tabs" role="group" aria-label="Como ver a regra">
+            <button class="fp-tab active" type="button" data-view="fluxo">Fluxo</button>
+            <button class="fp-tab" type="button" data-view="texto">Texto</button>
+          </div>
+        </div>
+        <div class="ag-art-body" id="artBody"></div>
+        <div class="ag-art-foot">
+          <span class="ag-cost" id="artCost">Custo estimado: <b class="ag-mono">R$ 0,00</b> por licitação</span>
+          <button class="btn btn-outline" type="button" id="btnPreview" disabled>Pré-visualizar em 3 licitações</button>
+          <button class="btn btn-primary" type="button" id="btnAtivar" disabled>Ativar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="../assets/settle.js" defer></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* =====================================================================
+       DADOS DE EXEMPLO
+       ===================================================================== */
+
+    var SCORE = [
+      { id:'seg',  nome:'Aderência ao segmento',              pts:25, fonte:'sys', fonteTxt:'Settle · match por objeto e item', nota:'Critério padrão da plataforma. Você pode reduzir o peso, mas não remover.', ativo:true },
+      { id:'val',  nome:'Valor estimado da licitação',        pts:20, fonte:'sys', fonteTxt:'Portal de origem', nota:'Por faixa: <b>até R$ 1 mi</b> = 5 · <b>R$ 1 mi a R$ 5 mi</b> = 10 · <b>acima de R$ 5 mi</b> = 20', ativo:true },
+      { id:'ate',  nome:'Exigência de atestado de capacidade técnica', pts:15, fonte:'var', fonteTxt:'Variável · Atestado exigido', nota:'Quando não encontrado: <b>considera que não exige</b> e soma os 15 pontos.', ativo:true, alerta:'Esse default é otimista. Em 3 das últimas 10 análises a exigência estava em anexo separado.' },
+      { id:'sub',  nome:'Permite subcontratação',             pts:10, fonte:'var', fonteTxt:'Variável · Permite subcontratação', nota:'Quando não encontrado: <b>não pontua e sinaliza</b> para revisão manual.', ativo:true },
+      { id:'praz', nome:'Prazo até a sessão pública',         pts:10, fonte:'sys', fonteTxt:'Portal de origem', nota:'Menos de 5 dias úteis: <b>0 ponto</b>. De 5 a 15 dias: <b>6</b>. Acima de 15 dias: <b>10</b>.', ativo:true },
+      { id:'meepp',nome:'Participação exclusiva ME/EPP',      pts:10, fonte:'var', fonteTxt:'Variável · Exclusividade ME/EPP', nota:'Quando não encontrado: <b>não pontua</b>.', ativo:true },
+      { id:'visi', nome:'Visita técnica obrigatória',         pts:0,  fonte:'pend',fonteTxt:'Rascunho · nunca rodou', nota:'Criado em 19/08/2026 e ainda não ativado.', ativo:false }
+    ];
+
+    var RESUMO = [
+      { nome:'Objeto da licitação',            fonte:'sys', fonteTxt:'Portal de origem',                       nota:'Sempre visível.' },
+      { nome:'Órgão, UASG e esfera',           fonte:'var', fonteTxt:'Variável · Esfera',                      nota:'A esfera vem do portal, sem custo de extração.' },
+      { nome:'Modalidade e critério de julgamento', fonte:'sys', fonteTxt:'Edital',                            nota:'' },
+      { nome:'Valor global estimado',          fonte:'sys', fonteTxt:'Portal de origem',                       nota:'' },
+      { nome:'Data e hora da sessão',          fonte:'sys', fonteTxt:'Portal de origem',                       nota:'' },
+      { nome:'CAPAG do órgão',                 fonte:'var', fonteTxt:'Variável · CAPAG (v3)',                  nota:'Licitação federal: exibe <b>não se aplica</b>, com a explicação.' },
+      { nome:'Documentos de habilitação exigidos', fonte:'var', fonteTxt:'Variável · Habilitação exigida',     nota:'Quando não encontrado: exibe <b>não encontrado</b>, nunca lista vazia.' },
+      { nome:'Permite subcontratação',         fonte:'var', fonteTxt:'Variável · Permite subcontratação',      nota:'' },
+      { nome:'Índices contábeis exigidos',     fonte:'var', fonteTxt:'Variável · Índices contábeis',           nota:'Não encontrado em 3 das últimas 10 licitações.', alerta:'Vale revisar a instrução dessa variável ou trocar a fonte para o anexo de habilitação.' },
+      { nome:'Exige visita técnica',           fonte:'pend',fonteTxt:'Oculto no Resumo',                       nota:'Depende do critério que ainda está em rascunho.' }
+    ];
+
+    var VARS = [
+      ['Esfera',                    'Portal de origem',              'Score, Resumo, Match', 'v2', 'sem custo',  'não se aplica'],
+      ['CAPAG',                     'Base do Tesouro + Esfera',      'Score, Resumo',        'v3', 'R$ 0,01',    'não pontua e sinaliza'],
+      ['Atestado exigido',          'Edital · item de habilitação',  'Score',                'v1', 'R$ 0,04',    'considera que não exige'],
+      ['Permite subcontratação',    'Termo de Referência',           'Score, Resumo',        'v1', 'R$ 0,03',    'não pontua e sinaliza'],
+      ['Quantidade de veículos',    'Termo de Referência',           'Match',                'v1', 'R$ 0,05',    'mantém a licitação no match'],
+      ['Índices contábeis',         'Edital · qualificação econômica','Resumo',              'v1', 'R$ 0,02',    'exibe não encontrado']
+    ];
+
+    var EXEC = [
+      ['26/08 09:12','Enviada para análise','PE 90014/2026 · SES-MG',    'Score completo (6 critérios)','78 pontos','R$ 0,14'],
+      ['26/08 09:12','Enviada para análise','PE 90014/2026 · SES-MG',    'Resumo (10 campos)','9 preenchidos, 1 não encontrado','R$ 0,06'],
+      ['26/08 08:40','Entrou no match','PE 00023/2026 · Pref. Itapevi',  'Variável CAPAG','não encontrada, sinalizada','R$ 0,01'],
+      ['25/08 17:03','Enviada para análise','PE 90112/2026 · TRF4',      'Score completo (6 critérios)','61 pontos','R$ 0,13'],
+      ['25/08 16:55','Enviada para análise','PE 00311/2026 · Pref. Osasco','Score completo (6 critérios)','—','R$ 0,04']
+    ];
+
+    /* =====================================================================
+       RENDERIZAÇÃO DAS LISTAS
+       ===================================================================== */
+
+    function chipFonte(f, txt) {
+      var cls = f === 'var' ? 'var' : (f === 'pend' ? 'pend' : 'sys');
+      return '<span class=' + JSON.stringify('ag-src ' + cls) + '>' + txt + '</span>';
+    }
+
+    function linha(item, comPontos) {
+      var el = document.createElement('div');
+      el.className = 'ag-row' + (item.ativo === false ? ' off' : '');
+      var alerta = item.alerta
+        ? '<div class="ag-row-note ag-warn">Atenção: ' + item.alerta + '</div>' : '';
+      el.innerHTML =
+        '<div class="ag-row-main">' +
+          '<div class="ag-row-name">' + item.nome +
+            (item.ativo === false ? ' <span class="tag-light">rascunho</span>' : '') + '</div>' +
+          '<div class="ag-row-meta">' + chipFonte(item.fonte, item.fonteTxt) + '</div>' +
+          (item.nota ? '<div class="ag-row-note">' + item.nota + '</div>' : '') + alerta +
+        '</div>' +
+        (comPontos ? '<div class="ag-row-pts ag-mono">' + (item.ativo === false ? '<span class="ag-dim">—</span>' : item.pts + ' pts') + '</div>' : '') +
+        '<div class="ag-row-acts"><button class="btn btn-outline" type="button">Ajustar</button></div>';
+      el.querySelector('.ag-row-acts button').addEventListener('click', function () {
+        abrirConstrutor(item.nome);
+      });
+      return el;
+    }
+
+    function pintarListas() {
+      var s = document.getElementById('rowsScore');
+      s.innerHTML = '';
+      SCORE.forEach(function (i) { s.appendChild(linha(i, true)); });
+
+      var r = document.getElementById('rowsResumo');
+      r.innerHTML = '';
+      RESUMO.forEach(function (i) { r.appendChild(linha(i, false)); });
+
+      document.getElementById('rowsVars').innerHTML = VARS.map(function (v) {
+        return '<tr><td><b>' + v[0] + '</b></td><td>' + v[1] + '</td><td>' + v[2] +
+               '</td><td>' + v[3] + '</td><td class="ag-mono">' + v[4] + '</td><td>' + v[5] + '</td></tr>';
+      }).join('');
+
+      document.getElementById('rowsExec').innerHTML = EXEC.map(function (e) {
+        var res = e[4] === '—'
+          ? '<span class="cap warn">falhou · edital não baixou</span>'
+          : (/não encontrada|não encontrado/.test(e[4]) ? '<span class="ag-warn">' + e[4] + '</span>' : e[4]);
+        return '<tr><td class="ag-mono">' + e[0] + '</td><td>' + e[1] + '</td><td>' + e[2] +
+               '</td><td>' + e[3] + '</td><td>' + res + '</td><td class="ag-mono">' + e[5] + '</td></tr>';
+      }).join('');
+
+      var ativos = SCORE.filter(function (i) { return i.ativo !== false; });
+      document.getElementById('totalPts').textContent = ativos.reduce(function (a, i) { return a + i.pts; }, 0);
+      document.getElementById('totalAtivos').textContent = ativos.length;
+    }
+
+    /* ---------- abas ---------- */
+    document.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('[data-tab]').forEach(function (o) {
+          o.classList.toggle('active', o === b);
+          o.setAttribute('aria-selected', o === b ? 'true' : 'false');
+        });
+        ['score', 'resumo', 'variaveis', 'execucoes'].forEach(function (p) {
+          document.getElementById('panel-' + p).hidden = (p !== b.dataset.tab);
+        });
+        document.getElementById('btnNovoCriterio').textContent =
+          b.dataset.tab === 'resumo' ? 'Novo campo no Resumo' : 'Novo critério';
+      });
+    });
+
+    document.getElementById('btnRecalc').addEventListener('click', function () {
+      document.getElementById('alertVersao').hidden = true;
+      settleToast('Recalculando 14 licitações em aberto');
+    });
+    document.getElementById('btnIgnorarVersao').addEventListener('click', function () {
+      document.getElementById('alertVersao').hidden = true;
+      settleToast('A v3 passa a valer só para novas licitações');
+    });
+
+    /* =====================================================================
+       CONSTRUTOR — modelo da regra
+       ===================================================================== */
+
+    var regra = null;
+    var vista = 'fluxo';
+    var stepAtual = null;
+
+    function novaRegra(nome, tipo) {
+      return {
+        nome: nome, tipo: tipo,
+        fonte: null, federal: null, semDado: null,
+        pontos: null, gatilho: null, saida: null,
+        custo: tipo === 'capag' ? 0.01 : 0.05
+      };
+    }
+
+    /* ---------- roteiro ---------- */
+
+    var STEPS = {
+      fonte: {
+        pergunta: function (r) {
+          return r.tipo === 'capag'
+            ? 'Entendi. A CAPAG não está no edital: ela vem da base do Tesouro Nacional, cruzada com a <b>esfera do órgão</b>. A esfera eu já tenho do portal, sem custo. Uso essa fonte?'
+            : 'Entendi. Essa informação eu preciso extrair do <b>Termo de Referência</b>, que é onde costuma aparecer o quantitativo. Uso essa fonte?';
+        },
+        opcoes: function (r) {
+          return r.tipo === 'capag'
+            ? [{ t:'Usar a base do Tesouro', v:'Base do Tesouro Nacional + variável Esfera' },
+               { t:'Extrair do edital', v:'Edital, quando o órgão declarar a própria CAPAG', extra:'mais lento e menos confiável' }]
+            : [{ t:'Usar o Termo de Referência', v:'Termo de Referência' },
+               { t:'Procurar em todos os anexos', v:'Edital e todos os anexos', extra:'custo maior por licitação' }];
+        },
+        aplica: function (r, o) { r.fonte = o.v; }
+      },
+
+      federal: {
+        pergunta: function () {
+          return 'Uma coisa que você não me disse: <b>licitação federal não tem CAPAG</b>. A nota só existe para estado e município. O que eu faço quando o órgão for federal?';
+        },
+        opcoes: function () {
+          return [
+            { t:'Não pontuar e explicar no Resumo', v:'Federal: 0 ponto, com a nota "não se aplica" no Resumo', extra:'recomendado' },
+            { t:'Somar os pontos assim mesmo',      v:'Federal: soma os pontos, tratando como risco baixo' },
+            { t:'Usar outro indicador',             v:'Federal: usar o histórico de pagamento do órgão na Settle' }
+          ];
+        },
+        aplica: function (r, o) { r.federal = o.v; }
+      },
+
+      semDado: {
+        pergunta: function (r) {
+          return r.tipo === 'capag'
+            ? 'E quando eu <b>não encontrar</b> a CAPAG do município? Acontece bastante com prefeitura pequena. Não encontrar não é a mesma coisa que ter nota ruim.'
+            : 'E quando eu <b>não encontrar</b> essa informação no documento? Não encontrar não é a mesma coisa que ser zero.';
+        },
+        opcoes: function () {
+          return [
+            { t:'Não pontuar e sinalizar para revisão', v:'Não encontrado: 0 ponto, sinalizado para revisão manual', extra:'recomendado' },
+            { t:'Não pontuar em silêncio',              v:'Não encontrado: 0 ponto, sem sinalizar' },
+            { t:'Pontuar como se fosse favorável',      v:'Não encontrado: pontua integralmente', extra:'otimista, pode inflar o score' }
+          ];
+        },
+        aplica: function (r, o) { r.semDado = o.v; }
+      },
+
+      pontos: {
+        pergunta: function (r) {
+          return r.tipo === 'capag'
+            ? 'Quantos pontos esse critério vale quando a condição for atendida? Hoje seu score soma 90 pontos em 6 critérios ativos.'
+            : 'Como esse critério pontua? Você pode dar um valor único ou trabalhar por faixa.';
+        },
+        opcoes: function (r) {
+          return r.tipo === 'capag'
+            ? [{ t:'10 pontos', v:'CAPAG A ou B: 10 pontos · CAPAG C ou D: 0 ponto' },
+               { t:'15 pontos', v:'CAPAG A ou B: 15 pontos · CAPAG C ou D: 0 ponto' },
+               { t:'Escalonado por nota', v:'CAPAG A: 10 · B: 7 · C: 3 · D: 0', extra:'mais granular' }]
+            : [{ t:'10 pontos quando atender', v:'Acima de 100 veículos: 10 pontos. Abaixo: 0 ponto' },
+               { t:'Por faixa', v:'Até 50 veículos: 0 · 51 a 100: 5 · acima de 100: 10', extra:'recomendado quando o volume importa' }];
+        },
+        aplica: function (r, o) { r.pontos = o.v; }
+      },
+
+      gatilho: {
+        pergunta: function () {
+          return 'Quando eu devo rodar isso? Isso muda o custo: quanto mais cedo, mais licitações passam pelo cálculo.';
+        },
+        opcoes: function () {
+          return [
+            { t:'Ao enviar para análise', v:'Toda vez que a licitação for enviada para análise', extra:'roda só no que você já filtrou' },
+            { t:'Assim que entrar no match', v:'Assim que a licitação entrar no match', extra:'roda em tudo, custo maior' },
+            { t:'Só quando eu pedir', v:'Sob demanda, pelo botão na tela da licitação' }
+          ];
+        },
+        aplica: function (r, o) { r.gatilho = o.v; }
+      },
+
+      saida: {
+        pergunta: function () {
+          return 'Por último: onde o resultado aparece?';
+        },
+        opcoes: function (r) {
+          var n = r.nome;
+          return [
+            { t:'No Score e no Resumo', v:'Score, no critério "' + n + '" · Resumo, como campo próprio', extra:'recomendado' },
+            { t:'Só no Score',          v:'Score, no critério "' + n + '"' },
+            { t:'Em uma aba nova',      v:'Aba própria na tela da licitação, com o resultado completo' }
+          ];
+        },
+        aplica: function (r, o) { r.saida = o.v; }
+      }
+    };
+
+    function ordemSteps(r) {
+      return r.tipo === 'capag'
+        ? ['fonte', 'federal', 'semDado', 'pontos', 'gatilho', 'saida']
+        : ['fonte', 'semDado', 'pontos', 'gatilho', 'saida'];
+    }
+
+    function proximoStep(r) {
+      var campo = { fonte:'fonte', federal:'federal', semDado:'semDado', pontos:'pontos', gatilho:'gatilho', saida:'saida' };
+      var falta = ordemSteps(r).filter(function (s) { return r[campo[s]] === null; });
+      return falta.length ? falta[0] : null;
+    }
+
+    /* ---------- conversa ---------- */
+
+    function bolha(quem, html) {
+      var el = document.createElement('div');
+      el.className = 'ag-msg ' + quem;
+      el.innerHTML = html;
+      var m = document.getElementById('msgs');
+      m.appendChild(el);
+      m.scrollTop = m.scrollHeight;
+      return el;
+    }
+
+    function limparChips() {
+      var c = document.querySelector('#msgs .ag-chips');
+      if (c) c.remove();
+    }
+
+    function mostrarChips(opcoes, aoEscolher) {
+      limparChips();
+      var box = document.createElement('div');
+      box.className = 'ag-chips';
+      opcoes.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ag-chip';
+        b.innerHTML = o.t + (o.extra ? '<small>' + o.extra + '</small>' : '');
+        b.addEventListener('click', function () { aoEscolher(o); });
+        box.appendChild(b);
+      });
+      var m = document.getElementById('msgs');
+      m.appendChild(box);
+      m.scrollTop = m.scrollHeight;
+    }
+
+    function perguntar(stepId) {
+      stepAtual = stepId;
+      var st = STEPS[stepId];
+      bolha('bot', st.pergunta(regra));
+      mostrarChips(st.opcoes(regra), function (o) {
+        limparChips();
+        bolha('me', o.t);
+        st.aplica(regra, o);
+        pintarArtefato(stepId);
+        var prox = proximoStep(regra);
+        if (prox) { setTimeout(function () { perguntar(prox); }, 260); }
+        else { setTimeout(fecharRoteiro, 260); }
+      });
+    }
+
+    function fecharRoteiro() {
+      stepAtual = null;
+      bolha('bot', 'Pronto, a regra está completa. Antes de ativar, rode em algumas licitações reais para ver se o resultado bate com o que você faria na mão.');
+      document.getElementById('btnPreview').disabled = false;
+      document.getElementById('btnAtivar').disabled = false;
+      document.getElementById('statusRegra').textContent = 'Pronta para ativar';
+    }
+
+    /* ---------- artefato ---------- */
+
+    function no(kind, titulo, sub, stepId, fresh) {
+      return '<div class="ag-node' + (fresh ? ' fresh' : '') + '">' +
+        '<div class="ag-node-main"><div class="ag-kind">' + kind + '</div>' +
+        '<div class="ag-node-title">' + titulo + '</div>' +
+        (sub ? '<div class="ag-node-sub">' + sub + '</div>' : '') + '</div>' +
+        (stepId ? '<button class="ag-adj" type="button" data-step="' + stepId + '">Ajustar</button>' : '') +
+        '</div>';
+    }
+
+    var CONN = '<div class="ag-conn" aria-hidden="true"></div>';
+
+    function ramosCapag(r) {
+      var out = '<div class="ag-branches">';
+      out += '<div class="ag-branch"><b>Federal</b><div class="out">' + (r.federal || 'ainda não definido') + '</div></div>';
+      out += '<div class="ag-branch"><b>Estadual</b><div class="out">Usa a CAPAG estadual do órgão</div></div>';
+      out += '<div class="ag-branch"><b>Municipal</b><div class="out">Usa a CAPAG municipal do órgão</div></div>';
+      out += '</div>';
+      return out;
+    }
+
+    function pintarFluxo(fresh) {
+      var r = regra, h = '';
+      h += no('Gatilho', r.gatilho || 'Ainda não definido', r.gatilho ? '' : 'Vou te perguntar quando rodar', r.gatilho ? 'gatilho' : null, fresh === 'gatilho');
+      h += CONN;
+      h += no('Fonte', r.fonte || 'Ainda não definida', '', r.fonte ? 'fonte' : null, fresh === 'fonte');
+      if (r.tipo === 'capag') {
+        h += CONN;
+        h += no('Variável', 'Esfera do órgão', 'Vem do portal · v2 · sem custo de extração', null, false);
+        h += CONN;
+        h += no('Decisão', 'Qual a esfera do órgão?', '', r.federal ? 'federal' : null, fresh === 'federal');
+        h += ramosCapag(r);
+        h += CONN;
+        h += no('Variável', 'CAPAG do órgão', 'Base do Tesouro · v3 · R$ 0,01 por extração', null, false);
+      }
+      h += CONN;
+      h += no('Pontuação', r.pontos || 'Ainda não definida', '', r.pontos ? 'pontos' : null, fresh === 'pontos');
+      h += CONN;
+      h += no('Sem o dado', r.semDado || 'Ainda não definido', 'O que fazer quando a informação não for encontrada', r.semDado ? 'semDado' : null, fresh === 'semDado');
+      h += CONN;
+      h += no('Saída', r.saida || 'Ainda não definida', '', r.saida ? 'saida' : null, fresh === 'saida');
+      return h;
+    }
+
+    function pintarTexto() {
+      var r = regra, li = [];
+      li.push('<b>Quando:</b> ' + (r.gatilho || '<span class="ag-dim">ainda não definido</span>'));
+      li.push('<b>De onde:</b> ' + (r.fonte || '<span class="ag-dim">ainda não definida</span>'));
+      if (r.tipo === 'capag') {
+        li.push('<b>Se o órgão for federal:</b> ' + (r.federal || '<span class="ag-dim">ainda não definido</span>'));
+        li.push('<b>Se for estadual ou municipal:</b> usa a CAPAG da esfera correspondente');
+      }
+      li.push('<b>Pontuação:</b> ' + (r.pontos || '<span class="ag-dim">ainda não definida</span>'));
+      li.push('<b>Se não encontrar o dado:</b> ' + (r.semDado || '<span class="ag-dim">ainda não definido</span>'));
+      li.push('<b>Onde aparece:</b> ' + (r.saida || '<span class="ag-dim">ainda não definida</span>'));
+      return '<ol class="ag-steps">' + li.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol>';
+    }
+
+    function pintarArtefato(fresh) {
+      var body = document.getElementById('artBody');
+      if (!regra) {
+        body.innerHTML = '<div class="ag-art-empty"><strong>Nada construído ainda</strong>' +
+          'Conforme você responder, a regra aparece aqui. Você pode revisar, ajustar cada pedaço e ver como fluxo ou como texto antes de ativar.</div>';
+        return;
+      }
+      document.getElementById('artTitle').textContent = regra.nome;
+      body.innerHTML = vista === 'fluxo' ? pintarFluxo(fresh) : pintarTexto();
+      body.querySelectorAll('[data-step]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var s = b.dataset.step;
+          regra[s] = null;
+          limparChips();
+          bolha('me', 'Quero mudar isso');
+          pintarArtefato();
+          setTimeout(function () { perguntar(s); }, 200);
+        });
+      });
+      var custo = regra.custo + (regra.tipo === 'capag' ? 0 : 0);
+      document.getElementById('artCost').innerHTML =
+        'Custo estimado: <b class="ag-mono">R$ ' + custo.toFixed(2).replace('.', ',') + '</b> por licitação · ' +
+        (regra.gatilho && /match/.test(regra.gatilho) ? 'cerca de 320 por mês' : 'cerca de 148 por mês');
+    }
+
+    document.querySelectorAll('[data-view]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        vista = b.dataset.view;
+        document.querySelectorAll('[data-view]').forEach(function (o) { o.classList.toggle('active', o === b); });
+        pintarArtefato();
+      });
+    });
+
+    /* ---------- pré-visualização ---------- */
+
+    var LICS = [
+      { ed:'Pregão Eletrônico nº 90014/2026', org:'Secretaria de Estado da Saúde de Minas Gerais · estadual', capag:'CAPAG B', res:'ok' },
+      { ed:'Pregão Eletrônico nº 00023/2026', org:'Prefeitura Municipal de Itapevi/SP · municipal', capag:'CAPAG não encontrada', res:'warn' },
+      { ed:'Pregão Eletrônico nº 90112/2026', org:'Tribunal Regional Federal da 4ª Região · federal', capag:'Não se aplica', res:'dim' }
+    ];
+
+    document.getElementById('btnPreview').addEventListener('click', function () {
+      var r = regra;
+      var pts = /15 pontos/.test(r.pontos || '') ? 15 : 10;
+      var html = '<div class="ag-prev">';
+      LICS.forEach(function (l) {
+        var valor, why, cls;
+        if (l.res === 'ok') { valor = '+' + pts; cls = 'ag-ok'; why = l.capag + ', dentro do que você definiu como favorável.'; }
+        else if (l.res === 'warn') {
+          valor = '0'; cls = 'ag-warn';
+          why = /pontua integralmente/.test(r.semDado || '')
+            ? l.capag + '. Pela sua regra, pontuaria integralmente mesmo sem o dado: <b>+' + pts + '</b>.'
+            : l.capag + '. ' + (/sinalizado/.test(r.semDado || '') ? 'Vai aparecer sinalizada para revisão manual.' : 'Não pontua, sem sinalizar.');
+          if (/pontua integralmente/.test(r.semDado || '')) { valor = '+' + pts; cls = 'ag-warn'; }
+        } else {
+          valor = /soma os pontos/.test(r.federal || '') ? '+' + pts : '0';
+          cls = 'ag-dim';
+          why = 'Órgão federal. ' + (r.federal || '').replace(/^Federal: /, '');
+        }
+        html += '<div class="ag-prev-item"><div class="ag-prev-main">' +
+          '<div class="ag-prev-ed">' + l.ed + '</div>' +
+          '<div class="ag-prev-org">' + l.org + '</div>' +
+          '<div class="ag-prev-why">' + why + '</div></div>' +
+          '<div class=' + JSON.stringify('ag-prev-pts ' + cls + ' ag-mono') + '>' + valor + '</div></div>';
+      });
+      html += '</div>';
+      document.getElementById('artBody').innerHTML = html;
+      document.getElementById('artTitle').textContent = 'Resultado em 3 licitações reais';
+      bolha('bot', 'Rodei em três licitações da sua carteira, sem alterar nada nelas. Se algum resultado te surpreendeu, é sinal de que a regra ainda não está do jeito que você faria na mão.');
+      mostrarChips([{ t:'Voltar para a regra' }, { t:'Está certo, quero ativar' }], function (o) {
+        limparChips();
+        if (/ativar/.test(o.t)) { document.getElementById('btnAtivar').click(); }
+        else { document.getElementById('artTitle').textContent = regra.nome; pintarArtefato(); }
+      });
+    });
+
+    /* ---------- ativar ---------- */
+
+    document.getElementById('btnAtivar').addEventListener('click', function () {
+      var r = regra;
+      limparChips();
+      bolha('bot', 'Antes de ativar: essa regra usa a variável <b>Esfera</b>, que já é usada no Resumo e no match, e a variável <b>CAPAG</b>, hoje na v3. Você tem <b>14 licitações em aberto</b> que foram analisadas sem esse critério. O que faço com elas?');
+      mostrarChips([
+        { t:'Recalcular as 14', extra:'o score delas pode mudar' },
+        { t:'Valer só para novas', extra:'nada muda no que já está aberto' }
+      ], function (o) {
+        limparChips();
+        bolha('me', o.t);
+        SCORE.push({
+          id:'novo', nome:r.nome, pts:(/15 pontos/.test(r.pontos || '') ? 15 : 10),
+          fonte:'var', fonteTxt:'Variável · ' + (r.tipo === 'capag' ? 'CAPAG (v3)' : 'Quantidade de veículos'),
+          nota:r.pontos + '. Quando não encontrado: <b>' + (r.semDado || '').replace(/^Não encontrado: /, '') + '</b>.',
+          ativo:true
+        });
+        pintarListas();
+        fechar();
+        settleToast('Critério ativado' + (/Recalcular/.test(o.t) ? ' e 14 licitações em recálculo' : ''), {
+          undoLabel:'Desfazer',
+          onUndo:function () { SCORE.pop(); pintarListas(); }
+        });
+      });
+    });
+
+    /* ---------- abrir e fechar ---------- */
+
+    function abrirConstrutor(nomeExistente) {
+      regra = null; stepAtual = null; vista = 'fluxo';
+      document.getElementById('msgs').innerHTML = '';
+      document.getElementById('artTitle').textContent = 'A regra que estou construindo';
+      document.getElementById('statusRegra').textContent = 'Rascunho';
+      document.getElementById('btnPreview').disabled = true;
+      document.getElementById('btnAtivar').disabled = true;
+      document.getElementById('artCost').innerHTML = 'Custo estimado: <b class="ag-mono">R$ 0,00</b> por licitação';
+      document.querySelectorAll('[data-view]').forEach(function (o) { o.classList.toggle('active', o.dataset.view === 'fluxo'); });
+      pintarArtefato();
+
+      document.getElementById('ovl').hidden = false;
+      document.getElementById('modal').hidden = false;
+
+      if (nomeExistente) {
+        document.getElementById('modalTitle').textContent = 'Ajustar: ' + nomeExistente;
+        document.getElementById('modalSub').textContent = 'Diga o que quer mudar. A regra atual continua valendo até você salvar.';
+        bolha('bot', 'Esse critério está ativo desde 12/08/2026 e rodou em 148 licitações. O que você quer mudar nele?');
+        mostrarChips([
+          { t:'A pontuação' }, { t:'O que fazer quando não encontra o dado' }, { t:'Quando ele roda' }
+        ], function (o) {
+          limparChips();
+          bolha('me', o.t);
+          regra = novaRegra(nomeExistente, 'capag');
+          regra.fonte = 'Base do Tesouro Nacional + variável Esfera';
+          regra.federal = 'Federal: 0 ponto, com a nota "não se aplica" no Resumo';
+          regra.gatilho = 'Toda vez que a licitação for enviada para análise';
+          regra.saida = 'Score, no critério "' + nomeExistente + '"';
+          regra.pontos = 'CAPAG A ou B: 10 pontos · CAPAG C ou D: 0 ponto';
+          regra.semDado = 'Não encontrado: 0 ponto, sinalizado para revisão manual';
+          var alvo = /pontuação/i.test(o.t) ? 'pontos' : (/roda/i.test(o.t) ? 'gatilho' : 'semDado');
+          regra[alvo] = null;
+          pintarArtefato();
+          setTimeout(function () { perguntar(alvo); }, 200);
+        });
+        return;
+      }
+
+      document.getElementById('modalTitle').textContent = 'Novo critério de score';
+      document.getElementById('modalSub').textContent = 'Descreva a regra em palavras. Vou te perguntar o que faltar.';
+      bolha('bot', 'Me diga em uma frase o que você quer que eu avalie. Pode escrever do jeito que você explicaria para alguém da sua equipe.');
+      mostrarChips([
+        { t:'Se a CAPAG do órgão for A ou B, somar 10 pontos', tipo:'capag' },
+        { t:'Se a frota exigida for acima de 100 veículos, somar 10 pontos', tipo:'veic' }
+      ], function (o) {
+        limparChips();
+        bolha('me', o.t);
+        iniciar(o.t, o.tipo);
+      });
+    }
+
+    function iniciar(texto, tipo) {
+      if (!tipo) tipo = /capag/i.test(texto) ? 'capag' : 'veic';
+      var nome = tipo === 'capag' ? 'Saúde financeira do órgão' : 'Porte da frota exigida';
+      regra = novaRegra(nome, tipo);
+      document.getElementById('statusRegra').textContent = 'Em construção';
+      bolha('bot', 'Vou chamar esse critério de <b>' + nome + '</b>. Você renomeia depois se quiser.');
+      pintarArtefato();
+      setTimeout(function () { perguntar('fonte'); }, 260);
+    }
+
+    function fechar() {
+      document.getElementById('ovl').hidden = true;
+      document.getElementById('modal').hidden = true;
+    }
+
+    document.getElementById('btnNovoCriterio').addEventListener('click', function () { abrirConstrutor(null); });
+    document.getElementById('btnFechar').addEventListener('click', fechar);
+    document.getElementById('ovl').addEventListener('click', fechar);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('modal').hidden) fechar();
+    });
+
+    document.getElementById('formMsg').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var campo = document.getElementById('inMsg');
+      var txt = campo.value.trim();
+      if (!txt) return;
+      campo.value = '';
+      limparChips();
+      bolha('me', txt);
+      if (!regra) { iniciar(txt, null); return; }
+      if (stepAtual) {
+        var st = STEPS[stepAtual];
+        st.aplica(regra, { t:txt, v:txt });
+        pintarArtefato(stepAtual);
+        var prox = proximoStep(regra);
+        if (prox) { setTimeout(function () { perguntar(prox); }, 260); } else { setTimeout(fecharRoteiro, 260); }
+      } else {
+        bolha('bot', 'Anotado. Se quiser mudar algum pedaço específico, use o botão <b>Ajustar</b> no bloco correspondente ao lado.');
+      }
+    });
+
+    /* ---------- boot ---------- */
+    pintarListas();
+    pintarArtefato();
+  })();
+  </script>
+</body>
+</html>
