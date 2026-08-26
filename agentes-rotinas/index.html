@@ -1,0 +1,748 @@
+<!doctype html>
+<!--
+  ============================================================================
+  SETTLE — Agentes, versão "Rotinas" (estrutura primeiro)
+  ----------------------------------------------------------------------------
+  Segunda abordagem do mesmo problema de /agentes.
+
+  Diferença: aqui a conversa NÃO é o caminho obrigatório. A pessoa entra por
+  onde souber (linguagem natural, modelo pronto ou formulário), e a elicitação
+  vira uma ETAPA DE REVISÃO antes de ativar, que aponta só as lacunas que
+  ficaram em aberto.
+
+  Espelha a estrutura de Tarefas agendadas / Rotinas do Claude:
+    - lista de agentes em cards, com estado visível (ativo, pausado, alerta)
+    - galeria de modelos para quem não quer partir do zero
+    - gatilho como seção nomeada, com os tipos à vista
+    - aviso de impacto antes de criar
+
+  O que foi deliberadamente NÃO copiado dessas telas:
+    - formulário puro, que assume que a pessoa já sabe o que escrever
+    - vocabulário de dev (webhook, cron, POST)
+    - ausência de custo por execução: aqui quem paga é o cliente
+  ============================================================================
+-->
+<html lang="pt-BR" data-preview="AGENTES-ROTINAS">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle — Agentes</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../assets/settle.css" />
+
+  <style>
+    /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
+    .agx-lead{font-size:14px;line-height:21px;color:var(--muted-foreground);max-width:780px;margin:8px 0 0;}
+    .agx-create{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:14px;margin:24px 0 32px;box-shadow:var(--shadow-xs);}
+    .agx-create textarea{width:100%;min-height:64px;resize:vertical;border:1px solid var(--border);border-radius:var(--radius-field);padding:11px 13px;font-family:inherit;font-size:14px;line-height:21px;color:var(--foreground);}
+    .agx-create-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    .agx-sug{flex:1;min-width:0;display:flex;gap:8px;flex-wrap:wrap;}
+    .agx-sugbtn{border:1px solid var(--border);background:var(--muted);color:var(--muted-foreground);border-radius:9999px;padding:5px 12px;font-family:inherit;font-size:12px;cursor:pointer;}
+    .agx-sugbtn:hover{background:var(--background);color:var(--foreground);}
+    .agx-sec{margin-bottom:32px;}
+    .agx-sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+    .agx-sec-title{font-size:18px;font-weight:600;margin:0;}
+    .agx-sec-sub{font-size:13px;color:var(--muted-foreground);margin:0 0 14px;}
+    .agx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+    .agx-card{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:8px;text-align:left;font-family:inherit;cursor:pointer;}
+    .agx-card:hover{border-color:var(--border-strong);}
+    .agx-card.off{background:var(--muted);}
+    .agx-card-top{display:flex;align-items:flex-start;gap:8px;}
+    .agx-card-title{flex:1;min-width:0;font-size:15px;font-weight:600;color:var(--foreground);line-height:21px;}
+    .agx-card-instr{font-size:13px;line-height:19px;color:var(--muted-foreground);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .agx-card-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px;}
+    .agx-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;line-height:16px;padding:2px 8px;border-radius:var(--radius-badge);}
+    .agx-badge.run{background:rgba(22,163,74,.1);color:var(--success);}
+    .agx-badge.pause{background:var(--muted);color:var(--muted-foreground);}
+    .agx-badge.warn{background:var(--warning-bg);color:var(--warning);}
+    .agx-badge.draft{background:rgba(23,23,23,.08);color:var(--foreground);}
+    .agx-money{margin-left:auto;font-size:12px;color:var(--muted-foreground);font-variant-numeric:tabular-nums;}
+    .agx-tpl-desc{font-size:13px;line-height:19px;color:var(--muted-foreground);}
+    .agx-tpl-meta{font-size:12px;color:var(--muted-foreground);display:flex;flex-direction:column;gap:2px;}
+    .agx-modal{position:fixed;inset:20px;max-width:820px;margin:0 auto;background:var(--background);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-pop);z-index:41;display:flex;flex-direction:column;overflow:hidden;}
+    .agx-modal[hidden]{display:none;}
+    .agx-mhead{flex:none;display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);}
+    .agx-mhead h2{margin:0;font-size:17px;font-weight:600;flex:1;min-width:0;}
+    .agx-mbody{flex:1;min-height:0;overflow-y:auto;padding:20px;}
+    .agx-mfoot{flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--border);}
+    .agx-mfoot .agx-money{margin-left:0;}
+    .agx-spacer{flex:1;}
+    .agx-field{margin-bottom:18px;}
+    .agx-field>label,.agx-flabel{display:block;font-size:14px;font-weight:600;margin-bottom:6px;}
+    .agx-fhint{font-size:12px;line-height:17px;color:var(--muted-foreground);margin:-2px 0 8px;}
+    .agx-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-field);padding:9px 12px;font-family:inherit;font-size:14px;color:var(--foreground);}
+    .agx-textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--border);border-radius:var(--radius-field);padding:11px 13px;font-family:inherit;font-size:14px;line-height:21px;color:var(--foreground);}
+    .agx-chipsel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--card);border-radius:9999px;padding:6px 12px;font-family:inherit;font-size:13px;color:var(--foreground);cursor:pointer;}
+    .agx-chipsel .agx-cost{color:var(--muted-foreground);font-size:11px;}
+    .agx-chipsel[aria-pressed="true"]{background:var(--accent-100);border-color:var(--accent);color:var(--accent-600);}
+    .agx-chipsel[aria-pressed="true"] .agx-cost{color:var(--accent-600);}
+    .agx-chipwrap{display:flex;flex-wrap:wrap;gap:8px;}
+    .agx-opt{width:100%;display:flex;align-items:flex-start;gap:11px;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-box);padding:11px 13px;font-family:inherit;text-align:left;cursor:pointer;margin-bottom:8px;}
+    .agx-opt:hover{background:var(--muted);}
+    .agx-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-100);}
+    .agx-opt-ico{flex:none;width:18px;height:18px;color:var(--muted-foreground);}
+    .agx-opt-main{flex:1;min-width:0;}
+    .agx-opt-t{display:block;font-size:14px;font-weight:600;line-height:20px;}
+    .agx-opt-d{display:block;font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:2px;}
+    .btn[hidden]{display:none;}
+    .agx-gap{border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius-box);background:var(--card);padding:13px 15px;margin-bottom:12px;}
+    .agx-gap.done{border-left-color:var(--success);}
+    .agx-gap-q{font-size:14px;line-height:21px;font-weight:600;margin-bottom:3px;}
+    .agx-gap-why{font-size:12px;line-height:18px;color:var(--muted-foreground);margin-bottom:10px;}
+    .agx-gap-ans{font-size:13px;line-height:19px;color:var(--success);font-weight:600;}
+    .agx-final{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--muted);padding:14px 16px;font-size:13px;line-height:20px;}
+    .agx-final b{font-weight:600;color:var(--foreground);}
+    .agx-final ul{margin:8px 0 0;padding-left:18px;}
+    .agx-final li{margin-bottom:4px;color:var(--muted-foreground);}
+    .agx-prev-item{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;}
+    .agx-prev-main{flex:1;min-width:0;}
+    .agx-prev-ed{font-size:13px;font-weight:600;}
+    .agx-prev-org{font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+    .agx-prev-why{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:5px;}
+    .agx-prev-pts{flex:none;font-size:15px;font-weight:700;min-width:56px;text-align:right;font-variant-numeric:tabular-nums;}
+    .agx-ok{color:var(--success);} .agx-warn{color:var(--warning);} .agx-dim{color:var(--muted-foreground);}
+    @media (max-width:900px){ .agx-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====================== SIDEBAR ====================== -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+
+    <div class="sb-head">
+      <div class="sb-logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+          <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+          <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="sb-ws">
+        <div class="sb-ws-name">CS Frotas</div>
+        <div class="sb-ws-sub">Espaço de trabalho</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+    <nav class="sb-content">
+      <div class="sb-section">Licitações</div>
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Recomendadas">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="sb-label">Recomendadas</span>
+          <span class="sb-count">18</span>
+        </a>
+        <a class="sb-item" href="#" title="Explorar licitações">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.3" cy="7.3" r="4.3"/><path d="M10.6 10.6 13.5 13.5" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Explorar licitações</span>
+        </a>
+        <a class="sb-item" href="#" title="Em andamento">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span>
+          <span class="sb-label">Em andamento</span>
+        </a>
+      </div>
+
+      <div class="sb-section">Configuração da análise</div>
+      <div class="sb-group">
+        <a class="sb-item active" href="#" aria-current="page" title="Agentes">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Agentes</span>
+        </a>
+        <a class="sb-item" href="#" title="Segmentos e match">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4.5h11M4.5 8h7M6.5 11.5h3" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Segmentos e match</span>
+        </a>
+        <a class="sb-item" href="#" title="Equipe e permissões">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.5"/><path d="M2 13c.6-2.2 2.1-3.3 4-3.3s3.4 1.1 4 3.3" stroke-linecap="round"/><circle cx="11.6" cy="6.4" r="1.9"/></svg></span>
+          <span class="sb-label">Equipe e permissões</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-avatar" aria-hidden="true">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier</div>
+        <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+  </aside>
+
+  <!-- ====================== SHELL ====================== -->
+  <div class="shell">
+
+    <header class="navbar">
+      <button class="icon-btn" type="button" data-sb-toggle aria-label="Recolher ou expandir a navegação">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
+      </button>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="hello">Olá, Brunno</span>
+    </header>
+
+    <main class="content">
+
+      <div class="page-head">
+        <p class="eyebrow">Agentes</p>
+        <h1 class="title">Análises da sua empresa</h1>
+        <p class="agx-lead">Cada agente é uma análise que roda sozinha nas suas licitações. Você descreve o que quer,
+          escolhe quando roda e onde o resultado aparece. Antes de ativar, a Settle revisa a regra com você.</p>
+      </div>
+
+      <!-- ============ CRIAR POR LINGUAGEM NATURAL ============ -->
+      <div class="agx-create">
+        <label class="sr-only" for="npt">O que você quer que a Settle analise em cada licitação?</label>
+        <textarea id="npt" placeholder="O que você quer que a Settle analise em cada licitação?"></textarea>
+        <div class="agx-create-foot">
+          <div class="agx-sug">
+            <button class="agx-sugbtn" type="button" data-sug="capag">Pontuar pela CAPAG do órgão</button>
+            <button class="agx-sugbtn" type="button" data-sug="hab">Listar os documentos de habilitação exigidos</button>
+            <button class="agx-sugbtn" type="button" data-sug="prazo">Avisar quando o prazo for curto demais</button>
+          </div>
+          <button class="btn btn-primary" type="button" id="btnCriar">Criar agente</button>
+        </div>
+      </div>
+
+      <!-- ============ AGENTES ATIVOS ============ -->
+      <section class="agx-sec" aria-labelledby="h-seus">
+        <div class="agx-sec-head">
+          <h2 class="agx-sec-title" id="h-seus">Seus agentes</h2>
+          <span class="count-chip" id="cntAgentes">6</span>
+        </div>
+        <p class="agx-sec-sub">Custo total no mês: <b>R$ 31,80</b> em 148 licitações analisadas.</p>
+        <div class="agx-grid" id="gridAgentes"></div>
+      </section>
+
+      <!-- ============ MODELOS ============ -->
+      <section class="agx-sec" aria-labelledby="h-modelos">
+        <div class="agx-sec-head">
+          <h2 class="agx-sec-title" id="h-modelos">Ou comece com um modelo</h2>
+        </div>
+        <p class="agx-sec-sub">Modelos prontos que você ajusta depois. Foram escritos a partir do que outras empresas
+          do seu segmento configuraram.</p>
+        <div class="agx-grid" id="gridModelos"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ====================== MODAL ====================== -->
+  <div class="fp-overlay" id="ovl" hidden></div>
+
+  <div class="agx-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+    <div class="agx-mhead">
+      <h2 id="mTitle">Novo agente</h2>
+      <span class="tag-light" id="mStatus">Rascunho</span>
+      <button class="icon-btn" type="button" id="btnFechar" aria-label="Fechar">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="agx-mbody" id="mBody"></div>
+    <div class="agx-mfoot">
+      <span class="agx-money" id="mCusto"></span>
+      <span class="agx-spacer"></span>
+      <button class="btn btn-outline" type="button" id="btnVoltar" hidden>Voltar</button>
+      <button class="btn btn-primary" type="button" id="btnAvancar">Revisar e ativar</button>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="../assets/settle.js" defer></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* =====================================================================
+       DADOS
+       ===================================================================== */
+
+    var AGENTES = [
+      { nome:'Score: saúde financeira do órgão',
+        instr:'Verifique a CAPAG do órgão. Se for A ou B, some 10 pontos ao score. Licitação federal não tem CAPAG: não pontue e explique no Resumo.',
+        estado:'run', gatilho:'Ao enviar para análise', custo:'R$ 0,01' },
+      { nome:'Checklist de habilitação',
+        instr:'Liste todos os documentos de habilitação exigidos no edital e nos anexos, separando por jurídica, fiscal, técnica e econômico-financeira. Marque o que a empresa já tem cadastrado.',
+        estado:'run', gatilho:'Assim que entra no match', custo:'R$ 0,06' },
+      { nome:'Resumo executivo do edital',
+        instr:'Em um parágrafo: objeto, valor global, prazo de entrega e as três exigências mais críticas para a nossa operação.',
+        estado:'run', gatilho:'Ao enviar para análise', custo:'R$ 0,04' },
+      { nome:'Análise de subcontratação e consórcio',
+        instr:'Verifique no Termo de Referência se há permissão de subcontratação e de participação em consórcio, e em que percentual.',
+        estado:'warn', gatilho:'Ao enviar para análise', custo:'R$ 0,03',
+        alerta:'Não encontrou a informação em 3 das últimas 10 licitações' },
+      { nome:'Exigência de atestado de capacidade técnica',
+        instr:'Identifique se o edital exige atestado de capacidade técnica e qual o quantitativo mínimo comprovado exigido.',
+        estado:'pause', gatilho:'Pausado desde 14/08', custo:'R$ 0,04' },
+      { nome:'Comparativo com atas de registro de preço',
+        instr:'Compare o valor unitário estimado com as atas de registro de preço vigentes do mesmo objeto nos últimos 12 meses.',
+        estado:'draft', gatilho:'Nunca rodou', custo:'—' }
+    ];
+
+    var MODELOS = [
+      { id:'capag', nome:'Score de saúde financeira do órgão',
+        desc:'Pontua a licitação pela CAPAG do órgão, respeitando a esfera. Órgão federal não tem CAPAG.',
+        quando:'Ao enviar para análise', fontes:'Portal de origem, base do Tesouro',
+        instr:'Verifique a CAPAG do órgão. Se for A ou B, some 10 pontos ao score.' },
+      { id:'hab', nome:'Checklist de habilitação',
+        desc:'Extrai todos os documentos exigidos e monta a lista por categoria, marcando o que a empresa já tem.',
+        quando:'Assim que entra no match', fontes:'Edital e anexos, documentos da empresa',
+        instr:'Liste todos os documentos de habilitação exigidos no edital e nos anexos, separando por jurídica, fiscal, técnica e econômico-financeira.' },
+      { id:'tec', nome:'Exigências técnicas do objeto',
+        desc:'Compara as especificações do Termo de Referência com o que a sua empresa fornece.',
+        quando:'Ao enviar para análise', fontes:'Termo de Referência, catálogo da empresa',
+        instr:'Compare cada especificação técnica do Termo de Referência com o catálogo da empresa e aponte o que não atendemos.' },
+      { id:'resumo', nome:'Resumo executivo do edital',
+        desc:'Um parágrafo com objeto, valor, prazo e as exigências mais críticas.',
+        quando:'Ao enviar para análise', fontes:'Edital',
+        instr:'Em um parágrafo: objeto, valor global, prazo de entrega e as três exigências mais críticas.' },
+      { id:'prazo', nome:'Alerta de prazo curto',
+        desc:'Avisa quando a sessão for em menos de 5 dias úteis e ainda houver visita técnica obrigatória.',
+        quando:'Assim que entra no match', fontes:'Portal de origem, Edital',
+        instr:'Avise quando a sessão pública for em menos de 5 dias úteis e o edital exigir visita técnica obrigatória.' },
+      { id:'impug', nome:'Cláusulas restritivas',
+        desc:'Sinaliza cláusulas que costumam embasar impugnação, como exigência de marca ou atestado desproporcional.',
+        quando:'Sob demanda', fontes:'Edital, Termo de Referência',
+        instr:'Sinalize cláusulas restritivas à competitividade: exigência de marca, atestado desproporcional ao objeto e prazos inexequíveis.' }
+    ];
+
+    var FONTES = [
+      { id:'portal', nome:'Portal de origem', custo:'sem custo', on:true },
+      { id:'edital', nome:'Edital', custo:'R$ 0,02', on:true },
+      { id:'tr', nome:'Termo de Referência', custo:'R$ 0,03', on:false },
+      { id:'anexos', nome:'Anexos de habilitação', custo:'R$ 0,04', on:false },
+      { id:'empresa', nome:'Documentos da sua empresa', custo:'R$ 0,01', on:false },
+      { id:'atas', nome:'Atas e resultados anteriores', custo:'R$ 0,05', on:false }
+    ];
+
+    var GATILHOS = [
+      { id:'analise', t:'Ao enviar para análise', d:'Roda só nas licitações que você já filtrou. Cerca de 148 por mês.' },
+      { id:'match',   t:'Assim que entrar no match', d:'Roda em tudo que o match trouxer, antes da sua triagem. Cerca de 320 por mês.' },
+      { id:'demanda', t:'Sob demanda', d:'Só quando alguém clicar no botão dentro da licitação.' }
+    ];
+
+    var SAIDAS = [
+      { id:'score',  t:'No Score', curto:'no Score', d:'Vira um critério com pontuação.' },
+      { id:'resumo', t:'No Resumo', curto:'no Resumo', d:'Vira um campo do resumo da licitação.' },
+      { id:'aba',    t:'Em uma aba própria', curto:'em uma aba própria', d:'Cria uma aba na tela da licitação com o resultado completo.' }
+    ];
+
+    /* =====================================================================
+       LISTAS
+       ===================================================================== */
+
+    var ICO_RUN   = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.2" stroke-linecap="round"/></svg>';
+    var ICO_WARN  = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.6 14.2 13H1.8z" stroke-linejoin="round"/><path d="M8 6.4v2.6" stroke-linecap="round"/></svg>';
+    var ICO_PAUSE = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 4.5v7M10 4.5v7" stroke-linecap="round"/></svg>';
+
+    function badge(a) {
+      if (a.estado === 'run')   return '<span class="agx-badge run">' + ICO_RUN + a.gatilho + '</span>';
+      if (a.estado === 'warn')  return '<span class="agx-badge run">' + ICO_RUN + a.gatilho + '</span>' +
+                                       '<span class="agx-badge warn">' + ICO_WARN + a.alerta + '</span>';
+      if (a.estado === 'pause') return '<span class="agx-badge pause">' + ICO_PAUSE + a.gatilho + '</span>';
+      return '<span class="agx-badge draft">Rascunho</span>';
+    }
+
+    function pintarAgentes() {
+      var g = document.getElementById('gridAgentes');
+      g.innerHTML = '';
+      AGENTES.forEach(function (a) {
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'agx-card' + (a.estado === 'pause' || a.estado === 'draft' ? ' off' : '');
+        el.innerHTML =
+          '<div class="agx-card-top"><span class="agx-card-title">' + a.nome + '</span></div>' +
+          '<div class="agx-card-instr">' + a.instr + '</div>' +
+          '<div class="agx-card-foot">' + badge(a) + '<span class="agx-money">' + a.custo + ' por licitação</span></div>';
+        el.addEventListener('click', function () { abrir(a.nome, a.instr, null); });
+        g.appendChild(el);
+      });
+      document.getElementById('cntAgentes').textContent = AGENTES.length;
+    }
+
+    function pintarModelos() {
+      var g = document.getElementById('gridModelos');
+      g.innerHTML = '';
+      MODELOS.forEach(function (m) {
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'agx-card';
+        el.innerHTML =
+          '<div class="agx-card-top"><span class="agx-card-title">' + m.nome + '</span></div>' +
+          '<div class="agx-tpl-desc">' + m.desc + '</div>' +
+          '<div class="agx-tpl-meta"><span>' + m.quando + '</span><span>Usa: ' + m.fontes + '</span></div>';
+        el.addEventListener('click', function () { abrir(m.nome, m.instr, m.id); });
+        g.appendChild(el);
+      });
+    }
+
+    /* =====================================================================
+       MODAL: estado
+       ===================================================================== */
+
+    var draft = null;
+    var etapa = 'form';
+
+    function novoDraft(nome, instr, modeloId) {
+      return {
+        nome: nome || '', instr: instr || '', modelo: modeloId,
+        fontes: FONTES.map(function (f) { return { id:f.id, on:f.on }; }),
+        gatilho: modeloId === 'hab' || modeloId === 'prazo' ? 'match' : 'analise',
+        saidas: { score: modeloId === 'capag', resumo: true, aba:false },
+        lacunas: {}
+      };
+    }
+
+    function custoDoDraft() {
+      var soma = 0;
+      draft.fontes.forEach(function (f) {
+        if (!f.on) return;
+        var base = FONTES.filter(function (x) { return x.id === f.id; })[0];
+        var v = parseFloat((base.custo || '0').replace('R$ ', '').replace(',', '.'));
+        if (!isNaN(v)) soma += v;
+      });
+      return soma;
+    }
+
+    function atualizarCusto() {
+      var vol = draft.gatilho === 'match' ? 320 : (draft.gatilho === 'demanda' ? 0 : 148);
+      var un = custoDoDraft();
+      var txt = 'R$ ' + un.toFixed(2).replace('.', ',') + ' por licitação';
+      if (vol) txt += ' · cerca de R$ ' + (un * vol).toFixed(2).replace('.', ',') + ' por mês';
+      document.getElementById('mCusto').textContent = txt;
+    }
+
+    /* =====================================================================
+       MODAL: etapa 1, o formulário
+       ===================================================================== */
+
+    function pintarForm() {
+      etapa = 'form';
+      document.getElementById('btnVoltar').hidden = true;
+      document.getElementById('btnAvancar').textContent = 'Revisar e ativar';
+
+      var h = '';
+      h += '<div class="agx-field"><label for="fNome">Nome</label>' +
+           '<input class="agx-input" id="fNome" type="text" value="' + draft.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Score de saúde financeira do órgão" /></div>';
+
+      h += '<div class="agx-field"><label for="fInstr">O que a Settle deve fazer</label>' +
+           '<p class="agx-fhint">Escreva como você explicaria para alguém da sua equipe. Não precisa prever todos os casos agora: na revisão eu aponto o que ficou em aberto.</p>' +
+           '<textarea class="agx-textarea" id="fInstr">' + draft.instr + '</textarea></div>';
+
+      h += '<div class="agx-field"><span class="agx-flabel">O que ele pode ler</span>' +
+           '<p class="agx-fhint">Cada documento a mais aumenta o custo por licitação.</p><div class="agx-chipwrap">';
+      FONTES.forEach(function (f) {
+        var on = draft.fontes.filter(function (x) { return x.id === f.id; })[0].on;
+        h += '<button class="agx-chipsel" type="button" data-fonte="' + f.id + '" aria-pressed="' + on + '">' +
+             f.nome + ' <span class="agx-cost">' + f.custo + '</span></button>';
+      });
+      h += '</div></div>';
+
+      h += '<div class="agx-field"><span class="agx-flabel">Quando roda</span>';
+      GATILHOS.forEach(function (g) {
+        h += '<button class="agx-opt" type="button" data-gat="' + g.id + '" aria-pressed="' + (draft.gatilho === g.id) + '">' +
+             '<span class="agx-opt-ico">' + ICO_RUN + '</span>' +
+             '<span class="agx-opt-main"><span class="agx-opt-t">' + g.t + '</span>' +
+             '<span class="agx-opt-d">' + g.d + '</span></span></button>';
+      });
+      h += '</div>';
+
+      h += '<div class="agx-field"><span class="agx-flabel">Onde o resultado aparece</span>';
+      SAIDAS.forEach(function (s) {
+        h += '<button class="agx-opt" type="button" data-saida="' + s.id + '" aria-pressed="' + (!!draft.saidas[s.id]) + '">' +
+             '<span class="agx-opt-ico">' + ICO_RUN + '</span>' +
+             '<span class="agx-opt-main"><span class="agx-opt-t">' + s.t + '</span>' +
+             '<span class="agx-opt-d">' + s.d + '</span></span></button>';
+      });
+      h += '</div>';
+
+      h += '<div class="alert alert-warning">' +
+           '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 5.5v3.2" stroke-linecap="round"/><circle cx="8" cy="11.2" r=".9" fill="currentColor" stroke="none"/><path d="M8 2.2 14.5 13.4H1.5z" stroke-linejoin="round"/></svg>' +
+           '<div class="alert-title">Este agente vale para todo o espaço de trabalho</div>' +
+           '<div class="alert-description"><p>Ele roda em todas as licitações da CS Frotas e o resultado aparece para as 7 pessoas da equipe. Só administradores podem editar depois de ativado.</p></div></div>';
+
+      document.getElementById('mBody').innerHTML = h;
+
+      document.getElementById('fNome').addEventListener('input', function (e) { draft.nome = e.target.value; });
+      document.getElementById('fInstr').addEventListener('input', function (e) { draft.instr = e.target.value; });
+
+      document.querySelectorAll('[data-fonte]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var f = draft.fontes.filter(function (x) { return x.id === b.dataset.fonte; })[0];
+          f.on = !f.on;
+          b.setAttribute('aria-pressed', String(f.on));
+          atualizarCusto();
+        });
+      });
+      document.querySelectorAll('[data-gat]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          draft.gatilho = b.dataset.gat;
+          document.querySelectorAll('[data-gat]').forEach(function (o) {
+            o.setAttribute('aria-pressed', String(o === b));
+          });
+          atualizarCusto();
+        });
+      });
+      document.querySelectorAll('[data-saida]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = b.dataset.saida;
+          draft.saidas[k] = !draft.saidas[k];
+          b.setAttribute('aria-pressed', String(draft.saidas[k]));
+        });
+      });
+
+      atualizarCusto();
+    }
+
+    /* =====================================================================
+       MODAL: etapa 2, a revisão (elicitação só do que ficou em aberto)
+       ===================================================================== */
+
+    function detectarLacunas() {
+      var txt = (draft.instr || '').toLowerCase();
+      var L = [];
+
+      if (/capag/.test(txt) && !/federal/.test(txt)) {
+        L.push({ id:'federal', label:'Se o órgão for federal',
+          q:'E quando o órgão for federal?',
+          why:'Você citou a CAPAG, mas ela só existe para estado e município. Licitação federal não tem nota, então preciso saber o que fazer nesses casos.',
+          ops:['Não pontuar e explicar no Resumo','Pontuar como se fosse favorável','Usar o histórico de pagamento do órgão'] });
+      }
+      if (/atestado|quantitativo|percentual|quantidade|veículo/.test(txt) && !/faixa|acima de|abaixo de/.test(txt)) {
+        L.push({ id:'faixa', label:'Quantidade',
+          q:'Vale a mesma coisa para qualquer quantidade?',
+          why:'A instrução trata o quantitativo como sim ou não. Em geral o volume muda o quanto a licitação interessa.',
+          ops:['Sim, é sim ou não','Quero pontuar por faixa'] });
+      }
+      L.push({ id:'semdado', label:'Quando não encontrar o dado',
+        q:'O que eu faço quando não encontrar essa informação?',
+        why:'Este agente roda sozinho, sem ninguém acompanhando. Não encontrar não é a mesma coisa que a resposta ser negativa, e eu preciso saber qual das duas você quer.',
+        ops:['Não pontuar e sinalizar para revisão','Não pontuar em silêncio','Tratar como se fosse favorável'] });
+      if (draft.gatilho === 'match') {
+        L.push({ id:'volume', label:'Volume',
+          q:'Confirma rodar em tudo que entra no match?',
+          why:'São cerca de 320 licitações por mês contra 148 se rodar só no que você filtrou. O resultado é o mesmo, muda o custo e a antecedência.',
+          ops:['Sim, quero antes da triagem','Prefiro rodar só no que eu filtrar'] });
+      }
+      if (!draft.saidas.score && !draft.saidas.resumo && !draft.saidas.aba) {
+        L.push({ id:'saida', label:'Onde aparece',
+          q:'Onde o resultado deve aparecer?',
+          why:'Sem isso o agente roda mas ninguém vê o resultado.',
+          ops:['No Score','No Resumo','Em uma aba própria'] });
+      }
+      return L;
+    }
+
+    var lacunas = [];
+
+    function pintarRevisao() {
+      etapa = 'revisao';
+      document.getElementById('btnVoltar').hidden = false;
+      document.getElementById('mStatus').textContent = 'Em revisão';
+
+      var pend = lacunas.filter(function (l) { return !draft.lacunas[l.id]; }).length;
+      document.getElementById('btnAvancar').textContent = 'Pré-visualizar em 3 licitações';
+      document.getElementById('btnAvancar').disabled = pend > 0;
+
+      var h = '<p class="agx-fhint">Li a sua instrução e encontrei ' + lacunas.length +
+              ' ponto(s) que ficaram em aberto. Enquanto eles não forem resolvidos eu teria que decidir sozinho, ' +
+              'e é aí que o resultado deixa de ser o que você faria na mão.</p>';
+
+      lacunas.forEach(function (l) {
+        var resp = draft.lacunas[l.id];
+        h += '<div class="agx-gap' + (resp ? ' done' : '') + '">' +
+             '<div class="agx-gap-q">' + l.q + '</div>' +
+             '<div class="agx-gap-why">' + l.why + '</div>';
+        if (resp) {
+          h += '<div class="agx-gap-ans">' + resp + '</div>';
+        } else {
+          h += '<div class="agx-chipwrap">' + l.ops.map(function (o) {
+            return '<button class="agx-chipsel" type="button" data-lac="' + l.id + '" data-op="' + o.replace(/"/g, '&quot;') + '">' + o + '</button>';
+          }).join('') + '</div>';
+        }
+        h += '</div>';
+      });
+
+      if (pend === 0) h += regraFinal();
+
+      document.getElementById('mBody').innerHTML = h;
+      document.querySelectorAll('[data-lac]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          draft.lacunas[b.dataset.lac] = b.dataset.op;
+          pintarRevisao();
+        });
+      });
+    }
+
+    function regraFinal() {
+      var gat = GATILHOS.filter(function (g) { return g.id === draft.gatilho; })[0];
+      var saida = SAIDAS.filter(function (s) { return draft.saidas[s.id]; }).map(function (s) { return s.curto; });
+      var itens = ['<b>Quando:</b> ' + gat.t,
+                   '<b>Lê:</b> ' + draft.fontes.filter(function (f) { return f.on; })
+                     .map(function (f) { return FONTES.filter(function (x) { return x.id === f.id; })[0].nome; }).join(', ')];
+      lacunas.forEach(function (l) { itens.push('<b>' + (l.label || l.q.replace('?', '')) + ':</b> ' + draft.lacunas[l.id]); });
+      itens.push('<b>Aparece:</b> ' + (saida.length ? saida.join(' e ') : 'em nenhum lugar ainda'));
+      return '<div class="agx-final"><b>Instrução final</b><br>' + draft.instr +
+             '<ul><li>' + itens.join('</li><li>') + '</li></ul></div>';
+    }
+
+    /* =====================================================================
+       MODAL: etapa 3, pré-visualização
+       ===================================================================== */
+
+    var LICS = [
+      { ed:'Pregão Eletrônico nº 90014/2026', org:'Secretaria de Estado da Saúde de Minas Gerais · estadual', caso:'ok' },
+      { ed:'Pregão Eletrônico nº 00023/2026', org:'Prefeitura Municipal de Itapevi/SP · municipal', caso:'semdado' },
+      { ed:'Pregão Eletrônico nº 90112/2026', org:'Tribunal Regional Federal da 4ª Região · federal', caso:'federal' }
+    ];
+
+    function pintarPreview() {
+      etapa = 'preview';
+      document.getElementById('mStatus').textContent = 'Pronto para ativar';
+      document.getElementById('btnAvancar').textContent = 'Ativar agente';
+      document.getElementById('btnAvancar').disabled = false;
+
+      var h = '<p class="agx-fhint">Rodei em três licitações reais da sua carteira, sem alterar nada nelas. ' +
+              'Se algum resultado te surpreender, volte e ajuste antes de ativar.</p>';
+
+      LICS.forEach(function (l) {
+        var val, cls, why;
+        if (l.caso === 'ok') {
+          val = '+10'; cls = 'agx-ok'; why = 'CAPAG B, dentro do que você definiu como favorável.';
+        } else if (l.caso === 'semdado') {
+          var r = draft.lacunas.semdado || '';
+          if (/favorável/.test(r)) { val = '+10'; cls = 'agx-warn'; why = 'CAPAG não encontrada. Pela sua escolha, pontua mesmo assim.'; }
+          else if (/silêncio/.test(r)) { val = '0'; cls = 'agx-dim'; why = 'CAPAG não encontrada. Não pontua e ninguém fica sabendo.'; }
+          else { val = '0'; cls = 'agx-warn'; why = 'CAPAG não encontrada. Vai aparecer sinalizada para revisão manual.'; }
+        } else {
+          var f = draft.lacunas.federal || '';
+          if (/favorável/.test(f)) { val = '+10'; cls = 'agx-dim'; why = 'Órgão federal, sem CAPAG. Pela sua escolha, pontua assim mesmo.'; }
+          else if (/histórico/.test(f)) { val = '+7'; cls = 'agx-dim'; why = 'Órgão federal. Usou o histórico de pagamento: bom pagador nos últimos 24 meses.'; }
+          else { val = '0'; cls = 'agx-dim'; why = 'Órgão federal, sem CAPAG. Aparece como não se aplica no Resumo.'; }
+        }
+        h += '<div class="agx-prev-item"><div class="agx-prev-main">' +
+             '<div class="agx-prev-ed">' + l.ed + '</div>' +
+             '<div class="agx-prev-org">' + l.org + '</div>' +
+             '<div class="agx-prev-why">' + why + '</div></div>' +
+             '<div class=' + JSON.stringify('agx-prev-pts ' + cls) + '>' + val + '</div></div>';
+      });
+
+      h += regraFinal();
+      document.getElementById('mBody').innerHTML = h;
+    }
+
+    /* =====================================================================
+       MODAL: etapa 4, ativar
+       ===================================================================== */
+
+    function pintarAtivar() {
+      etapa = 'ativar';
+      document.getElementById('btnAvancar').hidden = true;
+      var h = '<div class="agx-gap"><div class="agx-gap-q">E as licitações que já estão em aberto?</div>' +
+              '<div class="agx-gap-why">Você tem <b>14 licitações em aberto</b> que foram analisadas sem este agente. ' +
+              'Recalcular pode mudar o score que a sua equipe já viu.</div>' +
+              '<div class="agx-chipwrap">' +
+              '<button class="agx-chipsel" type="button" data-fim="recalc">Recalcular as 14</button>' +
+              '<button class="agx-chipsel" type="button" data-fim="novas">Valer só para novas</button>' +
+              '</div></div>';
+      document.getElementById('mBody').innerHTML = h;
+      document.querySelectorAll('[data-fim]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var gat = GATILHOS.filter(function (g) { return g.id === draft.gatilho; })[0];
+          AGENTES.unshift({
+            nome: draft.nome || 'Agente sem nome', instr: draft.instr,
+            estado:'run', gatilho:gat.t,
+            custo:'R$ ' + custoDoDraft().toFixed(2).replace('.', ',')
+          });
+          pintarAgentes();
+          fechar();
+          settleToast('Agente ativado' + (b.dataset.fim === 'recalc' ? ' e 14 licitações em recálculo' : ''), {
+            undoLabel:'Desfazer', onUndo:function () { AGENTES.shift(); pintarAgentes(); }
+          });
+        });
+      });
+    }
+
+    /* =====================================================================
+       NAVEGAÇÃO DO MODAL
+       ===================================================================== */
+
+    document.getElementById('btnAvancar').addEventListener('click', function () {
+      if (etapa === 'form') {
+        if (!draft.instr.trim()) { settleToast('Escreva o que a Settle deve fazer'); return; }
+        lacunas = detectarLacunas();
+        pintarRevisao();
+      } else if (etapa === 'revisao') {
+        pintarPreview();
+      } else if (etapa === 'preview') {
+        pintarAtivar();
+      }
+    });
+
+    document.getElementById('btnVoltar').addEventListener('click', function () {
+      if (etapa === 'revisao') { document.getElementById('mStatus').textContent = 'Rascunho'; pintarForm(); }
+      else if (etapa === 'preview') { pintarRevisao(); }
+      else if (etapa === 'ativar') { document.getElementById('btnAvancar').hidden = false; pintarPreview(); }
+    });
+
+    function abrir(nome, instr, modeloId) {
+      draft = novoDraft(nome, instr, modeloId);
+      lacunas = [];
+      document.getElementById('mTitle').textContent = modeloId ? 'A partir do modelo: ' + nome : (nome ? nome : 'Novo agente');
+      document.getElementById('mStatus').textContent = 'Rascunho';
+      document.getElementById('btnAvancar').hidden = false;
+      document.getElementById('btnAvancar').disabled = false;
+      document.getElementById('ovl').hidden = false;
+      document.getElementById('modal').hidden = false;
+      pintarForm();
+    }
+
+    function fechar() {
+      document.getElementById('ovl').hidden = true;
+      document.getElementById('modal').hidden = true;
+    }
+
+    document.getElementById('btnFechar').addEventListener('click', fechar);
+    document.getElementById('ovl').addEventListener('click', fechar);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('modal').hidden) fechar();
+    });
+
+    /* ---------- criação por linguagem natural ---------- */
+
+    var SUGS = {
+      capag:'Se a CAPAG do órgão for A ou B, some 10 pontos ao score.',
+      hab:'Liste todos os documentos de habilitação exigidos no edital e nos anexos, separando por categoria.',
+      prazo:'Avise quando a sessão pública for em menos de 5 dias úteis.'
+    };
+
+    document.querySelectorAll('[data-sug]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.getElementById('npt').value = SUGS[b.dataset.sug];
+        document.getElementById('npt').focus();
+      });
+    });
+
+    document.getElementById('btnCriar').addEventListener('click', function () {
+      var txt = document.getElementById('npt').value.trim();
+      if (!txt) { settleToast('Descreva o que você quer que a Settle analise'); return; }
+      var nome = /capag/i.test(txt) ? 'Score de saúde financeira do órgão'
+               : (/habilita/i.test(txt) ? 'Checklist de habilitação'
+               : (/prazo|sessão/i.test(txt) ? 'Alerta de prazo curto' : 'Novo agente'));
+      document.getElementById('npt').value = '';
+      abrir(nome, txt, null);
+    });
+
+    /* ---------- boot ---------- */
+    pintarAgentes();
+    pintarModelos();
+  })();
+  </script>
+</body>
+</html>
