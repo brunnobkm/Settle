@@ -135,6 +135,20 @@
     .ap-prev-why{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:5px;}
     .ap-prev-v{flex:none;min-width:56px;text-align:right;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
     .ap-ok{color:var(--success);} .ap-warn{color:var(--warning);} .ap-dim{color:var(--muted-foreground);}
+    .ap-item{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);margin-bottom:12px;overflow:hidden;}
+    .ap-item-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+    .ap-item-t{font-size:15px;font-weight:600;flex:1;min-width:0;}
+    .ap-item-t span{font-weight:400;color:var(--muted-foreground);font-size:13px;}
+    .cap.na{background:rgba(23,23,23,.08);color:var(--muted-foreground);}
+    .cap.pt{background:var(--accent-100);color:var(--accent-600);}
+    .ap-agg{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;background:var(--muted);font-size:12.5px;line-height:18px;color:var(--muted-foreground);flex-wrap:wrap;}
+    .ap-agg b{color:var(--foreground);font-weight:600;}
+    .ap-agg .ap-linkbtn{margin-left:auto;}
+    .ap-msg{max-width:92%;font-size:13.5px;line-height:20px;border-radius:12px;padding:9px 12px;}
+    .ap-msg.bot{background:var(--muted);}
+    .ap-msg.me{align-self:flex-end;background:var(--primary);color:var(--primary-foreground);}
+    .ap-msgs{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow-y:auto;}
+    .ap-sheet-foot{flex:none;display:flex;flex-direction:column;gap:8px;}
   </style>
 </head>
 
@@ -216,7 +230,8 @@
 
       <div class="fp-tabs" role="tablist" aria-label="Seções" style="margin-bottom:18px">
         <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="licitacao">Licitação</button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes">Agentes <span class="fp-c">6</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="tecnica">Análise técnica <span class="fp-c">3</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes">Agentes <span class="fp-c">7</span></button>
         <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c">6</span></button>
       </div>
 
@@ -257,6 +272,15 @@
           <div class="ap-box-head"><h2>De onde vieram os pontos</h2></div>
           <div class="ap-box-body" id="crits"></div>
         </div>
+      </section>
+
+      <!-- ============ ANÁLISE TÉCNICA: escopo por componente + agregação ============ -->
+      <section class="ap-panel" id="panel-tecnica" role="tabpanel" aria-label="Análise técnica" hidden>
+        <p class="ap-lead" style="margin-bottom:16px">Aqui o agente não roda uma vez por licitação: ele roda
+          <b>uma vez por componente</b>. Os componentes não existem antes de alguém ler o Termo de Referência,
+          então a lista abaixo foi descoberta na própria execução. O status de cada item é calculado a partir
+          dos componentes, por uma regra que é sua.</p>
+        <div id="itens"></div>
       </section>
 
       <!-- ============ AGENTES ============ -->
@@ -311,6 +335,22 @@
     </div>
   </div>
 
+  <!-- ====================== CONVERSA COM O RESULTADO ====================== -->
+  <div class="fp-overlay" id="ovlChat" hidden></div>
+  <aside class="fp-sheet" id="chat" role="dialog" aria-modal="true" aria-labelledby="chatTitle" hidden>
+    <div class="fp-sheet-head">
+      <b id="chatTitle">Perguntar sobre este resultado</b>
+      <button class="fp-close" type="button" id="chatX" aria-label="Fechar">&times;</button>
+    </div>
+    <p class="fp-sheet-sub" id="chatSub"></p>
+    <div class="ap-msgs" id="chatMsgs"></div>
+    <div class="ap-sheet-foot">
+      <div class="ap-chips" id="chatChips"></div>
+      <label class="sr-only" for="chatIn">Sua pergunta</label>
+      <input class="ap-input" id="chatIn" type="text" placeholder="Perguntar outra coisa" />
+    </div>
+  </aside>
+
   <div id="toasts"></div>
 
   <script src="../assets/settle.js" defer></script>
@@ -338,7 +378,9 @@
       atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
       subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Termo de Referência',         v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
       qtdveic:   { nome:'Quantidade de veículos',   tipo:'número',    fonte:'Termo de Referência',         v:'v1', custo:0.05, ausencia:'mantém no match' },
-      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',             v:'v1', custo:0.06, ausencia:'exibe não encontrado' }
+      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',             v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
+      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Termo de Referência',         v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
+      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'TR + catálogo da empresa',     v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
     };
 
     var AGENTES = [
@@ -386,6 +428,133 @@
         vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Assim que entra no match', custo:0.06,
         prov:'14 documentos extraídos do item 9 do edital', ramifica:false }
     ];
+
+    /* Agente de escopo COMPONENTE. É ele que exercita as duas dimensões que o
+       Score nunca usa: escopo descoberto em execução e agregação de volta. */
+    var AGENTE_TEC = {
+      id:'tec', nome:'Conformidade técnica do item', destino:'tecnica', escopo:'componente',
+      agregacao:'criticos', naoAvaliado:'bloqueia',
+      instr:'Para cada componente exigido no Termo de Referência, compare a especificação com o catálogo da empresa e diga se atendemos.',
+      vars:['componentes','especificacao'], pontos:null, ganhos:null, estado:'run',
+      gatilho:'Ao enviar para análise', custo:0.03, ramifica:false,
+      prov:'15 componentes descobertos em 3 itens', ausencia:'marca como não avaliado, nunca como não atende'
+    };
+
+    var ITENS = [
+      { n:1, nome:'Veículo hatch 1.0, 4 portas', qtd:24, comps:[
+        { nome:'Motorização mínima 1.0 flex',    critico:true,  st:'ok', tr:'TR 5.2.1', nosso:'1.0 flex, 3 cilindros' },
+        { nome:'Ar-condicionado de fábrica',      critico:false, st:'ok', tr:'TR 5.2.2', nosso:'de série em toda a frota' },
+        { nome:'Quilometragem livre',             critico:true,  st:'no', tr:'TR 5.2.5', nosso:'contrato padrão limita 2.000 km/mês' },
+        { nome:'Seguro total sem franquia',       critico:true,  st:'na', tr:'não localizado no TR', nosso:'seguro com franquia de R$ 2.500,00' },
+        { nome:'Rastreamento por telemetria',     critico:false, st:'pt', tr:'TR 5.2.8', nosso:'telemetria básica, sem relatório mensal' },
+        { nome:'Prazo de entrega de 15 dias',     critico:false, st:'ok', tr:'TR 8.1',   nosso:'12 dias úteis' }
+      ]},
+      { n:2, nome:'Veículo SUV 4x4 diesel', qtd:6, comps:[
+        { nome:'Tração 4x4 integral',             critico:true,  st:'ok', tr:'TR 6.1.1', nosso:'4x4 com reduzida' },
+        { nome:'Motor diesel mínimo 2.0',         critico:true,  st:'ok', tr:'TR 6.1.2', nosso:'2.2 turbodiesel' },
+        { nome:'Blindagem nível III-A',           critico:true,  st:'na', tr:'TR 6.4, sem dizer se é exigência ou opcional', nosso:'não fornecemos blindagem' },
+        { nome:'Capacidade de carga de 500 kg',   critico:false, st:'ok', tr:'TR 6.1.5', nosso:'620 kg' },
+        { nome:'Manutenção preventiva inclusa',   critico:false, st:'ok', tr:'TR 9.2',   nosso:'inclusa no contrato' }
+      ]},
+      { n:3, nome:'Van de 15 lugares', qtd:4, comps:[
+        { nome:'Mínimo de 15 lugares',            critico:true,  st:'ok', tr:'TR 7.1.1', nosso:'16 lugares' },
+        { nome:'Cinto de três pontos em todos os assentos', critico:true, st:'ok', tr:'TR 7.1.4', nosso:'de série' },
+        { nome:'Ar-condicionado com dupla evaporadora', critico:false, st:'ok', tr:'TR 7.1.6', nosso:'dupla evaporadora' },
+        { nome:'Prazo de entrega de 30 dias',     critico:false, st:'ok', tr:'TR 8.1',   nosso:'22 dias úteis' }
+      ]}
+    ];
+
+    var ST = {
+      ok:{ t:'atende',       cls:'cap ok' },
+      no:{ t:'não atende',   cls:'cap warn' },
+      pt:{ t:'atende em parte', cls:'cap pt' },
+      na:{ t:'não avaliado', cls:'cap na' }
+    };
+
+    var AGREGACOES = {
+      criticos:'Todos os componentes críticos precisam atender',
+      todos:'Todos os componentes precisam atender',
+      maioria:'A maioria dos componentes precisa atender'
+    };
+
+    /* A agregação: como N componentes viram um status de item. É a dimensão
+       que nenhuma outra análise da plataforma precisa. */
+    function agregar(item) {
+      var regra = AGENTE_TEC.agregacao, pol = AGENTE_TEC.naoAvaliado;
+      var alvo = regra === 'criticos' ? item.comps.filter(function (c) { return c.critico; }) : item.comps;
+      if (pol === 'ignora') alvo = alvo.filter(function (c) { return c.st !== 'na'; });
+
+      var nomes = function (l) { return l.map(function (c) { return '"' + c.nome + '"'; }).join(' e '); };
+      var falha   = alvo.filter(function (c) { return c.st === 'no'; });
+      var naoAval = alvo.filter(function (c) { return c.st === 'na'; });
+      var atende  = alvo.filter(function (c) { return c.st === 'ok'; });
+
+      if (falha.length) {
+        return { st:'no', porque:'porque ' + nomes(falha) +
+          (regra === 'criticos' ? ' é componente crítico e não atende' : ' não atende') };
+      }
+      if (naoAval.length && pol === 'reprova') {
+        return { st:'no', porque:'porque ' + nomes(naoAval) + ' não pôde ser avaliado, e você pediu para eu tratar ' +
+          'componente não avaliado como não atende' };
+      }
+      if (naoAval.length && pol === 'bloqueia') {
+        return { st:'inc', porque:'porque ' + nomes(naoAval) +
+          ' não pôde ser avaliado. Não avaliado não é a mesma coisa que não atender, então eu não concluo sozinho' };
+      }
+      if (regra === 'maioria' && atende.length <= alvo.length / 2) {
+        return { st:'no', porque:'porque menos da metade dos componentes atende' };
+      }
+      return { st:'ok', porque:'porque todos os componentes ' + (regra === 'criticos' ? 'críticos ' : '') + 'atendem' +
+        (item.comps.some(function (c) { return c.st === 'na'; }) && pol === 'ignora'
+          ? ', e os não avaliados estão sendo ignorados por sua escolha' : '') };
+    }
+
+    /* =====================================================================
+       ABA ANÁLISE TÉCNICA
+       ===================================================================== */
+
+    function pintarTecnica() {
+      var box = document.getElementById('itens');
+      var custo = ITENS.reduce(function (t, i) { return t + i.comps.length; }, 0) * AGENTE_TEC.custo;
+      var h = '<div class="alert">' +
+        '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+        '<div class="alert-title">Conformidade técnica do item · roda por componente</div>' +
+        '<div class="alert-description"><p>15 componentes descobertos em 3 itens, a partir do Termo de Referência. ' +
+        'Custo nesta licitação: R$ ' + custo.toFixed(2).replace('.', ',') + ', contra R$ 0,03 de um agente que rodasse uma vez só. ' +
+        '<button class="ap-linkbtn" type="button" data-edit-tec="1">Ajustar o agente</button></p></div></div>';
+
+      ITENS.forEach(function (it) {
+        var ag = agregar(it);
+        var cap = ag.st === 'ok' ? '<span class="cap ok">item atende</span>'
+                : (ag.st === 'no' ? '<span class="cap warn">item não atende</span>'
+                : '<span class="cap na">inconclusivo</span>');
+        h += '<div class="ap-item"><div class="ap-item-head">' +
+             '<span class="ap-item-t">Item ' + it.n + ' · ' + it.nome + ' <span>(' + it.qtd + ' unidades)</span></span>' +
+             cap + '</div>' +
+             '<div class="ap-agg"><div style="flex:1;min-width:260px"><b>Como cheguei nesse status:</b> ' +
+             AGREGACOES[AGENTE_TEC.agregacao].toLowerCase() + ', ' + ag.porque + '.</div>' +
+             '<button class="ap-linkbtn" type="button" data-chat="' + it.n + '">Perguntar sobre este item</button></div>' +
+             '<table class="dt"><thead><tr>' +
+             '<th scope="col">Componente exigido</th><th scope="col">Onde está no TR</th>' +
+             '<th scope="col">O que fornecemos</th><th scope="col">Status</th></tr></thead><tbody>';
+        it.comps.forEach(function (c) {
+          h += '<tr><td style="white-space:normal"><b>' + c.nome + '</b>' +
+               (c.critico ? ' <span class="tag-light">crítico</span>' : '') + '</td>' +
+               '<td style="white-space:normal">' + c.tr + '</td>' +
+               '<td style="white-space:normal">' + c.nosso + '</td>' +
+               '<td><span class="' + ST[c.st].cls + '">' + ST[c.st].t + '</span></td></tr>';
+        });
+        h += '</tbody></table></div>';
+      });
+
+      box.innerHTML = h;
+      box.querySelectorAll('[data-chat]').forEach(function (b) {
+        b.addEventListener('click', function () { abrirChat(ITENS.filter(function (i) { return i.n == b.dataset.chat; })[0]); });
+      });
+      box.querySelectorAll('[data-edit-tec]').forEach(function (b) {
+        b.addEventListener('click', function () { abrir(AGENTE_TEC); });
+      });
+    }
 
     /* =====================================================================
        ABA LICITAÇÃO
@@ -497,7 +666,7 @@
           o.classList.toggle('active', o === b);
           o.setAttribute('aria-selected', o === b ? 'true' : 'false');
         });
-        ['licitacao', 'agentes', 'variaveis'].forEach(function (p) {
+        ['licitacao', 'tecnica', 'agentes', 'variaveis'].forEach(function (p) {
           document.getElementById('panel-' + p).hidden = (p !== b.dataset.tab);
         });
       });
@@ -505,6 +674,105 @@
 
     document.getElementById('btnComoCalcula').addEventListener('click', function () {
       document.getElementById('crits').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
+    /* =====================================================================
+       CONVERSA COM O RESULTADO
+       Requisito da Alice (21/08): não basta ter a resposta do agente, é preciso
+       poder interagir com ela. E a conversa pode virar ajuste de regra.
+       ===================================================================== */
+
+    var itemChat = null;
+
+    function bolha(quem, html) {
+      var el = document.createElement('div');
+      el.className = 'ap-msg ' + quem;
+      el.innerHTML = html;
+      var m = document.getElementById('chatMsgs');
+      m.appendChild(el); m.scrollTop = m.scrollHeight;
+    }
+
+    function chips(lista) {
+      var box = document.getElementById('chatChips');
+      box.innerHTML = '';
+      lista.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'ap-chip'; b.textContent = o.t;
+        b.addEventListener('click', function () { bolha('me', o.t); o.faz(); });
+        box.appendChild(b);
+      });
+    }
+
+    function perguntasDoItem(it) {
+      var ag = agregar(it);
+      var trava = it.comps.filter(function (c) { return c.st === 'no' || c.st === 'na'; });
+      var lista = [
+        { t:'O que falta para atender?', faz:function () {
+            if (!trava.length) { bolha('bot', 'Nada. Todos os componentes deste item atendem.'); return; }
+            bolha('bot', (trava.length === 1 ? 'Um ponto trava' : trava.length + ' pontos travam') +
+              ' este item:<br>' + trava.map(function (c) {
+              return '<b>' + c.nome + '</b> (' + ST[c.st].t + '): o TR pede em ' + c.tr +
+                     ' e hoje nós temos ' + c.nosso + '.';
+            }).join('<br>'));
+            proximas(it);
+          }},
+        { t:'Por que ficou com esse status?', faz:function () {
+            bolha('bot', 'Regra de agregação atual: <b>' + AGREGACOES[AGENTE_TEC.agregacao].toLowerCase() +
+              '</b>. O item ficou assim ' + ag.porque + '.');
+            proximas(it);
+          }}
+      ];
+      if (it.comps.some(function (c) { return c.st === 'na'; })) {
+        lista.push({ t:'Trate não avaliado como não atende', faz:function () {
+            bolha('bot', 'Posso, mas é uma decisão com consequência: hoje eu deixo o item inconclusivo justamente ' +
+              'para você olhar. Se eu passar a tratar não avaliado como não atende, itens vão ser reprovados por ' +
+              'falta de informação minha, não por falha do fornecedor. Isso vale para todos os itens de todas as licitações.');
+            chips([
+              { t:'Mudar assim mesmo', faz:function () {
+                  AGENTE_TEC.naoAvaliado = 'reprova';
+                  pintarTecnica();
+                  bolha('bot', 'Mudei. Os itens foram recalculados agora.');
+                  settleToast('Regra de agregação atualizada', { undoLabel:'Desfazer',
+                    onUndo:function () { AGENTE_TEC.naoAvaliado = 'bloqueia'; pintarTecnica(); } });
+                  chips([]);
+                }},
+              { t:'Deixar como está', faz:function () { bolha('bot', 'Mantido. O item continua inconclusivo até alguém olhar.'); proximas(it); } }
+            ]);
+          }});
+      }
+      return lista;
+    }
+
+    function proximas(it) { chips(perguntasDoItem(it).slice(0, 3)); }
+
+    function abrirChat(it) {
+      itemChat = it;
+      var ag = agregar(it);
+      document.getElementById('chatTitle').textContent = 'Item ' + it.n;
+      document.getElementById('chatSub').textContent = it.nome + ' · ' + it.comps.length + ' componentes analisados';
+      document.getElementById('chatMsgs').innerHTML = '';
+      document.getElementById('ovlChat').hidden = false;
+      document.getElementById('chat').hidden = false;
+      bolha('bot', 'Este item está como <b>' +
+        (ag.st === 'ok' ? 'atende' : (ag.st === 'no' ? 'não atende' : 'inconclusivo')) +
+        '</b> ' + ag.porque + '. Pode perguntar o que quiser sobre isso.');
+      proximas(it);
+    }
+
+    function fecharChat() {
+      document.getElementById('ovlChat').hidden = true;
+      document.getElementById('chat').hidden = true;
+    }
+
+    document.getElementById('chatX').addEventListener('click', fecharChat);
+    document.getElementById('ovlChat').addEventListener('click', fecharChat);
+    document.getElementById('chatIn').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || !e.target.value.trim()) return;
+      var t = e.target.value.trim(); e.target.value = '';
+      bolha('me', t);
+      bolha('bot', 'Consigo responder sobre os componentes deste item e sobre a regra que gerou o status. ' +
+        'Se a resposta indicar que a regra está errada, dá para ajustar por aqui mesmo, sem sair da licitação.');
+      proximas(itemChat);
     });
 
     /* =====================================================================
@@ -536,8 +804,19 @@
     }
 
     function atualizarRodape() {
-      document.getElementById('mCusto').textContent =
-        'Custo: R$ ' + custoDoDraft().toFixed(2).replace('.', ',') + ' por licitação · cerca de 148 por mês';
+      /* O escopo é o que multiplica o custo: um agente por componente roda uma
+         vez para cada componente descoberto, não uma vez por licitação. */
+      var un = custoDoDraft(), txt;
+      if (draft.escopo === 'componente') {
+        var n = ITENS.reduce(function (t, i) { return t + i.comps.length; }, 0);
+        txt = 'Custo: R$ ' + un.toFixed(2).replace('.', ',') + ' por componente · ' + n +
+              ' componentes nesta licitação, R$ ' + (un * n).toFixed(2).replace('.', ',') +
+              ' · cerca de R$ ' + (un * n * 148).toFixed(2).replace('.', ',') + ' por mês';
+      } else {
+        txt = 'Custo: R$ ' + un.toFixed(2).replace('.', ',') + ' por licitação · cerca de R$ ' +
+              (un * 148).toFixed(2).replace('.', ',') + ' por mês';
+      }
+      document.getElementById('mCusto').textContent = txt;
       document.getElementById('btnFluxo').hidden = !(etapa === 'form' && draft.ramifica);
       document.getElementById('btnFluxo').textContent = vistaFluxo ? 'Ver como texto' : 'Ver como fluxo';
     }
@@ -571,7 +850,7 @@
       Object.keys(DESTINOS).forEach(function (k) {
         var dd = DESTINOS[k];
         h += '<button class="ap-chip" type="button" data-dest="' + k + '" aria-pressed="' + (draft.destino === k) + '"' +
-             (dd.bloqueado ? ' disabled title="Ainda não disponível"' : '') + '>' +
+             (dd.bloqueado && draft.destino !== k ? ' disabled title="Ainda não disponível"' : '') + '>' +
              dd.nome + ' <small>' + dd.tipo + '</small></button>';
       });
       h += '</div><p class="ap-fhint" style="margin-top:8px" id="destNota">' + d.nota + '</p></div>';
@@ -608,11 +887,27 @@
       }
       h += '</div>';
 
-      h += '<div class="ap-field"><span class="ap-flabel">Escopo e agregação</span>' +
-           '<div class="ap-locked"><span class="k">Roda</span>' +
-           '<span class="v">Uma vez por licitação. Escopo por item ou por componente existe no modelo e é o que a Análise técnica vai usar, mas ainda não está liberado aqui.</span></div>' +
-           '<div class="ap-locked" style="margin-top:8px"><span class="k">Agregação</span>' +
-           '<span class="v">Não se aplica: com uma execução por licitação, não há N resultados para juntar.</span></div></div>';
+      h += '<div class="ap-field"><span class="ap-flabel">Escopo e agregação</span>';
+      if (draft.escopo === 'componente') {
+        h += '<div class="ap-locked"><span class="k">Roda</span>' +
+             '<span class="v">Uma vez por <b>componente</b>. A lista de componentes não existe antes de ler o Termo de Referência: nesta licitação foram 15, em 3 itens. É isso que multiplica o custo.</span></div>' +
+             '<p class="ap-fhint" style="margin:14px 0 6px"><b>Como os componentes viram o status do item</b></p><div class="ap-chips">';
+        Object.keys(AGREGACOES).forEach(function (k) {
+          h += '<button class="ap-chip" type="button" data-agg="' + k + '" aria-pressed="' + (draft.agregacao === k) + '">' +
+               AGREGACOES[k] + '</button>';
+        });
+        h += '</div><p class="ap-fhint" style="margin:14px 0 6px"><b>E quando eu não conseguir avaliar um componente</b></p><div class="ap-chips">' +
+             '<button class="ap-chip" type="button" data-na="bloqueia" aria-pressed="' + (draft.naoAvaliado === 'bloqueia') + '">Deixar o item inconclusivo <small>recomendado</small></button>' +
+             '<button class="ap-chip" type="button" data-na="reprova" aria-pressed="' + (draft.naoAvaliado === 'reprova') + '">Tratar como não atende</button>' +
+             '<button class="ap-chip" type="button" data-na="ignora" aria-pressed="' + (draft.naoAvaliado === 'ignora') + '">Ignorar o componente</button>' +
+             '</div>';
+      } else {
+        h += '<div class="ap-locked"><span class="k">Roda</span>' +
+             '<span class="v">Uma vez por licitação. Escopo por item ou por componente existe no modelo e é o que a Análise técnica usa.</span></div>' +
+             '<div class="ap-locked" style="margin-top:8px"><span class="k">Agregação</span>' +
+             '<span class="v">Não se aplica: com uma execução por licitação, não há N resultados para juntar.</span></div>';
+      }
+      h += '</div>';
 
       document.getElementById('mBody').innerHTML = h;
 
@@ -622,6 +917,12 @@
       var pts = document.getElementById('fPts');
       if (pts) pts.addEventListener('input', function (e) {
         draft.pontos = parseInt(e.target.value, 10) || 0; draft.mudou.pontos = true;
+      });
+      document.querySelectorAll('[data-agg]').forEach(function (b) {
+        b.addEventListener('click', function () { draft.agregacao = b.dataset.agg; draft.mudou.agregacao = true; pintarForm(); });
+      });
+      document.querySelectorAll('[data-na]').forEach(function (b) {
+        b.addEventListener('click', function () { draft.naoAvaliado = b.dataset.na; draft.mudou.naoAvaliado = true; pintarForm(); });
       });
       document.querySelectorAll('[data-dest]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -672,6 +973,12 @@
           q:'O que eu faço quando não encontrar essa informação?',
           why:'Este agente roda sozinho. Não encontrar não é a mesma coisa que a resposta ser negativa, e quem lê o resultado depois não tem como saber a diferença.',
           ops:['Não pontuar e sinalizar para revisão','Não pontuar em silêncio','Somar os pontos mesmo assim'] });
+      }
+      if (draft.escopo === 'componente' && draft.mudou.naoAvaliado && draft.naoAvaliado !== 'bloqueia') {
+        L.push({ id:'naoaval', label:'Componente não avaliado',
+          q:'Você mudou o que acontece com componente que eu não consigo avaliar. Confirma?',
+          why:'Com essa regra, item vai ser reprovado por falta de informação minha, e não por falha do fornecedor. Quem lê o resultado depois não distingue as duas coisas.',
+          ops:['Confirmo, prefiro decisão fechada','Voltar para inconclusivo'] });
       }
       if (draft.mudou.destino) {
         L.push({ id:'destino', label:'Mudança de destino',
@@ -775,7 +1082,15 @@
     /* ---------- salvar ---------- */
 
     function salvar() {
-      var orig = acharAgente(draft.id);
+      var orig = draft.id === 'tec' ? AGENTE_TEC : acharAgente(draft.id);
+      if (draft.id === 'tec') {
+        var antesTec = { agregacao:orig.agregacao, naoAvaliado:orig.naoAvaliado, instr:orig.instr };
+        orig.agregacao = draft.agregacao; orig.naoAvaliado = draft.naoAvaliado; orig.instr = draft.instr;
+        pintarTecnica(); fechar();
+        settleToast('Agente atualizado e itens recalculados', { undoLabel:'Desfazer',
+          onUndo:function () { Object.keys(antesTec).forEach(function (k) { orig[k] = antesTec[k]; }); pintarTecnica(); } });
+        return;
+      }
       var antes = { pontos:orig.pontos, ganhos:orig.ganhos, instr:orig.instr, destino:orig.destino,
                     estado:orig.estado, risco:orig.risco, ausencia:orig.ausencia, prov:orig.prov };
       orig.instr = draft.instr;
@@ -817,7 +1132,7 @@
     });
 
     /* ---------- boot ---------- */
-    pintarCrits(); pintarAgentes(); pintarVars();
+    pintarCrits(); pintarTecnica(); pintarAgentes(); pintarVars();
   })();
   </script>
 </body>
