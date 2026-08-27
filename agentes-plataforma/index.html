@@ -1,0 +1,824 @@
+<!doctype html>
+<!--
+  ============================================================================
+  SETTLE — Agentes na plataforma (consolidação)
+  ----------------------------------------------------------------------------
+  Terceira tela do projeto. Não é mais uma hipótese: é a consolidação do que
+  ficou de pé depois de /agentes (conversa primeiro), /agentes-rotinas
+  (estrutura primeiro) e do modelo em agentes/MODELO.md.
+
+  O que ela corrige em relação às duas anteriores:
+
+  1. ENTRADA CONTEXTUAL. A intenção de mexer na regra nasce dentro da
+     licitação, discordando de um número, e não na aba de configuração.
+     A aba "Licitação" é a porta; a aba "Agentes" é o painel de controle.
+
+  2. VARIÁVEL DE VOLTA. Fonte (documento) e variável (informação extraída)
+     voltam a ser coisas diferentes, com versão, uso e custo próprios.
+
+  3. DESTINO RESTRINGE O TIPO. Escolher onde o resultado aparece fecha o
+     formato da regra: Score exige número, Resumo aceita texto ou lista.
+     Não é um checkbox de exibição.
+
+  4. ESCOPO E AGREGAÇÃO EXISTEM COMO CAMPO, sem tela. Ficam travados em
+     "por licitação" e visíveis como travados, para que a análise técnica
+     (escopo por componente, com agregação) entre depois sem reescrita.
+
+  5. FLUXO SOB DEMANDA. O diagrama aparece só quando a regra ramifica de
+     verdade, e não como formato padrão de toda regra.
+
+  6. AUSÊNCIA EM TRÊS ESTADOS, reusando o vocabulário do Resumo:
+     encontrado, não encontrado e fora das opções esperadas.
+  ============================================================================
+-->
+<html lang="pt-BR" data-preview="AGENTES-PLATAFORMA">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle — Agentes na plataforma</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../assets/settle.css" />
+
+  <style>
+    /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
+    .ap-lead{font-size:14px;line-height:21px;color:var(--muted-foreground);max-width:780px;margin:8px 0 0;}
+    .ap-panel[hidden]{display:none;}
+    .btn[hidden],.ap-why[hidden]{display:none;}
+    .ap-two{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
+    @media (min-width:1080px){ .ap-two{grid-template-columns:minmax(0,1fr) 380px;} }
+    .ap-box{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);}
+    .ap-box-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+    .ap-box-head h2{margin:0;font-size:16px;font-weight:600;flex:1;min-width:0;}
+    .ap-box-body{padding:14px 16px;}
+    .ap-obj{font-size:14px;line-height:21px;margin:0 0 10px;}
+    .ap-obj b{font-weight:700;}
+    .ap-facts{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted-foreground);}
+    .ap-facts b{color:var(--foreground);font-weight:600;}
+    .ap-num{font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
+    .ap-num small{font-size:15px;font-weight:500;color:var(--muted-foreground);}
+    .ap-bar{height:6px;border-radius:3px;background:var(--muted);overflow:hidden;margin:12px 0 4px;}
+    .ap-bar i{display:block;height:100%;background:var(--accent);}
+    .ap-crit{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-top:1px solid var(--border);}
+    .ap-crit:first-child{border-top:0;}
+    .ap-crit-main{flex:1;min-width:0;}
+    .ap-crit-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .ap-crit-sub{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:3px;}
+    .ap-pts{flex:none;min-width:56px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+    .ap-pts.zero{color:var(--muted-foreground);}
+    .ap-linkbtn{border:0;background:transparent;padding:0;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent-600);cursor:pointer;}
+    .ap-linkbtn:hover{text-decoration:underline;}
+    .ap-why{margin-top:8px;border-left:2px solid var(--border-strong);padding:2px 0 2px 12px;font-size:12.5px;line-height:18px;color:var(--muted-foreground);}
+    .ap-why b{color:var(--foreground);font-weight:600;}
+    .ap-quote{display:block;margin-top:5px;padding:7px 9px;background:var(--muted);border-radius:var(--radius-field);font-size:12px;line-height:17px;color:var(--foreground);}
+    .ap-risk{background:var(--warning-bg);border-radius:var(--radius-field);padding:8px 10px;margin-top:8px;font-size:12.5px;line-height:18px;color:var(--warning);}
+    .ap-risk b{display:block;font-weight:700;}
+    .ap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+    @media (max-width:900px){ .ap-grid{grid-template-columns:1fr;} }
+    .ap-card{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:8px;text-align:left;font-family:inherit;cursor:pointer;}
+    .ap-card:hover{border-color:var(--border-strong);}
+    .ap-card.off{background:var(--muted);}
+    .ap-card-title{font-size:15px;font-weight:600;line-height:21px;}
+    .ap-card-instr{font-size:13px;line-height:19px;color:var(--muted-foreground);}
+    .ap-card-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;}
+    .ap-tag{display:inline-flex;align-items:center;gap:5px;font-weight:600;line-height:16px;padding:2px 8px;border-radius:var(--radius-badge);}
+    .ap-tag.run{background:rgba(22,163,74,.1);color:var(--success);}
+    .ap-tag.pause{background:var(--muted);color:var(--muted-foreground);}
+    .ap-tag.warn{background:var(--warning-bg);color:var(--warning);}
+    .ap-tag.type{background:var(--accent-100);color:var(--accent-600);}
+    .ap-money{margin-left:auto;color:var(--muted-foreground);font-variant-numeric:tabular-nums;}
+    .ap-modal{position:fixed;inset:20px;max-width:880px;margin:0 auto;background:var(--background);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-pop);z-index:41;display:flex;flex-direction:column;overflow:hidden;}
+    .ap-modal[hidden]{display:none;}
+    .ap-mhead{flex:none;display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);}
+    .ap-mhead h2{margin:0;font-size:17px;font-weight:600;flex:1;min-width:0;}
+    .ap-mbody{flex:1;min-height:0;overflow-y:auto;padding:20px;}
+    .ap-mfoot{flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--border);}
+    .ap-mfoot .ap-money{margin-left:0;flex:1;font-size:12px;}
+    .ap-field{margin-bottom:18px;}
+    .ap-field>label,.ap-flabel{display:block;font-size:14px;font-weight:600;margin-bottom:6px;}
+    .ap-fhint{font-size:12px;line-height:17px;color:var(--muted-foreground);margin:-2px 0 8px;}
+    .ap-input,.ap-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-field);padding:10px 12px;font-family:inherit;font-size:14px;line-height:21px;color:var(--foreground);}
+    .ap-textarea{min-height:96px;resize:vertical;}
+    .ap-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--card);border-radius:9999px;padding:6px 12px;font-family:inherit;font-size:13px;color:var(--foreground);cursor:pointer;}
+    .ap-chip small{color:var(--muted-foreground);font-size:11px;}
+    .ap-chip[aria-pressed="true"]{background:var(--accent-100);border-color:var(--accent);color:var(--accent-600);}
+    .ap-chip[aria-pressed="true"] small{color:var(--accent-600);}
+    .ap-chips{display:flex;flex-wrap:wrap;gap:8px;}
+    .ap-locked{display:flex;align-items:flex-start;gap:10px;border:1px dashed var(--border-strong);border-radius:var(--radius-box);background:var(--muted);padding:11px 13px;}
+    .ap-locked .k{font-size:13px;font-weight:600;flex:none;width:104px;}
+    .ap-locked .v{flex:1;min-width:0;font-size:13px;color:var(--muted-foreground);line-height:18px;}
+    .ap-varline{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--border);font-size:13px;}
+    .ap-varline:first-of-type{border-top:0;}
+    .ap-varline .nm{font-weight:600;}
+    .ap-varline .meta{color:var(--muted-foreground);font-size:12px;}
+    .ap-gap{border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius-box);background:var(--card);padding:13px 15px;margin-bottom:12px;}
+    .ap-gap.done{border-left-color:var(--success);}
+    .ap-gap-q{font-size:14px;font-weight:600;line-height:21px;margin-bottom:3px;}
+    .ap-gap-why{font-size:12px;line-height:18px;color:var(--muted-foreground);margin-bottom:10px;}
+    .ap-gap-ans{font-size:13px;font-weight:600;color:var(--success);}
+    .ap-final{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--muted);padding:14px 16px;font-size:13px;line-height:20px;margin-top:16px;}
+    .ap-final ul{margin:8px 0 0;padding-left:18px;color:var(--muted-foreground);}
+    .ap-final li{margin-bottom:4px;}
+    .ap-node{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);padding:9px 12px;font-size:13px;}
+    .ap-node .k{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);display:block;margin-bottom:2px;}
+    .ap-conn{width:1px;height:11px;background:var(--border-strong);margin-left:20px;}
+    .ap-branches{margin-left:20px;padding-left:15px;border-left:1px solid var(--border-strong);display:flex;flex-direction:column;gap:7px;}
+    .ap-branch{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-field);padding:7px 10px;font-size:12.5px;line-height:18px;}
+    .ap-branch::before{content:"";position:absolute;left:-16px;top:15px;width:12px;height:1px;background:var(--border-strong);}
+    .ap-prev{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:11px 13px;display:flex;gap:12px;margin-bottom:8px;}
+    .ap-prev-main{flex:1;min-width:0;}
+    .ap-prev-ed{font-size:13px;font-weight:600;}
+    .ap-prev-org{font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+    .ap-prev-why{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:5px;}
+    .ap-prev-v{flex:none;min-width:56px;text-align:right;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
+    .ap-ok{color:var(--success);} .ap-warn{color:var(--warning);} .ap-dim{color:var(--muted-foreground);}
+  </style>
+</head>
+
+<body>
+
+  <!-- ====================== SIDEBAR ====================== -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+    <div class="sb-head">
+      <div class="sb-logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle cx="16" cy="16" r="14" fill="#D6EBDD"/>
+          <path d="M22 9 C 14 9 8 14 8 21 C 8 22 9 23 10 23 C 17 23 22 17 22 9 Z" fill="#3D9B5C"/>
+          <path d="M22 9 L 11 21" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="sb-ws">
+        <div class="sb-ws-name">CS Frotas</div>
+        <div class="sb-ws-sub">Espaço de trabalho</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+
+    <nav class="sb-content">
+      <div class="sb-section">Licitações</div>
+      <div class="sb-group">
+        <a class="sb-item active" href="#" aria-current="page" title="Em andamento">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span>
+          <span class="sb-label">Em andamento</span>
+          <span class="sb-count">14</span>
+        </a>
+        <a class="sb-item" href="#" title="Recomendadas">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="sb-label">Recomendadas</span>
+        </a>
+      </div>
+      <div class="sb-section">Configuração da análise</div>
+      <div class="sb-group">
+        <a class="sb-item" href="#" title="Agentes">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/></svg></span>
+          <span class="sb-label">Agentes</span>
+        </a>
+        <a class="sb-item" href="#" title="Equipe e permissões">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.5"/><path d="M2 13c.6-2.2 2.1-3.3 4-3.3s3.4 1.1 4 3.3" stroke-linecap="round"/><circle cx="11.6" cy="6.4" r="1.9"/></svg></span>
+          <span class="sb-label">Equipe e permissões</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-avatar" aria-hidden="true">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier</div>
+        <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
+      </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </div>
+  </aside>
+
+  <!-- ====================== SHELL ====================== -->
+  <div class="shell">
+    <header class="navbar">
+      <button class="icon-btn" type="button" data-sb-toggle aria-label="Recolher ou expandir a navegação">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
+      </button>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="hello">Olá, Brunno</span>
+    </header>
+
+    <main class="content">
+
+      <div class="page-head">
+        <p class="eyebrow">Análise da licitação</p>
+        <h1 class="title">PE 90014/2026</h1>
+        <p class="ap-lead">A regra que produziu cada número desta tela é sua e pode ser editada daqui.
+          O que você mudar vale para todas as licitações do espaço de trabalho.</p>
+      </div>
+
+      <div class="ap-bar" style="display:none"></div>
+
+      <div class="fp-tabs" role="tablist" aria-label="Seções" style="margin-bottom:18px">
+        <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="licitacao">Licitação</button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes">Agentes <span class="fp-c">6</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c">6</span></button>
+      </div>
+
+      <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
+      <section class="ap-panel" id="panel-licitacao" role="tabpanel" aria-label="Licitação">
+        <div class="ap-two">
+
+          <div class="ap-box">
+            <div class="ap-box-head"><h2>Secretaria de Estado da Saúde de Minas Gerais</h2>
+              <span class="tag-light">estadual</span></div>
+            <div class="ap-box-body">
+              <p class="ap-obj"><b>Objeto:</b> Contratação de empresa especializada na prestação de serviços
+                de locação de veículos automotores, sem motorista, para atendimento das unidades regionais
+                de saúde, pelo período de 24 meses.</p>
+              <div class="ap-facts">
+                <span>UASG <b>925467</b></span>
+                <span>Valor estimado <b>R$ 8.240.000,00</b></span>
+                <span>Sessão <b>08/09/2026 09:00</b></span>
+                <span>Itens <b>12</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ap-box">
+            <div class="ap-box-head"><h2>Score</h2>
+              <button class="ap-linkbtn" type="button" id="btnComoCalcula">Como isso é calculado</button></div>
+            <div class="ap-box-body">
+              <div class="ap-num" id="scoreNum">78 <small>de 100</small></div>
+              <div class="ap-bar"><i id="scoreFill" style="width:78%"></i></div>
+              <p class="ap-fhint" style="margin:8px 0 0">Calculado em 26/08 às 09:12, com 6 critérios ativos.
+                Custo desta análise: R$ 0,14.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ap-box" style="margin-top:16px">
+          <div class="ap-box-head"><h2>De onde vieram os pontos</h2></div>
+          <div class="ap-box-body" id="crits"></div>
+        </div>
+      </section>
+
+      <!-- ============ AGENTES ============ -->
+      <section class="ap-panel" id="panel-agentes" role="tabpanel" aria-label="Agentes" hidden>
+        <p class="ap-lead" style="margin-bottom:16px">Tudo que roda sozinho nas suas licitações.
+          O tipo de resultado de cada um é determinado por onde ele aparece.</p>
+        <div class="ap-grid" id="gridAgentes"></div>
+      </section>
+
+      <!-- ============ VARIÁVEIS ============ -->
+      <section class="ap-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
+        <p class="ap-lead" style="margin-bottom:16px">Uma variável é uma informação extraída uma vez e
+          reutilizada em qualquer lugar. Alterar uma variável afeta todos os agentes que a usam.</p>
+        <div class="datatable">
+          <div class="dt-top">
+            <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip">6</span></div>
+            <div class="dt-total">Custo no mês: <b>R$ 31,80</b></div>
+          </div>
+          <table class="dt">
+            <thead>
+              <tr>
+                <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Fonte</th>
+                <th scope="col">Usada por</th><th scope="col">Versão</th>
+                <th scope="col">Custo</th><th scope="col">Se não encontrar</th>
+              </tr>
+            </thead>
+            <tbody id="rowsVars"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ====================== EDITOR ====================== -->
+  <div class="fp-overlay" id="ovl" hidden></div>
+
+  <div class="ap-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+    <div class="ap-mhead">
+      <h2 id="mTitle">Editar critério</h2>
+      <span class="tag-light" id="mStatus">Ativo</span>
+      <button class="icon-btn" type="button" id="btnFechar" aria-label="Fechar">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="ap-mbody" id="mBody"></div>
+    <div class="ap-mfoot">
+      <span class="ap-money" id="mCusto"></span>
+      <button class="btn btn-outline" type="button" id="btnFluxo" hidden>Ver como fluxo</button>
+      <button class="btn btn-outline" type="button" id="btnVoltar" hidden>Voltar</button>
+      <button class="btn btn-primary" type="button" id="btnAvancar">Revisar mudanças</button>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="../assets/settle.js" defer></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* =====================================================================
+       MODELO — as dimensões de agentes/MODELO.md
+       Cada agente carrega escopo e agregação mesmo quando não usa, para que
+       análise técnica (escopo componente + agregação) entre sem reescrita.
+       ===================================================================== */
+
+    var DESTINOS = {
+      score:  { nome:'Score',        tipo:'número',            escopos:['licitacao'], nota:'Vira um critério com pontuação.' },
+      resumo: { nome:'Resumo',       tipo:'texto ou lista',    escopos:['licitacao'], nota:'Vira um campo do resumo da licitação.' },
+      aba:    { nome:'Aba própria',  tipo:'livre',             escopos:['licitacao'], nota:'Cria uma aba na licitação com o resultado completo.' },
+      tecnica:{ nome:'Análise técnica', tipo:'status por item', escopos:['componente'], nota:'Exige escopo por componente e regra de agregação.', bloqueado:true },
+      match:  { nome:'Match',        tipo:'sim ou não',        escopos:['licitacao'], nota:'Filtra a licitação antes da triagem.', bloqueado:true }
+    };
+
+    var VARS = {
+      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Portal de origem',            v:'v2', custo:0,    ausencia:'não se aplica' },
+      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Base do Tesouro + Esfera',    v:'v3', custo:0.01, ausencia:'não pontua e sinaliza' },
+      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
+      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Termo de Referência',         v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
+      qtdveic:   { nome:'Quantidade de veículos',   tipo:'número',    fonte:'Termo de Referência',         v:'v1', custo:0.05, ausencia:'mantém no match' },
+      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',             v:'v1', custo:0.06, ausencia:'exibe não encontrado' }
+    };
+
+    var AGENTES = [
+      { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Compare o objeto e os itens da licitação com os segmentos cadastrados da empresa.',
+        vars:[], pontos:25, ganhos:25, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        prov:'Objeto: locação de veículos automotores, sem motorista', sistema:true, ramifica:false },
+
+      { id:'val',  nome:'Valor estimado da licitação', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Pontue por faixa de valor global estimado: até R$ 1 mi vale 5, de R$ 1 mi a R$ 5 mi vale 10, acima de R$ 5 mi vale 20.',
+        vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        prov:'Valor global estimado no portal: R$ 8.240.000,00', sistema:true, ramifica:true },
+
+      { id:'ate',  nome:'Exigência de atestado de capacidade técnica', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Verifique se o edital exige atestado de capacidade técnica. Se não exigir, some 15 pontos.',
+        vars:['atestado'], pontos:15, ganhos:15, estado:'warn', gatilho:'Ao enviar para análise', custo:0.04,
+        prov:'Nada encontrado no item 9 do edital', ramifica:false,
+        ausencia:'considera que não exige e soma os pontos',
+        risco:'A informação não foi encontrada, e a regra atual soma os 15 pontos mesmo assim. Em 3 das últimas 10 licitações a exigência estava em anexo separado.' },
+
+      { id:'cap',  nome:'Saúde financeira do órgão', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Verifique a CAPAG do órgão. Se for A ou B, some 10 pontos.',
+        vars:['esfera','capag'], pontos:10, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.01,
+        prov:'CAPAG B, estadual, base do Tesouro de julho/2026', ramifica:true,
+        ausencia:'não pontua e sinaliza para revisão' },
+
+      { id:'praz', nome:'Prazo até a sessão pública', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Menos de 5 dias úteis vale 0, de 5 a 15 dias vale 8, acima de 15 dias vale 10.',
+        vars:[], pontos:10, ganhos:8, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        prov:'9 dias úteis até 08/09/2026', sistema:true, ramifica:true },
+
+      { id:'sub',  nome:'Permite subcontratação', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Se o Termo de Referência permitir subcontratação, some 10 pontos.',
+        vars:['subcontr'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0.03,
+        prov:'Item 7.3 do TR: "é vedada a subcontratação do objeto"', ramifica:false,
+        ausencia:'não pontua e sinaliza para revisão' },
+
+      { id:'meepp', nome:'Participação exclusiva ME/EPP', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Se a licitação for exclusiva para ME/EPP, some 10 pontos.',
+        vars:[], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
+
+      { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
+        instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
+        vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Assim que entra no match', custo:0.06,
+        prov:'14 documentos extraídos do item 9 do edital', ramifica:false }
+    ];
+
+    /* =====================================================================
+       ABA LICITAÇÃO
+       ===================================================================== */
+
+    function critHTML(a) {
+      var pts = a.pontos === null
+        ? '<span class="ap-dim">—</span>'
+        : a.ganhos + '<span class="ap-dim">/' + a.pontos + '</span>';
+      var risco = a.risco ? '<div class="ap-risk"><b>Vale conferir</b>' + a.risco + '</div>' : '';
+      return '<div class="ap-crit">' +
+        '<div class="ap-crit-main">' +
+          '<div class="ap-crit-name">' + a.nome +
+            (a.sistema ? ' <span class="tag-light">padrão Settle</span>' : '') +
+            (a.destino === 'resumo' ? ' <span class="ap-tag type">vai para o Resumo</span>' : '') + '</div>' +
+          '<div class="ap-crit-sub">' + a.prov + '</div>' +
+          risco +
+          '<div style="margin-top:8px;display:flex;gap:14px">' +
+            '<button class="ap-linkbtn" type="button" data-why="' + a.id + '">Por que este número</button>' +
+            '<button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a regra</button>' +
+          '</div>' +
+          '<div class="ap-why" id="why-' + a.id + '" hidden></div>' +
+        '</div>' +
+        '<div class="ap-pts' + (a.ganhos === 0 ? ' zero' : '') + '">' + pts + '</div>' +
+      '</div>';
+    }
+
+    function whyHTML(a) {
+      var h = '<b>Regra:</b> ' + a.instr;
+      if (a.vars.length) {
+        h += '<br><b>Extraiu:</b> ' + a.vars.map(function (v) {
+          return VARS[v].nome + ' (' + VARS[v].v + ')';
+        }).join(', ');
+      }
+      if (a.ausencia) h += '<br><b>Se não encontrar:</b> ' + a.ausencia;
+      h += '<span class="ap-quote">' + a.prov + '</span>';
+      return h;
+    }
+
+    function pintarCrits() {
+      var box = document.getElementById('crits');
+      box.innerHTML = AGENTES.map(critHTML).join('');
+
+      box.querySelectorAll('[data-why]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var a = acharAgente(b.dataset.why);
+          var el = document.getElementById('why-' + a.id);
+          if (el.hidden) { el.innerHTML = whyHTML(a); el.hidden = false; b.textContent = 'Esconder'; }
+          else { el.hidden = true; b.textContent = 'Por que este número'; }
+        });
+      });
+      box.querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
+      });
+
+      var soma = AGENTES.filter(function (a) { return a.pontos !== null; })
+        .reduce(function (t, a) { return t + a.ganhos; }, 0);
+      var max = AGENTES.filter(function (a) { return a.pontos !== null; })
+        .reduce(function (t, a) { return t + a.pontos; }, 0);
+      document.getElementById('scoreNum').innerHTML = soma + ' <small>de ' + max + '</small>';
+      document.getElementById('scoreFill').style.width = Math.round(soma / max * 100) + '%';
+    }
+
+    function acharAgente(id) {
+      return AGENTES.filter(function (a) { return a.id === id; })[0];
+    }
+
+    /* =====================================================================
+       ABA AGENTES E VARIÁVEIS
+       ===================================================================== */
+
+    function pintarAgentes() {
+      var g = document.getElementById('gridAgentes');
+      g.innerHTML = '';
+      AGENTES.filter(function (a) { return !a.sistema; }).forEach(function (a) {
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'ap-card';
+        var d = DESTINOS[a.destino];
+        el.innerHTML =
+          '<span class="ap-card-title">' + a.nome + '</span>' +
+          '<span class="ap-card-instr">' + a.instr + '</span>' +
+          '<span class="ap-card-foot">' +
+            '<span class="ap-tag ' + (a.estado === 'warn' ? 'warn' : 'run') + '">' + a.gatilho + '</span>' +
+            '<span class="ap-tag type">' + d.nome + ' · ' + d.tipo + '</span>' +
+            '<span class="ap-money">R$ ' + a.custo.toFixed(2).replace('.', ',') + '</span>' +
+          '</span>';
+        el.addEventListener('click', function () { abrir(a); });
+        g.appendChild(el);
+      });
+    }
+
+    function pintarVars() {
+      document.getElementById('rowsVars').innerHTML = Object.keys(VARS).map(function (k) {
+        var v = VARS[k];
+        var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; })
+          .map(function (a) { return a.nome; });
+        return '<tr><td><b>' + v.nome + '</b></td><td>' + v.tipo + '</td><td>' + v.fonte + '</td>' +
+          '<td>' + (usos.length ? usos.length + ' agente(s)' : '<span class="ap-dim">ninguém</span>') + '</td>' +
+          '<td>' + v.v + '</td><td>' + (v.custo ? 'R$ ' + v.custo.toFixed(2).replace('.', ',') : 'sem custo') + '</td>' +
+          '<td>' + v.ausencia + '</td></tr>';
+      }).join('');
+    }
+
+    /* ---------- abas ---------- */
+    document.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('[data-tab]').forEach(function (o) {
+          o.classList.toggle('active', o === b);
+          o.setAttribute('aria-selected', o === b ? 'true' : 'false');
+        });
+        ['licitacao', 'agentes', 'variaveis'].forEach(function (p) {
+          document.getElementById('panel-' + p).hidden = (p !== b.dataset.tab);
+        });
+      });
+    });
+
+    document.getElementById('btnComoCalcula').addEventListener('click', function () {
+      document.getElementById('crits').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
+    /* =====================================================================
+       EDITOR
+       ===================================================================== */
+
+    var draft = null, etapa = 'form', lacunas = [], vistaFluxo = false;
+
+    function abrir(a) {
+      draft = JSON.parse(JSON.stringify(a));
+      draft.mudou = {};
+      etapa = 'form'; lacunas = []; vistaFluxo = false;
+      document.getElementById('mTitle').textContent = a.nome;
+      document.getElementById('mStatus').textContent = a.sistema ? 'Padrão Settle' : 'Ativo';
+      document.getElementById('btnAvancar').hidden = false;
+      document.getElementById('btnAvancar').disabled = false;
+      document.getElementById('ovl').hidden = false;
+      document.getElementById('modal').hidden = false;
+      pintarForm();
+    }
+
+    function fechar() {
+      document.getElementById('ovl').hidden = true;
+      document.getElementById('modal').hidden = true;
+    }
+
+    function custoDoDraft() {
+      return draft.vars.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
+    }
+
+    function atualizarRodape() {
+      document.getElementById('mCusto').textContent =
+        'Custo: R$ ' + custoDoDraft().toFixed(2).replace('.', ',') + ' por licitação · cerca de 148 por mês';
+      document.getElementById('btnFluxo').hidden = !(etapa === 'form' && draft.ramifica);
+      document.getElementById('btnFluxo').textContent = vistaFluxo ? 'Ver como texto' : 'Ver como fluxo';
+    }
+
+    function pintarForm() {
+      etapa = 'form';
+      document.getElementById('btnVoltar').hidden = true;
+      document.getElementById('btnAvancar').textContent = 'Revisar mudanças';
+
+      var d = DESTINOS[draft.destino];
+      var h = '';
+
+      if (draft.sistema) {
+        h += '<div class="alert">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+          '<div class="alert-title">Critério padrão da Settle</div>' +
+          '<div class="alert-description"><p>Você pode mudar o peso e as faixas, mas não a forma como ele lê a licitação.</p></div></div>';
+      }
+
+      h += '<div class="ap-field"><label for="fInstr">O que a Settle deve fazer</label>' +
+           '<p class="ap-fhint">Escreva como você explicaria para alguém da equipe. Na revisão eu aponto o que ficou em aberto.</p>' +
+           '<textarea class="ap-textarea" id="fInstr">' + draft.instr + '</textarea></div>';
+
+      if (vistaFluxo && draft.ramifica) {
+        h += '<div class="ap-field"><span class="ap-flabel">Como essa regra decide</span>' + fluxoHTML() + '</div>';
+      }
+
+      h += '<div class="ap-field"><span class="ap-flabel">Onde o resultado aparece</span>' +
+           '<p class="ap-fhint">O destino define o que a regra precisa devolver. Trocar de destino muda o formato da resposta.</p>' +
+           '<div class="ap-chips">';
+      Object.keys(DESTINOS).forEach(function (k) {
+        var dd = DESTINOS[k];
+        h += '<button class="ap-chip" type="button" data-dest="' + k + '" aria-pressed="' + (draft.destino === k) + '"' +
+             (dd.bloqueado ? ' disabled title="Ainda não disponível"' : '') + '>' +
+             dd.nome + ' <small>' + dd.tipo + '</small></button>';
+      });
+      h += '</div><p class="ap-fhint" style="margin-top:8px" id="destNota">' + d.nota + '</p></div>';
+
+      if (draft.destino === 'score') {
+        h += '<div class="ap-field"><label for="fPts">Quanto vale</label>' +
+             '<input class="ap-input" id="fPts" type="number" min="0" max="50" value="' + (draft.pontos || 10) + '" />' +
+             '<p class="ap-fhint" style="margin-top:6px">O Score exige um número. Hoje seus critérios somam 100 pontos.</p></div>';
+      } else if (draft.destino === 'resumo') {
+        h += '<div class="ap-field"><span class="ap-flabel">Formato no Resumo</span>' +
+             '<div class="ap-chips">' +
+             '<button class="ap-chip" type="button" aria-pressed="true">Lista <small>com status por item</small></button>' +
+             '<button class="ap-chip" type="button" aria-pressed="false">Texto <small>um parágrafo</small></button>' +
+             '</div><p class="ap-fhint" style="margin-top:8px">O Resumo não aceita número solto: precisa de algo legível.</p></div>';
+      }
+
+      h += '<div class="ap-field"><span class="ap-flabel">Informações que ele extrai</span>' +
+           '<p class="ap-fhint">Cada variável é extraída uma vez e reaproveitada por quem precisar dela.</p>';
+      if (draft.vars.length) {
+        draft.vars.forEach(function (k) {
+          var v = VARS[k];
+          var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; }).length;
+          h += '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
+               '<span class="ap-tag type">' + v.tipo + '</span>' +
+               '<span class="meta">' + v.fonte + ' · ' + v.v + '</span>' +
+               '<span class="ap-money">' + (v.custo ? 'R$ ' + v.custo.toFixed(2).replace('.', ',') : 'sem custo') + '</span></div>';
+          if (usos > 1) {
+            h += '<p class="ap-fhint" style="margin:4px 0 0">Essa variável é usada por outros ' + (usos - 1) +
+                 ' agente(s). Mudar a extração dela muda o resultado deles também.</p>';
+          }
+        });
+      } else {
+        h += '<p class="ap-fhint">Este critério usa dados que a Settle já tem, sem custo de extração.</p>';
+      }
+      h += '</div>';
+
+      h += '<div class="ap-field"><span class="ap-flabel">Escopo e agregação</span>' +
+           '<div class="ap-locked"><span class="k">Roda</span>' +
+           '<span class="v">Uma vez por licitação. Escopo por item ou por componente existe no modelo e é o que a Análise técnica vai usar, mas ainda não está liberado aqui.</span></div>' +
+           '<div class="ap-locked" style="margin-top:8px"><span class="k">Agregação</span>' +
+           '<span class="v">Não se aplica: com uma execução por licitação, não há N resultados para juntar.</span></div></div>';
+
+      document.getElementById('mBody').innerHTML = h;
+
+      document.getElementById('fInstr').addEventListener('input', function (e) {
+        draft.instr = e.target.value; draft.mudou.instr = true;
+      });
+      var pts = document.getElementById('fPts');
+      if (pts) pts.addEventListener('input', function (e) {
+        draft.pontos = parseInt(e.target.value, 10) || 0; draft.mudou.pontos = true;
+      });
+      document.querySelectorAll('[data-dest]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          draft.destino = b.dataset.dest; draft.mudou.destino = true;
+          pintarForm();
+        });
+      });
+      atualizarRodape();
+    }
+
+    function fluxoHTML() {
+      var h = '<div class="ap-node"><span class="k">Extrai</span>Esfera do órgão · portal, sem custo</div>' +
+              '<div class="ap-conn" aria-hidden="true"></div>' +
+              '<div class="ap-node"><span class="k">Decide</span>Qual a esfera?</div>' +
+              '<div class="ap-branches">' +
+              '<div class="ap-branch"><b>Federal</b><br>Não existe CAPAG federal: 0 ponto, com nota no Resumo</div>' +
+              '<div class="ap-branch"><b>Estadual</b><br>Usa a CAPAG estadual</div>' +
+              '<div class="ap-branch"><b>Municipal</b><br>Usa a CAPAG municipal</div>' +
+              '</div><div class="ap-conn" aria-hidden="true"></div>' +
+              '<div class="ap-node"><span class="k">Pontua</span>CAPAG A ou B soma ' + (draft.pontos || 10) + ', C ou D soma 0</div>';
+      return h;
+    }
+
+    document.getElementById('btnFluxo').addEventListener('click', function () {
+      vistaFluxo = !vistaFluxo; pintarForm();
+    });
+
+    /* ---------- revisão ---------- */
+
+    function detectarLacunas() {
+      var t = (draft.instr || '').toLowerCase();
+      var L = [];
+      if (/capag/.test(t) && !/federal/.test(t)) {
+        L.push({ id:'federal', label:'Se o órgão for federal',
+          q:'E quando o órgão for federal?',
+          why:'CAPAG só existe para estado e município. Isso não é informação faltando, é pergunta que não se aplica, e o Resumo mostra os dois casos de formas diferentes.',
+          ops:['Não pontuar e mostrar "não se aplica"','Pontuar como se fosse favorável'] });
+      }
+      if (draft.risco) {
+        // A operação já mostrou que o tratamento atual falha. A revisão reabre a
+        // decisão mesmo sem o usuário ter mexido na instrução.
+        L.push({ id:'semdado', label:'Quando não encontrar',
+          q:'Hoje, quando não encontro essa informação, eu somo os pontos assim mesmo. Mantenho?',
+          why:'Foi assim que este critério somou 15 pontos nesta licitação, sem ter achado a exigência. Em 3 das últimas 10 análises ela estava em anexo separado, ou seja, existia e eu não vi.',
+          ops:['Não pontuar e sinalizar para revisão','Não pontuar em silêncio','Manter como está'] });
+      } else if (!draft.ausencia || draft.mudou.instr) {
+        L.push({ id:'semdado', label:'Quando não encontrar',
+          q:'O que eu faço quando não encontrar essa informação?',
+          why:'Este agente roda sozinho. Não encontrar não é a mesma coisa que a resposta ser negativa, e quem lê o resultado depois não tem como saber a diferença.',
+          ops:['Não pontuar e sinalizar para revisão','Não pontuar em silêncio','Somar os pontos mesmo assim'] });
+      }
+      if (draft.mudou.destino) {
+        L.push({ id:'destino', label:'Mudança de destino',
+          q:'Você mudou onde o resultado aparece. Confirma o novo formato?',
+          why:'O destino define o que a regra devolve. Sair do Score significa que este critério deixa de somar pontos.',
+          ops:['Confirmo','Voltar para o Score'] });
+      }
+      return L;
+    }
+
+    function pintarRevisao() {
+      etapa = 'revisao';
+      document.getElementById('btnVoltar').hidden = false;
+      document.getElementById('btnFluxo').hidden = true;
+      var pend = lacunas.filter(function (l) { return !draft.mudou['ans_' + l.id]; }).length;
+      document.getElementById('btnAvancar').textContent = 'Pré-visualizar em 3 licitações';
+      document.getElementById('btnAvancar').disabled = pend > 0;
+
+      var h = '<p class="ap-fhint">Li a regra e encontrei ' + lacunas.length +
+              ' ponto(s) em aberto. Enquanto não forem resolvidos eu teria que decidir sozinho.</p>';
+      lacunas.forEach(function (l) {
+        var r = draft.mudou['ans_' + l.id];
+        h += '<div class="ap-gap' + (r ? ' done' : '') + '">' +
+             '<div class="ap-gap-q">' + l.q + '</div><div class="ap-gap-why">' + l.why + '</div>' +
+             (r ? '<div class="ap-gap-ans">' + r + '</div>'
+                : '<div class="ap-chips">' + l.ops.map(function (o) {
+                    return '<button class="ap-chip" type="button" data-lac="' + l.id + '" data-op="' + o.replace(/"/g, '&quot;') + '">' + o + '</button>';
+                  }).join('') + '</div>') +
+             '</div>';
+      });
+      if (pend === 0) h += finalHTML();
+      document.getElementById('mBody').innerHTML = h;
+      document.querySelectorAll('[data-lac]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          draft.mudou['ans_' + b.dataset.lac] = b.dataset.op;
+          pintarRevisao();
+        });
+      });
+      atualizarRodape();
+    }
+
+    function finalHTML() {
+      var d = DESTINOS[draft.destino];
+      var li = ['<b>Aparece em:</b> ' + d.nome + ', como ' + d.tipo,
+                '<b>Roda:</b> ' + draft.gatilho + ', uma vez por licitação'];
+      if (draft.vars.length) {
+        li.push('<b>Extrai:</b> ' + draft.vars.map(function (k) { return VARS[k].nome + ' (' + VARS[k].v + ')'; }).join(', '));
+      }
+      lacunas.forEach(function (l) { li.push('<b>' + l.label + ':</b> ' + draft.mudou['ans_' + l.id]); });
+      return '<div class="ap-final"><b>Regra final</b><br>' + draft.instr +
+             '<ul><li>' + li.join('</li><li>') + '</li></ul></div>';
+    }
+
+    /* ---------- pré-visualização ---------- */
+
+    var LICS = [
+      { ed:'PE 90014/2026', org:'Secretaria de Estado da Saúde de MG · estadual', atual:true },
+      { ed:'PE 00023/2026', org:'Prefeitura Municipal de Itapevi/SP · municipal' },
+      { ed:'PE 90112/2026', org:'Tribunal Regional Federal da 4ª Região · federal', federal:true }
+    ];
+
+    /* O caso de cada licitação depende do agente em edição: a licitação atual
+       reflete o que realmente aconteceu nela, e o caso federal só existe para
+       quem usa a variável CAPAG. */
+    function casoDaLic(l) {
+      if (l.atual) return draft.risco ? 'semdado' : 'ok';
+      if (l.federal) return draft.vars.indexOf('capag') >= 0 ? 'federal' : 'ok';
+      return 'semdado';
+    }
+
+    function pintarPreview() {
+      etapa = 'preview';
+      document.getElementById('btnAvancar').textContent = 'Salvar e aplicar';
+      document.getElementById('btnAvancar').disabled = false;
+      var p = draft.pontos || 10;
+      var h = '<p class="ap-fhint">Rodei em três licitações reais, sem alterar nada nelas.</p>';
+      LICS.forEach(function (l) {
+        var v, cls, why, caso = casoDaLic(l);
+        if (caso === 'ok') { v = '+' + p; cls = 'ap-ok'; why = 'Atende ao que você definiu como favorável.'; }
+        else if (caso === 'semdado') {
+          var r = draft.mudou.ans_semdado || '';
+          if (/mesmo assim|Manter como está/.test(r)) { v = '+' + p; cls = 'ap-warn'; why = 'Informação não encontrada, e a regra soma os pontos assim mesmo.'; }
+          else if (/silêncio/.test(r)) { v = '0'; cls = 'ap-dim'; why = 'Informação não encontrada. Não pontua e ninguém fica sabendo.'; }
+          else { v = '0'; cls = 'ap-warn'; why = 'Informação não encontrada. Aparece sinalizada para revisão manual.'; }
+        } else {
+          var f = draft.mudou.ans_federal || '';
+          if (/favorável/.test(f)) { v = '+' + p; cls = 'ap-dim'; why = 'Órgão federal. Pela sua escolha, pontua assim mesmo.'; }
+          else { v = '0'; cls = 'ap-dim'; why = 'Órgão federal: a pergunta não se aplica, e o Resumo diz isso em vez de mostrar zero seco.'; }
+        }
+        h += '<div class="ap-prev"><div class="ap-prev-main"><div class="ap-prev-ed">' + l.ed +
+             (l.atual ? ' <span class="tag-light">esta licitação</span>' : '') + '</div>' +
+             '<div class="ap-prev-org">' + l.org + '</div>' +
+             '<div class="ap-prev-why">' + why + '</div></div>' +
+             '<div class=' + JSON.stringify('ap-prev-v ' + cls) + '>' + (draft.destino === 'score' ? v : 'ok') + '</div></div>';
+      });
+      h += finalHTML();
+      document.getElementById('mBody').innerHTML = h;
+      atualizarRodape();
+    }
+
+    /* ---------- salvar ---------- */
+
+    function salvar() {
+      var orig = acharAgente(draft.id);
+      var antes = { pontos:orig.pontos, ganhos:orig.ganhos, instr:orig.instr, destino:orig.destino,
+                    estado:orig.estado, risco:orig.risco, ausencia:orig.ausencia, prov:orig.prov };
+      orig.instr = draft.instr;
+      orig.destino = draft.destino;
+      if (draft.pontos !== null) orig.pontos = draft.pontos;
+      var r = draft.mudou.ans_semdado;
+      if (r) {
+        var mantem = /mesmo assim|Manter como está/.test(r);
+        orig.ausencia = mantem ? 'soma os pontos mesmo sem encontrar'
+                      : (/silêncio/.test(r) ? 'não pontua, sem sinalizar' : 'não pontua e sinaliza para revisão');
+        if (!mantem && orig.id === 'ate') {
+          orig.ganhos = 0; orig.estado = 'run'; orig.risco = null;
+          orig.prov = 'Não encontrado no edital, sinalizado para revisão';
+        }
+      }
+      pintarCrits(); pintarAgentes(); pintarVars();
+      fechar();
+      settleToast('Regra atualizada e score recalculado', {
+        undoLabel:'Desfazer',
+        onUndo:function () { Object.keys(antes).forEach(function (k) { orig[k] = antes[k]; });
+                             pintarCrits(); pintarAgentes(); pintarVars(); }
+      });
+    }
+
+    /* ---------- navegação ---------- */
+
+    document.getElementById('btnAvancar').addEventListener('click', function () {
+      if (etapa === 'form') { lacunas = detectarLacunas(); pintarRevisao(); }
+      else if (etapa === 'revisao') { pintarPreview(); }
+      else { salvar(); }
+    });
+    document.getElementById('btnVoltar').addEventListener('click', function () {
+      if (etapa === 'revisao') pintarForm(); else pintarRevisao();
+    });
+    document.getElementById('btnFechar').addEventListener('click', fechar);
+    document.getElementById('ovl').addEventListener('click', fechar);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('modal').hidden) fechar();
+    });
+
+    /* ---------- boot ---------- */
+    pintarCrits(); pintarAgentes(); pintarVars();
+  })();
+  </script>
+</body>
+</html>
