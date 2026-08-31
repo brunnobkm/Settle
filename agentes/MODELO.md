@@ -26,7 +26,8 @@ O que muda de uma análise para outra são os valores em cada elo.
 - `escopo`: por licitação, por item, por componente ou por documento. Define quantas vezes roda.
 - `gatilho`: entrou no match, enviada para análise, documento novo, sob demanda.
 - `fontes`: portal, edital, TR, anexos, documentos da empresa, bases externas.
-- `variáveis`: o que extrai, cada uma tipada (número, texto, lista, categoria, booleano).
+- `variáveis`: o que extrai, cada uma tipada (número, texto, lista, categoria, booleano)
+  **ou calculada**, ver abaixo.
 
 **O que ele decide**
 - `regra`: pontuar, classificar, filtrar, listar ou redigir.
@@ -42,6 +43,38 @@ O que muda de uma análise para outra são os valores em cada elo.
 Ausência já tem vocabulário definido no Resumo (FOUND / NOT_FOUND / OTHER). Não criar um
 segundo. Consequência prática: licitação federal na regra de CAPAG é OTHER, não NOT_FOUND.
 Não é que a informação faltou, é que a pergunta não se aplica.
+
+## Variável calculada
+
+Caso trazido pela Larissa em 31/08: "Peso total estimado de polpa (kg)" não sai de um trecho
+do edital, sai da **soma da quantidade de N itens** da tabela. Ela pediu duas coisas: marcar
+que aquilo é uma conta, e ajudar o cliente quando a conta está errada ou incompleta.
+
+Isso é uma dimensão que faltava. A agregação não acontece só no resultado da análise (o status
+do item na análise técnica): ela acontece **dentro da variável**.
+
+Uma variável calculada tem:
+
+| Campo | Exemplo |
+|---|---|
+| `operação` | soma, contagem, média, máximo |
+| `campo` | quantidade |
+| `critério` | itens cujo objeto é veículo leve |
+| `parcelas` | uma linha por item que entrou, com valor e origem |
+| `pendências` | parcela suspeita e item não extraído |
+
+**Por que a interface precisa mudar por causa disso**
+
+1. O valor não pode aparecer como número solto. Precisa dizer que é conta e de quantas parcelas.
+2. A memória de cálculo precisa ser visível: quais itens entraram, com quanto e de onde.
+3. O cliente precisa poder **derrubar uma parcela errada** (o caso do trecho que juntou a
+   quantidade com o valor unitário e virou 480 em vez de 4) e **informar o que não foi
+   extraído** (quantidade que estava numa imagem).
+4. Cada correção recalcula o total e pode mudar a faixa: no protótipo, informar o item que
+   faltava leva de 48 para 60 veículos e o score de 78 para 83.
+
+A proveniência aqui é plural: são N trechos, não um. Isso vale para toda variável calculada,
+e é o mesmo padrão do "peso total de polpa" e da "quantidade de veículos".
 
 ## O destino manda no formato
 
@@ -113,6 +146,7 @@ nascerem, a análise técnica só entra por reescrita ou gambiarra.
 | Campo | V1 | Interface |
 |---|---|---|
 | gatilho, fontes, variáveis, regra | implementa | visível e editável |
+| variável calculada e memória de cálculo | implementa | marcação de "cálculo" mais painel de parcelas com correção |
 | tipo de saída e destino | implementa | destino visível, tipo é consequência |
 | ausência em três estados | implementa | pergunta obrigatória antes de ativar |
 | proveniência | implementa | no resultado, como no Resumo |

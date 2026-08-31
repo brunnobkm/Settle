@@ -427,7 +427,22 @@
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
       atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
       subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Termo de Referência',         v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
-      qtdveic:   { nome:'Quantidade de veículos',   tipo:'número',    fonte:'Termo de Referência',         v:'v1', custo:0.05, ausencia:'mantém no match' },
+      qtdveic:   { nome:'Quantidade total de veículos', tipo:'calculada', fonte:'TR, quadro de quantitativos', v:'v1', custo:0.05,
+                   ausencia:'não pontua e sinaliza',
+                   /* Variável que não sai de um trecho: sai de uma conta sobre vários.
+                      Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
+                   calc:{ operacao:'soma', campo:'quantidade', unidade:'veículos',
+                     criterio:'itens cujo objeto é veículo leve para locação',
+                     parcelas:[
+                       { item:'Item 1',  desc:'Veículo hatch 1.0, 4 portas',      qtd:24, onde:'TR 5.2, quadro de quantitativos', on:true },
+                       { item:'Item 2',  desc:'Veículo SUV 4x4 diesel',           qtd:6,  onde:'TR 6.1, quadro de quantitativos', on:true },
+                       { item:'Item 3',  desc:'Van de 15 lugares',                qtd:4,  onde:'TR 7.1, quadro de quantitativos', on:true },
+                       { item:'Item 7',  desc:'Utilitário leve tipo furgão',      qtd:9,  onde:'TR 10.3, quadro de quantitativos', on:true },
+                       { item:'Item 9',  desc:'Picape cabine dupla',              qtd:5,  onde:'TR 12.1, quadro de quantitativos', on:true },
+                       { item:'Item 11', desc:'Veículo de representação',         qtd:480, onde:'TR 14.2, linha quebrada em duas páginas', on:false,
+                         suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
+                     ],
+                     faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
       docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',             v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
       componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Termo de Referência',         v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
       especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'TR + catálogo da empresa',     v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
@@ -436,16 +451,16 @@
     var AGENTES = [
       { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Compare o objeto e os itens da licitação com os segmentos cadastrados da empresa.',
-        vars:[], pontos:25, ganhos:25, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
         dado:'2 segmentos em comum: locação de frota, gestão de frota',
-        regraTexto:'Cada segmento em comum soma 12,5, até o teto de 25',
+        regraTexto:'Cada segmento em comum soma 10, até o teto de 20',
         prov:'Objeto: locação de veículos automotores, sem motorista', sistema:true, ramifica:false },
 
       { id:'val',  nome:'Valor estimado da licitação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Pontue por faixa de valor global estimado: até R$ 1 mi vale 5, de R$ 1 mi a R$ 5 mi vale 10, acima de R$ 5 mi vale 20.',
-        vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:15, ganhos:15, estado:'run', gatilho:'Ao enviar para análise', custo:0,
         dado:'R$ 8.240.000,00',
-        regraTexto:'Até R$ 1 mi soma 5 · de R$ 1 mi a R$ 5 mi soma 10 · acima de R$ 5 mi soma 20',
+        regraTexto:'Até R$ 1 mi soma 5 · de R$ 1 mi a R$ 5 mi soma 10 · acima de R$ 5 mi soma 15',
         prov:'Valor global estimado no portal: R$ 8.240.000,00', sistema:true, ramifica:true },
 
       { id:'ate',  nome:'Exigência de atestado de capacidade técnica', destino:'score', escopo:'licitacao', agregacao:null,
@@ -482,10 +497,18 @@
 
       { id:'meepp', nome:'Participação exclusiva ME/EPP', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se a licitação for exclusiva para ME/EPP, some 10 pontos.',
-        vars:[], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:5, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
         dado:'ampla concorrência',
-        regraTexto:'Exclusiva para ME/EPP soma 10 · ampla concorrência soma 0',
+        regraTexto:'Exclusiva para ME/EPP soma 5 · ampla concorrência soma 0',
         prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
+
+      { id:'frota', nome:'Porte da frota exigida', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Some a quantidade de todos os itens de veículo leve e pontue pela faixa.',
+        vars:['qtdveic'], pontos:15, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.05,
+        dado:'48 veículos', dadoCalc:true,
+        regraTexto:'Até 20 veículos soma 0 · de 21 a 50 soma 10 · acima de 50 soma 15',
+        prov:'Somado de 5 itens do quadro de quantitativos', ramifica:true,
+        ausencia:'não pontua e sinaliza' },
 
       { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
         instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
@@ -631,9 +654,15 @@
         ? '<span class="ap-dim">—</span>'
         : a.ganhos + '<span class="ap-dim">/' + a.pontos + '</span>';
       var risco = a.risco ? '<div class="ap-risk"><b>Vale conferir</b>' + a.risco + '</div>' : '';
+      var calc = a.dadoCalc ? calcDe(a) : null;
+      var marca = calc
+        ? '<span class="badge-calc">cálculo · soma de ' + calc.parcelas.filter(function (x) { return x.on; }).length + ' itens</span>'
+        : '';
+      var pend = calc ? pendenciasDa(calc) : 0;
       var dado = a.dado
-        ? '<div class="ap-dado' + (a.dadoRuim ? ' ruim' : '') + '">' + a.dado +
-          (a.dadoQualif ? '<span class="q">' + a.dadoQualif + '</span>' : '') + '</div>'
+        ? '<div class="ap-dado' + (a.dadoRuim ? ' ruim' : '') + '">' + a.dado + marca +
+          (a.dadoQualif ? '<span class="q">' + a.dadoQualif + '</span>' : '') +
+          (pend ? '<span class="q ap-warn">' + pend + ' ponto(s) da conta precisam da sua conferência</span>' : '') + '</div>'
         : '';
       return '<div class="ap-crit" id="crit-' + a.id + '">' +
         '<div class="ap-crit-main">' +
@@ -644,11 +673,13 @@
           (a.regraTexto ? '<div class="ap-crit-sub"><b>Regra:</b> ' + a.regraTexto + '</div>' : '') +
           risco +
           '<div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap">' +
+            (calc ? '<button class="ap-linkbtn" type="button" data-conta="' + a.id + '">Ver a conta</button>' : '') +
             '<button class="ap-linkbtn" type="button" data-why="' + a.id + '">De onde saiu</button>' +
             '<button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a regra</button>' +
             '<button class="ap-linkbtn" type="button" data-ensinar="' + a.id + '">Está errado</button>' +
           '</div>' +
           '<div class="ap-why" id="why-' + a.id + '" hidden></div>' +
+          '<div id="conta-' + a.id + '" hidden></div>' +
         '</div>' +
         '<div class="ap-pts' + (a.ganhos === 0 ? ' zero' : '') + '">' + pts + '</div>' +
       '</div>';
@@ -683,8 +714,25 @@
       box.querySelectorAll('[data-edit]').forEach(function (b) {
         b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
       });
+      box.querySelectorAll('[data-conta]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var a = acharAgente(b.dataset.conta), el = document.getElementById('conta-' + a.id);
+          if (el.hidden) { el.innerHTML = contaHTML(a); el.hidden = false; ligarConta(a);
+                           b.textContent = 'Esconder a conta'; contasAbertas[a.id] = true; }
+          else { el.hidden = true; b.textContent = 'Ver a conta'; contasAbertas[a.id] = false; }
+        });
+      });
       box.querySelectorAll('[data-ensinar]').forEach(function (b) {
         b.addEventListener('click', function () { ensinar(acharAgente(b.dataset.ensinar)); });
+      });
+
+      Object.keys(contasAbertas).forEach(function (id) {
+        if (!contasAbertas[id]) return;
+        var a = acharAgente(id), el = document.getElementById('conta-' + id);
+        if (!a || !el) return;
+        el.innerHTML = contaHTML(a); el.hidden = false; ligarConta(a);
+        var b = box.querySelector('[data-conta="' + id + '"]');
+        if (b) b.textContent = 'Esconder a conta';
       });
 
       var soma = AGENTES.filter(function (a) { return a.pontos !== null; })
@@ -693,6 +741,99 @@
         .reduce(function (t, a) { return t + a.pontos; }, 0);
       document.getElementById('scoreNum').innerHTML = soma + ' <small>de ' + max + '</small>';
       document.getElementById('scoreFill').style.width = Math.round(soma / max * 100) + '%';
+    }
+
+    /* =====================================================================
+       VARIÁVEL CALCULADA
+       Feedback da Larissa (31/08): existe variável que não vem de um trecho,
+       vem de uma conta sobre vários. A tela precisa dizer que é conta, mostrar
+       as parcelas e deixar o cliente completar o que faltou e derrubar o que
+       veio errado.
+       ===================================================================== */
+
+    var contasAbertas = {};
+
+    function calcDe(a) {
+      var k = (a.vars || []).filter(function (x) { return VARS[x] && VARS[x].calc; })[0];
+      return k ? VARS[k].calc : null;
+    }
+
+    function pendenciasDa(calc) {
+      return calc.parcelas.filter(function (p) { return p.suspeito; }).length + calc.faltando.length;
+    }
+
+    function totalDe(calc) {
+      return calc.parcelas.filter(function (p) { return p.on; })
+        .reduce(function (t, p) { return t + p.qtd; }, 0);
+    }
+
+    function faixaDaFrota(n) {
+      return n > 50 ? 15 : (n > 20 ? 10 : 0);
+    }
+
+    function recalcularFrota() {
+      var a = acharAgente('frota'), calc = calcDe(a);
+      var t = totalDe(calc);
+      a.dado = t.toLocaleString('pt-BR') + ' veículos';
+      a.ganhos = faixaDaFrota(t);
+      pintarCrits();
+    }
+
+    function contaHTML(a) {
+      var calc = calcDe(a), t = totalDe(calc);
+      var h = '<div class="memo"><div class="memo-top">' +
+        'Esta variável <b>não é um trecho do edital, é uma conta</b>. Ela soma a <b>' + calc.campo +
+        '</b> dos ' + calc.criterio + '. Confira as parcelas: o que estiver errado aqui vira nota errada.' +
+        '</div><table class="dt"><thead><tr>' +
+        '<th scope="col">Item</th><th scope="col">Objeto</th><th scope="col">Quantidade</th>' +
+        '<th scope="col">Onde estava</th><th scope="col">Entra na conta</th></tr></thead><tbody>';
+
+      calc.parcelas.forEach(function (p, i) {
+        h += '<tr class="' + (p.suspeito ? 'sus' : (p.on ? '' : 'off')) + '">' +
+          '<td>' + p.item + '</td><td style="white-space:normal">' + p.desc +
+          (p.suspeito ? '<br><span class="ap-warn">' + p.suspeito + '</span>' : '') + '</td>' +
+          '<td class="n">' + p.qtd.toLocaleString('pt-BR') + '</td>' +
+          '<td style="white-space:normal">' + p.onde + '</td>' +
+          '<td><button class="ap-mini" type="button" data-toggle="' + i + '">' +
+            (p.on ? 'Remover' : 'Incluir') + '</button></td></tr>';
+      });
+
+      calc.faltando.forEach(function (f, j) {
+        h += '<tr class="off"><td>' + f.item + '</td>' +
+          '<td style="white-space:normal">' + f.desc + '<br><span class="ap-warn">Não consegui extrair: ' + f.motivo + '</span></td>' +
+          '<td class="ap-dim">sem valor</td><td class="ap-dim">não localizado</td>' +
+          '<td><button class="ap-mini" type="button" data-add="' + j + '">Informar</button></td></tr>';
+      });
+
+      h += '</tbody></table><div class="memo-foot">' +
+        '<span class="ap-fhint" style="margin:0">Faixa aplicada: ' + a.regraTexto + '</span>' +
+        '<span class="memo-total">' + t.toLocaleString('pt-BR') + ' ' + calc.unidade +
+        ' · ' + faixaDaFrota(t) + ' pontos</span></div></div>';
+      return h;
+    }
+
+    function ligarConta(a) {
+      var calc = calcDe(a), el = document.getElementById('conta-' + a.id);
+      el.querySelectorAll('[data-toggle]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var p = calc.parcelas[parseInt(b.dataset.toggle, 10)];
+          p.on = !p.on;
+          if (p.on && p.suspeito) {
+            settleToast('Item incluído mesmo com a quantidade suspeita');
+          }
+          recalcularFrota();
+        });
+      });
+      el.querySelectorAll('[data-add]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var f = calc.faltando[parseInt(b.dataset.add, 10)];
+          var qtd = 12; // no protótipo o valor vem preenchido para não pedir digitação
+          calc.parcelas.push({ item:f.item, desc:f.desc, qtd:qtd, onde:'informado por você em 31/08', on:true });
+          calc.faltando.splice(parseInt(b.dataset.add, 10), 1);
+          recalcularFrota();
+          settleToast(f.item + ' entrou na conta com ' + qtd + ' veículos');
+        });
+      });
     }
 
     function acharAgente(id) {
