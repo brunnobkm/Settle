@@ -336,14 +336,14 @@
         <div class="datatable">
           <div class="dt-top">
             <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip">6</span></div>
-            <div class="dt-total">Custo no mês: <b>R$ 31,80</b></div>
+            <div class="dt-total" data-col="custo" hidden>Custo no mês: <b>R$ 31,80</b></div>
           </div>
           <table class="dt">
             <thead>
               <tr>
                 <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Fonte</th>
                 <th scope="col">Usada por</th><th scope="col">Versão</th>
-                <th scope="col">Custo</th><th scope="col">Se não encontrar</th>
+                <th scope="col" data-col="custo" hidden>Custo</th><th scope="col">Se não encontrar</th>
               </tr>
             </thead>
             <tbody id="rowsVars"></tbody>
@@ -424,6 +424,13 @@
        Cada agente carrega escopo e agregação mesmo quando não usa, para que
        análise técnica (escopo componente + agregação) entre sem reescrita.
        ===================================================================== */
+
+    /* Custo por execução saiu da interface em 31/08, até a Alice confirmar em que
+       lugar ele deve aparecer. Os valores continuam no modelo: basta virar para
+       true para tudo voltar. */
+    var MOSTRAR_CUSTO = false;
+
+    function moeda(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
 
     var DESTINOS = {
       score:  { nome:'Score',        tipo:'número',            escopos:['licitacao'], nota:'Vira um critério com pontuação.' },
@@ -637,7 +644,8 @@
         '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
         '<div class="alert-title">Conformidade técnica do item · roda por componente</div>' +
         '<div class="alert-description"><p>15 componentes descobertos em 3 itens, a partir do Termo de Referência. ' +
-        'Custo nesta licitação: R$ ' + custo.toFixed(2).replace('.', ',') + ', contra R$ 0,03 de um agente que rodasse uma vez só. ' +
+        (MOSTRAR_CUSTO ? 'Custo nesta licitação: ' + moeda(custo) + ', contra ' + moeda(0.03) + ' de um agente que rodasse uma vez só. '
+                       : 'O agente roda 15 vezes aqui, contra uma vez de um agente por licitação. ') +
         '<button class="ap-linkbtn" type="button" data-edit-tec="1">Ajustar o agente</button></p></div></div>';
 
       ITENS.forEach(function (it) {
@@ -846,7 +854,8 @@
           '<p class="ap-fhint" style="margin:10px 0 12px">Esta licitação ainda não foi enviada para análise. ' +
           'Os agentes só rodam quando você envia, para você não pagar por licitação que vai descartar na triagem.</p>' +
           '<button class="btn btn-primary" type="button" id="btnEnviar">Enviar para análise</button>' +
-          '<p class="ap-fhint" style="margin-top:10px">Custo estimado: R$ 0,59 nesta licitação, somando as quatro análises.</p>';
+          (MOSTRAR_CUSTO ? '<p class="ap-fhint" style="margin-top:10px">Custo estimado: ' + moeda(0.59) +
+            ' nesta licitação, somando as quatro análises.</p>' : '');
         el.querySelector('#btnEnviar').addEventListener('click', function () {
           setEstado('calculando');
           settleToast('Enviada para análise. Os agentes começaram a rodar.');
@@ -886,7 +895,7 @@
         '<div class="ap-bar"><i id="scoreFill" style="width:' + Math.round(soma / max * 100) + '%"></i></div>' +
         '<p class="ap-fhint" style="margin:8px 0 0">Calculado em 26/08 às 09:12, com ' +
         AGENTES.filter(aplicavel).filter(function (a) { return a.pontos !== null; }).length +
-        ' regras aplicáveis. Custo desta análise: R$ 0,19.</p>' +
+        ' regras aplicáveis.' + (MOSTRAR_CUSTO ? ' Custo desta análise: ' + moeda(0.19) + '.' : '') + '</p>' +
         (fora ? '<p class="ap-fhint ap-warn" style="margin-top:6px">' + fora +
           ' pontos não se aplicam a esta licitação, então saíram do total. ' +
           '<button class="ap-linkbtn" type="button" id="verFora">Ver quais</button></p>' : '');
@@ -1033,7 +1042,7 @@
           '<span class="ap-card-foot">' +
             '<span class="ap-tag ' + (a.estado === 'warn' ? 'warn' : 'run') + '">' + a.gatilho + '</span>' +
             '<span class="ap-tag type">' + d.nome + ' · ' + d.tipo + '</span>' +
-            '<span class="ap-money">R$ ' + a.custo.toFixed(2).replace('.', ',') + '</span>' +
+            (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(a.custo) + '</span>' : '') +
           '</span>';
         el.addEventListener('click', function () { abrir(a); });
         g.appendChild(el);
@@ -1047,7 +1056,7 @@
           .map(function (a) { return a.nome; });
         return '<tr><td><b>' + v.nome + '</b></td><td>' + v.tipo + '</td><td>' + v.fonte + '</td>' +
           '<td>' + (usos.length ? usos.length + ' agente(s)' : '<span class="ap-dim">ninguém</span>') + '</td>' +
-          '<td>' + v.v + '</td><td>' + (v.custo ? 'R$ ' + v.custo.toFixed(2).replace('.', ',') : 'sem custo') + '</td>' +
+          '<td>' + v.v + '</td>' + (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
           '<td>' + v.ausencia + '</td></tr>';
       }).join('');
     }
@@ -1210,12 +1219,11 @@
       var un = custoDoDraft(), txt;
       if (draft.escopo === 'componente') {
         var n = ITENS.reduce(function (t, i) { return t + i.comps.length; }, 0);
-        txt = 'Custo: R$ ' + un.toFixed(2).replace('.', ',') + ' por componente · ' + n +
-              ' componentes nesta licitação, R$ ' + (un * n).toFixed(2).replace('.', ',') +
-              ' · cerca de R$ ' + (un * n * 148).toFixed(2).replace('.', ',') + ' por mês';
+        txt = MOSTRAR_CUSTO
+          ? 'Custo: ' + moeda(un) + ' por componente · ' + n + ' componentes nesta licitação, ' + moeda(un * n)
+          : 'Roda ' + n + ' vezes nesta licitação, uma por componente';
       } else {
-        txt = 'Custo: R$ ' + un.toFixed(2).replace('.', ',') + ' por licitação · cerca de R$ ' +
-              (un * 148).toFixed(2).replace('.', ',') + ' por mês';
+        txt = MOSTRAR_CUSTO ? 'Custo: ' + moeda(un) + ' por licitação' : 'Roda uma vez por licitação';
       }
       document.getElementById('mCusto').textContent = txt;
       document.getElementById('btnFluxo').hidden = !(etapa === 'form' && draft.ramifica);
@@ -1288,7 +1296,7 @@
           h += '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
                '<span class="ap-tag type">' + v.tipo + '</span>' +
                '<span class="meta">' + v.fonte + ' · ' + v.v + '</span>' +
-               '<span class="ap-money">' + (v.custo ? 'R$ ' + v.custo.toFixed(2).replace('.', ',') : 'sem custo') + '</span></div>';
+               (MOSTRAR_CUSTO ? '<span class="ap-money">' + (v.custo ? moeda(v.custo) : 'sem custo') + '</span>' : '') + '</div>';
           if (usos > 1) {
             h += '<p class="ap-fhint" style="margin:4px 0 0">Essa variável é usada por outros ' + (usos - 1) +
                  ' agente(s). Mudar a extração dela muda o resultado deles também.</p>';
@@ -1309,7 +1317,7 @@
       h += '<div class="ap-field" id="fieldEscopo"><span class="ap-flabel">Escopo e agregação</span>';
       if (draft.escopo === 'componente') {
         h += '<div class="ap-locked"><span class="k">Roda</span>' +
-             '<span class="v">Uma vez por <b>componente</b>. A lista de componentes não existe antes de ler o Termo de Referência: nesta licitação foram 15, em 3 itens. É isso que multiplica o custo.</span></div>' +
+             '<span class="v">Uma vez por <b>componente</b>. A lista de componentes não existe antes de ler o Termo de Referência: nesta licitação foram 15, em 3 itens. É isso que multiplica o número de execuções.</span></div>' +
              '<p class="ap-fhint" style="margin:14px 0 6px"><b>Como os componentes viram o status do item</b></p><div class="ap-chips">';
         Object.keys(AGREGACOES).forEach(function (k) {
           h += '<button class="ap-chip" type="button" data-agg="' + k + '" aria-pressed="' + (draft.agregacao === k) + '">' +
@@ -1769,7 +1777,7 @@
 
       var n = fx.blocos.length;
       document.getElementById('fxCusto').textContent = n
-        ? 'Custo: R$ ' + fxCusto().toFixed(2).replace('.', ',') + ' por licitação · ' + n + ' passo(s)'
+        ? (MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação · ' : '') + n + ' passo(s)'
         : 'Sem passos ainda';
       document.getElementById('fxValidar').disabled = !n;
       document.getElementById('fxAtivar').disabled = !n;
@@ -1856,14 +1864,13 @@
       document.getElementById('fxValidar').hidden = true;
       document.getElementById('fxAtivar').textContent = 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
-      document.getElementById('fxCusto').textContent = 'O custo depende da fonte escolhida';
+      document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO ? 'O custo depende da fonte escolhida' : '';
       document.getElementById('fxBody').innerHTML =
         '<div class="ap-field"><label for="vNome">O que você quer extrair</label>' +
         '<p class="ap-fhint">Escreva como pergunta. É assim que a Settle vai procurar no documento.</p>' +
         '<input class="ap-input" id="vNome" type="text" placeholder="Ex.: exige atestado de capacidade técnica?" /></div>' +
         '<div class="ap-field"><span class="ap-flabel">De onde vem</span><div class="ap-chips">' +
-        ['Portal de origem <small>sem custo</small>', 'Edital <small>R$ 0,02</small>',
-         'Termo de Referência <small>R$ 0,03</small>', 'Anexos <small>R$ 0,04</small>']
+        ['Portal de origem', 'Edital', 'Termo de Referência', 'Anexos']
           .map(function (o, j) { return '<button class="ap-chip" type="button" aria-pressed="' + (j === 1) + '">' + o + '</button>'; }).join('') +
         '</div></div>' +
         '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span><div class="ap-chips">' +
@@ -1940,7 +1947,7 @@
           resumo = rs.length + ' regras' + (pts ? ' · ' + pts + ' pontos no total' : '');
           custo = rs.reduce(function (t, r) { return t + r.custo; }, 0);
         } else if (an.formato === 'composicao') {
-          resumo = '1 regra, aplicada a cada componente · 15 componentes nesta licitação';
+          resumo = '1 regra, aplicada a cada componente · 15 execuções nesta licitação';
           custo = AGENTE_TEC.custo * 15;
         } else {
           resumo = '1 instrução em texto · ' + JURIDICA.vars.length + ' variáveis dentro';
@@ -1953,7 +1960,7 @@
             '<span class="ap-tag ' + (an.id === 'juridica' ? 'pause' : 'run') + '">' +
               (an.id === 'juridica' ? 'Rascunho' : an.gatilho) + '</span>' +
             '<span class="ap-tag type">' + resumo + '</span>' +
-            '<span class="ap-money">R$ ' + custo.toFixed(2).replace('.', ',') + '</span>' +
+            (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
           '</span>';
         el.addEventListener('click', function () { abrirAnalise(an); });
         g.appendChild(el);
@@ -1999,8 +2006,9 @@
         '<div class="alert-title">Por que estruturado e não texto livre</div>' +
         '<div class="alert-description"><p>Numa análise de pontuação, escolher a variável e dar a nota é mais rápido e menos ambíguo do que descrever tudo por escrito. Texto livre com variáveis dentro é o formato da análise jurídica, onde a resposta é um parecer e não um número.</p></div></div>';
 
-      document.getElementById('fxCusto').textContent =
-        'Custo: R$ ' + rs.reduce(function (t, r) { return t + r.custo; }, 0).toFixed(2).replace('.', ',') + ' por licitação';
+      document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO
+        ? 'Custo: ' + moeda(rs.reduce(function (t, r) { return t + r.custo; }, 0)) + ' por licitação'
+        : rs.length + ' regras nesta análise';
       document.getElementById('fxBody').innerHTML = h;
       document.querySelectorAll('[data-anedit]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -2083,12 +2091,13 @@
           return '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
                  '<span class="ap-tag type">' + v.tipo + '</span>' +
                  '<span class="meta">' + v.fonte + ' · ' + v.v + (usos ? ' · também usada em ' + usos + ' regra(s) do Score' : '') + '</span>' +
-                 '<span class="ap-money">R$ ' + v.custo.toFixed(2).replace('.', ',') + '</span></div>';
+                 (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(v.custo) + '</span>' : '') + '</div>';
         }).join('');
       }
       var custo = ks.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
-      document.getElementById('fxCusto').textContent =
-        'Custo: R$ ' + custo.toFixed(2).replace('.', ',') + ' por licitação · ' + ks.length + ' variáveis';
+      document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO
+        ? 'Custo: ' + moeda(custo) + ' por licitação · ' + ks.length + ' variáveis'
+        : ks.length + ' variáveis nesta instrução';
     }
 
     function salvarRange() {
@@ -2248,7 +2257,7 @@
           }},
         { t:'Ensinar a variável a olhar os anexos', faz:function () {
             bolha('bot', 'Essa é a que resolve de verdade. A variável <b>' + VARS[a.vars[0]].nome +
-              '</b> passa da v1 para a v2 e vai procurar também nos anexos, em todas as licitações e em todas as análises que usam ela. O custo dela sobe de R$ 0,04 para R$ 0,06.');
+              '</b> passa da v1 para a v2 e vai procurar também nos anexos, em todas as licitações e em todas as análises que usam ela.');
             aplicarCorrecao(a, true);
           }}
       ]);
@@ -2291,7 +2300,7 @@
         antes:function () { abaAtiva('licitacao'); } },
 
       { alvo:'#estadoDemo', titulo:'Antes de existir número',
-        texto:'O score só é calculado quando a licitação é <b>enviada para análise</b>, e não quando ela entra no match. É assim que o custo fica sob controle: nada roda no que você vai descartar na triagem.<p>Estes botões existem só no protótipo, para ver os quatro momentos: ainda não enviado, calculando com o que já ficou pronto, calculado e falhou.</p>',
+        texto:'O score só é calculado quando a licitação é <b>enviada para análise</b>, e não quando ela entra no match: nada roda no que você vai descartar na triagem.<p>Estes botões existem só no protótipo, para ver os quatro momentos: ainda não enviado, calculando com o que já ficou pronto, calculado e falhou.</p>',
         antes:function () { setEstado('pronto'); } },
 
       { alvo:'#crit-cap', titulo:'O dado extraído, não só a nota',
@@ -2336,7 +2345,7 @@
         texto:'Dá para adicionar um critério novo daqui, com esta licitação servindo de teste antes de salvar. A aba de agentes continua existindo como painel de controle, mas não é o único caminho para criar.' },
 
       { alvo:'#panel-tecnica .alert', titulo:'O mesmo modelo, em outra análise',
-        texto:'A análise técnica é o caso que quebrava o modelo. Ela roda <b>por componente</b>, e os componentes não existem antes de alguém ler o Termo de Referência: foram descobertos na execução.<p>Repare no custo: R$ 0,45 nesta licitação contra R$ 0,03 de um agente que rodasse uma vez só.</p>',
+        texto:'A análise técnica é o caso que quebrava o modelo. Ela roda <b>por componente</b>, e os componentes não existem antes de alguém ler o Termo de Referência: foram descobertos na execução.<p>São 15 execuções nesta licitação, contra uma de um agente que rodasse uma vez só.</p>',
         antes:function () { abaAtiva('tecnica'); } },
 
       { alvo:'#item-2', titulo:'Não avaliado não é não atende',
@@ -2394,8 +2403,8 @@
         antes:function () { pintarFx(); fx.blocos.splice(1, 0, { t:'decidir', sobre:'esfera', ramos:ramosDe('esfera') });
                             editando = -1; pintarFx(); } },
 
-      { alvo:'#fxCusto', titulo:'Gatilho e custo',
-        texto:'O cliente escolhe quando o agente roda, e o custo por licitação acompanha os passos de extração que ele adicionou.' },
+      { alvo:'#fxCusto', titulo:'Gatilho e passos',
+        texto:'O cliente escolhe quando o agente roda, e o rodapé acompanha os passos que ele adicionou.' },
 
       { alvo:'.ap-prev', titulo:'Validar de novo',
         texto:'Agora as três licitações passam, inclusive a federal, porque existe caminho para ela. Só então o agente é ativado e passa a rodar sozinho.',
