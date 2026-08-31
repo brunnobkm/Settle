@@ -862,3 +862,22 @@ table.items .col-seg{display:flex;gap:6px;}
 .vf-opt:hover,.vf-opt.on{background:var(--muted);}
 .vf-opt b{font-weight:600;} .vf-opt span{font-size:11.5px;color:var(--muted-foreground);}
 .vf-opt.criar{color:var(--accent-600);font-weight:600;border-top:1px solid var(--border);border-radius:0;margin-top:4px;padding-top:9px;}
+
+
+/* ==========================================================================
+   18. MEMÓRIA DE CÁLCULO
+   --------------------------------------------------------------------------
+   Para a variável que não vem de um trecho e sim de uma conta sobre vários:
+   mostra as parcelas, o que está suspeito, o que faltou e o total.
+   ========================================================================== */
+
+.badge-calc{display:inline-flex;align-items:center;gap:4px;margin-left:8px;background:var(--accent-100);
+  color:var(--accent-600);border-radius:var(--radius-badge);padding:1px 7px;font-size:11px;font-weight:600;vertical-align:middle;}
+.memo{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;}
+.memo-top{padding:10px 13px;background:var(--muted);font-size:12.5px;line-height:18px;color:var(--muted-foreground);}
+.memo-top b{color:var(--foreground);}
+.memo tr.off td{opacity:.5;}
+.memo tr.sus td{background:var(--warning-bg);}
+.memo td.n{font-variant-numeric:tabular-nums;}
+.memo-foot{display:flex;align-items:center;gap:10px;padding:10px 13px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.memo-total{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-left:auto;}
