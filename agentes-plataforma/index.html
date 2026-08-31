@@ -67,6 +67,9 @@
     .ap-crit-main{flex:1;min-width:0;}
     .ap-crit-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
     .ap-crit-sub{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:3px;}
+    .ap-dado{margin-top:5px;font-size:14px;font-weight:600;color:var(--foreground);}
+    .ap-dado.ruim{color:var(--warning);}
+    .ap-dado .q{display:block;font-size:12px;font-weight:400;color:var(--muted-foreground);margin-top:2px;}
     .ap-pts{flex:none;min-width:56px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
     .ap-pts.zero{color:var(--muted-foreground);}
     .ap-linkbtn{border:0;background:transparent;padding:0;font-family:inherit;font-size:12px;font-weight:600;color:var(--accent-600);cursor:pointer;}
@@ -299,7 +302,8 @@
       <!-- ============ AGENTES ============ -->
       <section class="ap-panel" id="panel-agentes" role="tabpanel" aria-label="Agentes" hidden>
         <p class="ap-lead" style="margin-bottom:16px">Tudo que roda sozinho nas suas licitações.
-          Nesta abordagem, é aqui que um agente nasce: você constrói o fluxo antes de ele existir na licitação.</p>
+          Cada análise é <b>um agente</b> que produz vários resultados. O Score é uma análise com 7 regras dentro,
+          e não 7 agentes soltos.</p>
         <div style="display:flex;gap:8px;margin-bottom:16px">
           <button class="btn btn-primary" type="button" id="btnNovoAgente">Novo agente</button>
           <button class="btn btn-outline" type="button" id="btnNovaVarA">Nova variável</button>
@@ -416,7 +420,11 @@
 
     var VARS = {
       esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Portal de origem',            v:'v2', custo:0,    ausencia:'não se aplica' },
-      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Base do Tesouro + Esfera',    v:'v3', custo:0.01, ausencia:'não pontua e sinaliza' },
+      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Base do Tesouro + Esfera',    v:'v3', custo:0.01, ausencia:'não pontua e sinaliza',
+                   depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
+                   excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
+      populacao: { nome:'População',                tipo:'número',    fonte:'IBGE + Esfera',               v:'v1', custo:0,    ausencia:'não pontua',
+                   depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
       atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
       subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Termo de Referência',         v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
       qtdveic:   { nome:'Quantidade de veículos',   tipo:'número',    fonte:'Termo de Referência',         v:'v1', custo:0.05, ausencia:'mantém no match' },
@@ -429,16 +437,22 @@
       { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Compare o objeto e os itens da licitação com os segmentos cadastrados da empresa.',
         vars:[], pontos:25, ganhos:25, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        dado:'2 segmentos em comum: locação de frota, gestão de frota',
+        regraTexto:'Cada segmento em comum soma 12,5, até o teto de 25',
         prov:'Objeto: locação de veículos automotores, sem motorista', sistema:true, ramifica:false },
 
       { id:'val',  nome:'Valor estimado da licitação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Pontue por faixa de valor global estimado: até R$ 1 mi vale 5, de R$ 1 mi a R$ 5 mi vale 10, acima de R$ 5 mi vale 20.',
         vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        dado:'R$ 8.240.000,00',
+        regraTexto:'Até R$ 1 mi soma 5 · de R$ 1 mi a R$ 5 mi soma 10 · acima de R$ 5 mi soma 20',
         prov:'Valor global estimado no portal: R$ 8.240.000,00', sistema:true, ramifica:true },
 
       { id:'ate',  nome:'Exigência de atestado de capacidade técnica', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Verifique se o edital exige atestado de capacidade técnica. Se não exigir, some 15 pontos.',
         vars:['atestado'], pontos:15, ganhos:15, estado:'warn', gatilho:'Ao enviar para análise', custo:0.04,
+        dado:'não encontrado', dadoRuim:true,
+        regraTexto:'Não exige soma 15 · exige soma 0',
         prov:'Nada encontrado no item 9 do edital', ramifica:false,
         ausencia:'considera que não exige e soma os pontos',
         risco:'A informação não foi encontrada, e a regra atual soma os 15 pontos mesmo assim. Em 3 das últimas 10 licitações a exigência estava em anexo separado.' },
@@ -446,28 +460,38 @@
       { id:'cap',  nome:'Saúde financeira do órgão', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Verifique a CAPAG do órgão. Se for A ou B, some 10 pontos.',
         vars:['esfera','capag'], pontos:10, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.01,
+        dado:'CAPAG B', dadoQualif:'CAPAG estadual, porque o órgão é do estado de Minas Gerais',
+        regraTexto:'A ou B soma 10 · C ou D soma 0 · federal e estatal não se aplica',
         prov:'CAPAG B, estadual, base do Tesouro de julho/2026', ramifica:true,
         ausencia:'não pontua e sinaliza para revisão' },
 
       { id:'praz', nome:'Prazo até a sessão pública', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Menos de 5 dias úteis vale 0, de 5 a 15 dias vale 8, acima de 15 dias vale 10.',
         vars:[], pontos:10, ganhos:8, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        dado:'9 dias úteis',
+        regraTexto:'Menos de 5 dias soma 0 · de 5 a 15 dias soma 8 · acima de 15 dias soma 10',
         prov:'9 dias úteis até 08/09/2026', sistema:true, ramifica:true },
 
       { id:'sub',  nome:'Permite subcontratação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se o Termo de Referência permitir subcontratação, some 10 pontos.',
         vars:['subcontr'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0.03,
+        dado:'não permite',
+        regraTexto:'Permite soma 10 · não permite soma 0',
         prov:'Item 7.3 do TR: "é vedada a subcontratação do objeto"', ramifica:false,
         ausencia:'não pontua e sinaliza para revisão' },
 
       { id:'meepp', nome:'Participação exclusiva ME/EPP', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se a licitação for exclusiva para ME/EPP, some 10 pontos.',
         vars:[], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        dado:'ampla concorrência',
+        regraTexto:'Exclusiva para ME/EPP soma 10 · ampla concorrência soma 0',
         prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
 
       { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
         instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
         vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Assim que entra no match', custo:0.06,
+        dado:'14 documentos exigidos, 11 já cadastrados na empresa',
+        regraTexto:'Lista por categoria: jurídica, fiscal, técnica e econômico-financeira',
         prov:'14 documentos extraídos do item 9 do edital', ramifica:false }
     ];
 
@@ -607,16 +631,22 @@
         ? '<span class="ap-dim">—</span>'
         : a.ganhos + '<span class="ap-dim">/' + a.pontos + '</span>';
       var risco = a.risco ? '<div class="ap-risk"><b>Vale conferir</b>' + a.risco + '</div>' : '';
+      var dado = a.dado
+        ? '<div class="ap-dado' + (a.dadoRuim ? ' ruim' : '') + '">' + a.dado +
+          (a.dadoQualif ? '<span class="q">' + a.dadoQualif + '</span>' : '') + '</div>'
+        : '';
       return '<div class="ap-crit" id="crit-' + a.id + '">' +
         '<div class="ap-crit-main">' +
           '<div class="ap-crit-name">' + a.nome +
             (a.sistema ? ' <span class="tag-light">padrão Settle</span>' : '') +
             (a.destino === 'resumo' ? ' <span class="ap-tag type">vai para o Resumo</span>' : '') + '</div>' +
-          '<div class="ap-crit-sub">' + a.prov + '</div>' +
+          dado +
+          (a.regraTexto ? '<div class="ap-crit-sub"><b>Regra:</b> ' + a.regraTexto + '</div>' : '') +
           risco +
-          '<div style="margin-top:8px;display:flex;gap:14px">' +
-            '<button class="ap-linkbtn" type="button" data-why="' + a.id + '">Por que este número</button>' +
+          '<div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap">' +
+            '<button class="ap-linkbtn" type="button" data-why="' + a.id + '">De onde saiu</button>' +
             '<button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a regra</button>' +
+            '<button class="ap-linkbtn" type="button" data-ensinar="' + a.id + '">Está errado</button>' +
           '</div>' +
           '<div class="ap-why" id="why-' + a.id + '" hidden></div>' +
         '</div>' +
@@ -625,10 +655,12 @@
     }
 
     function whyHTML(a) {
-      var h = '<b>Regra:</b> ' + a.instr;
+      var h = '<b>Instrução:</b> ' + a.instr;
       if (a.vars.length) {
-        h += '<br><b>Extraiu:</b> ' + a.vars.map(function (v) {
-          return VARS[v].nome + ' (' + VARS[v].v + ')';
+        h += '<br><b>Variáveis usadas:</b> ' + a.vars.map(function (k) {
+          var v = VARS[k], q = '';
+          if (v.depende && v.qualifica) q = ' · aqui vale ' + v.qualifica.estadual;
+          return v.nome + ' (' + v.v + ')' + q;
         }).join(', ');
       }
       if (a.ausencia) h += '<br><b>Se não encontrar:</b> ' + a.ausencia;
@@ -650,6 +682,9 @@
       });
       box.querySelectorAll('[data-edit]').forEach(function (b) {
         b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
+      });
+      box.querySelectorAll('[data-ensinar]').forEach(function (b) {
+        b.addEventListener('click', function () { ensinar(acharAgente(b.dataset.ensinar)); });
       });
 
       var soma = AGENTES.filter(function (a) { return a.pontos !== null; })
@@ -1003,6 +1038,12 @@
           why:'CAPAG só existe para estado e município. Isso não é informação faltando, é pergunta que não se aplica, e o Resumo mostra os dois casos de formas diferentes.',
           ops:['Não pontuar e mostrar "não se aplica"','Pontuar como se fosse favorável'] });
       }
+      if (/capag/.test(t) && !/estatal|economia mista/.test(t)) {
+        L.push({ id:'estatal', label:'Se o órgão for estatal',
+          q:'E quando o órgão for uma estatal ou do Sistema S?',
+          why:'CAPAG é nota de ente federativo. Petrobras, Sistema S e sociedades de economia mista não têm CAPAG, e hoje elas cairiam no mesmo balde de "não encontrado", o que é outra coisa.',
+          ops:['Não pontuar e explicar que não se aplica','Usar o histórico de pagamento do órgão na Settle'] });
+      }
       if (draft.risco) {
         // A operação já mostrou que o tratamento atual falha. A revisão reabre a
         // decisão mesmo sem o usuário ter mexido na instrução.
@@ -1148,12 +1189,12 @@
           orig.prov = 'Não encontrado no edital, sinalizado para revisão';
         }
       }
-      pintarCrits(); pintarAgentes(); pintarVars();
+      pintarCrits(); pintarAnalises(); pintarVars();
       fechar();
       settleToast('Regra atualizada e score recalculado', {
         undoLabel:'Desfazer',
         onUndo:function () { Object.keys(antes).forEach(function (k) { orig[k] = antes[k]; });
-                             pintarCrits(); pintarAgentes(); pintarVars(); }
+                             pintarCrits(); pintarAnalises(); pintarVars(); }
       });
     }
 
@@ -1393,6 +1434,8 @@
     function abrirFx(base) {
       fx = base || fxNovo();
       editando = -1;
+      document.getElementById('fxValidar').hidden = false;
+      document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Novo agente';
       document.getElementById('fxStatus').textContent = fx.ativo ? 'Ativo' : 'Rascunho';
       document.getElementById('ovl').hidden = false;
@@ -1434,7 +1477,7 @@
         vars:fx.blocos.filter(function (b) { return b.t === 'extrair'; }).map(function (b) { return b.v; }),
         pontos:10, ganhos:10, estado:'run', gatilho:GATILHOS_FX[fx.gatilho], custo:fxCusto(),
         prov:'Ativado pelo construtor de fluxo', ramifica:fx.blocos.some(function (b) { return b.t === 'decidir'; }) });
-      pintarAgentes(); pintarVars(); pintarCrits();
+      pintarAnalises(); pintarVars(); pintarCrits();
       fecharFx();
       settleToast('Agente ativado pelo construtor');
     });
@@ -1482,6 +1525,388 @@
     document.getElementById('btnNovaVarA').addEventListener('click', abrirVar);
 
 
+
+    /* =====================================================================
+       ANÁLISES
+       Uma análise é UM agente que produz N resultados. O Score é uma análise
+       com 7 regras dentro, não 7 agentes. O formato da regra segue o tipo da
+       análise: Score é estruturado, jurídica é texto com variáveis dentro.
+       ===================================================================== */
+
+    var JURIDICA = {
+      id:'juridica', nome:'Análise jurídica', formato:'texto', ativo:false,
+      gatilho:'Ao enviar para análise',
+      // o texto guarda as variáveis como objeto, não como palavra solta
+      texto:'Analise o edital e aponte risco jurídico para a nossa participação. Considere {{subcontr}} e {{atestado}}. ' +
+            'Sinalize cláusula que restrinja a competitividade, como exigência de marca ou de atestado desproporcional ao objeto.',
+      vars:['subcontr', 'atestado']
+    };
+
+    var ANALISES = [
+      { id:'score', nome:'Score', formato:'estruturado',
+        desc:'Nota de 0 a 100 que ordena a sua lista de licitações.',
+        gatilho:'Ao enviar para análise', destino:'score' },
+      { id:'resumo', nome:'Resumo', formato:'estruturado',
+        desc:'Os campos que aparecem no resumo de cada licitação.',
+        gatilho:'Assim que entra no match', destino:'resumo' },
+      { id:'tecnica', nome:'Análise técnica', formato:'composicao',
+        desc:'Compara componente a componente do Termo de Referência com o catálogo da empresa.',
+        gatilho:'Ao enviar para análise' },
+      { id:'juridica', nome:'Análise jurídica', formato:'texto',
+        desc:'Texto livre com variáveis dentro. Ainda não ativada.',
+        gatilho:'Ao enviar para análise' }
+    ];
+
+    function regrasDa(an) {
+      if (an.destino) return AGENTES.filter(function (a) { return a.destino === an.destino; });
+      return [];
+    }
+
+    function pintarAnalises() {
+      var g = document.getElementById('gridAgentes');
+      g.innerHTML = '';
+      ANALISES.forEach(function (an) {
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'ap-card' + (an.id === 'juridica' ? ' off' : '');
+        var resumo, custo;
+        if (an.formato === 'estruturado') {
+          var rs = regrasDa(an);
+          var pts = rs.reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+          resumo = rs.length + ' regras' + (pts ? ' · ' + pts + ' pontos no total' : '');
+          custo = rs.reduce(function (t, r) { return t + r.custo; }, 0);
+        } else if (an.formato === 'composicao') {
+          resumo = '1 regra, aplicada a cada componente · 15 componentes nesta licitação';
+          custo = AGENTE_TEC.custo * 15;
+        } else {
+          resumo = '1 instrução em texto · ' + JURIDICA.vars.length + ' variáveis dentro';
+          custo = JURIDICA.vars.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
+        }
+        el.innerHTML =
+          '<span class="ap-card-title">' + an.nome + '</span>' +
+          '<span class="ap-card-instr">' + an.desc + '</span>' +
+          '<span class="ap-card-foot">' +
+            '<span class="ap-tag ' + (an.id === 'juridica' ? 'pause' : 'run') + '">' +
+              (an.id === 'juridica' ? 'Rascunho' : an.gatilho) + '</span>' +
+            '<span class="ap-tag type">' + resumo + '</span>' +
+            '<span class="ap-money">R$ ' + custo.toFixed(2).replace('.', ',') + '</span>' +
+          '</span>';
+        el.addEventListener('click', function () { abrirAnalise(an); });
+        g.appendChild(el);
+      });
+    }
+
+    function abrirAnalise(an) {
+      document.getElementById('fxTitle').textContent = an.nome;
+      document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
+      document.getElementById('ovl').hidden = false;
+      document.getElementById('fxModal').hidden = false;
+      document.getElementById('fxValidar').hidden = an.formato === 'estruturado';
+      document.getElementById('fxAtivar').hidden = an.formato === 'estruturado';
+      document.getElementById('fxAtivar').disabled = false;
+
+      if (an.formato === 'texto') return pintarTextoVars();
+
+      if (an.formato === 'composicao') {
+        document.getElementById('fxModal').hidden = true;
+        document.getElementById('ovl').hidden = true;
+        abrir(AGENTE_TEC);
+        return;
+      }
+
+      var rs = regrasDa(an);
+      var pts = rs.reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+      var h = '<p class="ap-fhint">' + (an.destino === 'score'
+        ? 'Uma análise, ' + rs.length + ' regras, ' + pts + ' pontos no total. Não são ' + rs.length +
+          ' agentes: é o Score inteiro, e as regras vivem dentro dele.'
+        : 'Os campos do Resumo e a fonte de cada um.') + '</p>';
+
+      rs.forEach(function (r) {
+        h += '<div class="ap-varline" style="align-items:flex-start">' +
+             '<span style="flex:1;min-width:0"><span class="nm">' + r.nome + '</span>' +
+             (r.regraTexto ? '<span class="meta" style="display:block">' + r.regraTexto + '</span>' : '') +
+             (r.vars.length ? '<span class="meta" style="display:block">usa ' +
+                r.vars.map(function (k) { return VARS[k].nome; }).join(', ') + '</span>' : '') + '</span>' +
+             (r.pontos !== null ? '<span class="ap-pts">' + r.pontos + '</span>' : '') +
+             '<button class="ap-mini" type="button" data-anedit="' + r.id + '">Editar</button></div>';
+      });
+
+      h += '<div class="alert" style="margin-top:16px"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+        '<div class="alert-title">Por que estruturado e não texto livre</div>' +
+        '<div class="alert-description"><p>Numa análise de pontuação, escolher a variável e dar a nota é mais rápido e menos ambíguo do que descrever tudo por escrito. Texto livre com variáveis dentro é o formato da análise jurídica, onde a resposta é um parecer e não um número.</p></div></div>';
+
+      document.getElementById('fxCusto').textContent =
+        'Custo: R$ ' + rs.reduce(function (t, r) { return t + r.custo; }, 0).toFixed(2).replace('.', ',') + ' por licitação';
+      document.getElementById('fxBody').innerHTML = h;
+      document.querySelectorAll('[data-anedit]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          document.getElementById('fxModal').hidden = true;
+          abrir(acharAgente(b.dataset.anedit));
+        });
+      });
+    }
+
+
+    /* =====================================================================
+       INSTRUÇÃO COM VARIÁVEIS DENTRO
+       Resposta ao "como é que ele cria uma variável ali dentro, de forma
+       muito determinada, pro sistema saber que aquilo tem proveniência
+       própria" (Alice, 25:41 e 27:38 de 31/08).
+
+       A variável não é palavra no meio do texto: é um objeto no texto. Some
+       do texto se apagada, aparece na lista de variáveis usadas, e pode ser
+       criada sem sair da escrita.
+       ===================================================================== */
+
+    var rangeSalvo = null;
+
+    function chipHTML(k, novo) {
+      return '<span class="varchip' + (novo ? ' novo' : '') + '" contenteditable="false" data-v="' + k + '">' +
+             VARS[k].nome + '</span>';
+    }
+
+    function textoParaHTML(t) {
+      return t.replace(/\{\{(\w+)\}\}/g, function (_, k) {
+        return VARS[k] ? chipHTML(k) : '{{' + k + '}}';
+      });
+    }
+
+    function varsNoTexto() {
+      var campo = document.getElementById('vfCampo');
+      if (!campo) return [];
+      return [].slice.call(campo.querySelectorAll('.varchip')).map(function (c) { return c.dataset.v; });
+    }
+
+    function pintarTextoVars() {
+      document.getElementById('fxValidar').hidden = false;
+      document.getElementById('fxAtivar').hidden = false;
+      document.getElementById('fxAtivar').textContent = 'Ativar análise';
+
+      var h = '<div class="ap-field"><span class="ap-flabel">O que a Settle deve analisar</span>' +
+        '<p class="ap-fhint">Aqui a instrução é texto, porque a resposta é um parecer e não um número. ' +
+        'As partes destacadas são <b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.</p>' +
+        '<div class="vf-wrap">' +
+          '<div class="vf" id="vfCampo" contenteditable="true" role="textbox" aria-multiline="true" ' +
+          'aria-label="Instrução da análise" data-ph="Descreva o que analisar. Digite / para inserir uma variável.">' +
+          textoParaHTML(JURIDICA.texto) + '</div>' +
+          '<div class="vf-menu" id="vfMenu" hidden></div>' +
+        '</div>' +
+        '<p class="vf-hint">Digite <kbd>/</kbd> para inserir uma variável existente ou criar uma nova aqui mesmo.</p>' +
+        '</div>' +
+        '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
+        '<div id="vfLista"></div></div>';
+
+      document.getElementById('fxBody').innerHTML = h;
+
+      var campo = document.getElementById('vfCampo');
+      campo.addEventListener('keydown', function (e) {
+        if (e.key === '/') { e.preventDefault(); salvarRange(); abrirMenuVar(); }
+      });
+      campo.addEventListener('input', listaDeVars);
+      listaDeVars();
+    }
+
+    function listaDeVars() {
+      var box = document.getElementById('vfLista');
+      if (!box) return;
+      var ks = varsNoTexto();
+      if (!ks.length) {
+        box.innerHTML = '<p class="ap-fhint">Nenhuma ainda. Sem variável, a Settle lê o edital inteiro toda vez e não consegue reaproveitar o dado em outra análise.</p>';
+      } else {
+        box.innerHTML = ks.map(function (k) {
+          var v = VARS[k];
+          var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; }).length;
+          return '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
+                 '<span class="ap-tag type">' + v.tipo + '</span>' +
+                 '<span class="meta">' + v.fonte + ' · ' + v.v + (usos ? ' · também usada em ' + usos + ' regra(s) do Score' : '') + '</span>' +
+                 '<span class="ap-money">R$ ' + v.custo.toFixed(2).replace('.', ',') + '</span></div>';
+        }).join('');
+      }
+      var custo = ks.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
+      document.getElementById('fxCusto').textContent =
+        'Custo: R$ ' + custo.toFixed(2).replace('.', ',') + ' por licitação · ' + ks.length + ' variáveis';
+    }
+
+    function salvarRange() {
+      var sel = window.getSelection();
+      if (sel.rangeCount) rangeSalvo = sel.getRangeAt(0).cloneRange();
+    }
+
+    function abrirMenuVar() {
+      var menu = document.getElementById('vfMenu');
+      var campo = document.getElementById('vfCampo');
+      var r = rangeSalvo ? rangeSalvo.getBoundingClientRect() : null;
+      var base = campo.getBoundingClientRect();
+      var topo = (r && r.top ? r.top - base.top : 24) + 26;
+      menu.style.top = topo + 'px';
+      menu.style.left = (r && r.left ? Math.max(0, r.left - base.left) : 0) + 'px';
+      menu.hidden = false;
+      menuLista('');
+    }
+
+    function fecharMenuVar() { document.getElementById('vfMenu').hidden = true; }
+
+    function menuLista(filtro) {
+      var menu = document.getElementById('vfMenu');
+      var ks = Object.keys(VARS).filter(function (k) {
+        return VARS[k].nome.toLowerCase().indexOf(filtro.toLowerCase()) >= 0;
+      });
+      var h = '<div class="h">Variáveis já extraídas</div>' +
+        (ks.length ? ks.map(function (k) {
+          return '<button class="vf-opt" type="button" data-ins="' + k + '"><b>' + VARS[k].nome + '</b>' +
+                 '<span>' + VARS[k].tipo + ' · ' + VARS[k].fonte + '</span></button>';
+        }).join('') : '<div class="ap-fhint" style="padding:4px 9px">Nenhuma com esse nome.</div>') +
+        '<button class="vf-opt criar" type="button" data-criar="1">Criar uma variável nova aqui</button>';
+      menu.innerHTML = h;
+      menu.querySelectorAll('[data-ins]').forEach(function (b) {
+        b.addEventListener('click', function () { inserirVar(b.dataset.ins, false); });
+      });
+      menu.querySelector('[data-criar]').addEventListener('click', formNovaVar);
+    }
+
+    function inserirVar(k, novo) {
+      var campo = document.getElementById('vfCampo');
+      campo.focus();
+      var sel = window.getSelection();
+      if (rangeSalvo) { sel.removeAllRanges(); sel.addRange(rangeSalvo); }
+      var frag = document.createElement('span');
+      frag.innerHTML = chipHTML(k, novo) + '&nbsp;';
+      var range = sel.getRangeAt(0);
+      range.deleteContents();
+      var nós = [].slice.call(frag.childNodes);
+      nós.reverse().forEach(function (n) { range.insertNode(n); });
+      range.collapse(false);
+      sel.removeAllRanges(); sel.addRange(range);
+      fecharMenuVar();
+      listaDeVars();
+    }
+
+    /* Criação determinada: os quatro campos que fazem a Settle saber que ali
+       existe uma extração com proveniência, e não uma frase. */
+    function formNovaVar() {
+      var menu = document.getElementById('vfMenu');
+      menu.innerHTML =
+        '<div class="h">Nova variável</div>' +
+        '<div style="padding:4px 9px 10px">' +
+          '<label class="ap-fhint" for="nvNome">O que extrair</label>' +
+          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: exige garantia contratual?" />' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">De onde</p><div class="ap-chips" data-g="fonte">' +
+            '<button class="ap-chip" type="button" data-val="Edital" aria-pressed="true">Edital</button>' +
+            '<button class="ap-chip" type="button" data-val="Termo de Referência" aria-pressed="false">TR</button>' +
+            '<button class="ap-chip" type="button" data-val="Edital e anexos" aria-pressed="false">Anexos</button>' +
+          '</div>' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Tipo da resposta</p><div class="ap-chips" data-g="tipo">' +
+            '<button class="ap-chip" type="button" data-val="sim ou não" aria-pressed="true">sim ou não</button>' +
+            '<button class="ap-chip" type="button" data-val="número" aria-pressed="false">número</button>' +
+            '<button class="ap-chip" type="button" data-val="texto" aria-pressed="false">texto</button>' +
+            '<button class="ap-chip" type="button" data-val="lista" aria-pressed="false">lista</button>' +
+          '</div>' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Se não encontrar</p><div class="ap-chips" data-g="ausencia">' +
+            '<button class="ap-chip" type="button" data-val="marca como não encontrado" aria-pressed="true">não encontrado</button>' +
+            '<button class="ap-chip" type="button" data-val="assume que não exige" aria-pressed="false">assume que não exige</button>' +
+          '</div>' +
+          '<button class="btn btn-primary" type="button" id="nvCriar" style="width:100%;justify-content:center;margin-top:12px">Criar e inserir</button>' +
+        '</div>';
+
+      menu.querySelectorAll('.ap-chips').forEach(function (g) {
+        g.querySelectorAll('.ap-chip').forEach(function (b) {
+          b.addEventListener('click', function () {
+            g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+          });
+        });
+      });
+      document.getElementById('nvNome').focus();
+      document.getElementById('nvCriar').addEventListener('click', function () {
+        var nome = document.getElementById('nvNome').value.trim();
+        if (!nome) { settleToast('Escreva o que a variável deve extrair'); return; }
+        var val = function (g) {
+          var b = menu.querySelector('[data-g="' + g + '"] .ap-chip[aria-pressed="true"]');
+          return b ? b.dataset.val : '';
+        };
+        var k = 'nv' + Object.keys(VARS).length;
+        VARS[k] = { nome:nome, tipo:val('tipo'), fonte:val('fonte'), v:'v1',
+                    custo:val('fonte') === 'Edital e anexos' ? 0.04 : 0.02, ausencia:val('ausencia') };
+        pintarVars();
+        inserirVar(k, true);
+        settleToast('Variável criada e disponível para as outras análises');
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      var m = document.getElementById('vfMenu');
+      if (m && !m.hidden && !m.contains(e.target) && e.target.id !== 'vfCampo') fecharMenuVar();
+    });
+
+    /* =====================================================================
+       ENSINAR O AGENTE A PARTIR DO ERRO
+       "Ele deveria vir aqui e poder ensinar para o agente que isso está
+       errado" (Alice, 22:59). A correção pontual vira melhoria da variável.
+       ===================================================================== */
+
+    function ensinar(a) {
+      document.getElementById('chatTitle').textContent = a.nome;
+      document.getElementById('chatSub').textContent = 'Resultado nesta licitação: ' + (a.dado || 'sem dado');
+      document.getElementById('chatMsgs').innerHTML = '';
+      document.getElementById('ovlChat').hidden = false;
+      document.getElementById('chat').hidden = false;
+      bolha('bot', 'Eu concluí <b>' + (a.dado || 'sem dado') + '</b> e por isso dei ' + a.ganhos +
+        ' de ' + a.pontos + '. O que está errado?');
+
+      var opcoes = [
+        { t:'O dado que você extraiu está errado', faz:function () {
+            bolha('bot', 'Onde está a informação certa? Se você me disser, eu passo a procurar lá.');
+            chips([
+              { t:'Está no anexo, não no corpo do edital', faz:function () { corrigirFonte(a); } },
+              { t:'Está no corpo, você leu errado', faz:function () {
+                  bolha('bot', 'Então o problema é a instrução da variável, não a fonte. Vale reescrever o que ela procura. Abro o editor?');
+                  chips([{ t:'Abrir o editor', faz:function () { fecharChat(); abrir(a); } }]);
+                }}
+            ]);
+          }},
+        { t:'O dado está certo, a regra é que está errada', faz:function () {
+            bolha('bot', 'Isso eu corrijo no editor da regra, e vale para todas as licitações daqui pra frente.');
+            chips([{ t:'Abrir o editor da regra', faz:function () { fecharChat(); abrir(a); } }]);
+          }},
+        { t:'Está tudo certo, me enganei', faz:function () {
+            bolha('bot', 'Sem problema. Nada foi alterado.');
+            chips([]);
+          }}
+      ];
+      chips(opcoes);
+    }
+
+    function corrigirFonte(a) {
+      bolha('bot', 'Entendi. Posso fazer de duas formas, e elas são bem diferentes:');
+      chips([
+        { t:'Corrigir só nesta licitação', faz:function () {
+            bolha('bot', 'Corrigi aqui. Mas na próxima licitação com a exigência em anexo eu vou errar de novo, porque a variável não mudou.');
+            aplicarCorrecao(a, false);
+          }},
+        { t:'Ensinar a variável a olhar os anexos', faz:function () {
+            bolha('bot', 'Essa é a que resolve de verdade. A variável <b>' + VARS[a.vars[0]].nome +
+              '</b> passa da v1 para a v2 e vai procurar também nos anexos, em todas as licitações e em todas as análises que usam ela. O custo dela sobe de R$ 0,04 para R$ 0,06.');
+            aplicarCorrecao(a, true);
+          }}
+      ]);
+    }
+
+    function aplicarCorrecao(a, ensina) {
+      var k = a.vars[0], antes = JSON.parse(JSON.stringify(VARS[k])), antesA = { dado:a.dado, ganhos:a.ganhos, estado:a.estado, risco:a.risco, dadoRuim:a.dadoRuim, prov:a.prov };
+      a.dado = 'exige atestado de acervo técnico'; a.dadoRuim = false;
+      a.ganhos = 0; a.estado = 'run'; a.risco = null;
+      a.prov = 'Anexo III, item 3.2: atestado de acervo técnico registrado no CREA';
+      if (ensina) { VARS[k].v = 'v2'; VARS[k].fonte = 'Edital e anexos'; VARS[k].custo = 0.06; }
+      pintarCrits(); pintarVars(); pintarAnalises();
+      chips([]);
+      settleToast(ensina ? 'Variável atualizada para v2 em todas as análises' : 'Corrigido só nesta licitação', {
+        undoLabel:'Desfazer',
+        onUndo:function () {
+          VARS[k] = antes; Object.keys(antesA).forEach(function (x) { a[x] = antesA[x]; });
+          pintarCrits(); pintarVars(); pintarAnalises();
+        }
+      });
+    }
+
     /* =====================================================================
        TUTORIAIS
        Um roteiro por abordagem. Os passos executam a ação antes de explicar,
@@ -1501,9 +1926,15 @@
         texto:'Este critério somou <b>15 pontos</b> por não ter encontrado exigência de atestado. Só que não encontrar não é a mesma coisa que não existir: em 3 das últimas 10 análises a exigência estava em anexo separado.<p>O aviso âmbar aparece porque a operação já mostrou que essa regra falha.</p>',
         antes:function () { abaAtiva('licitacao'); } },
 
-      { alvo:'#why-ate', titulo:'De onde veio o número',
-        texto:'Antes de mudar qualquer coisa, a pessoa precisa entender. Aqui aparece a regra em português, a variável usada com a versão, o tratamento de ausência e o <b>trecho de origem</b>. É a proveniência que já existe no Resumo.',
+      { alvo:'#crit-cap', titulo:'O dado extraído, não só a nota',
+        texto:'Cada linha mostra <b>o que foi extraído</b> e a <b>regra por trás</b>. Antes aparecia só a pontuação, e o cliente não tinha como saber a qual CAPAG ou a qual população o número se referia.<p>Aqui a variável vem qualificada: CAPAG estadual, porque o órgão é do estado.</p>' },
+
+      { alvo:'#why-ate', titulo:'E a origem, quando ele quiser',
+        texto:'Um clique a mais mostra a instrução, as variáveis com versão, o tratamento de ausência e o <b>trecho de origem</b>. A proveniência que já existe no Resumo.',
         antes:function () { clic('[data-why="ate"]'); } },
+
+      { alvo:'#crit-ate', titulo:'Ensinar o agente onde ele errou',
+        texto:'"Está errado" abre a correção no lugar onde o erro apareceu. A pessoa diz que a exigência estava no anexo, e aí vem a escolha que importa: corrigir só esta licitação, ou <b>ensinar a variável a olhar os anexos</b>, o que vale para todas as análises que usam ela.<p>Corrigir é pontual. Ensinar melhora o sistema.</p>' },
 
       { alvo:'#fInstr', titulo:'A regra em texto, não em código',
         texto:'"Ajustar a regra" abre o editor com a regra escrita como uma pessoa explicaria para a equipe. Nada de nó, aresta ou operador.',
@@ -1542,7 +1973,7 @@
         antes:function () { clic('[data-chat="2"]'); }, espera:320 },
 
       { titulo:'Resumindo esta abordagem',
-        texto:'A pessoa nunca partiu de uma tela em branco. Ela discordou de um número, entendeu de onde ele vinha, corrigiu a regra e viu o efeito.<p>Agora veja a outra abordagem no menu da esquerda: lá o agente nasce antes de qualquer licitação.</p>',
+        texto:'A pessoa nunca partiu de uma tela em branco. Ela discordou de um número, viu o dado e a regra, corrigiu e viu o efeito na hora.<p>Agora veja a outra abordagem no menu da esquerda, onde ficam as análises inteiras e o construtor.</p>',
         antes:function () { fecharChat(); } }
     ];
 
@@ -1559,9 +1990,13 @@
         texto:'A pessoa escreve a pergunta, escolhe de onde vem, o tipo da resposta e o que fazer quando não encontrar.<p>Repare: <b>o tipo decide onde ela vai poder ser usada</b>. Só número entra no Score.</p>',
         antes:function () { abrirVar(); }, espera:320 },
 
-      { alvo:'#gridAgentes', titulo:'Agora o agente',
-        texto:'Com as variáveis prontas, o cliente monta o agente. Esta lista é o painel de controle: o que está ativo, com que gatilho e quanto custa.',
+      { alvo:'#gridAgentes', titulo:'Uma análise é um agente, não vários',
+        texto:'São quatro análises, não vinte agentes soltos. O <b>Score é uma análise com 7 regras dentro</b>, somando 100 pontos. Clicar nela mostra todas as regras juntas, que era a pergunta de onde ver o score inteiro.',
         antes:function () { fecharFx(); abaAtiva('agentes'); }, espera:300 },
+
+      { alvo:'#fxBody', titulo:'Cada formato serve a um tipo de análise',
+        texto:'A análise jurídica é <b>texto com variáveis dentro</b>, porque a resposta é um parecer. O Score continua estruturado, com variável e nota, que é mais rápido e menos ambíguo para pontuar.<p>Digitando <b>/</b> a pessoa insere uma variável existente ou cria uma nova sem sair da escrita, com os quatro campos que fazem o sistema saber que ali existe uma extração com proveniência própria.</p>',
+        antes:function () { abrirAnalise(ANALISES[3]); }, espera:340 },
 
       { alvo:'#fxAdd', titulo:'O fluxo é montado passo a passo',
         texto:'Quatro tipos de caixinha: <b>Extrair</b> pega a informação, <b>Decidir</b> separa caminhos, <b>Pontuar</b> transforma em pontos e <b>Exibir</b> diz onde aparece.<p>É o mesmo vocabulário que a Harvey usa no Agent Builder: input, lógica, ação e saída.</p>',
@@ -1602,7 +2037,7 @@
     });
 
     /* ---------- boot ---------- */
-    pintarCrits(); pintarTecnica(); pintarAgentes(); pintarVars();
+    pintarCrits(); pintarTecnica(); pintarAnalises(); pintarVars();
     setVia('lic');
   })();
   </script>
