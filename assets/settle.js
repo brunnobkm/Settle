@@ -135,6 +135,125 @@
     return dismiss;
   };
 
+
+  /* ---------- Tutorial guiado ---------------------------------------------
+     window.settleTour(passos) onde cada passo é:
+       { alvo: '#seletor' (opcional; sem alvo o balão fica centralizado),
+         titulo, texto (aceita HTML), antes: fn (roda antes de destacar),
+         espera: ms (atraso após o `antes`, para animação/render) }
+     Retorna { parar }.
+  ------------------------------------------------------------------------ */
+
+  var tourAtivo = null;
+
+  window.settleTour = function (passos, opts) {
+    if (tourAtivo) tourAtivo.parar();
+    opts = opts || {};
+
+    var scrim = document.querySelector('.tut-scrim');
+    if (!scrim) {
+      scrim = document.createElement('div');
+      scrim.className = 'tut-scrim';
+      document.body.appendChild(scrim);
+    }
+    var pop = document.querySelector('.tut-pop');
+    if (!pop) {
+      pop = document.createElement('div');
+      pop.className = 'tut-pop';
+      pop.setAttribute('role', 'dialog');
+      pop.setAttribute('aria-live', 'polite');
+      document.body.appendChild(pop);
+    }
+    scrim.hidden = false;
+    pop.hidden = false;
+
+    var i = 0, alvoAtual = null;
+
+    function limpar() {
+      if (alvoAtual) { alvoAtual.classList.remove('tut-alvo'); alvoAtual = null; }
+    }
+
+    function posicionar(el) {
+      var m = 14, w = pop.offsetWidth, h = pop.offsetHeight;
+      if (!el) {
+        pop.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+        pop.style.top = Math.round((window.innerHeight - h) / 2) + 'px';
+        return;
+      }
+      var r = el.getBoundingClientRect();
+      var top = r.bottom + m;
+      if (top + h > window.innerHeight - 8) {
+        top = r.top - h - m;
+        if (top < 8) top = Math.max(8, (window.innerHeight - h) / 2);
+      }
+      var left = r.left;
+      if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+      if (left < 8) left = 8;
+      pop.style.left = Math.round(left) + 'px';
+      pop.style.top = Math.round(top) + 'px';
+    }
+
+    function render() {
+      var p = passos[i];
+      limpar();
+      if (typeof p.antes === 'function') p.antes();
+
+      setTimeout(function () {
+        var el = p.alvo ? document.querySelector(p.alvo) : null;
+        if (el) {
+          el.classList.add('tut-alvo');
+          alvoAtual = el;
+          var r = el.getBoundingClientRect();
+          if (r.top < 70 || r.bottom > window.innerHeight - 70) {
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        }
+        pop.innerHTML =
+          '<div class="tut-kicker">' + (p.kicker || 'Tutorial') + '</div>' +
+          '<h3>' + p.titulo + '</h3>' +
+          '<p>' + p.texto + '</p>' +
+          '<div class="tut-nav">' +
+            '<span class="tut-count">' + (i + 1) + ' de ' + passos.length + '</span>' +
+            (i > 0 ? '<button class="btn btn-outline" type="button" data-tut="voltar">Voltar</button>' : '') +
+            '<button class="btn btn-outline" type="button" data-tut="sair">Sair</button>' +
+            '<button class="btn btn-primary" type="button" data-tut="proximo">' +
+              (i === passos.length - 1 ? 'Concluir' : 'Próximo') + '</button>' +
+          '</div>';
+        pop.querySelectorAll('[data-tut]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var a = b.dataset.tut;
+            if (a === 'sair') return parar();
+            if (a === 'voltar') { i = Math.max(0, i - 1); return render(); }
+            if (i === passos.length - 1) return parar();
+            i++; render();
+          });
+        });
+        // posiciona depois de medir o balão já preenchido
+        requestAnimationFrame(function () { posicionar(el); });
+      }, p.espera || (p.antes ? 260 : 0));
+    }
+
+    function parar() {
+      limpar();
+      scrim.hidden = true;
+      pop.hidden = true;
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+      tourAtivo = null;
+      if (typeof opts.aoSair === 'function') opts.aoSair();
+    }
+
+    function onKey(e) { if (e.key === 'Escape') parar(); }
+    function onResize() { posicionar(alvoAtual); }
+
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+
+    tourAtivo = { parar: parar };
+    render();
+    return tourAtivo;
+  };
+
   /* ---------- Boot ------------------------------------------------------- */
 
   function boot() {

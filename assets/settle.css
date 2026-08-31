@@ -95,6 +95,10 @@ body{
 button{font-family:inherit; cursor:pointer;}
 svg{display:block;}
 
+/* O atributo hidden tem que vencer qualquer display declarado depois.
+   Sem isto, .btn, .fp-tab e afins continuam visíveis mesmo com hidden. */
+[hidden]{display:none !important;}
+
 /* acessibilidade: foco sempre visível. Não remova. */
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px;}
 
@@ -471,6 +475,7 @@ table.dt tbody tr:last-child td{border-bottom:none;}
 .fp-tabs{display:inline-flex;align-items:center;gap:2px;background:rgba(23,23,23,.06);border-radius:10px;padding:3px;}
 .fp-tab{border:none;background:transparent;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:14px;font-weight:500;color:var(--foreground);opacity:.65;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
 .fp-tab.active{background:var(--background);opacity:1;box-shadow:var(--shadow-xs);}
+.fp-tab[hidden]{display:none;}   /* o display:inline-flex acima anula o atributo hidden */
 .fp-c{font-size:12px;font-weight:600;color:var(--muted-foreground);}
 .fp-actions{display:inline-flex;align-items:center;gap:4px;}
 .fp-actions[hidden]{display:none;}
@@ -795,3 +800,33 @@ table.items .col-seg{display:flex;gap:6px;}
   .page-head .eyebrow{font-size:22px;line-height:28px;}
   .content{padding:16px 16px 48px;}
 }
+
+
+/* ==========================================================================
+   16. TUTORIAL GUIADO
+   --------------------------------------------------------------------------
+   Passo a passo com destaque no elemento. Use window.settleTour(passos).
+   O scrim não bloqueia clique: quem estiver fazendo o tour pode explorar.
+   ========================================================================== */
+
+.tut-scrim{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.5);pointer-events:none;transition:opacity .18s;}
+.tut-scrim[hidden]{display:none;}
+.tut-alvo{position:relative;z-index:57;border-radius:var(--radius-field);
+  box-shadow:0 0 0 3px var(--accent), 0 0 0 7px rgba(58,155,158,.28);}
+.tut-pop{position:fixed;z-index:60;width:352px;max-width:calc(100vw - 32px);
+  background:var(--background);border:1px solid var(--border);border-radius:var(--radius-box);
+  box-shadow:var(--shadow-pop);padding:16px 18px;}
+.tut-pop[hidden]{display:none;}
+.tut-kicker{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent-600);margin-bottom:6px;}
+.tut-pop h3{margin:0 0 7px;font-size:16px;font-weight:600;line-height:22px;}
+.tut-pop p{margin:0;font-size:13.5px;line-height:20px;color:var(--muted-foreground);}
+.tut-pop p + p{margin-top:9px;}
+.tut-pop b{color:var(--foreground);font-weight:600;}
+.tut-nav{display:flex;align-items:center;gap:8px;margin-top:15px;}
+.tut-count{flex:1;font-size:12px;color:var(--muted-foreground);font-variant-numeric:tabular-nums;}
+.tut-fab{position:fixed;right:24px;bottom:24px;z-index:39;display:inline-flex;align-items:center;gap:8px;
+  padding:12px 18px;border:none;border-radius:9999px;background:var(--accent);color:#fff;
+  font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
+.tut-fab:hover{background:var(--accent-600);}
+.tut-fab svg{width:17px;height:17px;}
+.tut-fab[hidden]{display:none;}
