@@ -64,11 +64,16 @@
     .ap-bar i{display:block;height:100%;background:var(--accent);}
     .ap-crit{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-top:1px solid var(--border);}
     .ap-crit:first-child{border-top:0;}
+    .ap-crit.nao-aplica{background:var(--muted);}
     .ap-crit-main{flex:1;min-width:0;}
     .ap-crit-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
     .ap-crit-sub{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:3px;}
     .ap-dado{margin-top:5px;font-size:14px;font-weight:600;color:var(--foreground);}
     .ap-dado.ruim{color:var(--warning);}
+    .ap-demo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:9px 13px;border:1px dashed var(--border-strong);border-radius:var(--radius-box);font-size:12px;color:var(--muted-foreground);}
+    .ap-prog{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);font-size:13px;}
+    .ap-prog:first-child{border-top:0;}
+    .ap-prog .nm{flex:1;min-width:0;font-weight:600;}
     .ap-dado .q{display:block;font-size:12px;font-weight:400;color:var(--muted-foreground);margin-top:2px;}
     .ap-pts{flex:none;min-width:56px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
     .ap-pts.zero{color:var(--muted-foreground);}
@@ -253,6 +258,17 @@
 
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
       <section class="ap-panel" id="panel-licitacao" role="tabpanel" aria-label="Licitação">
+
+        <div class="ap-demo">
+          <span>Só no protótipo, para ver os quatro momentos:</span>
+          <div class="ap-chips" id="estadoDemo">
+            <button class="ap-chip" type="button" data-est="pronto" aria-pressed="true">Calculado</button>
+            <button class="ap-chip" type="button" data-est="nao_enviado" aria-pressed="false">Ainda não enviado</button>
+            <button class="ap-chip" type="button" data-est="calculando" aria-pressed="false">Calculando</button>
+            <button class="ap-chip" type="button" data-est="falhou" aria-pressed="false">Falhou</button>
+          </div>
+        </div>
+
         <div class="ap-two">
 
           <div class="ap-box">
@@ -274,18 +290,14 @@
           <div class="ap-box">
             <div class="ap-box-head" id="boxScore"><h2>Score</h2>
               <button class="ap-linkbtn" type="button" id="btnComoCalcula">Como isso é calculado</button></div>
-            <div class="ap-box-body">
-              <div class="ap-num" id="scoreNum">78 <small>de 100</small></div>
-              <div class="ap-bar"><i id="scoreFill" style="width:78%"></i></div>
-              <p class="ap-fhint" style="margin:8px 0 0">Calculado em 26/08 às 09:12, com 6 critérios ativos.
-                Custo desta análise: R$ 0,14.</p>
-            </div>
+            <div class="ap-box-body" id="scoreBody"></div>
           </div>
 
         </div>
 
         <div class="ap-box" style="margin-top:16px">
-          <div class="ap-box-head"><h2>De onde vieram os pontos</h2></div>
+          <div class="ap-box-head"><h2>De onde vieram os pontos</h2>
+            <button class="btn btn-outline" type="button" id="btnNovoDaqui">Adicionar critério daqui</button></div>
           <div class="ap-box-body" id="crits"></div>
         </div>
       </section>
@@ -296,6 +308,9 @@
           <b>uma vez por componente</b>. Os componentes não existem antes de alguém ler o Termo de Referência,
           então a lista abaixo foi descoberta na própria execução. O status de cada item é calculado a partir
           dos componentes, por uma regra que é sua.</p>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn btn-outline" type="button" id="btnNovaVerificacao">Adicionar verificação daqui</button>
+        </div>
         <div id="itens"></div>
       </section>
 
@@ -423,6 +438,7 @@
       capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Base do Tesouro + Esfera',    v:'v3', custo:0.01, ausencia:'não pontua e sinaliza',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
+      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Objeto e itens, cruzado com os seus segmentos', v:'v3', custo:0, ausencia:'fica fora do match' },
       populacao: { nome:'População',                tipo:'número',    fonte:'IBGE + Esfera',               v:'v1', custo:0,    ausencia:'não pontua',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
       atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
@@ -501,6 +517,18 @@
         dado:'ampla concorrência',
         regraTexto:'Exclusiva para ME/EPP soma 5 · ampla concorrência soma 0',
         prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
+
+      { id:'iso', nome:'Certificação ISO 39001 de segurança viária', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Se o edital exigir ISO 39001 e a empresa tiver o certificado válido, some 10 pontos.',
+        vars:['segmento'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        regraTexto:'Exige e temos soma 10 · exige e não temos soma 0',
+        prov:'Regra condicionada ao segmento da licitação', ramifica:false,
+        /* Regra que só existe em parte das licitações. Alice, 10:37 de 31/08:
+           "se for o segmento A, quero saber se exige o certificado; se for o
+           segmento B, não precisa. Como que a gente exibe isso para o cliente?" */
+        condicao:{ ok:false, var:'segmento', esperado:'transporte de passageiros',
+          texto:'Só se aplica quando o segmento da licitação é transporte de passageiros',
+          porque:'Esta licitação é de locação e gestão de frota, e nesse segmento a ISO 39001 não costuma ser exigida. A regra ficou de fora do total.' } },
 
       { id:'frota', nome:'Porte da frota exigida', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Some a quantidade de todos os itens de veículo leve e pontue pela faixa.',
@@ -664,6 +692,17 @@
           (a.dadoQualif ? '<span class="q">' + a.dadoQualif + '</span>' : '') +
           (pend ? '<span class="q ap-warn">' + pend + ' ponto(s) da conta precisam da sua conferência</span>' : '') + '</div>'
         : '';
+      if (!aplicavel(a)) {
+        return '<div class="ap-crit nao-aplica" id="crit-' + a.id + '">' +
+          '<div class="ap-crit-main">' +
+            '<div class="ap-crit-name">' + a.nome + ' <span class="tag-light">não se aplica</span></div>' +
+            '<div class="ap-crit-sub"><b>Condição:</b> ' + a.condicao.texto + '</div>' +
+            '<div class="ap-crit-sub">' + a.condicao.porque + '</div>' +
+            '<div style="margin-top:8px"><button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a condição</button></div>' +
+          '</div>' +
+          '<div class="ap-pts zero">' + a.pontos + ' pts<br><span class="ap-dim" style="font-size:11px;font-weight:400">fora do total</span></div>' +
+        '</div>';
+      }
       return '<div class="ap-crit" id="crit-' + a.id + '">' +
         '<div class="ap-crit-main">' +
           '<div class="ap-crit-name">' + a.nome +
@@ -701,6 +740,23 @@
 
     function pintarCrits() {
       var box = document.getElementById('crits');
+
+      if (estadoExec === 'nao_enviado') {
+        box.innerHTML = '<div class="empty-state"><strong>Nada calculado ainda</strong>' +
+          'Quando você enviar para análise, as regras rodam e cada linha aqui mostra o dado extraído, ' +
+          'a regra aplicada e o trecho de origem.</div>';
+        return;
+      }
+      if (estadoExec === 'calculando') { box.innerHTML = progressoHTML(); return; }
+      if (estadoExec === 'falhou') {
+        box.innerHTML = '<div class="alert alert-warning">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.6 14.2 13H1.8z" stroke-linejoin="round"/><path d="M8 6.4v2.6" stroke-linecap="round"/></svg>' +
+          '<div class="alert-title">3 de 8 regras rodaram</div>' +
+          '<div class="alert-description"><p>As que dependem do edital ficaram sem fonte. As que usam dados do portal estão abaixo.</p></div></div>' +
+          AGENTES.filter(function (a) { return !a.vars.length && a.destino === 'score'; }).map(critHTML).join('');
+        return;
+      }
+
       box.innerHTML = AGENTES.map(critHTML).join('');
 
       box.querySelectorAll('[data-why]').forEach(function (b) {
@@ -735,12 +791,129 @@
         if (b) b.textContent = 'Esconder a conta';
       });
 
-      var soma = AGENTES.filter(function (a) { return a.pontos !== null; })
+      pintarScoreBox();
+    }
+
+
+
+    /* =====================================================================
+       CRIAR A PARTIR DA LICITAÇÃO
+       "Ele deveria conseguir adicionar agente de forma bem mais contextual,
+       bem mais simples aqui na plataforma" (Alice, 17:33 de 21/08). Criar de
+       dentro do resultado, com o contexto já preenchido e a licitação aberta
+       servindo de teste.
+       ===================================================================== */
+
+    function criarDaqui(destino) {
+      var novo = {
+        id:'novo' + AGENTES.length, nome:'', destino:destino,
+        escopo: destino === 'tecnica' ? 'componente' : 'licitacao',
+        agregacao: destino === 'tecnica' ? 'criticos' : null,
+        naoAvaliado:'bloqueia',
+        instr:'', vars:[], pontos: destino === 'score' ? 10 : null, ganhos:0,
+        estado:'run', gatilho:'Ao enviar para análise', custo:0, ramifica:false,
+        prov:'', novo:true, contexto:'PE 90014/2026'
+      };
+      AGENTES.push(novo);
+      abrir(novo);
+    }
+
+    document.getElementById('btnNovoDaqui').addEventListener('click', function () { criarDaqui('score'); });
+    document.getElementById('btnNovaVerificacao').addEventListener('click', function () { criarDaqui('tecnica'); });
+
+    /* =====================================================================
+       ESTADOS DE EXECUÇÃO
+       "Em que momento essas coisas vão ser rodadas? Quando ele clicar em
+       enviar para análise. Qual é a ideia disso? Reduzir custo." E: "como
+       fica a experiência do cara enquanto essas coisas não estão calculadas?"
+       (Alice, 04:36 e 04:48 de 31/08)
+       ===================================================================== */
+
+    var estadoExec = 'pronto';
+
+    var PROGRESSO = [
+      { nome:'Resumo',           st:'ok',      det:'10 campos preenchidos' },
+      { nome:'Score',            st:'rodando', det:'5 de 8 regras' },
+      { nome:'Análise técnica',  st:'rodando', det:'4 de 15 componentes' },
+      { nome:'Análise jurídica', st:'fila',    det:'na fila' }
+    ];
+
+    function pintarScoreBox() {
+      var el = document.getElementById('scoreBody');
+      if (estadoExec === 'nao_enviado') {
+        el.innerHTML =
+          '<div class="ap-num ap-dim">—</div>' +
+          '<p class="ap-fhint" style="margin:10px 0 12px">Esta licitação ainda não foi enviada para análise. ' +
+          'Os agentes só rodam quando você envia, para você não pagar por licitação que vai descartar na triagem.</p>' +
+          '<button class="btn btn-primary" type="button" id="btnEnviar">Enviar para análise</button>' +
+          '<p class="ap-fhint" style="margin-top:10px">Custo estimado: R$ 0,59 nesta licitação, somando as quatro análises.</p>';
+        el.querySelector('#btnEnviar').addEventListener('click', function () {
+          setEstado('calculando');
+          settleToast('Enviada para análise. Os agentes começaram a rodar.');
+        });
+        return;
+      }
+      if (estadoExec === 'calculando') {
+        el.innerHTML =
+          '<div class="skeleton" style="display:flex"><span class="sk" style="width:120px;height:38px"></span></div>' +
+          '<div class="ap-bar" style="margin-top:14px"><i style="width:38%"></i></div>' +
+          '<p class="ap-fhint" style="margin:8px 0 0">Calculando desde 09:11. Costuma levar cerca de 3 minutos ' +
+          'em licitação deste tamanho. Você pode sair da tela, o resultado fica salvo.</p>';
+        return;
+      }
+      if (estadoExec === 'falhou') {
+        el.innerHTML =
+          '<div class="ap-num ap-warn">—</div>' +
+          '<p class="ap-fhint" style="margin:10px 0 12px"><b>Não consegui calcular.</b> O portal recusou o download ' +
+          'do edital três vezes seguidas (erro 503). Sem o edital, 5 das 8 regras não têm de onde extrair.</p>' +
+          '<button class="btn btn-primary" type="button" id="btnRetry">Tentar de novo</button>' +
+          '<p class="ap-fhint" style="margin-top:10px">O que já dá para ver: valor, prazo e órgão vêm do portal e ' +
+          'estão preenchidos. Você também pode anexar o edital manualmente.</p>';
+        el.querySelector('#btnRetry').addEventListener('click', function () {
+          setEstado('calculando'); settleToast('Tentando baixar o edital de novo');
+        });
+        return;
+      }
+
+      var soma = AGENTES.filter(aplicavel).filter(function (a) { return a.pontos !== null; })
         .reduce(function (t, a) { return t + a.ganhos; }, 0);
-      var max = AGENTES.filter(function (a) { return a.pontos !== null; })
+      var max = AGENTES.filter(aplicavel).filter(function (a) { return a.pontos !== null; })
         .reduce(function (t, a) { return t + a.pontos; }, 0);
-      document.getElementById('scoreNum').innerHTML = soma + ' <small>de ' + max + '</small>';
-      document.getElementById('scoreFill').style.width = Math.round(soma / max * 100) + '%';
+      var fora = AGENTES.filter(function (a) { return !aplicavel(a) && a.pontos; })
+        .reduce(function (t, a) { return t + a.pontos; }, 0);
+      el.innerHTML =
+        '<div class="ap-num" id="scoreNum">' + soma + ' <small>de ' + max + '</small></div>' +
+        '<div class="ap-bar"><i id="scoreFill" style="width:' + Math.round(soma / max * 100) + '%"></i></div>' +
+        '<p class="ap-fhint" style="margin:8px 0 0">Calculado em 26/08 às 09:12, com ' +
+        AGENTES.filter(aplicavel).filter(function (a) { return a.pontos !== null; }).length +
+        ' regras aplicáveis. Custo desta análise: R$ 0,19.</p>' +
+        (fora ? '<p class="ap-fhint ap-warn" style="margin-top:6px">' + fora +
+          ' pontos não se aplicam a esta licitação, então saíram do total. ' +
+          '<button class="ap-linkbtn" type="button" id="verFora">Ver quais</button></p>' : '');
+      var vf = el.querySelector('#verFora');
+      if (vf) vf.addEventListener('click', function () {
+        var alvo = document.querySelector('.ap-crit.nao-aplica');
+        if (alvo) alvo.scrollIntoView({ block:'center', behavior:'smooth' });
+      });
+    }
+
+    function setEstado(e) {
+      estadoExec = e;
+      document.querySelectorAll('[data-est]').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.est === e));
+      });
+      pintarScoreBox();
+      pintarCrits();
+    }
+
+    function progressoHTML() {
+      return '<p class="ap-fhint">Cada análise roda por conta própria. O que já ficou pronto você pode usar sem esperar o resto.</p>' +
+        PROGRESSO.map(function (p) {
+          var cap = p.st === 'ok' ? '<span class="cap ok">pronto</span>'
+                  : (p.st === 'rodando' ? '<span class="cap pt">rodando</span>' : '<span class="cap na">na fila</span>');
+          return '<div class="ap-prog"><span class="nm">' + p.nome + '</span>' +
+                 '<span class="ap-dim">' + p.det + '</span>' + cap + '</div>';
+        }).join('');
     }
 
     /* =====================================================================
@@ -836,6 +1009,8 @@
       });
     }
 
+    function aplicavel(a) { return !a.condicao || a.condicao.ok; }
+
     function acharAgente(id) {
       return AGENTES.filter(function (a) { return a.id === id; })[0];
     }
@@ -888,6 +1063,10 @@
           document.getElementById('panel-' + p).hidden = (p !== b.dataset.tab);
         });
       });
+    });
+
+    document.querySelectorAll('[data-est]').forEach(function (b) {
+      b.addEventListener('click', function () { setEstado(b.dataset.est); });
     });
 
     document.getElementById('btnComoCalcula').addEventListener('click', function () {
@@ -1013,6 +1192,10 @@
     }
 
     function fechar() {
+      if (draft && draft.novo) {
+        var i = AGENTES.map(function (a) { return a.id; }).indexOf(draft.id);
+        if (i >= 0 && AGENTES[i].novo) { AGENTES.splice(i, 1); pintarCrits(); pintarAnalises(); }
+      }
       document.getElementById('ovl').hidden = true;
       document.getElementById('modal').hidden = true;
     }
@@ -1047,6 +1230,12 @@
       var d = DESTINOS[draft.destino];
       var h = '';
 
+      if (draft.novo) {
+        h += '<div class="alert"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+          '<div class="alert-title">Criado a partir da ' + draft.contexto + '</div>' +
+          '<div class="alert-description"><p>Esta licitação serve de teste: antes de salvar você vê o resultado da regra nela. ' +
+          'Depois de salva, a regra vale para todas as licitações do espaço de trabalho.</p></div></div>';
+      }
       if (draft.sistema) {
         h += '<div class="alert">' +
           '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
@@ -1054,6 +1243,11 @@
           '<div class="alert-description"><p>Você pode mudar o peso e as faixas, mas não a forma como ele lê a licitação.</p></div></div>';
       }
 
+      if (draft.novo) {
+        h += '<div class="ap-field"><label for="fNomeNovo">Nome do critério</label>' +
+             '<input class="ap-input" id="fNomeNovo" type="text" value="' + draft.nome.replace(/"/g, '&quot;') +
+             '" placeholder="Ex.: Exige seguro sem franquia" /></div>';
+      }
       h += '<div class="ap-field"><label for="fInstr">O que a Settle deve fazer</label>' +
            '<p class="ap-fhint">Escreva como você explicaria para alguém da equipe. Na revisão eu aponto o que ficou em aberto.</p>' +
            '<textarea class="ap-textarea" id="fInstr">' + draft.instr + '</textarea></div>';
@@ -1105,6 +1299,13 @@
       }
       h += '</div>';
 
+      h += '<div class="ap-field"><span class="ap-flabel">Quando esta regra se aplica</span>' +
+           '<p class="ap-fhint">Uma regra pode não valer para toda licitação. O que não se aplica sai do total, ' +
+           'em vez de virar zero, senão a licitação parece pior do que é.</p><div class="ap-chips">' +
+           '<button class="ap-chip" type="button" data-cond="sempre" aria-pressed="' + !draft.condicao + '">Em todas as licitações</button>' +
+           '<button class="ap-chip" type="button" data-cond="segmento" aria-pressed="' + !!draft.condicao + '">Só em alguns segmentos <small>transporte de passageiros</small></button>' +
+           '</div></div>';
+
       h += '<div class="ap-field" id="fieldEscopo"><span class="ap-flabel">Escopo e agregação</span>';
       if (draft.escopo === 'componente') {
         h += '<div class="ap-locked"><span class="k">Roda</span>' +
@@ -1132,9 +1333,23 @@
       document.getElementById('fInstr').addEventListener('input', function (e) {
         draft.instr = e.target.value; draft.mudou.instr = true;
       });
+      var nn = document.getElementById('fNomeNovo');
+      if (nn) nn.addEventListener('input', function (e) { draft.nome = e.target.value; });
       var pts = document.getElementById('fPts');
       if (pts) pts.addEventListener('input', function (e) {
         draft.pontos = parseInt(e.target.value, 10) || 0; draft.mudou.pontos = true;
+      });
+      document.querySelectorAll('[data-cond]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (b.dataset.cond === 'sempre') { draft.condicao = null; }
+          else if (!draft.condicao) {
+            draft.condicao = { ok:false, var:'segmento', esperado:'transporte de passageiros',
+              texto:'Só se aplica quando o segmento da licitação é transporte de passageiros',
+              porque:'Esta licitação é de locação e gestão de frota, então a regra fica fora do total.' };
+          }
+          draft.mudou.condicao = true;
+          pintarForm();
+        });
       });
       document.querySelectorAll('[data-agg]').forEach(function (b) {
         b.addEventListener('click', function () { draft.agregacao = b.dataset.agg; draft.mudou.agregacao = true; pintarForm(); });
@@ -1319,6 +1534,14 @@
                     estado:orig.estado, risco:orig.risco, ausencia:orig.ausencia, prov:orig.prov };
       orig.instr = draft.instr;
       orig.destino = draft.destino;
+      orig.condicao = draft.condicao;
+      if (draft.novo) {
+        orig.nome = draft.nome || 'Critério sem nome';
+        orig.novo = false;
+        orig.dado = 'ainda não rodou nesta licitação';
+        orig.prov = 'Criado a partir da ' + draft.contexto + ' em 31/08';
+        orig.regraTexto = draft.instr;
+      }
       if (draft.pontos !== null) orig.pontos = draft.pontos;
       var r = draft.mudou.ans_semdado;
       if (r) {
@@ -2067,6 +2290,10 @@
         texto:'Este critério somou <b>15 pontos</b> por não ter encontrado exigência de atestado. Só que não encontrar não é a mesma coisa que não existir: em 3 das últimas 10 análises a exigência estava em anexo separado.<p>O aviso âmbar aparece porque a operação já mostrou que essa regra falha.</p>',
         antes:function () { abaAtiva('licitacao'); } },
 
+      { alvo:'#estadoDemo', titulo:'Antes de existir número',
+        texto:'O score só é calculado quando a licitação é <b>enviada para análise</b>, e não quando ela entra no match. É assim que o custo fica sob controle: nada roda no que você vai descartar na triagem.<p>Estes botões existem só no protótipo, para ver os quatro momentos: ainda não enviado, calculando com o que já ficou pronto, calculado e falhou.</p>',
+        antes:function () { setEstado('pronto'); } },
+
       { alvo:'#crit-cap', titulo:'O dado extraído, não só a nota',
         texto:'Cada linha mostra <b>o que foi extraído</b> e a <b>regra por trás</b>. Antes aparecia só a pontuação, e o cliente não tinha como saber a qual CAPAG ou a qual população o número se referia.<p>Aqui a variável vem qualificada: CAPAG estadual, porque o órgão é do estado.</p>' },
 
@@ -2101,6 +2328,12 @@
       { alvo:'#boxScore', titulo:'O resultado muda na hora',
         texto:'Salvou, o score caiu de 78 para <b>63</b> e o critério passou a dizer "não encontrado, sinalizado para revisão". A pessoa vê a consequência da própria decisão no mesmo lugar onde ela discordou.',
         antes:function () { clic('#btnAvancar'); }, espera:420 },
+
+      { alvo:'#crit-iso', titulo:'Regra que não vale para toda licitação',
+        texto:'Esta regra só existe quando o segmento é transporte de passageiros. Como esta licitação é de frota, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.<p>O denominador do score muda de licitação para licitação, e o cabeçalho diz quantos pontos saíram e por quê.</p>' },
+
+      { alvo:'#btnNovoDaqui', titulo:'Criar sem sair da licitação',
+        texto:'Dá para adicionar um critério novo daqui, com esta licitação servindo de teste antes de salvar. A aba de agentes continua existindo como painel de controle, mas não é o único caminho para criar.' },
 
       { alvo:'#panel-tecnica .alert', titulo:'O mesmo modelo, em outra análise',
         texto:'A análise técnica é o caso que quebrava o modelo. Ela roda <b>por componente</b>, e os componentes não existem antes de alguém ler o Termo de Referência: foram descobertos na execução.<p>Repare no custo: R$ 0,45 nesta licitação contra R$ 0,03 de um agente que rodasse uma vez só.</p>',
