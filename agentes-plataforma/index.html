@@ -1943,8 +1943,15 @@
         var resumo, custo;
         if (an.formato === 'estruturado') {
           var rs = regrasDa(an);
-          var pts = rs.reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
-          resumo = rs.length + ' regras' + (pts ? ' · ' + pts + ' pontos no total' : '');
+          /* Pontos fixos e condicionais contados em separado: a regra condicional
+             existe na configuração, mas só entra no total da licitação em que se
+             aplica. Sem isso o card dizia 110 e a licitação dizia 100. */
+          var pts = rs.filter(function (r) { return !r.condicao; })
+            .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+          var cond = rs.filter(function (r) { return r.condicao; })
+            .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+          resumo = rs.length + ' regras' + (pts ? ' · ' + pts + ' pontos fixos' : '') +
+                   (cond ? ' + ' + cond + ' condicionais' : '');
           custo = rs.reduce(function (t, r) { return t + r.custo; }, 0);
         } else if (an.formato === 'composicao') {
           resumo = '1 regra, aplicada a cada componente · 15 execuções nesta licitação';
@@ -1986,19 +1993,24 @@
       }
 
       var rs = regrasDa(an);
-      var pts = rs.reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+      var pts = rs.filter(function (r) { return !r.condicao; })
+        .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+      var cond = rs.filter(function (r) { return r.condicao; })
+        .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
       var h = '<p class="ap-fhint">' + (an.destino === 'score'
-        ? 'Uma análise, ' + rs.length + ' regras, ' + pts + ' pontos no total. Não são ' + rs.length +
-          ' agentes: é o Score inteiro, e as regras vivem dentro dele.'
+        ? 'Uma análise, ' + rs.length + ' regras, ' + pts + ' pontos fixos' +
+          (cond ? ' e ' + cond + ' condicionais, que só entram no total da licitação em que se aplicam' : '') +
+          '. Não são ' + rs.length + ' agentes: é o Score inteiro, e as regras vivem dentro dele.'
         : 'Os campos do Resumo e a fonte de cada um.') + '</p>';
 
       rs.forEach(function (r) {
         h += '<div class="ap-varline" style="align-items:flex-start">' +
-             '<span style="flex:1;min-width:0"><span class="nm">' + r.nome + '</span>' +
+             '<span style="flex:1;min-width:0"><span class="nm">' + r.nome +
+               (r.condicao ? ' <span class="tag-light">condicional</span>' : '') + '</span>' +
              (r.regraTexto ? '<span class="meta" style="display:block">' + r.regraTexto + '</span>' : '') +
              (r.vars.length ? '<span class="meta" style="display:block">usa ' +
                 r.vars.map(function (k) { return VARS[k].nome; }).join(', ') + '</span>' : '') + '</span>' +
-             (r.pontos !== null ? '<span class="ap-pts">' + r.pontos + '</span>' : '') +
+             (r.pontos !== null ? '<span class="ap-pts">' + r.pontos + (r.condicao ? '*' : '') + '</span>' : '') +
              '<button class="ap-mini" type="button" data-anedit="' + r.id + '">Editar</button></div>';
       });
 
