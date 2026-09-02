@@ -881,3 +881,61 @@ table.items .col-seg{display:flex;gap:6px;}
 .memo td.n{font-variant-numeric:tabular-nums;}
 .memo-foot{display:flex;align-items:center;gap:10px;padding:10px 13px;border-top:1px solid var(--border);flex-wrap:wrap;}
 .memo-total{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-left:auto;}
+
+
+/* ==========================================================================
+   19. PAINEL DE AGENTES
+   --------------------------------------------------------------------------
+   Painel lateral disponível em qualquer tela: lista de agentes, conversa com
+   um deles e acesso à configuração. A conversa propõe a mudança; a mudança só
+   acontece depois de a pessoa ver o antes e o depois e aprovar.
+   ========================================================================== */
+
+.cp-fab{position:fixed;right:24px;bottom:24px;z-index:38;display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid var(--border);border-radius:9999px;background:var(--background);color:var(--foreground);font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
+.cp-fab:hover{background:var(--muted);}
+.cp-fab svg{width:18px;height:18px;}
+.cp{position:fixed;top:0;right:0;bottom:0;width:384px;max-width:100vw;z-index:39;background:var(--background);border-left:1px solid var(--border);display:flex;flex-direction:column;box-shadow:var(--shadow-pop);}
+    body.cp-open .shell{margin-right:384px;}
+    @media (max-width:1200px){ body.cp-open .shell{margin-right:0;} }
+.cp-head{flex:none;display:flex;align-items:center;gap:6px;padding:12px 12px 12px 16px;border-bottom:1px solid var(--border);}
+.cp-title{flex:1;min-width:0;display:flex;align-items:center;gap:7px;border:0;background:transparent;padding:5px 8px;margin-left:-8px;border-radius:var(--radius-field);font-family:inherit;font-size:15px;font-weight:600;color:var(--foreground);cursor:pointer;text-align:left;}
+.cp-title:hover{background:var(--muted);}
+.cp-title svg{flex:none;transition:transform .15s;}
+.cp-title[aria-expanded="true"] svg{transform:rotate(180deg);}
+.cp-body{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;}
+.cp-foot{flex:none;display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);}
+.cp-item{display:flex;align-items:flex-start;gap:10px;width:100%;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-box);padding:11px 13px;margin-bottom:8px;font-family:inherit;text-align:left;cursor:pointer;}
+.cp-item:hover{border-color:var(--border-strong);background:var(--muted);}
+.cp-item-main{flex:1;min-width:0;}
+.cp-item-nome{display:block;font-size:14px;font-weight:600;color:var(--foreground);}
+.cp-item-sub{display:block;font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:2px;}
+.cp-agente{font-size:12px;color:var(--muted-foreground);margin-bottom:14px;}
+.cp-msg{max-width:94%;font-size:13.5px;line-height:20px;border-radius:12px;padding:9px 12px;margin-bottom:10px;}
+.cp-msg.bot{background:var(--muted);}
+.cp-msg.me{margin-left:auto;background:var(--primary);color:var(--primary-foreground);}
+.cp-prop{border:1px solid var(--accent);border-radius:var(--radius-box);background:var(--card);padding:12px 14px;margin-bottom:10px;}
+.cp-prop h4{margin:0 0 4px;font-size:13px;font-weight:700;}
+.cp-prop .por{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-bottom:10px;}
+.cp-diff{font-size:12.5px;line-height:18px;border-top:1px solid var(--border);padding-top:9px;}
+.cp-diff .de{color:var(--muted-foreground);text-decoration:line-through;display:block;}
+.cp-diff .para{color:var(--foreground);font-weight:600;display:block;margin-top:3px;}
+.cp-prop-acts{display:flex;gap:8px;margin-top:11px;}
+
+
+/* ==========================================================================
+   20. LINHA DE RESULTADO EXPANSÍVEL
+   --------------------------------------------------------------------------
+   Lista onde cada linha mostra só o resultado e abre o detalhe sob demanda:
+   a regra por trás, a origem e as ações. Mantém a lista legível quando há
+   muitas linhas com muita informação atrás de cada uma.
+   ========================================================================== */
+
+.ap-crit{border-top:1px solid var(--border);}
+.ap-crit:first-child{border-top:0;}
+.ap-crit-btn{display:flex;align-items:center;gap:14px;width:100%;padding:13px 8px;border:0;background:transparent;font-family:inherit;text-align:left;cursor:pointer;border-radius:var(--radius-field);}
+.ap-crit-btn:hover{background:var(--muted);}
+.ap-crit.nao-aplica .ap-crit-btn{opacity:.68;}
+.ap-chev{flex:none;color:var(--muted-foreground);font-size:17px;transition:transform .15s;}
+.ap-crit-btn[aria-expanded="true"] .ap-chev{transform:rotate(90deg);}
+.ap-det{padding:2px 8px 16px;}
+.ap-det-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
