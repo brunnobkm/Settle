@@ -385,7 +385,7 @@
                      faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
       docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',            v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
       componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Edital e anexos',            v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
-      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos + catálogo da empresa', v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
+      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos',            v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
     };
 
     var AGENTES = [
@@ -562,6 +562,7 @@
         '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
         '<div class="alert-title">Conformidade técnica do item · roda por componente</div>' +
         '<div class="alert-description"><p>15 componentes descobertos em 3 itens, a partir do Termo de Referência. ' +
+        'A Settle extrai a exigência; <b>o que a sua empresa fornece é informado por você</b>, porque isso não está em documento nenhum da licitação. ' +
         (MOSTRAR_CUSTO ? 'Custo nesta licitação: ' + moeda(custo) + ', contra ' + moeda(0.03) + ' de um agente que rodasse uma vez só. '
                        : 'O agente roda 15 vezes aqui, contra uma vez de um agente por licitação. ') +
         '<button class="ap-linkbtn" type="button" data-edit-tec="1">Ajustar o agente</button></p></div></div>';
@@ -579,7 +580,8 @@
              '<button class="ap-linkbtn" type="button" data-chat="' + it.n + '">Falar com o agente</button></div>' +
              '<table class="dt"><thead><tr>' +
              '<th scope="col">Componente exigido</th><th scope="col">Onde está no TR</th>' +
-             '<th scope="col">O que fornecemos</th><th scope="col">Status</th></tr></thead><tbody>';
+             '<th scope="col">O que fornecemos <span class="tag-light">informado por você</span></th>' +
+             '<th scope="col">Status</th></tr></thead><tbody>';
         it.comps.forEach(function (c) {
           h += '<tr><td style="white-space:normal"><b>' + c.nome + '</b>' +
                (c.critico ? ' <span class="tag-light">crítico</span>' : '') + '</td>' +
@@ -2044,10 +2046,9 @@
         multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
                         'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') +
         '<p class="ap-fhint" style="margin:12px 0 5px"><b>Em outras fontes</b>, que não são documentos da licitação</p>' +
-        multi('fonte2', ['Dados do portal', 'Catálogo da empresa'], v ? v.fonte : '') +
-        '<p class="ap-fhint" style="margin:6px 0 0">Dados do portal é o que a Settle já capturou da licitação, ' +
-        'como órgão, valor, prazo e CAPAG: não precisa ler documento. Catálogo da empresa são os seus documentos, ' +
-        'não os do órgão.</p>' +
+        multi('fonte2', ['Dados do portal'], v ? v.fonte : '') +
+        '<p class="ap-fhint" style="margin:6px 0 0">O que a Settle já capturou da licitação e de bases públicas, ' +
+        'como órgão, valor, prazo, CAPAG e habitantes. Não precisa ler documento.</p>' +
         '<p class="ap-fhint" style="margin-top:10px">Documento que a Settle não conseguiu classificar fica ' +
         'de fora por padrão. Marcando, ele entra na busca.</p></div>' +
         '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
