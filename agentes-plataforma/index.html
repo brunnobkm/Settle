@@ -358,16 +358,16 @@
     };
 
     var VARS = {
-      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Portal de origem',            v:'v2', custo:0,    ausencia:'não se aplica' },
-      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Base do Tesouro + Esfera',    v:'v3', custo:0.01, ausencia:'não pontua e sinaliza',
+      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Dados do portal',            v:'v2', custo:0,    ausencia:'não se aplica' },
+      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Dados do portal e bases públicas', v:'v3', custo:0.01, ausencia:'não pontua e sinaliza',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
-      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Objeto e itens, cruzado com os seus segmentos', v:'v3', custo:0, ausencia:'fica fora do match' },
-      populacao: { nome:'População',                tipo:'número',    fonte:'IBGE + Esfera',               v:'v1', custo:0,    ausencia:'não pontua',
+      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Dados do portal',            v:'v3', custo:0, ausencia:'fica fora do match' },
+      populacao: { nome:'População',                tipo:'número',    fonte:'Dados do portal e bases públicas', v:'v1', custo:0,    ausencia:'não pontua',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
-      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital, item de habilitação', v:'v1', custo:0.04, ausencia:'considera que não exige' },
-      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Termo de Referência',         v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
-      qtdveic:   { nome:'Quantidade total de veículos', tipo:'calculada', fonte:'TR, quadro de quantitativos', v:'v1', custo:0.05,
+      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.04, ausencia:'considera que não exige' },
+      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
+      qtdveic:   { nome:'Quantidade total de veículos', tipo:'calculada', fonte:'Edital e anexos',            v:'v1', custo:0.05,
                    ausencia:'não pontua e sinaliza',
                    /* Variável que não sai de um trecho: sai de uma conta sobre vários.
                       Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
@@ -383,9 +383,9 @@
                          suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
                      ],
                      faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
-      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',             v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
-      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Termo de Referência',         v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
-      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'TR + catálogo da empresa',     v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
+      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',            v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
+      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Edital e anexos',            v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
+      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos + catálogo da empresa', v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
     };
 
     var AGENTES = [
@@ -2004,6 +2004,14 @@
       document.getElementById('fxAtivar').disabled = false;
       document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO ? 'O custo depende da fonte escolhida' : '';
 
+      /* múltipla escolha: o valor final é a lista das marcadas */
+      var multi = function (grupo, opcoes, atual) {
+        return '<div class="ap-chips" data-multi="' + grupo + '">' + opcoes.map(function (o) {
+          var on = (atual || '').indexOf(o) >= 0;
+          return '<button class="ap-chip" type="button" data-val="' + o + '" aria-pressed="' + on + '">' + o + '</button>';
+        }).join('') + '</div>';
+      };
+
       var chips = function (grupo, opcoes, atual) {
         return '<div class="ap-chips" data-g="' + grupo + '">' + opcoes.map(function (o) {
           var val = o.split(' <')[0];
@@ -2030,8 +2038,16 @@
         '<p class="ap-fhint">Escreva como pergunta. É assim que a Settle vai procurar no documento.</p>' +
         '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
         '" placeholder="Ex.: exige atestado de capacidade técnica?" /></div>' +
-        '<div class="ap-field"><span class="ap-flabel">De onde vem</span>' +
-        chips('fonte', ['Portal de origem', 'Edital', 'Termo de Referência', 'Edital e anexos'], v ? v.fonte : 'Edital') + '</div>' +
+        '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
+        '<p class="ap-fhint">Os arquivos de uma licitação variam de órgão para órgão, então a escolha é por ' +
+        'categoria, não por arquivo. Pode marcar mais de uma.</p>' +
+        '<p class="ap-fhint" style="margin:10px 0 5px"><b>Nos arquivos da licitação</b></p>' +
+        multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
+                        'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') +
+        '<p class="ap-fhint" style="margin:12px 0 5px"><b>Fora deles</b></p>' +
+        multi('fonte2', ['Dados do portal', 'Catálogo da empresa'], v ? v.fonte : '') +
+        '<p class="ap-fhint" style="margin-top:10px">Documento que a Settle não conseguiu classificar fica ' +
+        'de fora por padrão. Marcando, ele entra na busca.</p></div>' +
         '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
         chips('tipo', ['sim ou não', 'número', 'texto', 'lista', 'categoria', 'calculada'], v ? v.tipo : 'sim ou não') +
         '<p class="ap-fhint" style="margin-top:8px">O tipo decide onde essa variável pode ser usada depois: só número entra no Score.</p></div>' +
@@ -2040,10 +2056,17 @@
               v ? v.ausencia : 'marca como não encontrado') + '</div>' +
         (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
 
-      document.querySelectorAll('#fxBody .ap-chips').forEach(function (g) {
+      document.querySelectorAll('#fxBody .ap-chips[data-g]').forEach(function (g) {
         g.querySelectorAll('.ap-chip').forEach(function (b) {
           b.addEventListener('click', function () {
             g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+          });
+        });
+      });
+      document.querySelectorAll('#fxBody .ap-chips[data-multi]').forEach(function (g) {
+        g.querySelectorAll('.ap-chip').forEach(function (b) {
+          b.addEventListener('click', function () {
+            b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
           });
         });
       });
@@ -2064,11 +2087,16 @@
     function salvarVar() {
       var nome = document.getElementById('vNome').value.trim();
       if (!nome) { settleToast('Escreva o que a variável deve extrair'); return; }
+      var fontes = [];
+      document.querySelectorAll('#fxBody .ap-chips[data-multi] .ap-chip[aria-pressed="true"]')
+        .forEach(function (b) { fontes.push(b.dataset.val); });
+      if (!fontes.length) { settleToast('Escolha pelo menos um lugar para procurar'); return; }
+
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
       var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
       VARS[k] = {
-        nome:nome, tipo:valorDe('tipo'), fonte:valorDe('fonte'), ausencia:valorDe('ausencia'),
+        nome:nome, tipo:valorDe('tipo'), fonte:fontes.join(', '), ausencia:valorDe('ausencia'),
         v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
         depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
         calc:novo ? undefined : VARS[k].calc
