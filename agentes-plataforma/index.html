@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 15:54</p>
+        <p class="ap-selo">protótipo · versão de 02/09 16:00</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -2031,20 +2031,14 @@
         '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
         '" placeholder="Ex.: prazo de entrega" /></div>' +
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
-        '<p class="ap-fhint">Os arquivos variam de órgão para órgão, então a escolha é por categoria, não por ' +
-        'arquivo. Pode marcar mais de uma. O que a Settle não conseguiu classificar fica de fora por padrão.</p>' +
         multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
                         'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') + '</div>' +
 
         '<div class="ap-field"><label for="vAus">Quando não encontrar no documento</label>' +
-        '<p class="ap-fhint">Escreva o que a Settle deve registrar nesse caso.</p>' +
+        '<p class="ap-fhint">Em branco, a Settle registra como não encontrado.</p>' +
         '<input class="ap-input" id="vAus" type="text" value="' +
-        (v ? (v.ausencia || '').replace(/"/g, '&quot;') : 'registra como não encontrado') +
-        '" placeholder="Ex.: registra como não encontrado" />' +
-        '<div class="ap-chips" style="margin-top:8px">' +
-        ['registra como não encontrado', 'assume que não exige', 'assume zero'].map(function (o) {
-          return '<button class="ap-chip" type="button" data-sug-aus="' + o + '">' + o + '</button>';
-        }).join('') + '</div></div>' +
+        (v ? (v.ausencia || '').replace(/"/g, '&quot;') : '') +
+        '" placeholder="Ex.: assume zero" /></div>' +
         (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
 
       document.querySelectorAll('#fxBody .ap-chips[data-g]').forEach(function (g) {
@@ -2060,9 +2054,6 @@
             b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
           });
         });
-      });
-      document.querySelectorAll('#fxBody [data-sug-aus]').forEach(function (b) {
-        b.addEventListener('click', function () { document.getElementById('vAus').value = b.dataset.sugAus; });
       });
 
       /* Deduz o formato pelo enunciado: continua existindo no modelo, porque
@@ -2424,21 +2415,14 @@
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">O que extrair</label>' +
           '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: prazo de entrega" />' +
-          '<p class="ap-fhint" style="margin:10px 0 4px">De onde</p><div class="ap-chips" data-g="fonte">' +
-            '<button class="ap-chip" type="button" data-val="Edital" aria-pressed="true">Edital</button>' +
-            '<button class="ap-chip" type="button" data-val="Termo de Referência" aria-pressed="false">TR</button>' +
-            '<button class="ap-chip" type="button" data-val="Edital e anexos" aria-pressed="false">Anexos</button>' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Onde procurar</p><div class="ap-chips" data-g="fonte">' +
+            '<button class="ap-chip" type="button" data-val="Edital e anexos" aria-pressed="true">Edital e anexos</button>' +
+            '<button class="ap-chip" type="button" data-val="Manifestações" aria-pressed="false">Manifestações</button>' +
+            '<button class="ap-chip" type="button" data-val="Arquivos de resultado" aria-pressed="false">Resultado</button>' +
+            '<button class="ap-chip" type="button" data-val="Documentos não identificados" aria-pressed="false">Não identificados</button>' +
           '</div>' +
-          '<p class="ap-fhint" style="margin:10px 0 4px">Tipo da resposta</p><div class="ap-chips" data-g="tipo">' +
-            '<button class="ap-chip" type="button" data-val="sim ou não" aria-pressed="true">sim ou não</button>' +
-            '<button class="ap-chip" type="button" data-val="número" aria-pressed="false">número</button>' +
-            '<button class="ap-chip" type="button" data-val="texto" aria-pressed="false">texto</button>' +
-            '<button class="ap-chip" type="button" data-val="lista" aria-pressed="false">lista</button>' +
-          '</div>' +
-          '<p class="ap-fhint" style="margin:10px 0 4px">Se não encontrar</p><div class="ap-chips" data-g="ausencia">' +
-            '<button class="ap-chip" type="button" data-val="marca como não encontrado" aria-pressed="true">não encontrado</button>' +
-            '<button class="ap-chip" type="button" data-val="assume que não exige" aria-pressed="false">assume que não exige</button>' +
-          '</div>' +
+          '<label class="ap-fhint" for="nvAus" style="display:block;margin:10px 0 4px">Quando não encontrar</label>' +
+          '<input class="ap-input" id="nvAus" type="text" placeholder="Ex.: assume zero" />' +
           '<button class="btn btn-primary" type="button" id="nvCriar" style="width:100%;justify-content:center;margin-top:12px">Criar e inserir</button>' +
         '</div>';
 
@@ -2458,8 +2442,9 @@
           return b ? b.dataset.val : '';
         };
         var k = 'nv' + Object.keys(VARS).length;
-        VARS[k] = { nome:nome, tipo:val('tipo'), fonte:val('fonte'), v:'v1',
-                    custo:val('fonte') === 'Edital e anexos' ? 0.04 : 0.02, ausencia:val('ausencia') };
+        VARS[k] = { nome:nome, tipo:tipoDeduzido(nome), fonte:val('fonte'), v:'v1',
+                    custo:val('fonte') === 'Edital e anexos' ? 0.04 : 0.02,
+                    ausencia:(document.getElementById('nvAus').value || '').trim() || 'registra como não encontrado' };
         pintarVars();
         inserirVar(k, true);
         settleToast('Variável criada e disponível para as outras análises');
