@@ -2033,10 +2033,10 @@
         : '';
 
       document.getElementById('fxBody').innerHTML = impacto +
-        '<div class="ap-field"><label for="vNome">O que você quer extrair</label>' +
-        '<p class="ap-fhint">Escreva como pergunta. É assim que a Settle vai procurar no documento.</p>' +
+        '<div class="ap-field"><label for="vNome">O que extrair</label>' +
+        '<p class="ap-fhint">Descreva a informação. É este nome que vai aparecer dentro das regras que usarem a variável.</p>' +
         '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
-        '" placeholder="Ex.: exige atestado de capacidade técnica?" /></div>' +
+        '" placeholder="Ex.: exigência de atestado de capacidade técnica" /></div>' +
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
         '<p class="ap-fhint">Os arquivos de uma licitação variam de órgão para órgão, então a escolha é por ' +
         'categoria, não por arquivo. Pode marcar mais de uma.</p>' +
@@ -2413,7 +2413,7 @@
         '<div class="h">Nova variável</div>' +
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">O que extrair</label>' +
-          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: exige garantia contratual?" />' +
+          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: exigência de garantia contratual" />' +
           '<p class="ap-fhint" style="margin:10px 0 4px">De onde</p><div class="ap-chips" data-g="fonte">' +
             '<button class="ap-chip" type="button" data-val="Edital" aria-pressed="true">Edital</button>' +
             '<button class="ap-chip" type="button" data-val="Termo de Referência" aria-pressed="false">TR</button>' +
