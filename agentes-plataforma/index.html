@@ -238,13 +238,7 @@
 
       <!-- ============ VARIÁVEIS ============ -->
       <section class="ap-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
-        <p class="ap-lead" style="margin-bottom:16px">Uma variável é uma informação extraída uma vez e
-          reutilizada em qualquer lugar. Alterar uma variável afeta todos os agentes que a usam.</p>
         <div class="datatable">
-          <div class="dt-top">
-            <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip" id="cntVar2">6</span></div>
-            <div class="dt-total" data-col="custo" hidden>Custo no mês: <b>R$ 31,80</b></div>
-          </div>
           <table class="dt">
             <thead>
               <tr>
@@ -1007,7 +1001,6 @@
     function pintarVars() {
       document.getElementById('cntAg').textContent = ANALISES.length;
       document.getElementById('cntVar').textContent = Object.keys(VARS).length;
-      document.getElementById('cntVar2').textContent = Object.keys(VARS).length;
       document.getElementById('rowsVars').innerHTML = Object.keys(VARS).map(function (k) {
         var v = VARS[k];
         var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; })
