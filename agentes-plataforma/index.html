@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 15:45</p>
+        <p class="ap-selo">protótipo · versão de 02/09 15:50</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -2031,26 +2031,20 @@
         '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
         '" placeholder="Ex.: exigência de atestado de capacidade técnica" /></div>' +
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
-        '<p class="ap-fhint">Os arquivos de uma licitação variam de órgão para órgão, então a escolha é por ' +
-        'categoria, não por arquivo. Pode marcar mais de uma.</p>' +
-        '<p class="ap-fhint" style="margin:10px 0 5px"><b>Nos documentos da licitação</b></p>' +
+        '<p class="ap-fhint">Os arquivos variam de órgão para órgão, então a escolha é por categoria, não por ' +
+        'arquivo. Pode marcar mais de uma. O que a Settle não conseguiu classificar fica de fora por padrão.</p>' +
         multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
-                        'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') +
-        '<p class="ap-fhint" style="margin:12px 0 5px"><b>Em outras fontes</b>, que não são documentos da licitação</p>' +
-        multi('fonte2', ['Dados do portal'], v ? v.fonte : '') +
-        '<p class="ap-fhint" style="margin:6px 0 0">O que a Settle já capturou da licitação e de bases públicas, ' +
-        'como órgão, valor, prazo, CAPAG e habitantes. Não precisa ler documento.</p>' +
-        '<p class="ap-fhint" style="margin-top:10px">Documento que a Settle não conseguiu classificar fica ' +
-        'de fora por padrão. Marcando, ele entra na busca.</p></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Formato da resposta</span>' +
-        '<p class="ap-fhint">A Settle deduz pelo que você escreveu. Troque só se estiver errado: é o formato que ' +
-        'decide onde a variável pode ser usada, e só número entra numa regra de pontuação por faixa.</p>' +
-        chips('tipo', ['sim ou não', 'número', 'texto', 'lista', 'categoria'], v ? v.tipo : 'sim ou não') + '</div>' +
-        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar no documento</span>' +
-        '<p class="ap-fhint">O que registrar quando a resposta não está lá. <b>O que fazer com esse resultado</b> ' +
-        'é decisão de cada regra que usar a variável, não dela.</p>' +
-        chips('ausencia', ['registra como não encontrado', 'assume que não exige'],
-              v ? v.ausencia : 'registra como não encontrado') + '</div>' +
+                        'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') + '</div>' +
+
+        '<div class="ap-field"><label for="vAus">Quando não encontrar no documento</label>' +
+        '<p class="ap-fhint">Escreva o que a Settle deve registrar nesse caso.</p>' +
+        '<input class="ap-input" id="vAus" type="text" value="' +
+        (v ? (v.ausencia || '').replace(/"/g, '&quot;') : 'registra como não encontrado') +
+        '" placeholder="Ex.: registra como não encontrado" />' +
+        '<div class="ap-chips" style="margin-top:8px">' +
+        ['registra como não encontrado', 'assume que não exige', 'assume zero'].map(function (o) {
+          return '<button class="ap-chip" type="button" data-sug-aus="' + o + '">' + o + '</button>';
+        }).join('') + '</div></div>' +
         (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
 
       document.querySelectorAll('#fxBody .ap-chips[data-g]').forEach(function (g) {
@@ -2067,28 +2061,12 @@
           });
         });
       });
-      /* Deduz o formato pelo enunciado, para a pessoa não ter que pensar nisso. */
-      function deduzTipo(txt) {
-        var t = txt.toLowerCase();
-        if (/quantidade|quantos|número de|total de|peso|valor|prazo de|percentual/.test(t)) return 'número';
-        if (/documentos|lista de|itens|relação de/.test(t)) return 'lista';
-        if (/exig|permite|possui|aceita|obriga|é exclusiv/.test(t)) return 'sim ou não';
-        if (/esfera|porte|categoria|classificação|nota/.test(t)) return 'categoria';
-        return 'texto';
-      }
-
-      var campoNome = document.getElementById('vNome');
-      campoNome.addEventListener('input', function () {
-        if (campoNome.dataset.tocado === 'tipo') return;   // a pessoa já escolheu à mão
-        var t = deduzTipo(campoNome.value);
-        document.querySelectorAll('#fxBody [data-g="tipo"] .ap-chip').forEach(function (b) {
-          b.setAttribute('aria-pressed', String(b.dataset.val === t));
-        });
-      });
-      document.querySelectorAll('#fxBody [data-g="tipo"] .ap-chip').forEach(function (b) {
-        b.addEventListener('click', function () { campoNome.dataset.tocado = 'tipo'; });
+      document.querySelectorAll('#fxBody [data-sug-aus]').forEach(function (b) {
+        b.addEventListener('click', function () { document.getElementById('vAus').value = b.dataset.sugAus; });
       });
 
+      /* Deduz o formato pelo enunciado: continua existindo no modelo, porque
+         define onde a variável pode ser usada, mas não é mais pergunta. */
       var ex = document.getElementById('vExcluir');
       if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
 
@@ -2097,6 +2075,17 @@
     }
 
     var varEditando = null, modoModal = 'outro';
+
+    /* O formato não é perguntado: sai do enunciado. Ele existe porque decide
+       onde a variável pode ser usada (só número entra em regra de faixa). */
+    function tipoDeduzido(txt) {
+      var t = (txt || '').toLowerCase();
+      if (/quantidade|quantos|número de|total de|peso|valor|prazo de|percentual/.test(t)) return 'número';
+      if (/documentos|lista de|itens|relação de/.test(t)) return 'lista';
+      if (/exig|permite|possui|aceita|obriga|é exclusiv/.test(t)) return 'sim ou não';
+      if (/esfera|porte|categoria|classificação|nota/.test(t)) return 'categoria';
+      return 'texto';
+    }
 
     function valorDe(grupo) {
       var b = document.querySelector('#fxBody [data-g="' + grupo + '"] .ap-chip[aria-pressed="true"]');
@@ -2114,8 +2103,9 @@
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
       var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
+      var aus = (document.getElementById('vAus').value || '').trim() || 'registra como não encontrado';
       VARS[k] = {
-        nome:nome, tipo:valorDe('tipo'), fonte:fontes.join(', '), ausencia:valorDe('ausencia'),
+        nome:nome, tipo:tipoDeduzido(nome), fonte:fontes.join(', '), ausencia:aus,
         v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
         depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
         calc:novo ? undefined : VARS[k].calc
