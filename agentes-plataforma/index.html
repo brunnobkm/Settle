@@ -216,8 +216,8 @@
     <main class="content">
 
       <div class="page-head">
-        <h1 class="title">Agentes</h1>
-        <p class="ap-lead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
+        <h1 class="title" id="phTitle">Agentes</h1>
+        <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
       </div>
 
@@ -1726,7 +1726,19 @@
 
     var via = 'lic';
 
+    var CABECALHO = {
+      agentes:{ titulo:'Agentes',
+        lead:'Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra, edita e vê o que ele produziu na última execução.' },
+      variaveis:{ titulo:'Variáveis',
+        lead:'Informação extraída uma vez e reaproveitada por qualquer agente. Antes de alterar ou excluir uma, a tabela mostra quais regras dependem dela.' }
+    };
+
     function abaAtiva(tab) {
+      var c = CABECALHO[tab];
+      if (c) {
+        document.getElementById('phTitle').textContent = c.titulo;
+        document.getElementById('phLead').textContent = c.lead;
+      }
       document.querySelectorAll('[data-tab]').forEach(function (o) {
         var on = o.dataset.tab === tab;
         o.classList.toggle('active', on);
