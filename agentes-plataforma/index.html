@@ -2040,11 +2040,14 @@
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
         '<p class="ap-fhint">Os arquivos de uma licitação variam de órgão para órgão, então a escolha é por ' +
         'categoria, não por arquivo. Pode marcar mais de uma.</p>' +
-        '<p class="ap-fhint" style="margin:10px 0 5px"><b>Nos arquivos da licitação</b></p>' +
+        '<p class="ap-fhint" style="margin:10px 0 5px"><b>Nos documentos da licitação</b></p>' +
         multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
                         'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') +
-        '<p class="ap-fhint" style="margin:12px 0 5px"><b>Fora deles</b></p>' +
+        '<p class="ap-fhint" style="margin:12px 0 5px"><b>Em outras fontes</b>, que não são documentos da licitação</p>' +
         multi('fonte2', ['Dados do portal', 'Catálogo da empresa'], v ? v.fonte : '') +
+        '<p class="ap-fhint" style="margin:6px 0 0">Dados do portal é o que a Settle já capturou da licitação, ' +
+        'como órgão, valor, prazo e CAPAG: não precisa ler documento. Catálogo da empresa são os seus documentos, ' +
+        'não os do órgão.</p>' +
         '<p class="ap-fhint" style="margin-top:10px">Documento que a Settle não conseguiu classificar fica ' +
         'de fora por padrão. Marcando, ele entra na busca.</p></div>' +
         '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
