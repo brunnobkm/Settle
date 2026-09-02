@@ -171,3 +171,85 @@ As três primeiras mudam o banco, não só a tela.
    licitação. O cliente vê estimativa antes de ativar?
 5. **Quem pode editar** um agente que vale para o espaço de trabalho inteiro. Liga direto com
    o trabalho de permissionamento.
+
+---
+
+# Revisão de 02/09 (reunião com Bruno Ortiz e José Victor Almada)
+
+A conversa foi sobre o que o backend já tem e o que precisa receber. Ela corrige três coisas
+que o protótipo tinha resolvido pela metade e acrescenta um tema inteiro que estava fora.
+
+## A variável, com os campos que o backend espera
+
+| Campo | Regra | Origem |
+|---|---|---|
+| nome | curto, é o que aparece dentro das regras | hoje só existe uma key |
+| descrição | uma linha, para o cliente entender variável cadastrada pela Settle | José Victor, 05:30 |
+| **tipo** | **obrigatório**: texto, número, sim ou não, data, lista, categoria | José Victor, 10:04 |
+| **prompt** | campo próprio, separado do nome, porque cresce | José Victor, 08:05 |
+| **fontes** | **lista ordenada**, não conjunto | Bruno Ortiz, 12:31 |
+| **valor padrão** | tipado: segue o tipo escolhido, não é texto livre | José Victor, 17:10 |
+| versão | como já estava | |
+
+O tipo não é decoração: é ele que valida o valor padrão e o que o prompt pode pedir. Uma
+variável de data não aceita "abacaxi" como padrão, senão quebra na hora de entrar no Score.
+Por isso o campo do valor padrão muda de formato quando o tipo muda: booleano vira sim/não/nenhum,
+número vira campo numérico, data vira calendário, e só texto é realmente livre.
+
+A dedução de tipo pelo enunciado, que o protótipo fazia até 02/09, foi removida.
+
+### Fonte é ordem, não conjunto
+
+O caso que fechou a discussão é do Bruno Ortiz: "eu quero buscar o CNPJ e quero dar preferência
+para a minuta do contrato". A Settle procura na primeira fonte e só passa para a seguinte se não
+achar. Como o José Victor apontou (14:24), as quatro categorias grossas escondem uma distinção que
+importa: dentro de "Edital e anexos" o estudo preliminar costuma estar desatualizado e o termo de
+referência é o que rege. A lista de fontes passou a ter os dois níveis.
+
+O "resto dos arquivos" virou uma opção separada e ligada por padrão, respondendo ao ponto de que o
+comportamento do sistema deveria ser procurar em todo o resto para não produzir falso negativo
+(José Victor, 11:12).
+
+### Variável da Settle é somente leitura
+
+O cliente usa em qualquer agente, mas não edita a definição (José Victor, 20:49). E a lista precisa
+de busca, porque a Settle vai cadastrar muitas e o cliente poucas (20:54).
+
+## O agente: permissões, aprovação e histórico
+
+Tema que não existia no modelo. "Você tem que dizer para o agente, na configuração do agente, o que
+ele pode ou o que ele não pode fazer dentro da plataforma. E tem ações que deveriam ser aprovadas
+por ser humano" (Bruno Ortiz, 46:33).
+
+**Três estados por ação, não dois**: não pode, pede aprovação, executa sozinho. O estado do meio é o
+que faz a fila de aprovações existir.
+
+**A fila de aprovações em lote** responde ao corner case que ficou sem resposta na reunião (48:14):
+se o agente roda em 50 licitações e cada ação pede aprovação, ninguém vai abrir 50 licitações para
+clicar em aprovar. Todas as ações pendentes, de todos os agentes, caem numa fila só, com seleção
+múltipla.
+
+**Histórico de execução** (José Victor, 32:26): quando rodou, em qual licitação, o que fez e em que
+estado terminou. Sem isso, confiar uma ação ao agente é confiar sem auditoria.
+
+## O que a reunião confirmou
+
+- **Prompt livre venceu o passo a passo.** "Hoje em dia é mais fácil pedir em forma de texto, a gente
+  não precisa fazer UI e a pessoa não precisa aprender a usar UI" (José Victor, 28:07). Isso reforça
+  a decisão de manter o fluxograma como visão secundária, contra a preferência inicial da Alice.
+- **O `/` para inserir variável no meio do prompt** foi validado (22:14).
+- **O agente lê variáveis, não documentos** (José Victor, 28:27): se o agente reabre os documentos,
+  ele duplica o trabalho da variável, fica caro e fica inconsistente, porque a mesma extração pedida
+  duas vezes pode voltar diferente. O agente decide em cima de variáveis e do estado do sistema.
+- **Gatilho é lista fechada pela Settle**, não campo livre (25:21).
+- **Para o cliente, variável é o que sai de arquivo.** CAPAG e população vêm de portal e bases, mas
+  essas são cadastradas pela Settle (09:55).
+
+## Em aberto, e é o mais importante para o teste
+
+7. **Onde o resultado do agente aparece.** O José Victor defende que apareça onde o agente foi
+   configurado para rodar, junto da análise técnica ou da jurídica (39:08). O risco que levantei é
+   espalhar agente por toda a plataforma e a pessoa não saber onde procurar; a contraproposta é uma
+   seção de agentes dentro do workspace da licitação (40:00). A objeção dele à contraproposta é
+   concreta: quem quer validar o que o agente decidiu na análise técnica ficaria alternando entre
+   duas abas (41:26). Ficou em "a gente teria que testar na prática".

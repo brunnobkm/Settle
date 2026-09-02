@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 16:00</p>
+        <p class="ap-selo">protótipo · versão de 02/09 17:33</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -227,6 +227,7 @@
         <div class="fp-tabs" role="tablist" aria-label="Seções" id="tabs">
           <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="agentes">Agentes <span class="fp-c" id="cntAg">4</span></button>
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c" id="cntVar">6</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="aprovacoes">Aprovações <span class="fp-c" id="cntAprov">0</span></button>
         </div>
         <button class="btn btn-primary" type="button" id="btnNovoAgente" data-daaba="agentes">Novo agente</button>
         <button class="btn btn-primary" type="button" id="btnNovaVar" data-daaba="variaveis" hidden>Nova variável</button>
@@ -240,17 +241,51 @@
 
       <!-- ============ VARIÁVEIS ============ -->
       <section class="ap-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
+        <div class="ap-field" style="max-width:360px">
+          <label class="sr-only" for="vBusca">Procurar variável</label>
+          <input class="ap-input" id="vBusca" type="search" placeholder="Procurar por nome ou descrição" />
+        </div>
         <div class="datatable">
           <table class="dt">
             <thead>
               <tr>
-                <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Fonte</th>
-                <th scope="col">Se não encontrar</th>
+                <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Onde procurar</th>
+                <th scope="col">Valor padrão</th>
                 <th scope="col" data-col="custo" hidden>Custo</th>
                 <th scope="col">Mexer nela afeta</th><th scope="col"><span class="sr-only">Ações</span></th>
               </tr>
             </thead>
             <tbody id="rowsVars"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ APROVAÇÕES ============
+           O corner case do Bruno Ortiz (02/09): se o agente roda em 50
+           licitações e cada ação pede aprovação, ninguém vai abrir 50
+           licitações para clicar em aprovar. A fila junta tudo num lugar e
+           deixa aprovar em lote.
+           ================================================== -->
+      <section class="ap-panel" id="panel-aprovacoes" role="tabpanel" aria-label="Aprovações" hidden>
+        <p class="ap-fhint" style="margin:0 0 12px">Ações que os agentes querem executar e que você configurou
+          para pedir aprovação. Selecione várias para responder de uma vez.</p>
+        <div class="lote" id="loteBar">
+          <label class="ap-check"><input type="checkbox" id="aprTodas" /> <span>Selecionar todas</span></label>
+          <span class="lote-n" id="loteN">nenhuma selecionada</span>
+          <button class="btn btn-outline" type="button" id="aprRecusar" disabled>Recusar</button>
+          <button class="btn btn-primary" type="button" id="aprAprovar" disabled>Aprovar</button>
+        </div>
+        <div class="datatable">
+          <table class="dt">
+            <thead>
+              <tr>
+                <th scope="col"><span class="sr-only">Selecionar</span></th>
+                <th scope="col">Licitação</th><th scope="col">Agente</th>
+                <th scope="col">Ação proposta</th><th scope="col">Por quê</th>
+                <th scope="col">Pedido em</th>
+              </tr>
+            </thead>
+            <tbody id="rowsAprov"></tbody>
           </table>
         </div>
       </section>
@@ -359,18 +394,46 @@
       match:  { nome:'Match',        tipo:'sim ou não',        escopos:['licitacao'], nota:'Filtra a licitação antes da triagem.', bloqueado:true }
     };
 
+    /* A variável, com o que o backend precisa receber (reunião de 02/09 com
+       Bruno Ortiz e José Victor):
+       - tipo é obrigatório e é ele que valida o valor padrão e o que o prompt
+         pode pedir. Uma variável de data não aceita "abacaxi" como padrão.
+       - prompt é campo próprio, separado do nome e da descrição, porque cresce.
+       - fontes é uma LISTA ORDENADA, não um conjunto: "o CNPJ quase sempre
+         está na minuta do contrato, procure lá primeiro".
+       - settle:true são as que a Settle cadastra. O cliente lê, não edita. */
     var VARS = {
-      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Dados do portal',            v:'v2', custo:0,    ausencia:'registra como não se aplica' },
-      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Dados do portal e bases públicas', v:'v3', custo:0.01, ausencia:'registra como não encontrado',
+      esfera:    { nome:'Esfera', tipo:'categoria', settle:true, v:'v2', custo:0,
+                   desc:'Se o órgão é federal, estadual ou municipal.',
+                   prompt:'Identifique a esfera administrativa do órgão que publicou o edital.',
+                   fontes:['Dados do portal'], resto:false, padrao:'' },
+      capag:     { nome:'CAPAG', tipo:'categoria', settle:true, v:'v3', custo:0.01,
+                   desc:'Nota de capacidade de pagamento do ente, de A a D.',
+                   prompt:'Recupere a nota CAPAG do ente na base do Tesouro Nacional, referente ao exercício mais recente publicado.',
+                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
-      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Dados do portal',            v:'v3', custo:0, ausencia:'registra como não encontrado' },
-      populacao: { nome:'População',                tipo:'número',    fonte:'Dados do portal e bases públicas', v:'v1', custo:0,    ausencia:'registra como não encontrado',
+      segmento:  { nome:'Segmento da licitação', tipo:'lista', settle:true, v:'v3', custo:0,
+                   desc:'Os segmentos de mercado a que o objeto pertence.',
+                   prompt:'Classifique o objeto da licitação nos segmentos do catálogo da Settle.',
+                   fontes:['Dados do portal'], resto:false, padrao:'' },
+      populacao: { nome:'População', tipo:'número', settle:true, v:'v1', custo:0,
+                   desc:'População do ente, usada para estimar porte.',
+                   prompt:'Recupere a população estimada do ente na projeção mais recente do IBGE.',
+                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
-      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.04, ausencia:'assume que não exige' },
-      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.03, ausencia:'registra como não encontrado' },
-      qtdveic:   { nome:'Quantidade total de veículos', tipo:'calculada', fonte:'Edital e anexos',            v:'v1', custo:0.05,
-                   ausencia:'registra como não encontrado',
+      atestado:  { nome:'Atestado exigido', tipo:'sim ou não', v:'v1', custo:0.04,
+                   desc:'Se o edital pede atestado de capacidade técnica na habilitação.',
+                   prompt:'Verifique se o edital exige atestado de capacidade técnica como documento de habilitação. Responda sim quando houver exigência, ainda que parcial.',
+                   fontes:['Edital e anexos'], resto:true, padrao:'não' },
+      subcontr:  { nome:'Permite subcontratação', tipo:'sim ou não', v:'v1', custo:0.03,
+                   desc:'Se o edital autoriza subcontratar parte do objeto.',
+                   prompt:'Verifique se o edital autoriza a subcontratação de parte do objeto e em que percentual.',
+                   fontes:['Edital e anexos', 'Minuta do contrato'], resto:true, padrao:'nenhum' },
+      qtdveic:   { nome:'Quantidade total de veículos', tipo:'número', v:'v1', custo:0.05,
+                   desc:'Soma das quantidades de todos os itens de veículo leve.',
+                   prompt:'Some a quantidade de todos os itens cujo objeto seja veículo leve para locação, item a item, no quadro de quantitativos.',
+                   fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'0',
                    /* Variável que não sai de um trecho: sai de uma conta sobre vários.
                       Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
                    calc:{ operacao:'soma', campo:'quantidade', unidade:'veículos',
@@ -385,10 +448,45 @@
                          suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
                      ],
                      faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
-      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',            v:'v1', custo:0.06, ausencia:'registra como não encontrado' },
-      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Edital e anexos',            v:'v2', custo:0.02, ausencia:'registra como não encontrado' },
-      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos',            v:'v1', custo:0.01, ausencia:'registra como não avaliado' }
+      docshab:   { nome:'Documentos de habilitação', tipo:'lista', v:'v1', custo:0.06,
+                   desc:'Relação dos documentos exigidos para habilitação.',
+                   prompt:'Liste todos os documentos exigidos para habilitação, separando por jurídica, fiscal, econômico-financeira e técnica.',
+                   fontes:['Edital e anexos'], resto:true, padrao:'' },
+      componentes:{ nome:'Componentes do item', tipo:'lista', v:'v2', custo:0.02,
+                   desc:'Os componentes que formam cada item do Termo de Referência.',
+                   prompt:'Para cada item, liste os componentes que o formam com a especificação exigida de cada um.',
+                   fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'' },
+      especificacao:{ nome:'Especificação exigida', tipo:'texto', v:'v1', custo:0.01,
+                   desc:'O texto da especificação técnica de um componente.',
+                   prompt:'Transcreva a especificação técnica exigida para o componente, sem resumir.',
+                   fontes:['Termo de referência'], resto:true, padrao:'não avaliado' }
     };
+
+    /* Os tipos que o backend aceita. O tipo decide o formato do valor padrão:
+       booleano vira select de três opções, número vira campo numérico, e só
+       texto é realmente livre. */
+    var TIPOS_VAR = ['texto', 'número', 'sim ou não', 'data', 'lista', 'categoria'];
+
+    /* As fontes possíveis, em dois níveis. O nível fino existe porque dentro
+       de "Edital e anexos" há documento que vale e documento que já não vale:
+       o estudo preliminar costuma estar desatualizado, o termo de referência é
+       o que rege (José Victor, 14:24). */
+    var FONTES = ['Edital e anexos', 'Termo de referência', 'Minuta do contrato',
+                  'Estudo técnico preliminar', 'Manifestações', 'Arquivos de resultado'];
+
+    function fonteTxt(v) {
+      var f = (v.fontes || []).join(' > ');
+      return f + (v.resto ? (f ? ' > ' : '') + 'resto dos arquivos' : '');
+    }
+
+    /* O valor padrão exibido. Vazio não é "não encontrado": é ausência de
+       valor, e a regra que usar a variável precisa saber disso. */
+    function padraoTxt(v) {
+      if (v.padrao === '' || v.padrao === undefined || v.padrao === null) {
+        return '<span class="ap-dim">sem valor</span>';
+      }
+      return v.padrao;
+    }
 
     var AGENTES = [
       { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
@@ -1016,19 +1114,38 @@
       return u;
     }
 
+    var filtroVar = '';
+
     function pintarVars() {
       document.getElementById('cntAg').textContent = ANALISES.length;
       document.getElementById('cntVar').textContent = Object.keys(VARS).length;
-      document.getElementById('rowsVars').innerHTML = Object.keys(VARS).map(function (k) {
+      var q = filtroVar.trim().toLowerCase();
+      var chaves = Object.keys(VARS).filter(function (k) {
+        if (!q) return true;
+        var v = VARS[k];
+        return (v.nome + ' ' + (v.desc || '')).toLowerCase().indexOf(q) >= 0;
+      });
+
+      if (!chaves.length) {
+        document.getElementById('rowsVars').innerHTML =
+          '<tr><td colspan="6"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
+        return;
+      }
+
+      document.getElementById('rowsVars').innerHTML = chaves.map(function (k) {
         var v = VARS[k], u = usosDaVar(k);
         var afeta = u.length
           ? u.map(function (x) { return '<b>' + x.agente + '</b> · ' + x.regra; }).join('<br>')
           : '<span class="ap-dim">ninguém ainda</span>';
-        return '<tr><td><b>' + v.nome + '</b></td><td>' + v.tipo + '</td><td>' + v.fonte + '</td>' +
-          '<td>' + v.ausencia + '</td>' +
+        return '<tr><td style="white-space:normal"><b>' + v.nome + '</b>' +
+          (v.settle ? ' <span class="ap-tag">Settle</span>' : '') +
+          (v.desc ? '<div class="ap-dim" style="font-size:12px;margin-top:2px">' + v.desc + '</div>' : '') +
+          '</td><td>' + v.tipo + '</td><td style="white-space:normal">' + fonteTxt(v) + '</td>' +
+          '<td>' + padraoTxt(v) + '</td>' +
           (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
           '<td style="white-space:normal">' + afeta + '</td>' +
-          '<td><button class="ap-mini" type="button" data-vedit="' + k + '">Editar</button></td></tr>';
+          '<td><button class="ap-mini" type="button" data-vedit="' + k + '">' +
+          (v.settle ? 'Ver' : 'Editar') + '</button></td></tr>';
       }).join('');
 
       document.querySelectorAll('[data-vedit]').forEach(function (b) {
@@ -1055,7 +1172,7 @@
       document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
       document.getElementById('cpConfig').hidden = true;
       document.getElementById('cpForm').hidden = true;
-      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + v.nome + ' · ' + v.fonte + '</p>';
+      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + v.nome + ' · ' + fonteTxt(v) + '</p>';
 
       if (!u.length) {
         cpBolha('bot', 'Esta variável não é usada por nenhum agente. Excluir não quebra nada.');
@@ -1195,7 +1312,7 @@
     function cpDadoErrado(regra) {
       var v = VARS[regra.vars[0]];
       cpBolha('bot', 'O dado veio da variável <b>' + (v ? v.nome : 'do sistema') + '</b>' +
-        (v ? ' (' + v.v + '), que hoje procura em <b>' + v.fonte + '</b>' : '') +
+        (v ? ' (' + v.v + '), que hoje procura em <b>' + fonteTxt(v) + '</b>' : '') +
         '. Onde está a informação certa?');
       cpChips([
         { t:'Está no anexo, não no corpo do edital', faz:function () { cpPropor(regra, 'anexo'); } },
@@ -1230,12 +1347,15 @@
     function cpPropor(regra, tipo) {
       var v = VARS[regra.vars[0]];
       if (tipo === 'anexo') {
+        /* Agora que a fonte é uma ordem, a correção certa não é trocar a lista:
+           é subir o anexo para o primeiro lugar. */
         cpProposta = { regra:regra, escopo:'variavel',
-          titulo:'Mudar onde a variável procura',
+          titulo:'Procurar primeiro no anexo',
           por:'Vale para todas as licitações e para todas as análises que usam ' + (v ? v.nome : 'essa variável') + '.',
-          de:(v ? v.fonte + ' · ' + v.v : ''), para:'Edital e anexos · v2',
+          de:(v ? fonteTxt(v) + ' · ' + v.v : ''),
+          para:'Termo de referência > Edital e anexos > resto dos arquivos · v2',
           aplica:function () {
-            v.fonte = 'Edital e anexos'; v.v = 'v2'; v.custo = 0.06;
+            v.fontes = ['Termo de referência', 'Edital e anexos']; v.resto = true; v.v = 'v2'; v.custo = 0.06;
             regra.dado = 'exige atestado de acervo técnico'; regra.dadoRuim = false;
             regra.ganhos = 0; regra.estado = 'run'; regra.risco = null;
             regra.prov = 'Anexo III, item 3.2: atestado de acervo técnico registrado no CREA';
@@ -1419,7 +1539,7 @@
           var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; }).length;
           h += '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
                '<span class="ap-tag type">' + v.tipo + '</span>' +
-               '<span class="meta">' + v.fonte + ' · ' + v.v + '</span>' +
+               '<span class="meta">' + fonteTxt(v) + ' · ' + v.v + '</span>' +
                (MOSTRAR_CUSTO ? '<span class="ap-money">' + (v.custo ? moeda(v.custo) : 'sem custo') + '</span>' : '') + '</div>';
           if (usos > 1) {
             h += '<p class="ap-fhint" style="margin:4px 0 0">Essa variável é usada por outros ' + (usos - 1) +
@@ -1723,7 +1843,9 @@
       agentes:{ titulo:'Agentes',
         lead:'Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra, edita e vê o que ele produziu na última execução.' },
       variaveis:{ titulo:'Variáveis',
-        lead:'Informação extraída uma vez e reaproveitada por qualquer agente. Antes de alterar ou excluir uma, a tabela mostra quais regras dependem dela.' }
+        lead:'Informação extraída uma vez e reaproveitada por qualquer agente. Antes de alterar ou excluir uma, a tabela mostra quais regras dependem dela.' },
+      aprovacoes:{ titulo:'Aprovações',
+        lead:'As ações que os agentes querem executar e que dependem de você. Ficam todas aqui, de todas as licitações, para responder em lote.' }
     };
 
     function abaAtiva(tab) {
@@ -1737,7 +1859,7 @@
         o.classList.toggle('active', on);
         o.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['agentes', 'variaveis'].forEach(function (pn) {
+      ['agentes', 'variaveis', 'aprovacoes'].forEach(function (pn) {
         document.getElementById('panel-' + pn).hidden = (pn !== tab);
       });
       /* cada aba tem a própria ação de criar, alinhada com ela */
@@ -1747,7 +1869,10 @@
     }
 
     document.querySelectorAll('[data-tab]').forEach(function (b) {
-      b.addEventListener('click', function () { abaAtiva(b.dataset.tab); });
+      b.addEventListener('click', function () {
+        abaAtiva(b.dataset.tab);
+        if (b.dataset.tab === 'aprovacoes') pintarAprov();
+      });
     });
 
     /* Compatibilidade: chamadas antigas de troca de área agora só garantem
@@ -1793,7 +1918,7 @@
     }
 
     function blocoTexto(b) {
-      if (b.t === 'extrair') return VARS[b.v] ? VARS[b.v].nome + ' <span class="ap-dim">· ' + VARS[b.v].fonte + ' · ' + VARS[b.v].v + '</span>' : 'Escolha a variável';
+      if (b.t === 'extrair') return VARS[b.v] ? VARS[b.v].nome + ' <span class="ap-dim">· ' + fonteTxt(VARS[b.v]) + ' · ' + VARS[b.v].v + '</span>' : 'Escolha a variável';
       if (b.t === 'decidir') return 'Conforme ' + (VARS[b.sobre] ? VARS[b.sobre].nome : 'a variável');
       if (b.t === 'pontuar') return b.regra || 'Defina a pontuação';
       return b.onde || 'Escolha onde aparece';
@@ -1983,81 +2108,191 @@
 
     /* ---------- nova variável ---------- */
 
+    /* Estado do formulário enquanto ele está aberto. As fontes são uma lista
+       ordenada, então precisam de estado próprio: chip não guarda ordem. */
+    var vForm = { fontes:[], resto:true, tipo:'texto' };
+
+    /* O valor padrão segue o tipo. É a regra que o José Victor colocou em
+       02/09: uma variável de data não pode ter "abacaxi" como padrão, senão
+       quebra na hora de usar no Score. Só texto é realmente livre. */
+    function padraoCampo(tipo, valor) {
+      valor = valor === undefined || valor === null ? '' : String(valor);
+      if (tipo === 'sim ou não') {
+        return '<div class="ap-chips" data-g="padrao">' +
+          ['sim', 'não', 'nenhum'].map(function (o) {
+            return '<button class="ap-chip" type="button" data-val="' + o + '" aria-pressed="' +
+                   (o === valor) + '">' + o + '</button>';
+          }).join('') + '</div>' +
+          '<p class="ap-fhint" style="margin:6px 0 0">"nenhum" deixa a variável sem valor, e a regra que ' +
+          'depende dela não pontua.</p>';
+      }
+      if (tipo === 'número') {
+        return '<input class="ap-input" id="vPadrao" type="number" step="any" value="' + valor +
+               '" placeholder="Ex.: 0" /><p class="ap-fhint" style="margin:6px 0 0">Em branco, a variável ' +
+               'fica sem valor. Zero é um número, e soma como zero.</p>';
+      }
+      if (tipo === 'data') {
+        return '<input class="ap-input" id="vPadrao" type="date" value="' + valor + '" />' +
+               '<p class="ap-fhint" style="margin:6px 0 0">Em branco, a variável fica sem data.</p>';
+      }
+      return '<input class="ap-input" id="vPadrao" type="text" value="' + valor.replace(/"/g, '&quot;') +
+             '" placeholder="Ex.: não avaliado" /><p class="ap-fhint" style="margin:6px 0 0">' +
+             'Em branco, a variável fica sem valor.</p>';
+    }
+
+    /* A lista ordenada de fontes: o que vem primeiro é procurado primeiro. */
+    function pintarOrdem(travado) {
+      var box = document.getElementById('vOrdem');
+      if (!box) return;
+      box.innerHTML = vForm.fontes.length
+        ? '<div class="ord">' + vForm.fontes.map(function (f, i) {
+            return '<div class="ord-item"><span class="ord-n">' + (i + 1) + '</span>' +
+              '<span class="ord-nm">' + f + '</span>' +
+              (travado ? '' : '<span class="ord-btns">' +
+                '<button class="ap-mini" type="button" data-sobe="' + i + '" aria-label="Subir ' + f + '"' +
+                  (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
+                '<button class="ap-mini" type="button" data-desce="' + i + '" aria-label="Descer ' + f + '"' +
+                  (i === vForm.fontes.length - 1 ? ' disabled' : '') + '>&darr;</button>' +
+                '<button class="ap-mini" type="button" data-tira="' + i + '" aria-label="Remover ' + f + '">Remover</button>' +
+              '</span>') + '</div>';
+          }).join('') + '</div>'
+        : '<p class="ord-empty">Nenhuma fonte escolhida. Adicione pelo menos uma.</p>';
+
+      box.querySelectorAll('[data-sobe]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var i = +b.dataset.sobe, t = vForm.fontes[i - 1];
+          vForm.fontes[i - 1] = vForm.fontes[i]; vForm.fontes[i] = t; pintarOrdem(travado);
+        });
+      });
+      box.querySelectorAll('[data-desce]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var i = +b.dataset.desce, t = vForm.fontes[i + 1];
+          vForm.fontes[i + 1] = vForm.fontes[i]; vForm.fontes[i] = t; pintarOrdem(travado);
+        });
+      });
+      box.querySelectorAll('[data-tira]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          vForm.fontes.splice(+b.dataset.tira, 1); pintarOrdem(travado); pintarAddFonte(travado);
+        });
+      });
+    }
+
+    function pintarAddFonte(travado) {
+      var box = document.getElementById('vAddFonte');
+      if (!box) return;
+      var livres = FONTES.filter(function (f) { return vForm.fontes.indexOf(f) < 0; });
+      box.innerHTML = travado || !livres.length ? '' :
+        '<div class="ap-chips">' + livres.map(function (f) {
+          return '<button class="ap-chip" type="button" data-add="' + f + '">+ ' + f + '</button>';
+        }).join('') + '</div>';
+      box.querySelectorAll('[data-add]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          vForm.fontes.push(b.dataset.add); pintarOrdem(travado); pintarAddFonte(travado);
+        });
+      });
+    }
+
     /* Serve para criar e para editar: com uma chave, abre preenchida e avisa
-       quais regras vão sentir a mudança. */
+       quais regras vão sentir a mudança. Variável da Settle abre travada. */
     function abrirVar(k) {
       var v = k ? VARS[k] : null, u = k ? usosDaVar(k) : [];
+      var travado = !!(v && v.settle);
+
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Nova variável';
-      document.getElementById('fxStatus').textContent = v ? 'Em uso' : 'Rascunho';
+      document.getElementById('fxStatus').textContent = travado ? 'Da Settle' : (v ? 'Em uso' : 'Rascunho');
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
-      document.getElementById('fxAtivar').hidden = false;
+      document.getElementById('fxAtivar').hidden = travado;
       document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
-      document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO ? 'O custo depende da fonte escolhida' : '';
+      document.getElementById('fxCusto').textContent = '';
 
-      /* múltipla escolha: o valor final é a lista das marcadas */
-      var multi = function (grupo, opcoes, atual) {
-        return '<div class="ap-chips" data-multi="' + grupo + '">' + opcoes.map(function (o) {
-          var on = (atual || '').indexOf(o) >= 0;
-          return '<button class="ap-chip" type="button" data-val="' + o + '" aria-pressed="' + on + '">' + o + '</button>';
-        }).join('') + '</div>';
-      };
+      vForm.fontes = v ? (v.fontes || []).slice() : ['Edital e anexos'];
+      vForm.resto = v ? !!v.resto : true;
+      vForm.tipo = v ? v.tipo : 'texto';
 
-      var chips = function (grupo, opcoes, atual) {
-        return '<div class="ap-chips" data-g="' + grupo + '">' + opcoes.map(function (o) {
-          var val = o.split(' <')[0];
-          return '<button class="ap-chip" type="button" data-val="' + val + '" aria-pressed="' +
-                 (val === atual) + '">' + o + '</button>';
-        }).join('') + '</div>';
-      };
+      var dis = travado ? ' disabled' : '';
 
-      var impacto = v
-        ? '<div class="alert' + (u.length ? ' alert-warning' : '') + '">' +
-          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
-          '<div class="alert-title">' + (u.length
-            ? 'Mexer aqui afeta ' + u.length + ' regra(s)'
-            : 'Nenhuma regra usa esta variável ainda') + '</div>' +
-          '<div class="alert-description"><p>' + (u.length
-            ? u.map(function (x) { return x.agente + ' · ' + x.regra; }).join('<br>') +
-              '<br>A mudança vale para todas as licitações analisadas daqui para frente.'
-            : 'Você pode mudar o que quiser sem quebrar nada.') + '</p></div></div>'
-        : '';
+      var aviso = travado
+        ? '<div class="alert">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6" rx="1.5"/><path d="M5.8 7V5.4a2.2 2.2 0 0 1 4.4 0V7"/></svg>' +
+          '<div class="alert-title">Variável cadastrada pela Settle</div>' +
+          '<div class="alert-description"><p>Você pode usá-la em qualquer agente, mas não editar a definição. ' +
+          'Para uma regra diferente, crie uma variável sua.</p></div></div>'
+        : (v
+          ? '<div class="alert' + (u.length ? ' alert-warning' : '') + '">' +
+            '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+            '<div class="alert-title">' + (u.length
+              ? 'Mexer aqui afeta ' + u.length + ' regra(s)'
+              : 'Nenhuma regra usa esta variável ainda') + '</div>' +
+            '<div class="alert-description"><p>' + (u.length
+              ? u.map(function (x) { return x.agente + ' · ' + x.regra; }).join('<br>') +
+                '<br>A mudança vale para todas as licitações analisadas daqui para frente.'
+              : 'Você pode mudar o que quiser sem quebrar nada.') + '</p></div></div>'
+          : '');
 
-      document.getElementById('fxBody').innerHTML = impacto +
-        '<div class="ap-field"><label for="vNome">O que extrair</label>' +
-        '<p class="ap-fhint">Descreva a informação. É este nome que vai aparecer dentro das regras que usarem a variável.</p>' +
-        '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
-        '" placeholder="Ex.: prazo de entrega" /></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
-        multi('fonte', ['Edital e anexos', 'Manifestações', 'Arquivos de resultado',
-                        'Documentos não identificados'], v ? v.fonte : 'Edital e anexos') + '</div>' +
+      document.getElementById('fxBody').innerHTML = aviso +
 
-        '<div class="ap-field"><label for="vAus">Quando não encontrar no documento</label>' +
-        '<p class="ap-fhint">Em branco, a Settle registra como não encontrado.</p>' +
-        '<input class="ap-input" id="vAus" type="text" value="' +
-        (v ? (v.ausencia || '').replace(/"/g, '&quot;') : '') +
-        '" placeholder="Ex.: assume zero" /></div>' +
-        (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
+        '<div class="ap-field"><label for="vNome">Nome</label>' +
+        '<p class="ap-fhint">Curto. É por este nome que a variável aparece dentro das regras.</p>' +
+        '<input class="ap-input" id="vNome" type="text"' + dis + ' value="' +
+        (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: prazo de entrega" /></div>' +
 
-      document.querySelectorAll('#fxBody .ap-chips[data-g]').forEach(function (g) {
-        g.querySelectorAll('.ap-chip').forEach(function (b) {
-          b.addEventListener('click', function () {
-            g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-          });
+        '<div class="ap-field"><label for="vDesc">Descrição</label>' +
+        '<p class="ap-fhint">Uma linha para quem for usar entender o que ela guarda.</p>' +
+        '<input class="ap-input" id="vDesc" type="text"' + dis + ' value="' +
+        (v ? (v.desc || '').replace(/"/g, '&quot;') : '') +
+        '" placeholder="Ex.: prazo em dias para entregar o objeto" /></div>' +
+
+        '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
+        '<p class="ap-fhint">Define o que a Settle aceita como resposta e como o valor padrão é preenchido. ' +
+        'Só número entra em regra de faixa, só sim ou não entra em regra de condição.</p>' +
+        '<div class="ap-chips" data-g="tipo" id="vTipo">' + TIPOS_VAR.map(function (t) {
+          return '<button class="ap-chip" type="button"' + dis + ' data-val="' + t + '" aria-pressed="' +
+                 (t === vForm.tipo) + '">' + t + '</button>';
+        }).join('') + '</div></div>' +
+
+        '<div class="ap-field"><label for="vPrompt">O que a Settle deve procurar</label>' +
+        '<p class="ap-fhint">A instrução de extração. Escreva como explicaria para alguém que vai ler o ' +
+        'documento por você.</p>' +
+        '<textarea class="ap-input" id="vPrompt" rows="3"' + dis + ' placeholder="Ex.: encontre o prazo, em dias, ' +
+        'para a entrega do objeto contado a partir da assinatura do contrato.">' +
+        (v ? (v.prompt || '') : '') + '</textarea></div>' +
+
+        '<div class="ap-field"><span class="ap-flabel">Onde procurar, nesta ordem</span>' +
+        '<p class="ap-fhint">A Settle procura na primeira fonte e só passa para a seguinte se não achar.</p>' +
+        '<div id="vOrdem"></div><div id="vAddFonte"></div>' +
+        '<label class="ap-check" style="margin-top:10px"><input type="checkbox" id="vResto"' + dis +
+        (vForm.resto ? ' checked' : '') + ' /> <span>Se não achar em nenhuma delas, procurar no resto dos ' +
+        'arquivos da licitação</span></label></div>' +
+
+        '<div class="ap-field"><span class="ap-flabel">Valor padrão quando não encontrar</span>' +
+        '<p class="ap-fhint">O que a variável vale quando a informação não está em lugar nenhum. ' +
+        'O formato segue o tipo escolhido acima.</p>' +
+        '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '') + '</div></div>' +
+
+        (v && !travado
+          ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>'
+          : '');
+
+      pintarOrdem(travado);
+      pintarAddFonte(travado);
+
+      /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
+         impede um padrão incompatível de ser salvo. */
+      var gt = document.getElementById('vTipo');
+      gt.querySelectorAll('.ap-chip').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (travado) return;
+          gt.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+          vForm.tipo = b.dataset.val;
+          document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '');
+          ligarChipsPadrao();
         });
       });
-      document.querySelectorAll('#fxBody .ap-chips[data-multi]').forEach(function (g) {
-        g.querySelectorAll('.ap-chip').forEach(function (b) {
-          b.addEventListener('click', function () {
-            b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
-          });
-        });
-      });
+      ligarChipsPadrao();
 
-      /* Deduz o formato pelo enunciado: continua existindo no modelo, porque
-         define onde a variável pode ser usada, mas não é mais pergunta. */
       var ex = document.getElementById('vExcluir');
       if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
 
@@ -2065,18 +2300,17 @@
       modoModal = 'variavel';
     }
 
-    var varEditando = null, modoModal = 'outro';
-
-    /* O formato não é perguntado: sai do enunciado. Ele existe porque decide
-       onde a variável pode ser usada (só número entra em regra de faixa). */
-    function tipoDeduzido(txt) {
-      var t = (txt || '').toLowerCase();
-      if (/quantidade|quantos|número de|total de|peso|valor|prazo de|percentual/.test(t)) return 'número';
-      if (/documentos|lista de|itens|relação de/.test(t)) return 'lista';
-      if (/exig|permite|possui|aceita|obriga|é exclusiv/.test(t)) return 'sim ou não';
-      if (/esfera|porte|categoria|classificação|nota/.test(t)) return 'categoria';
-      return 'texto';
+    function ligarChipsPadrao() {
+      var g = document.querySelector('#vPadraoBox .ap-chips[data-g="padrao"]');
+      if (!g) return;
+      g.querySelectorAll('.ap-chip').forEach(function (b) {
+        b.addEventListener('click', function () {
+          g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        });
+      });
     }
+
+    var varEditando = null, modoModal = 'outro';
 
     function valorDe(grupo) {
       var b = document.querySelector('#fxBody [data-g="' + grupo + '"] .ap-chip[aria-pressed="true"]');
@@ -2085,18 +2319,30 @@
 
     function salvarVar() {
       var nome = document.getElementById('vNome').value.trim();
-      if (!nome) { settleToast('Escreva o que a variável deve extrair'); return; }
-      var fontes = [];
-      document.querySelectorAll('#fxBody .ap-chips[data-multi] .ap-chip[aria-pressed="true"]')
-        .forEach(function (b) { fontes.push(b.dataset.val); });
-      if (!fontes.length) { settleToast('Escolha pelo menos um lugar para procurar'); return; }
+      if (!nome) { settleToast('Dê um nome à variável'); return; }
+      var prompt = document.getElementById('vPrompt').value.trim();
+      if (!prompt) { settleToast('Escreva o que a Settle deve procurar'); return; }
+      if (!vForm.fontes.length && !document.getElementById('vResto').checked) {
+        settleToast('Escolha pelo menos um lugar para procurar'); return;
+      }
+
+      var padrao;
+      if (vForm.tipo === 'sim ou não') {
+        padrao = valorDe('padrao');
+        if (padrao === 'nenhum') padrao = '';
+      } else {
+        var campo = document.getElementById('vPadrao');
+        padrao = campo ? campo.value.trim() : '';
+      }
 
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
       var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
-      var aus = (document.getElementById('vAus').value || '').trim() || 'registra como não encontrado';
       VARS[k] = {
-        nome:nome, tipo:tipoDeduzido(nome), fonte:fontes.join(', '), ausencia:aus,
+        nome:nome, desc:document.getElementById('vDesc').value.trim(),
+        tipo:vForm.tipo, prompt:prompt,
+        fontes:vForm.fontes.slice(), resto:document.getElementById('vResto').checked,
+        padrao:padrao,
         v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
         depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
         calc:novo ? undefined : VARS[k].calc
@@ -2116,6 +2362,10 @@
 
     document.getElementById('btnNovaVar').addEventListener('click', function () { abrirVar(null); });
 
+    document.getElementById('vBusca').addEventListener('input', function (e) {
+      filtroVar = e.target.value; pintarVars();
+    });
+
 
 
 
@@ -2125,6 +2375,197 @@
        com 7 regras dentro, não 7 agentes. O formato da regra segue o tipo da
        análise: Score é estruturado, jurídica é texto com variáveis dentro.
        ===================================================================== */
+
+    /* =====================================================================
+       O QUE O AGENTE PODE FAZER, E O QUE PRECISA DE APROVAÇÃO
+       "Você tem que dizer para o agente, na configuração do agente, o que ele
+       pode ou o que ele não pode fazer dentro da plataforma. E tem ações que
+       deveriam ser aprovadas por ser humano" (Bruno Ortiz, 46:33 de 02/09).
+
+       Três estados por ação, não dois: não pode / pede aprovação / executa
+       sozinho. O estado do meio é o que faz a fila de aprovações existir.
+       ===================================================================== */
+
+    var ACOES = [
+      { k:'mover',   nome:'Mover a licitação no funil',
+        sub:'Ex.: passar de Recomendadas para Em análise.' },
+      { k:'status',  nome:'Mudar o status de um item',
+        sub:'Ex.: marcar um componente como não atende na análise técnica.' },
+      { k:'resp',    nome:'Marcar responsável',
+        sub:'Atribuir a licitação a alguém do time.' },
+      { k:'resumo',  nome:'Escrever no resumo da licitação',
+        sub:'Preencher ou substituir campos do resumo.' },
+      { k:'externo', nome:'Consultar sites fora da Settle',
+        sub:'Ex.: comparar com o catálogo publicado de um fabricante.' }
+    ];
+
+    var PERM_ESTADOS = [
+      { v:'nao',     t:'não pode' },
+      { v:'aprovar', t:'pede aprovação' },
+      { v:'auto',    t:'executa sozinho' }
+    ];
+
+    function permsHTML(an) {
+      var p = an.perms || {};
+      var risco = ACOES.filter(function (a) { return p[a.k] === 'auto'; }).length;
+      return '<div class="ap-box" style="margin-bottom:14px">' +
+        '<div class="ap-box-head"><h2>O que este agente pode fazer</h2>' +
+        (risco ? '<span class="ap-tag warn">' + risco + ' sem aprovação</span>' : '') + '</div>' +
+        '<div class="ap-box-body">' +
+        ACOES.map(function (a) {
+          var atual = p[a.k] || 'nao';
+          return '<div class="perm"><span class="perm-txt"><span class="perm-nm">' + a.nome + '</span>' +
+            '<span class="perm-sub">' + a.sub + '</span></span>' +
+            '<span class="ap-chips" data-perm="' + a.k + '">' + PERM_ESTADOS.map(function (e) {
+              return '<button class="ap-chip" type="button" data-val="' + e.v + '" aria-pressed="' +
+                     (e.v === atual) + '">' + e.t + '</button>';
+            }).join('') + '</span></div>';
+        }).join('') +
+        '<p class="ap-fhint" style="margin:12px 0 0">O que estiver em <b>pede aprovação</b> entra na aba ' +
+        'Aprovações em vez de acontecer. O que estiver em <b>executa sozinho</b> acontece sem aviso: ' +
+        'o agente pode errar, e ninguém vê antes.</p>' +
+        '</div></div>';
+    }
+
+    function ligarPerms(an) {
+      document.querySelectorAll('#fxBody [data-perm]').forEach(function (g) {
+        g.querySelectorAll('.ap-chip').forEach(function (b) {
+          b.addEventListener('click', function () {
+            g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+            an.perms = an.perms || {};
+            an.perms[g.dataset.perm] = b.dataset.val;
+            if (b.dataset.val === 'aprovar') {
+              settleToast('Ações desse tipo passam a esperar sua aprovação');
+            }
+          });
+        });
+      });
+    }
+
+    /* =====================================================================
+       HISTÓRICO DE EXECUÇÃO
+       "Tem o histórico das ações dele?" (José Victor, 32:26). Sem isso, quem
+       confia uma ação ao agente não tem como auditar o que ele fez.
+       ===================================================================== */
+
+    function execHTML(an) {
+      var es = an.execs || [];
+      return '<div class="ap-box" style="margin-bottom:14px">' +
+        '<div class="ap-box-head"><h2>Últimas execuções</h2>' +
+        '<button class="ap-mini" type="button" id="execRodar">Executar agora</button>' +
+        '<button class="ap-mini" type="button" id="execPausar">' +
+          (an.pausado ? 'Retomar' : 'Pausar') + '</button></div>' +
+        '<div class="ap-box-body">' +
+        (an.pausado ? '<p class="ap-fhint" style="margin:0 0 10px">Pausado. Não roda em licitação nova até ser retomado.</p>' : '') +
+        (es.length ? es.map(function (e) {
+          return '<div class="exec"><span class="exec-when">' + e.quando + '</span>' +
+            '<span class="exec-what">' + e.o +
+            '<span class="exec-sub">' + e.lic + '</span></span>' +
+            '<span class="ap-tag ' + (e.st === 'falhou' ? 'warn' : e.st === 'aguardando' ? 'pause' : 'run') + '">' +
+            (e.st === 'falhou' ? 'falhou' : e.st === 'aguardando' ? 'esperando aprovação' : 'concluída') +
+            '</span></div>';
+        }).join('') : '<p class="ap-fhint" style="margin:0">Ainda não rodou em nenhuma licitação.</p>') +
+        '</div></div>';
+    }
+
+    function ligarExec(an) {
+      var r = document.getElementById('execRodar');
+      if (r) r.addEventListener('click', function () {
+        an.execs = an.execs || [];
+        an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
+          o:'Execução manual disparada por você', st:'ok' });
+        abrirAnalise(an);
+        settleToast('Execução disparada nesta licitação');
+      });
+      var pz = document.getElementById('execPausar');
+      if (pz) pz.addEventListener('click', function () {
+        an.pausado = !an.pausado;
+        abrirAnalise(an);
+        settleToast(an.pausado ? 'Agente pausado' : 'Agente retomado');
+      });
+    }
+
+    /* =====================================================================
+       FILA DE APROVAÇÕES
+       ===================================================================== */
+
+    var APROVACOES = [
+      { id:'a1', lic:'PE 90014/2026', org:'Secretaria de Saúde de MG', agente:'Análise técnica',
+        acao:'Mover para Em análise', por:'11 dos 15 componentes atendem ao Termo de Referência', quando:'hoje, 14:22' },
+      { id:'a2', lic:'PE 00023/2026', org:'Prefeitura de Itapevi/SP', agente:'Score',
+        acao:'Mover para Descartadas', por:'Score 34 de 100, abaixo do corte de 50', quando:'hoje, 14:22' },
+      { id:'a3', lic:'PE 90112/2026', org:'Tribunal Regional Federal da 4ª Região', agente:'Análise técnica',
+        acao:'Marcar Michele como responsável', por:'Órgão federal com objeto de frota, faixa dela', quando:'hoje, 11:08' },
+      { id:'a4', lic:'PE 00471/2026', org:'Prefeitura de Contagem/MG', agente:'Análise técnica',
+        acao:'Consultar o catálogo do fabricante', por:'Componente sem especificação equivalente no catálogo interno', quando:'ontem, 17:40' },
+      { id:'a5', lic:'PE 00088/2026', org:'Secretaria de Educação do RS', agente:'Score',
+        acao:'Mover para Em análise', por:'Score 81 de 100, acima do corte', quando:'ontem, 17:40' }
+    ];
+
+    var aprovSel = {};
+
+    function pintarAprov() {
+      document.getElementById('cntAprov').textContent = APROVACOES.length;
+      var body = document.getElementById('rowsAprov');
+      if (!APROVACOES.length) {
+        body.innerHTML = '<tr><td colspan="6"><span class="ap-dim">Nada esperando por você. ' +
+          'As ações que os agentes executam sozinhos ficam no histórico de cada agente.</span></td></tr>';
+        return atualizarLote();
+      }
+      body.innerHTML = APROVACOES.map(function (a) {
+        return '<tr><td><label class="ap-check"><input type="checkbox" data-apr="' + a.id + '"' +
+          (aprovSel[a.id] ? ' checked' : '') + ' /> <span class="sr-only">Selecionar ' + a.lic + '</span></label></td>' +
+          '<td style="white-space:normal"><b>' + a.lic + '</b><div class="ap-dim" style="font-size:12px">' +
+          a.org + '</div></td>' +
+          '<td>' + a.agente + '</td><td style="white-space:normal">' + a.acao + '</td>' +
+          '<td style="white-space:normal">' + a.por + '</td><td>' + a.quando + '</td></tr>';
+      }).join('');
+
+      body.querySelectorAll('[data-apr]').forEach(function (c) {
+        c.addEventListener('change', function () {
+          aprovSel[c.dataset.apr] = c.checked;
+          atualizarLote();
+        });
+      });
+      atualizarLote();
+    }
+
+    function selecionadas() {
+      return APROVACOES.filter(function (a) { return aprovSel[a.id]; });
+    }
+
+    function atualizarLote() {
+      var n = selecionadas().length;
+      document.getElementById('loteN').textContent = n
+        ? n + (n === 1 ? ' selecionada' : ' selecionadas')
+        : 'nenhuma selecionada';
+      document.getElementById('aprAprovar').disabled = !n;
+      document.getElementById('aprRecusar').disabled = !n;
+      var todas = document.getElementById('aprTodas');
+      todas.checked = !!APROVACOES.length && n === APROVACOES.length;
+    }
+
+    function responderLote(aprovou) {
+      var sel = selecionadas();
+      if (!sel.length) return;
+      var antes = APROVACOES.slice(), antesSel = JSON.parse(JSON.stringify(aprovSel));
+      APROVACOES = APROVACOES.filter(function (a) { return !aprovSel[a.id]; });
+      aprovSel = {};
+      pintarAprov();
+      settleToast(sel.length + (aprovou
+        ? ' ação(ões) aprovada(s) e executada(s)'
+        : ' ação(ões) recusada(s)'), {
+        undoLabel:'Desfazer',
+        onUndo:function () { APROVACOES = antes; aprovSel = antesSel; pintarAprov(); }
+      });
+    }
+
+    document.getElementById('aprAprovar').addEventListener('click', function () { responderLote(true); });
+    document.getElementById('aprRecusar').addEventListener('click', function () { responderLote(false); });
+    document.getElementById('aprTodas').addEventListener('change', function (e) {
+      APROVACOES.forEach(function (a) { aprovSel[a.id] = e.target.checked; });
+      pintarAprov();
+    });
 
     var JURIDICA = {
       id:'juridica', nome:'Análise jurídica', formato:'texto', ativo:false,
@@ -2138,16 +2579,35 @@
     var ANALISES = [
       { id:'score', nome:'Score', formato:'estruturado',
         desc:'Nota de 0 a 100 que ordena a sua lista de licitações.',
-        gatilho:'Ao enviar para análise', destino:'score' },
+        gatilho:'Ao enviar para análise', destino:'score',
+        perms:{ mover:'aprovar', status:'nao', resp:'nao', resumo:'auto', externo:'nao' },
+        execs:[
+          { quando:'hoje, 14:22', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Calculou 78 de 100', st:'ok' },
+          { quando:'hoje, 14:22', lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'Calculou 34 de 100 · pediu para mover para Descartadas', st:'aguardando' },
+          { quando:'ontem, 17:40', lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'Calculou 81 de 100', st:'ok' },
+          { quando:'ontem, 09:14', lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'Não encontrou CAPAG: órgão federal não tem', st:'falhou' }
+        ] },
       { id:'resumo', nome:'Resumo', formato:'estruturado',
         desc:'Os campos que aparecem no resumo de cada licitação.',
-        gatilho:'Assim que entra no match', destino:'resumo' },
+        gatilho:'Assim que entra no match', destino:'resumo',
+        perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'auto', externo:'nao' },
+        execs:[
+          { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Preencheu 6 campos do resumo', st:'ok' },
+          { quando:'hoje, 11:02', lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'Preencheu 5 campos, 1 sem valor', st:'ok' }
+        ] },
       { id:'tecnica', nome:'Análise técnica', formato:'composicao',
         desc:'Compara componente a componente do Termo de Referência com o catálogo da empresa.',
-        gatilho:'Ao enviar para análise' },
+        gatilho:'Ao enviar para análise',
+        perms:{ mover:'aprovar', status:'aprovar', resp:'aprovar', resumo:'nao', externo:'aprovar' },
+        execs:[
+          { quando:'hoje, 14:22', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Avaliou 15 componentes em 3 itens · pediu para mover para Em análise', st:'aguardando' },
+          { quando:'ontem, 17:40', lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'Avaliou 9 componentes · pediu acesso ao catálogo do fabricante', st:'aguardando' }
+        ] },
       { id:'juridica', nome:'Análise jurídica', formato:'texto',
         desc:'Texto livre com variáveis dentro. Ainda não ativada.',
-        gatilho:'Ao enviar para análise' }
+        gatilho:'Ao enviar para análise',
+        perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
+        execs:[] }
     ];
 
     function regrasDa(an) {
@@ -2206,7 +2666,7 @@
       document.getElementById('fxAtivar').hidden = an.formato !== 'texto';
       document.getElementById('fxAtivar').disabled = false;
 
-      if (an.formato === 'texto') return pintarTextoVars();
+      if (an.formato === 'texto') return pintarTextoVars(an);
 
       /* Análise técnica: o resultado dela é por componente, com agregação. */
       if (an.formato === 'composicao') {
@@ -2216,8 +2676,9 @@
           'alguém ler o Termo de Referência.</p>' +
           '<div style="display:flex;gap:8px;margin-bottom:14px">' +
             '<button class="btn btn-outline" type="button" id="anCfg">Configurar o agente</button></div>' +
-          '<div id="itens"></div>';
+          '<div id="itens"></div>' + permsHTML(an) + execHTML(an);
         pintarTecnica();
+        ligarPerms(an); ligarExec(an);
         document.getElementById('anCfg').addEventListener('click', function () {
           document.getElementById('fxModal').hidden = true; abrir(AGENTE_TEC);
         });
@@ -2250,11 +2711,12 @@
             '<div class="ap-box-body" id="scoreBody"></div></div>';
       }
 
-      h += '<div class="ap-box"><div class="ap-box-head"><h2>Regras</h2>' +
+      h += '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Regras</h2>' +
            '<button class="btn btn-outline" type="button" id="anNova">Nova regra</button></div>' +
-           '<div class="ap-box-body" id="crits"></div></div>';
+           '<div class="ap-box-body" id="crits"></div></div>' + permsHTML(an) + execHTML(an);
 
       document.getElementById('fxBody').innerHTML = h;
+      ligarPerms(an); ligarExec(an);
 
       if (an.destino === 'score') {
         document.querySelectorAll('[data-est]').forEach(function (b) {
@@ -2301,7 +2763,7 @@
       return [].slice.call(campo.querySelectorAll('.varchip')).map(function (c) { return c.dataset.v; });
     }
 
-    function pintarTextoVars() {
+    function pintarTextoVars(an) {
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar análise';
@@ -2318,9 +2780,11 @@
         '<p class="vf-hint">Digite <kbd>/</kbd> para inserir uma variável existente ou criar uma nova aqui mesmo.</p>' +
         '</div>' +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
-        '<div id="vfLista"></div></div>';
+        '<div id="vfLista"></div></div>' +
+        (an ? permsHTML(an) + execHTML(an) : '');
 
       document.getElementById('fxBody').innerHTML = h;
+      if (an) { ligarPerms(an); ligarExec(an); }
 
       var campo = document.getElementById('vfCampo');
       campo.addEventListener('keydown', function (e) {
@@ -2342,7 +2806,7 @@
           var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; }).length;
           return '<div class="ap-varline"><span class="nm">' + v.nome + '</span>' +
                  '<span class="ap-tag type">' + v.tipo + '</span>' +
-                 '<span class="meta">' + v.fonte + ' · ' + v.v + (usos ? ' · também usada em ' + usos + ' regra(s) do Score' : '') + '</span>' +
+                 '<span class="meta">' + fonteTxt(v) + ' · ' + v.v + (usos ? ' · também usada em ' + usos + ' regra(s) do Score' : '') + '</span>' +
                  (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(v.custo) + '</span>' : '') + '</div>';
         }).join('');
       }
@@ -2379,7 +2843,7 @@
       var h = '<div class="h">Variáveis já extraídas</div>' +
         (ks.length ? ks.map(function (k) {
           return '<button class="vf-opt" type="button" data-ins="' + k + '"><b>' + VARS[k].nome + '</b>' +
-                 '<span>' + VARS[k].tipo + ' · ' + VARS[k].fonte + '</span></button>';
+                 '<span>' + VARS[k].tipo + ' · ' + fonteTxt(VARS[k]) + '</span></button>';
         }).join('') : '<div class="ap-fhint" style="padding:4px 9px">Nenhuma com esse nome.</div>') +
         '<button class="vf-opt criar" type="button" data-criar="1">Criar uma variável nova aqui</button>';
       menu.innerHTML = h;
@@ -2406,23 +2870,30 @@
       listaDeVars();
     }
 
-    /* Criação determinada: os quatro campos que fazem a Settle saber que ali
-       existe uma extração com proveniência, e não uma frase. */
+    /* Criação a partir da escrita: os mesmos campos obrigatórios da modal
+       (nome, tipo, prompt e a primeira fonte), em versão curta. O resto da
+       configuração fica para a tela de variáveis. */
     function formNovaVar() {
       var menu = document.getElementById('vfMenu');
       menu.innerHTML =
         '<div class="h">Nova variável</div>' +
         '<div style="padding:4px 9px 10px">' +
-          '<label class="ap-fhint" for="nvNome">O que extrair</label>' +
+          '<label class="ap-fhint" for="nvNome">Nome</label>' +
           '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: prazo de entrega" />' +
-          '<p class="ap-fhint" style="margin:10px 0 4px">Onde procurar</p><div class="ap-chips" data-g="fonte">' +
-            '<button class="ap-chip" type="button" data-val="Edital e anexos" aria-pressed="true">Edital e anexos</button>' +
-            '<button class="ap-chip" type="button" data-val="Manifestações" aria-pressed="false">Manifestações</button>' +
-            '<button class="ap-chip" type="button" data-val="Arquivos de resultado" aria-pressed="false">Resultado</button>' +
-            '<button class="ap-chip" type="button" data-val="Documentos não identificados" aria-pressed="false">Não identificados</button>' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Tipo da resposta</p><div class="ap-chips" data-g="tipo">' +
+            TIPOS_VAR.map(function (t, i) {
+              return '<button class="ap-chip" type="button" data-val="' + t + '" aria-pressed="' +
+                     (i === 0) + '">' + t + '</button>';
+            }).join('') +
           '</div>' +
-          '<label class="ap-fhint" for="nvAus" style="display:block;margin:10px 0 4px">Quando não encontrar</label>' +
-          '<input class="ap-input" id="nvAus" type="text" placeholder="Ex.: assume zero" />' +
+          '<label class="ap-fhint" for="nvPrompt" style="display:block;margin:10px 0 4px">O que a Settle deve procurar</label>' +
+          '<textarea class="ap-input" id="nvPrompt" rows="2" placeholder="Ex.: encontre o prazo, em dias, para a entrega do objeto."></textarea>' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Procurar primeiro em</p><div class="ap-chips" data-g="fonte">' +
+            FONTES.slice(0, 4).map(function (f, i) {
+              return '<button class="ap-chip" type="button" data-val="' + f + '" aria-pressed="' +
+                     (i === 0) + '">' + f + '</button>';
+            }).join('') +
+          '</div>' +
           '<button class="btn btn-primary" type="button" id="nvCriar" style="width:100%;justify-content:center;margin-top:12px">Criar e inserir</button>' +
         '</div>';
 
@@ -2436,15 +2907,18 @@
       document.getElementById('nvNome').focus();
       document.getElementById('nvCriar').addEventListener('click', function () {
         var nome = document.getElementById('nvNome').value.trim();
-        if (!nome) { settleToast('Escreva o que a variável deve extrair'); return; }
+        if (!nome) { settleToast('Dê um nome à variável'); return; }
+        var prompt = document.getElementById('nvPrompt').value.trim();
+        if (!prompt) { settleToast('Escreva o que a Settle deve procurar'); return; }
         var val = function (g) {
           var b = menu.querySelector('[data-g="' + g + '"] .ap-chip[aria-pressed="true"]');
           return b ? b.dataset.val : '';
         };
+        var fonte = val('fonte');
         var k = 'nv' + Object.keys(VARS).length;
-        VARS[k] = { nome:nome, tipo:tipoDeduzido(nome), fonte:val('fonte'), v:'v1',
-                    custo:val('fonte') === 'Edital e anexos' ? 0.04 : 0.02,
-                    ausencia:(document.getElementById('nvAus').value || '').trim() || 'registra como não encontrado' };
+        VARS[k] = { nome:nome, desc:'', tipo:val('tipo'), prompt:prompt,
+                    fontes:[fonte], resto:true, padrao:'', v:'v1',
+                    custo:fonte === 'Edital e anexos' ? 0.04 : 0.02 };
         pintarVars();
         inserirVar(k, true);
         settleToast('Variável criada e disponível para as outras análises');
@@ -2510,7 +2984,7 @@
         antes:function () { clic('[data-lac="semdado"]'); setTimeout(function () { clic('#btnAvancar'); }, 200); }, espera:520 },
 
       { alvo:'#panel-variaveis .datatable', titulo:'As variáveis são objeto próprio',
-        texto:'Extraídas uma vez, reaproveitadas por qualquer agente. Cada uma com tipo, fonte, versão e o que fazer quando não encontra. É o que a Settle entrega e um construtor de prompt genérico não entrega.',
+        texto:'Extraídas uma vez, reaproveitadas por qualquer agente. Cada uma com <b>tipo</b>, prompt, ordem de fontes e valor padrão. As marcadas como Settle o cliente usa, mas não edita.',
         antes:function () { clic('#btnAvancar'); setTimeout(function () { fechar(); fecharFx(); abaAtiva('variaveis'); }, 220); }, espera:520 },
 
       { alvo:'#fxBody', titulo:'Variável dentro do texto',
@@ -2521,9 +2995,17 @@
         texto:'Os 15 componentes não existiam antes de ler o Termo de Referência. O status do item vem de uma <b>regra de agregação</b> que é do cliente, e "não avaliado" deixa o item inconclusivo em vez de reprovado.',
         antes:function () { fecharFx(); setTimeout(function () { abrirAnalise(ANALISES[2]); }, 200); }, espera:520 },
 
+      { alvo:'#fxBody .ap-box:nth-last-child(2)', titulo:'O que o agente pode fazer',
+        texto:'Três estados por ação, não dois: não pode, pede aprovação, executa sozinho. O estado do meio é o que faz a fila de aprovações existir. Abaixo fica o <b>histórico</b>: toda vez que ele rodou, em qual licitação e o que aconteceu.',
+        antes:function () { fecharFx(); setTimeout(function () { abrirAnalise(ANALISES[2]); }, 200); }, espera:560 },
+
+      { alvo:'#panel-aprovacoes .datatable', titulo:'A fila de aprovações',
+        texto:'O problema que o Bruno Ortiz levantou: se o agente roda em 50 licitações e cada ação pede aprovação, ninguém vai abrir 50 licitações para clicar em aprovar. Tudo cai aqui, de todos os agentes, e responde em lote.',
+        antes:function () { fecharFx(); abaAtiva('aprovacoes'); pintarAprov(); }, espera:340 },
+
       { alvo:'#cp', titulo:'O painel de agentes',
         texto:'Disponível em qualquer tela. O cabeçalho abre a lista, você escolhe com quem falar, e a engrenagem leva à configuração daquele agente.',
-        antes:function () { fecharFx(); cpAbrirPainel(); cpSelecionar('score', acharAgente('ate')); }, espera:420 },
+        antes:function () { fecharFx(); abaAtiva('agentes'); cpAbrirPainel(); cpSelecionar('score', acharAgente('ate')); }, espera:420 },
 
       { alvo:'.cp-prop', titulo:'A conversa propõe, você aprova',
         texto:'O ponto que a Alice fez questão: a conversa é uma coisa, o que foi construído é outra. A correção vira <b>proposta com antes e depois</b>, dizendo o alcance, e só passa a valer quando aplicada.',
@@ -2534,14 +3016,14 @@
         }, espera:340 },
 
       { titulo:'É isso',
-        texto:'Uma área para configurar, um painel para conversar e corrigir de qualquer lugar. O que ainda depende de decisão está em VALIDACAO.md, junto com o roteiro do teste com cliente.',
+        texto:'Uma área para configurar, uma fila para aprovar e um painel para conversar de qualquer lugar. O que ainda depende de decisão está em VALIDACAO.md, junto com o roteiro do teste com cliente.',
         antes:function () { cpFecharPainel(); } }
     ];
 
     document.getElementById('fabTutorial').addEventListener('click', function () { settleTour(TOUR); });
 
     /* ---------- boot ---------- */
-    pintarAnalises(); pintarVars();
+    pintarAnalises(); pintarVars(); pintarAprov();
     abaAtiva('agentes');
   })();
   </script>
