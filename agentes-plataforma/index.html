@@ -62,13 +62,10 @@
     .ap-num small{font-size:15px;font-weight:500;color:var(--muted-foreground);}
     .ap-bar{height:6px;border-radius:3px;background:var(--muted);overflow:hidden;margin:12px 0 4px;}
     .ap-bar i{display:block;height:100%;background:var(--accent);}
-    .ap-crit{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-top:1px solid var(--border);}
-    .ap-crit:first-child{border-top:0;}
-    .ap-crit.nao-aplica{background:var(--muted);}
-    .ap-crit-main{flex:1;min-width:0;}
-    .ap-crit-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-    .ap-crit-sub{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-top:3px;}
-    .ap-dado{margin-top:5px;font-size:14px;font-weight:600;color:var(--foreground);}
+    .ap-crit-main{flex:1;min-width:0;display:block;}
+    .ap-crit-name{font-size:14px;font-weight:600;display:block;color:var(--foreground);}
+    .ap-crit-sub{display:block;font-size:12px;line-height:17px;color:var(--muted-foreground);margin:3px 0 0;}
+    .ap-dado{display:block;margin-top:4px;font-size:14px;font-weight:600;color:var(--foreground);}
     .ap-dado.ruim{color:var(--warning);}
     .ap-demo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:9px 13px;border:1px dashed var(--border-strong);border-radius:var(--radius-box);font-size:12px;color:var(--muted-foreground);}
     .ap-prog{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);font-size:13px;}
@@ -187,15 +184,14 @@
     </div>
 
     <nav class="sb-content">
-      <div class="sb-section">Duas abordagens</div>
       <div class="sb-group">
-        <a class="sb-item active" href="#" id="viaLic" aria-current="page" title="Editar pela licitação">
+        <a class="sb-item active" href="#" id="viaLic" aria-current="page" title="Análise da licitação">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5 6h6M5 8.6h6M5 11.2h3.5" stroke-linecap="round"/></svg></span>
-          <span class="sb-label">Editar pela licitação</span>
+          <span class="sb-label">Análise da licitação</span>
         </a>
-        <a class="sb-item" href="#" id="viaCons" title="Construtor de agentes">
-          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="1.8" width="5" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="5" height="3.4" rx="1"/><rect x="9.2" y="10.8" width="5" height="3.4" rx="1"/><path d="M8 5.2v2.4M4.3 10.8V7.6h7.4v3.2" stroke-linecap="round"/></svg></span>
-          <span class="sb-label">Construtor de agentes</span>
+        <a class="sb-item" href="#" id="viaCons" title="Agentes">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Agentes</span>
         </a>
       </div>
     </nav>
@@ -232,8 +228,8 @@
       <div class="fp-tabs" role="tablist" aria-label="Seções" id="tabs" style="margin-bottom:18px">
         <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="licitacao" data-via="lic">Licitação</button>
         <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="tecnica" data-via="lic">Análise técnica <span class="fp-c">3</span></button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes" data-via="cons" hidden>Agentes <span class="fp-c">7</span></button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis" data-via="cons" hidden>Variáveis <span class="fp-c">6</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes" data-via="cons" hidden>Agentes <span class="fp-c" id="cntAg">4</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis" data-via="cons" hidden>Variáveis <span class="fp-c" id="cntVar">6</span></button>
       </div>
 
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
@@ -277,7 +273,7 @@
 
         <div class="ap-box" style="margin-top:16px">
           <div class="ap-box-head"><h2>De onde vieram os pontos</h2>
-            <button class="btn btn-outline" type="button" id="btnNovoDaqui">Adicionar critério daqui</button></div>
+            <span class="ap-fhint" style="margin:0">produzido pelo agente <b>Score</b></span></div>
           <div class="ap-box-body" id="crits"></div>
         </div>
       </section>
@@ -288,9 +284,6 @@
           <b>uma vez por componente</b>. Os componentes não existem antes de alguém ler o Termo de Referência,
           então a lista abaixo foi descoberta na própria execução. O status de cada item é calculado a partir
           dos componentes, por uma regra que é sua.</p>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-          <button class="btn btn-outline" type="button" id="btnNovaVerificacao">Adicionar verificação daqui</button>
-        </div>
         <div id="itens"></div>
       </section>
 
@@ -315,7 +308,7 @@
         </div>
         <div class="datatable">
           <div class="dt-top">
-            <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip">6</span></div>
+            <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip" id="cntVar2">6</span></div>
             <div class="dt-total" data-col="custo" hidden>Custo no mês: <b>R$ 31,80</b></div>
           </div>
           <table class="dt">
@@ -371,20 +364,35 @@
     </div>
   </div>
 
-  <!-- ====================== CONVERSA COM O RESULTADO ====================== -->
-  <div class="fp-overlay" id="ovlChat" hidden></div>
-  <aside class="fp-sheet" id="chat" role="dialog" aria-modal="true" aria-labelledby="chatTitle" hidden>
-    <div class="fp-sheet-head">
-      <b id="chatTitle">Perguntar sobre este resultado</b>
-      <button class="fp-close" type="button" id="chatX" aria-label="Fechar">&times;</button>
+  <!-- ====================== PAINEL DE AGENTES ======================
+       Presente em qualquer tela. O usuário escolhe com quem falar, e o mesmo
+       painel dá acesso à configuração daquele agente. A conversa propõe; a
+       mudança só existe depois de aprovada, com antes e depois à vista.
+       ============================================================== -->
+  <button class="cp-fab" type="button" id="cpAbrir">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
+    Agentes
+  </button>
+
+  <aside class="cp" id="cp" hidden aria-label="Painel de agentes">
+    <div class="cp-head">
+      <button class="cp-title" type="button" id="cpLista" aria-expanded="false">
+        <span id="cpTitulo">Agentes</span>
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" type="button" id="cpConfig" aria-label="Abrir a configuração deste agente" hidden>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" type="button" id="cpFechar" aria-label="Fechar o painel">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
     </div>
-    <p class="fp-sheet-sub" id="chatSub"></p>
-    <div class="ap-msgs" id="chatMsgs"></div>
-    <div class="ap-sheet-foot">
-      <div class="ap-chips" id="chatChips"></div>
-      <label class="sr-only" for="chatIn">Sua pergunta</label>
-      <input class="ap-input" id="chatIn" type="text" placeholder="Perguntar outra coisa" />
-    </div>
+    <div class="cp-body" id="cpBody"></div>
+    <form class="cp-foot" id="cpForm" hidden>
+      <label class="sr-only" for="cpIn">Mensagem para o agente</label>
+      <input class="ap-input" id="cpIn" type="text" placeholder="O que está errado ou o que quer mudar" />
+      <button class="btn btn-primary" type="submit">Enviar</button>
+    </form>
   </aside>
 
   <button class="tut-fab" type="button" id="fabTutorial">
@@ -638,7 +646,7 @@
              cap + '</div>' +
              '<div class="ap-agg"><div style="flex:1;min-width:260px"><b>Como cheguei nesse status:</b> ' +
              AGREGACOES[AGENTE_TEC.agregacao].toLowerCase() + ', ' + ag.porque + '.</div>' +
-             '<button class="ap-linkbtn" type="button" data-chat="' + it.n + '">Perguntar sobre este item</button></div>' +
+             '<button class="ap-linkbtn" type="button" data-chat="' + it.n + '">Falar com o agente</button></div>' +
              '<table class="dt"><thead><tr>' +
              '<th scope="col">Componente exigido</th><th scope="col">Onde está no TR</th>' +
              '<th scope="col">O que fornecemos</th><th scope="col">Status</th></tr></thead><tbody>';
@@ -654,7 +662,14 @@
 
       box.innerHTML = h;
       box.querySelectorAll('[data-chat]').forEach(function (b) {
-        b.addEventListener('click', function () { abrirChat(ITENS.filter(function (i) { return i.n == b.dataset.chat; })[0]); });
+        b.addEventListener('click', function () {
+          var it = ITENS.filter(function (i) { return i.n == b.dataset.chat; })[0];
+          var ag = agregar(it);
+          cpAbrirPainel(); cpSelecionar('tecnica');
+          cpBolha('bot', 'No <b>item ' + it.n + '</b> desta licitação eu concluí <b>' +
+            (ag.st === 'ok' ? 'atende' : (ag.st === 'no' ? 'não atende' : 'inconclusivo')) + '</b> ' + ag.porque +
+            '. Se isso estiver errado, me diga o que muda que eu proponho o ajuste da regra.');
+        });
       });
       box.querySelectorAll('[data-edit-tec]').forEach(function (b) {
         b.addEventListener('click', function () { abrir(AGENTE_TEC); });
@@ -669,46 +684,64 @@
       var pts = a.pontos === null
         ? '<span class="ap-dim">—</span>'
         : a.ganhos + '<span class="ap-dim">/' + a.pontos + '</span>';
-      var risco = a.risco ? '<div class="ap-risk"><b>Vale conferir</b>' + a.risco + '</div>' : '';
-      var calc = a.dadoCalc ? calcDe(a) : null;
-      var marca = calc
-        ? '<span class="badge-calc">cálculo · soma de ' + calc.parcelas.filter(function (x) { return x.on; }).length + ' itens</span>'
-        : '';
-      var pend = calc ? pendenciasDa(calc) : 0;
-      var dado = a.dado
-        ? '<div class="ap-dado' + (a.dadoRuim ? ' ruim' : '') + '">' + a.dado + marca +
-          (a.dadoQualif ? '<span class="q">' + a.dadoQualif + '</span>' : '') +
-          (pend ? '<span class="q ap-warn">' + pend + ' ponto(s) da conta precisam da sua conferência</span>' : '') + '</div>'
-        : '';
+
       if (!aplicavel(a)) {
         return '<div class="ap-crit nao-aplica" id="crit-' + a.id + '">' +
-          '<div class="ap-crit-main">' +
-            '<div class="ap-crit-name">' + a.nome + ' <span class="tag-light">não se aplica</span></div>' +
-            '<div class="ap-crit-sub"><b>Condição:</b> ' + a.condicao.texto + '</div>' +
-            '<div class="ap-crit-sub">' + a.condicao.porque + '</div>' +
-            '<div style="margin-top:8px"><button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a condição</button></div>' +
-          '</div>' +
-          '<div class="ap-pts zero">' + a.pontos + ' pts<br><span class="ap-dim" style="font-size:11px;font-weight:400">fora do total</span></div>' +
-        '</div>';
+          '<button class="ap-crit-btn" type="button" aria-expanded="false" data-exp="' + a.id + '">' +
+            '<span class="ap-crit-main"><span class="ap-crit-name">' + a.nome +
+              ' <span class="tag-light">não se aplica</span></span>' +
+              '<span class="ap-crit-sub">' + a.condicao.texto + '</span></span>' +
+            '<span class="ap-pts zero">' + a.pontos + '<span class="ap-dim" style="font-size:11px;font-weight:400"> fora do total</span></span>' +
+            '<span class="ap-chev" aria-hidden="true">›</span>' +
+          '</button><div class="ap-det" id="det-' + a.id + '" hidden></div></div>';
       }
+
+      var calc = a.dadoCalc ? calcDe(a) : null;
+      var pend = calc ? pendenciasDa(calc) : 0;
+      var alerta = a.risco ? 'A regra atual pode estar somando pontos indevidos'
+                 : (pend ? pend + ' ponto(s) da conta precisam de conferência' : '');
+
       return '<div class="ap-crit" id="crit-' + a.id + '">' +
-        '<div class="ap-crit-main">' +
-          '<div class="ap-crit-name">' + a.nome +
-            (a.sistema ? ' <span class="tag-light">padrão Settle</span>' : '') +
-            (a.destino === 'resumo' ? ' <span class="ap-tag type">vai para o Resumo</span>' : '') + '</div>' +
-          dado +
-          (a.regraTexto ? '<div class="ap-crit-sub"><b>Regra:</b> ' + a.regraTexto + '</div>' : '') +
-          risco +
-          '<div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap">' +
-            (calc ? '<button class="ap-linkbtn" type="button" data-conta="' + a.id + '">Ver a conta</button>' : '') +
-            '<button class="ap-linkbtn" type="button" data-why="' + a.id + '">De onde saiu</button>' +
-            '<button class="ap-linkbtn" type="button" data-edit="' + a.id + '">Ajustar a regra</button>' +
-            '<button class="ap-linkbtn" type="button" data-ensinar="' + a.id + '">Está errado</button>' +
-          '</div>' +
-          '<div class="ap-why" id="why-' + a.id + '" hidden></div>' +
-          '<div id="conta-' + a.id + '" hidden></div>' +
-        '</div>' +
-        '<div class="ap-pts' + (a.ganhos === 0 ? ' zero' : '') + '">' + pts + '</div>' +
+        '<button class="ap-crit-btn" type="button" aria-expanded="false" data-exp="' + a.id + '">' +
+          '<span class="ap-crit-main">' +
+            '<span class="ap-crit-name">' + a.nome +
+              (a.sistema ? ' <span class="tag-light">padrão Settle</span>' : '') + '</span>' +
+            (a.dado ? '<span class=' + JSON.stringify('ap-dado' + (a.dadoRuim || alerta ? ' ruim' : '')) + '>' + a.dado +
+              (calc ? '<span class="badge-calc">cálculo</span>' : '') + '</span>' : '') +
+            (alerta ? '<span class="ap-crit-sub ap-warn">' + alerta + '</span>' : '') +
+          '</span>' +
+          '<span class="ap-pts' + (a.ganhos === 0 ? ' zero' : '') + '">' + pts + '</span>' +
+          '<span class="ap-chev" aria-hidden="true">›</span>' +
+        '</button>' +
+        '<div class="ap-det" id="det-' + a.id + '" hidden></div>' +
+      '</div>';
+    }
+
+    function detHTML(a) {
+      if (!aplicavel(a)) {
+        return '<p class="ap-crit-sub">' + a.condicao.porque + '</p>' + acoesHTML(a);
+      }
+      var h = '';
+      if (a.regraTexto) h += '<p class="ap-crit-sub"><b>Regra:</b> ' + a.regraTexto + '</p>';
+      if (a.vars.length) {
+        h += '<p class="ap-crit-sub"><b>Variáveis:</b> ' + a.vars.map(function (k) {
+          var v = VARS[k], q = '';
+          if (v.depende && v.qualifica) q = ' (aqui vale ' + v.qualifica.estadual + ')';
+          return v.nome + ' ' + v.v + q;
+        }).join(', ') + '</p>';
+      }
+      if (a.ausencia) h += '<p class="ap-crit-sub"><b>Se não encontrar:</b> ' + a.ausencia + '</p>';
+      if (a.dadoQualif) h += '<p class="ap-crit-sub">' + a.dadoQualif + '</p>';
+      h += '<span class="ap-quote">' + a.prov + '</span>';
+      if (a.risco) h += '<div class="ap-risk"><b>Vale conferir</b>' + a.risco + '</div>';
+      if (a.dadoCalc) h += contaHTML(a);
+      return h + acoesHTML(a);
+    }
+
+    function acoesHTML(a) {
+      return '<div class="ap-det-acts">' +
+        '<button class="btn btn-outline" type="button" data-falar="' + a.id + '">Falar com o agente</button>' +
+        '<button class="btn btn-outline" type="button" data-edit="' + a.id + '">Abrir a configuração</button>' +
       '</div>';
     }
 
@@ -747,36 +780,28 @@
 
       box.innerHTML = AGENTES.map(critHTML).join('');
 
-      box.querySelectorAll('[data-why]').forEach(function (b) {
+      box.querySelectorAll('[data-exp]').forEach(function (b) {
         b.addEventListener('click', function () {
-          var a = acharAgente(b.dataset.why);
-          var el = document.getElementById('why-' + a.id);
-          if (el.hidden) { el.innerHTML = whyHTML(a); el.hidden = false; b.textContent = 'Esconder'; }
-          else { el.hidden = true; b.textContent = 'Por que este número'; }
+          var a = acharAgente(b.dataset.exp), el = document.getElementById('det-' + a.id);
+          var abrindo = el.hidden;
+          el.innerHTML = abrindo ? detHTML(a) : '';
+          el.hidden = !abrindo;
+          b.setAttribute('aria-expanded', String(abrindo));
+          detsAbertos[a.id] = abrindo;
+          if (abrindo && a.dadoCalc) ligarConta(a);
+          if (abrindo) ligarAcoes(el);
         });
-      });
-      box.querySelectorAll('[data-edit]').forEach(function (b) {
-        b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
-      });
-      box.querySelectorAll('[data-conta]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var a = acharAgente(b.dataset.conta), el = document.getElementById('conta-' + a.id);
-          if (el.hidden) { el.innerHTML = contaHTML(a); el.hidden = false; ligarConta(a);
-                           b.textContent = 'Esconder a conta'; contasAbertas[a.id] = true; }
-          else { el.hidden = true; b.textContent = 'Ver a conta'; contasAbertas[a.id] = false; }
-        });
-      });
-      box.querySelectorAll('[data-ensinar]').forEach(function (b) {
-        b.addEventListener('click', function () { ensinar(acharAgente(b.dataset.ensinar)); });
       });
 
-      Object.keys(contasAbertas).forEach(function (id) {
-        if (!contasAbertas[id]) return;
-        var a = acharAgente(id), el = document.getElementById('conta-' + id);
+      Object.keys(detsAbertos).forEach(function (id) {
+        if (!detsAbertos[id]) return;
+        var a = acharAgente(id), el = document.getElementById('det-' + id);
         if (!a || !el) return;
-        el.innerHTML = contaHTML(a); el.hidden = false; ligarConta(a);
-        var b = box.querySelector('[data-conta="' + id + '"]');
-        if (b) b.textContent = 'Esconder a conta';
+        el.innerHTML = detHTML(a); el.hidden = false;
+        if (a.dadoCalc) ligarConta(a);
+        ligarAcoes(el);
+        var b = box.querySelector('[data-exp="' + id + '"]');
+        if (b) b.setAttribute('aria-expanded', 'true');
       });
 
       pintarScoreBox();
@@ -806,8 +831,6 @@
       abrir(novo);
     }
 
-    document.getElementById('btnNovoDaqui').addEventListener('click', function () { criarDaqui('score'); });
-    document.getElementById('btnNovaVerificacao').addEventListener('click', function () { criarDaqui('tecnica'); });
 
     /* =====================================================================
        ESTADOS DE EXECUÇÃO
@@ -913,7 +936,16 @@
        veio errado.
        ===================================================================== */
 
-    var contasAbertas = {};
+    var contasAbertas = {}, detsAbertos = {};
+
+    function ligarAcoes(el) {
+      el.querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
+      });
+      el.querySelectorAll('[data-falar]').forEach(function (b) {
+        b.addEventListener('click', function () { falarSobre(acharAgente(b.dataset.falar)); });
+      });
+    }
 
     function calcDe(a) {
       var k = (a.vars || []).filter(function (x) { return VARS[x] && VARS[x].calc; })[0];
@@ -975,7 +1007,8 @@
     }
 
     function ligarConta(a) {
-      var calc = calcDe(a), el = document.getElementById('conta-' + a.id);
+      var calc = calcDe(a), el = document.getElementById('det-' + a.id);
+      if (!el) return;
       el.querySelectorAll('[data-toggle]').forEach(function (b) {
         b.addEventListener('click', function () {
           var p = calc.parcelas[parseInt(b.dataset.toggle, 10)];
@@ -1030,6 +1063,9 @@
     }
 
     function pintarVars() {
+      document.getElementById('cntAg').textContent = ANALISES.length;
+      document.getElementById('cntVar').textContent = Object.keys(VARS).length;
+      document.getElementById('cntVar2').textContent = Object.keys(VARS).length;
       document.getElementById('rowsVars').innerHTML = Object.keys(VARS).map(function (k) {
         var v = VARS[k];
         var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; })
@@ -1063,102 +1099,227 @@
     });
 
     /* =====================================================================
-       CONVERSA COM O RESULTADO
-       Requisito da Alice (21/08): não basta ter a resposta do agente, é preciso
-       poder interagir com ela. E a conversa pode virar ajuste de regra.
+       PAINEL DE AGENTES
+       Um lugar só, de qualquer tela: escolhe o agente, conversa, e a
+       correção vira proposta com antes e depois. O botão de engrenagem no
+       cabeçalho abre a configuração completa do agente selecionado.
        ===================================================================== */
 
-    var itemChat = null;
+    var cpAgente = null, cpProposta = null;
 
-    function bolha(quem, html) {
-      var el = document.createElement('div');
-      el.className = 'ap-msg ' + quem;
-      el.innerHTML = html;
-      var m = document.getElementById('chatMsgs');
-      m.appendChild(el); m.scrollTop = m.scrollHeight;
+    function cpAbrirPainel() {
+      document.getElementById('cp').hidden = false;
+      document.body.classList.add('cp-open');
+      document.getElementById('cpAbrir').hidden = true;
+      if (!cpAgente) cpPintarLista();
     }
 
-    function chips(lista) {
-      var box = document.getElementById('chatChips');
-      box.innerHTML = '';
-      lista.forEach(function (o) {
-        var b = document.createElement('button');
-        b.type = 'button'; b.className = 'ap-chip'; b.textContent = o.t;
-        b.addEventListener('click', function () { bolha('me', o.t); o.faz(); });
-        box.appendChild(b);
+    function cpFecharPainel() {
+      document.getElementById('cp').hidden = true;
+      document.body.classList.remove('cp-open');
+      document.getElementById('cpAbrir').hidden = false;
+    }
+
+    /* Quem produziu cada resultado: é o nome que a pessoa procura na lista. */
+    function agenteDe(regra) {
+      if (!regra) return null;
+      if (regra.id === 'tec') return 'tecnica';
+      if (regra.destino === 'resumo') return 'resumo';
+      return 'score';
+    }
+
+    function cpPintarLista() {
+      cpAgente = null;
+      document.getElementById('cpTitulo').textContent = 'Agentes';
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'true');
+      document.getElementById('cpConfig').hidden = true;
+      document.getElementById('cpForm').hidden = true;
+
+      var h = '<p class="cp-agente">Escolha com quem falar. Cada agente conhece as próprias regras e o que produziu em cada licitação.</p>';
+      ANALISES.forEach(function (an) {
+        var sub = an.formato === 'estruturado'
+          ? regrasDa(an).length + ' regras · ' + an.gatilho.toLowerCase()
+          : (an.id === 'tecnica' ? 'roda por componente · 15 execuções aqui' : 'rascunho, ainda não ativado');
+        h += '<button class="cp-item" type="button" data-cpsel="' + an.id + '">' +
+             '<span class="cp-item-main"><span class="cp-item-nome">' + an.nome + '</span>' +
+             '<span class="cp-item-sub">' + sub + '</span></span></button>';
+      });
+      h += '<button class="cp-item" type="button" data-cpnovo="1">' +
+           '<span class="cp-item-main"><span class="cp-item-nome">Criar um agente novo</span>' +
+           '<span class="cp-item-sub">abre a configuração em branco</span></span></button>';
+
+      document.getElementById('cpBody').innerHTML = h;
+      document.querySelectorAll('[data-cpsel]').forEach(function (b) {
+        b.addEventListener('click', function () { cpSelecionar(b.dataset.cpsel); });
+      });
+      document.querySelector('[data-cpnovo]').addEventListener('click', function () {
+        cpFecharPainel(); setVia('cons'); abaAtiva('agentes'); abrirFx(null);
       });
     }
 
-    function perguntasDoItem(it) {
-      var ag = agregar(it);
-      var trava = it.comps.filter(function (c) { return c.st === 'no' || c.st === 'na'; });
-      var lista = [
-        { t:'O que falta para atender?', faz:function () {
-            if (!trava.length) { bolha('bot', 'Nada. Todos os componentes deste item atendem.'); return; }
-            bolha('bot', (trava.length === 1 ? 'Um ponto trava' : trava.length + ' pontos travam') +
-              ' este item:<br>' + trava.map(function (c) {
-              return '<b>' + c.nome + '</b> (' + ST[c.st].t + '): o TR pede em ' + c.tr +
-                     ' e hoje nós temos ' + c.nosso + '.';
-            }).join('<br>'));
-            proximas(it);
-          }},
-        { t:'Por que ficou com esse status?', faz:function () {
-            bolha('bot', 'Regra de agregação atual: <b>' + AGREGACOES[AGENTE_TEC.agregacao].toLowerCase() +
-              '</b>. O item ficou assim ' + ag.porque + '.');
-            proximas(it);
-          }}
-      ];
-      if (it.comps.some(function (c) { return c.st === 'na'; })) {
-        lista.push({ t:'Trate não avaliado como não atende', faz:function () {
-            bolha('bot', 'Posso, mas é uma decisão com consequência: hoje eu deixo o item inconclusivo justamente ' +
-              'para você olhar. Se eu passar a tratar não avaliado como não atende, itens vão ser reprovados por ' +
-              'falta de informação minha, não por falha do fornecedor. Isso vale para todos os itens de todas as licitações.');
-            chips([
-              { t:'Mudar assim mesmo', faz:function () {
-                  AGENTE_TEC.naoAvaliado = 'reprova';
-                  pintarTecnica();
-                  bolha('bot', 'Mudei. Os itens foram recalculados agora.');
-                  settleToast('Regra de agregação atualizada', { undoLabel:'Desfazer',
-                    onUndo:function () { AGENTE_TEC.naoAvaliado = 'bloqueia'; pintarTecnica(); } });
-                  chips([]);
-                }},
-              { t:'Deixar como está', faz:function () { bolha('bot', 'Mantido. O item continua inconclusivo até alguém olhar.'); proximas(it); } }
-            ]);
-          }});
+    function cpSelecionar(id, regra) {
+      cpAgente = ANALISES.filter(function (a) { return a.id === id; })[0];
+      cpProposta = null;
+      document.getElementById('cpTitulo').textContent = cpAgente.nome;
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+      document.getElementById('cpConfig').hidden = false;
+      document.getElementById('cpForm').hidden = false;
+      document.getElementById('cpBody').innerHTML =
+        '<p class="cp-agente">' + cpAgente.desc + '</p>';
+
+      if (regra) {
+        cpBolha('bot', 'Nesta licitação, a regra <b>' + regra.nome + '</b> resultou em <b>' +
+          (regra.dado || 'sem dado') + '</b>' + (regra.pontos !== null ? ', que deu ' + regra.ganhos + ' de ' + regra.pontos + ' pontos' : '') +
+          '. O que está errado?');
+        cpSugestoes(regra);
+      } else {
+        cpBolha('bot', 'Pode me dizer o que quer mudar, ou apontar um resultado que ficou errado. ' +
+          'Eu consigo ver o que produzi em cada licitação que analisei.');
+        cpSugestoes(null);
       }
-      return lista;
     }
 
-    function proximas(it) { chips(perguntasDoItem(it).slice(0, 3)); }
-
-    function abrirChat(it) {
-      itemChat = it;
-      var ag = agregar(it);
-      document.getElementById('chatTitle').textContent = 'Item ' + it.n;
-      document.getElementById('chatSub').textContent = it.nome + ' · ' + it.comps.length + ' componentes analisados';
-      document.getElementById('chatMsgs').innerHTML = '';
-      document.getElementById('ovlChat').hidden = false;
-      document.getElementById('chat').hidden = false;
-      bolha('bot', 'Este item está como <b>' +
-        (ag.st === 'ok' ? 'atende' : (ag.st === 'no' ? 'não atende' : 'inconclusivo')) +
-        '</b> ' + ag.porque + '. Pode perguntar o que quiser sobre isso.');
-      proximas(it);
+    function cpBolha(quem, html) {
+      var el = document.createElement('div');
+      el.className = 'cp-msg ' + quem;
+      el.innerHTML = html;
+      var b = document.getElementById('cpBody');
+      b.appendChild(el); b.scrollTop = b.scrollHeight;
     }
 
-    function fecharChat() {
-      document.getElementById('ovlChat').hidden = true;
-      document.getElementById('chat').hidden = true;
+    function cpSugestoes(regra) {
+      var box = document.createElement('div');
+      box.className = 'ap-chips';
+      var ops = regra
+        ? [{ t:'O dado extraído está errado', faz:function () { cpDadoErrado(regra); } },
+           { t:'A regra está errada', faz:function () { cpRegraErrada(regra); } }]
+        : [{ t:'Onde este agente já rodou?', faz:function () {
+              cpBolha('bot', 'Rodei em 148 licitações neste mês. Na que você está agora, a PE 90014/2026, produzi ' +
+                (cpAgente.destino ? regrasDa(cpAgente).length + ' resultados' : '15 resultados') +
+                '. Pode citar um deles que eu te mostro de onde saiu.'); } },
+           { t:'Quero mudar uma regra', faz:function () {
+              cpBolha('bot', 'Me diga qual, ou abra a configuração na engrenagem aqui em cima para ver todas.'); } }];
+      ops.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'ap-chip'; b.textContent = o.t;
+        b.addEventListener('click', function () { box.remove(); cpBolha('me', o.t); o.faz(); });
+        box.appendChild(b);
+      });
+      var body = document.getElementById('cpBody');
+      body.appendChild(box); body.scrollTop = body.scrollHeight;
     }
 
-    document.getElementById('chatX').addEventListener('click', fecharChat);
-    document.getElementById('ovlChat').addEventListener('click', fecharChat);
-    document.getElementById('chatIn').addEventListener('keydown', function (e) {
-      if (e.key !== 'Enter' || !e.target.value.trim()) return;
-      var t = e.target.value.trim(); e.target.value = '';
-      bolha('me', t);
-      bolha('bot', 'Consigo responder sobre os componentes deste item e sobre a regra que gerou o status. ' +
-        'Se a resposta indicar que a regra está errada, dá para ajustar por aqui mesmo, sem sair da licitação.');
-      proximas(itemChat);
+    function cpDadoErrado(regra) {
+      var v = VARS[regra.vars[0]];
+      cpBolha('bot', 'O dado veio da variável <b>' + (v ? v.nome : 'do sistema') + '</b>' +
+        (v ? ' (' + v.v + '), que hoje procura em <b>' + v.fonte + '</b>' : '') +
+        '. Onde está a informação certa?');
+      cpChips([
+        { t:'Está no anexo, não no corpo do edital', faz:function () { cpPropor(regra, 'anexo'); } },
+        { t:'Está no corpo, você leu errado',        faz:function () { cpPropor(regra, 'instrucao'); } }
+      ]);
+    }
+
+    function cpRegraErrada(regra) {
+      cpBolha('bot', 'A regra atual é: <b>' + (regra.regraTexto || regra.instr) + '</b>. O que muda?');
+      cpChips([
+        { t:'Não deveria pontuar sem o dado', faz:function () { cpPropor(regra, 'ausencia'); } },
+        { t:'Quero mexer nos pontos',         faz:function () {
+            cpBolha('bot', 'Isso é mais rápido na configuração: abre na engrenagem aqui em cima, o campo é "Quanto vale".'); } }
+      ]);
+    }
+
+    function cpChips(ops) {
+      var box = document.createElement('div');
+      box.className = 'ap-chips';
+      ops.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'ap-chip'; b.textContent = o.t;
+        b.addEventListener('click', function () { box.remove(); cpBolha('me', o.t); o.faz(); });
+        box.appendChild(b);
+      });
+      var body = document.getElementById('cpBody');
+      body.appendChild(box); body.scrollTop = body.scrollHeight;
+    }
+
+    /* A conversa propõe, o artefato decide. Nada muda sem a pessoa ver o
+       antes e o depois e aprovar. */
+    function cpPropor(regra, tipo) {
+      var v = VARS[regra.vars[0]];
+      if (tipo === 'anexo') {
+        cpProposta = { regra:regra, escopo:'variavel',
+          titulo:'Mudar onde a variável procura',
+          por:'Vale para todas as licitações e para todas as análises que usam ' + (v ? v.nome : 'essa variável') + '.',
+          de:(v ? v.fonte + ' · ' + v.v : ''), para:'Edital e anexos · v2',
+          aplica:function () {
+            v.fonte = 'Edital e anexos'; v.v = 'v2'; v.custo = 0.06;
+            regra.dado = 'exige atestado de acervo técnico'; regra.dadoRuim = false;
+            regra.ganhos = 0; regra.estado = 'run'; regra.risco = null;
+            regra.prov = 'Anexo III, item 3.2: atestado de acervo técnico registrado no CREA';
+            pintarCrits(); pintarVars(); pintarAnalises();
+          } };
+      } else if (tipo === 'ausencia') {
+        cpProposta = { regra:regra, escopo:'regra',
+          titulo:'Mudar o que fazer quando não encontro o dado',
+          por:'Vale para todas as licitações analisadas por este agente daqui para frente.',
+          de:(regra.ausencia || 'soma os pontos mesmo sem encontrar'), para:'não pontua e sinaliza para revisão',
+          aplica:function () {
+            regra.ausencia = 'não pontua e sinaliza para revisão';
+            regra.ganhos = 0; regra.risco = null; regra.estado = 'run';
+            regra.dado = 'não encontrado'; regra.dadoRuim = true;
+            pintarCrits(); pintarAnalises();
+          } };
+      } else {
+        cpProposta = { regra:regra, escopo:'variavel',
+          titulo:'Reescrever o que a variável procura',
+          por:'Muda a extração em todas as licitações.',
+          de:(v ? v.nome + ' ' + v.v : ''), para:'mesma variável, v2, com a instrução ajustada',
+          aplica:function () { if (v) { v.v = 'v2'; } pintarVars(); pintarAnalises(); } };
+      }
+      cpPintarProposta();
+    }
+
+    function cpPintarProposta() {
+      var p = cpProposta;
+      var el = document.createElement('div');
+      el.className = 'cp-prop';
+      el.innerHTML = '<h4>' + p.titulo + '</h4><div class="por">' + p.por + '</div>' +
+        '<div class="cp-diff"><span class="de">' + p.de + '</span><span class="para">' + p.para + '</span></div>' +
+        '<div class="cp-prop-acts">' +
+          '<button class="btn btn-primary" type="button" data-cpok="1">Aplicar</button>' +
+          '<button class="btn btn-outline" type="button" data-cpver="1">Ver na configuração</button>' +
+        '</div>';
+      var body = document.getElementById('cpBody');
+      body.appendChild(el); body.scrollTop = body.scrollHeight;
+      el.querySelector('[data-cpok]').addEventListener('click', function () {
+        p.aplica();
+        el.querySelector('.cp-prop-acts').innerHTML = '<span class="ap-ok" style="font-size:13px;font-weight:600">Aplicado</span>';
+        cpBolha('bot', 'Feito. Já vale para as próximas licitações, e o resultado desta foi recalculado.');
+        settleToast('Regra atualizada pelo agente');
+      });
+      el.querySelector('[data-cpver]').addEventListener('click', function () { abrir(p.regra); });
+    }
+
+    /* Entrada a partir de um resultado: seleciona o agente e já traz o caso. */
+    function falarSobre(regra) {
+      cpAbrirPainel();
+      cpSelecionar(agenteDe(regra), regra);
+    }
+
+    document.getElementById('cpAbrir').addEventListener('click', cpAbrirPainel);
+    document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
+    document.getElementById('cpLista').addEventListener('click', cpPintarLista);
+    document.getElementById('cpConfig').addEventListener('click', function () {
+      if (!cpAgente) return;
+      setVia('cons'); abaAtiva('agentes'); abrirAnalise(cpAgente);
+    });
+    document.getElementById('cpForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var c = document.getElementById('cpIn');
+      if (!c.value.trim()) return;
+      cpBolha('me', c.value.trim()); c.value = '';
+      cpBolha('bot', 'Consigo agir sobre as regras deste agente e sobre o que ele produziu nas licitações. ' +
+        'Se for uma correção, eu proponho a mudança com o antes e o depois antes de aplicar.');
     });
 
     /* =====================================================================
@@ -1577,9 +1738,9 @@
 
     var CABECALHO = {
       lic:{ eyebrow:'Análise da licitação', titulo:'PE 90014/2026',
-        lead:'A regra que produziu cada número desta tela é sua e pode ser editada daqui. Você parte do resultado com que discorda, não de uma tela em branco.' },
-      cons:{ eyebrow:'Construtor de agentes', titulo:'Agentes e variáveis',
-        lead:'Nesta abordagem você cadastra a variável, monta o fluxo de decisão com as caixinhas, define quando roda e onde aparece. O agente existe antes de qualquer licitação.' }
+        lead:'Cada número aqui diz de qual agente veio. Para mudar a regra por trás, fale com esse agente no painel à direita ou abra a configuração dele.' },
+      cons:{ eyebrow:'Configuração', titulo:'Agentes',
+        lead:'Aqui você cadastra e edita os agentes e as variáveis que eles usam. É o lugar onde a regra vive; a licitação é onde o resultado dela aparece.' }
     };
 
     function setVia(v) {
@@ -2208,70 +2369,6 @@
        errado" (Alice, 22:59). A correção pontual vira melhoria da variável.
        ===================================================================== */
 
-    function ensinar(a) {
-      document.getElementById('chatTitle').textContent = a.nome;
-      document.getElementById('chatSub').textContent = 'Resultado nesta licitação: ' + (a.dado || 'sem dado');
-      document.getElementById('chatMsgs').innerHTML = '';
-      document.getElementById('ovlChat').hidden = false;
-      document.getElementById('chat').hidden = false;
-      bolha('bot', 'Eu concluí <b>' + (a.dado || 'sem dado') + '</b> e por isso dei ' + a.ganhos +
-        ' de ' + a.pontos + '. O que está errado?');
-
-      var opcoes = [
-        { t:'O dado que você extraiu está errado', faz:function () {
-            bolha('bot', 'Onde está a informação certa? Se você me disser, eu passo a procurar lá.');
-            chips([
-              { t:'Está no anexo, não no corpo do edital', faz:function () { corrigirFonte(a); } },
-              { t:'Está no corpo, você leu errado', faz:function () {
-                  bolha('bot', 'Então o problema é a instrução da variável, não a fonte. Vale reescrever o que ela procura. Abro o editor?');
-                  chips([{ t:'Abrir o editor', faz:function () { fecharChat(); abrir(a); } }]);
-                }}
-            ]);
-          }},
-        { t:'O dado está certo, a regra é que está errada', faz:function () {
-            bolha('bot', 'Isso eu corrijo no editor da regra, e vale para todas as licitações daqui pra frente.');
-            chips([{ t:'Abrir o editor da regra', faz:function () { fecharChat(); abrir(a); } }]);
-          }},
-        { t:'Está tudo certo, me enganei', faz:function () {
-            bolha('bot', 'Sem problema. Nada foi alterado.');
-            chips([]);
-          }}
-      ];
-      chips(opcoes);
-    }
-
-    function corrigirFonte(a) {
-      bolha('bot', 'Entendi. Posso fazer de duas formas, e elas são bem diferentes:');
-      chips([
-        { t:'Corrigir só nesta licitação', faz:function () {
-            bolha('bot', 'Corrigi aqui. Mas na próxima licitação com a exigência em anexo eu vou errar de novo, porque a variável não mudou.');
-            aplicarCorrecao(a, false);
-          }},
-        { t:'Ensinar a variável a olhar os anexos', faz:function () {
-            bolha('bot', 'Essa é a que resolve de verdade. A variável <b>' + VARS[a.vars[0]].nome +
-              '</b> passa da v1 para a v2 e vai procurar também nos anexos, em todas as licitações e em todas as análises que usam ela.');
-            aplicarCorrecao(a, true);
-          }}
-      ]);
-    }
-
-    function aplicarCorrecao(a, ensina) {
-      var k = a.vars[0], antes = JSON.parse(JSON.stringify(VARS[k])), antesA = { dado:a.dado, ganhos:a.ganhos, estado:a.estado, risco:a.risco, dadoRuim:a.dadoRuim, prov:a.prov };
-      a.dado = 'exige atestado de acervo técnico'; a.dadoRuim = false;
-      a.ganhos = 0; a.estado = 'run'; a.risco = null;
-      a.prov = 'Anexo III, item 3.2: atestado de acervo técnico registrado no CREA';
-      if (ensina) { VARS[k].v = 'v2'; VARS[k].fonte = 'Edital e anexos'; VARS[k].custo = 0.06; }
-      pintarCrits(); pintarVars(); pintarAnalises();
-      chips([]);
-      settleToast(ensina ? 'Variável atualizada para v2 em todas as análises' : 'Corrigido só nesta licitação', {
-        undoLabel:'Desfazer',
-        onUndo:function () {
-          VARS[k] = antes; Object.keys(antesA).forEach(function (x) { a[x] = antesA[x]; });
-          pintarCrits(); pintarVars(); pintarAnalises();
-        }
-      });
-    }
-
     /* =====================================================================
        TUTORIAIS
        Um roteiro por abordagem. Os passos executam a ação antes de explicar,
@@ -2298,9 +2395,9 @@
       { alvo:'#crit-cap', titulo:'O dado extraído, não só a nota',
         texto:'Cada linha mostra <b>o que foi extraído</b> e a <b>regra por trás</b>. Antes aparecia só a pontuação, e o cliente não tinha como saber a qual CAPAG ou a qual população o número se referia.<p>Aqui a variável vem qualificada: CAPAG estadual, porque o órgão é do estado.</p>' },
 
-      { alvo:'#why-ate', titulo:'E a origem, quando ele quiser',
-        texto:'Um clique a mais mostra a instrução, as variáveis com versão, o tratamento de ausência e o <b>trecho de origem</b>. A proveniência que já existe no Resumo.',
-        antes:function () { clic('[data-why="ate"]'); } },
+      { alvo:'#det-ate', titulo:'O detalhe abre no lugar',
+        texto:'Um clique mostra a instrução, as variáveis com versão, o tratamento de ausência e o <b>trecho de origem</b>. E duas ações: falar com o agente ou abrir a configuração dele.',
+        antes:function () { clic('[data-exp="ate"]'); } },
 
       { alvo:'#crit-ate', titulo:'Ensinar o agente onde ele errou',
         texto:'"Está errado" abre a correção no lugar onde o erro apareceu. A pessoa diz que a exigência estava no anexo, e aí vem a escolha que importa: corrigir só esta licitação, ou <b>ensinar a variável a olhar os anexos</b>, o que vale para todas as análises que usam ela.<p>Corrigir é pontual. Ensinar melhora o sistema.</p>' },
@@ -2333,8 +2430,9 @@
       { alvo:'#crit-iso', titulo:'Regra que não vale para toda licitação',
         texto:'Esta regra só existe quando o segmento é transporte de passageiros. Como esta licitação é de frota, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.<p>O denominador do score muda de licitação para licitação, e o cabeçalho diz quantos pontos saíram e por quê.</p>' },
 
-      { alvo:'#btnNovoDaqui', titulo:'Criar sem sair da licitação',
-        texto:'Dá para adicionar um critério novo daqui, com esta licitação servindo de teste antes de salvar. A aba de agentes continua existindo como painel de controle, mas não é o único caminho para criar.' },
+      { alvo:'#cpAbrir', titulo:'De qualquer lugar da plataforma',
+        texto:'O painel fica a um clique em qualquer tela. É por ele que se fala com um agente, se chega na configuração e se cria um novo, sem ter que caçar onde a regra mora.',
+        antes:function () { cpFecharPainel(); } },
 
       { alvo:'#panel-tecnica .alert', titulo:'O mesmo modelo, em outra análise',
         texto:'A análise técnica é o caso que quebrava o modelo. Ela roda <b>por componente</b>, e os componentes não existem antes de alguém ler o Termo de Referência: foram descobertos na execução.<p>São 15 execuções nesta licitação, contra uma de um agente que rodasse uma vez só.</p>',
@@ -2343,13 +2441,21 @@
       { alvo:'#item-2', titulo:'Não avaliado não é não atende',
         texto:'Este item ficou <b>inconclusivo</b>, não reprovado, porque a blindagem não pôde ser avaliada. A frase acima da tabela explica como o status do item foi calculado a partir dos componentes: essa é a regra de agregação, e ela é do cliente.' },
 
-      { alvo:'#chat', titulo:'Conversar com o resultado',
-        texto:'Requisito que a Alice levantou duas vezes: não basta ter a resposta, é preciso poder interagir com ela. A conversa explica o status, diz o que trava, e <b>pode virar ajuste de regra</b> com o aviso da consequência antes de aplicar.',
-        antes:function () { clic('[data-chat="2"]'); }, espera:320 },
+      { alvo:'#cp', titulo:'O painel de agentes',
+        texto:'Ele está em qualquer tela. Você escolhe com quem falar, e o mesmo painel dá acesso à configuração daquele agente pela engrenagem.<p>Chegando por um resultado, o agente já vem selecionado e o caso já está na mesa.</p>',
+        antes:function () { abaAtiva('licitacao'); falarSobre(acharAgente('ate')); }, espera:380 },
+
+      { alvo:'.cp-prop', titulo:'A conversa propõe, você aprova',
+        texto:'O ponto que a Alice fez questão: a conversa é uma coisa, o que foi construído é outra. A correção vira <b>proposta com antes e depois</b>, dizendo o alcance da mudança, e só passa a valer quando você aplica.',
+        antes:function () {
+          var ch = document.querySelector('#cpBody .ap-chips'); if (ch) ch.remove();
+          cpBolha('me', 'O dado extraído está errado, está no anexo');
+          cpPropor(acharAgente('ate'), 'anexo');
+        }, espera:340 },
 
       { titulo:'Resumindo esta abordagem',
         texto:'A pessoa nunca partiu de uma tela em branco. Ela discordou de um número, viu o dado e a regra, corrigiu e viu o efeito na hora.<p>Agora veja a outra abordagem no menu da esquerda, onde ficam as análises inteiras e o construtor.</p>',
-        antes:function () { fecharChat(); } }
+        antes:function () { cpFecharPainel(); } }
     ];
 
     var TOUR_CONS = [
