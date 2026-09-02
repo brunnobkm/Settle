@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 15:50</p>
+        <p class="ap-selo">protótipo · versão de 02/09 15:54</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -1378,7 +1378,7 @@
       if (draft.novo) {
         h += '<div class="ap-field"><label for="fNomeNovo">Nome do critério</label>' +
              '<input class="ap-input" id="fNomeNovo" type="text" value="' + draft.nome.replace(/"/g, '&quot;') +
-             '" placeholder="Ex.: Exige seguro sem franquia" /></div>';
+             '" placeholder="Ex.: Prazo de entrega" /></div>';
       }
       h += '<div class="ap-field"><label for="fInstr">O que a Settle deve fazer</label>' +
            '<p class="ap-fhint">Escreva como você explicaria para alguém da equipe. Na revisão eu aponto o que ficou em aberto.</p>' +
@@ -1818,7 +1818,7 @@
       }
       if (b.t === 'pontuar') {
         h += '<label class="ap-fhint" for="fxr' + i + '">Regra de pontuação</label>' +
-             '<input class="ap-input" id="fxr' + i + '" data-campo="regra" data-i="' + i + '" type="text" value="' + (b.regra || '').replace(/"/g, '&quot;') + '" placeholder="Ex.: CAPAG A ou B soma 10 pontos" />';
+             '<input class="ap-input" id="fxr' + i + '" data-campo="regra" data-i="' + i + '" type="text" value="' + (b.regra || '').replace(/"/g, '&quot;') + '" placeholder="Ex.: acima de 30 dias soma 10 pontos" />';
       }
       if (b.t === 'exibir') {
         h += '<p class="ap-fhint" style="margin-bottom:6px">Onde o resultado aparece</p><div class="ap-chips">';
@@ -1832,7 +1832,7 @@
 
     function pintarFx() {
       var h = '<div class="ap-field"><label for="fxNome">Nome do agente</label>' +
-              '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Saúde financeira do órgão" /></div>';
+              '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Análise de prazos" /></div>';
 
       h += '<div class="ap-field"><span class="ap-flabel">O fluxo</span>' +
            '<p class="ap-fhint">Cada caixinha é um passo. O agente executa de cima para baixo.</p>';
@@ -2029,7 +2029,7 @@
         '<div class="ap-field"><label for="vNome">O que extrair</label>' +
         '<p class="ap-fhint">Descreva a informação. É este nome que vai aparecer dentro das regras que usarem a variável.</p>' +
         '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
-        '" placeholder="Ex.: exigência de atestado de capacidade técnica" /></div>' +
+        '" placeholder="Ex.: prazo de entrega" /></div>' +
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
         '<p class="ap-fhint">Os arquivos variam de órgão para órgão, então a escolha é por categoria, não por ' +
         'arquivo. Pode marcar mais de uma. O que a Settle não conseguiu classificar fica de fora por padrão.</p>' +
@@ -2423,7 +2423,7 @@
         '<div class="h">Nova variável</div>' +
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">O que extrair</label>' +
-          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: exigência de garantia contratual" />' +
+          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: prazo de entrega" />' +
           '<p class="ap-fhint" style="margin:10px 0 4px">De onde</p><div class="ap-chips" data-g="fonte">' +
             '<button class="ap-chip" type="button" data-val="Edital" aria-pressed="true">Edital</button>' +
             '<button class="ap-chip" type="button" data-val="Termo de Referência" aria-pressed="false">TR</button>' +
