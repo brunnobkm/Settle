@@ -216,8 +216,8 @@
     <main class="content">
 
       <div class="page-head">
-        <h1 class="title">Agentes</h1>
-        <p class="ap-lead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
+        <h1 class="title" id="phTitle">Agentes</h1>
+        <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
       </div>
 
@@ -243,8 +243,9 @@
             <thead>
               <tr>
                 <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Fonte</th>
-                <th scope="col">Usada por</th><th scope="col">Versão</th>
-                <th scope="col" data-col="custo" hidden>Custo</th><th scope="col">Se não encontrar</th>
+                <th scope="col">Se não encontrar</th>
+                <th scope="col" data-col="custo" hidden>Custo</th>
+                <th scope="col">Mexer nela afeta</th><th scope="col"><span class="sr-only">Ações</span></th>
               </tr>
             </thead>
             <tbody id="rowsVars"></tbody>
@@ -998,18 +999,79 @@
       });
     }
 
+    /* Quem quebra se esta variável mudar ou sumir. É o que a pessoa precisa
+       saber antes de mexer, e não o número da versão. */
+    function usosDaVar(k) {
+      var u = [];
+      AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; }).forEach(function (a) {
+        var an = ANALISES.filter(function (x) { return x.id === agenteDe(a); })[0];
+        u.push({ agente:(an ? an.nome : 'Score'), regra:a.nome });
+      });
+      if (AGENTE_TEC.vars.indexOf(k) >= 0) u.push({ agente:'Análise técnica', regra:'Conformidade técnica do item' });
+      if (JURIDICA.vars.indexOf(k) >= 0) u.push({ agente:'Análise jurídica', regra:'instrução em texto' });
+      return u;
+    }
+
     function pintarVars() {
       document.getElementById('cntAg').textContent = ANALISES.length;
       document.getElementById('cntVar').textContent = Object.keys(VARS).length;
       document.getElementById('rowsVars').innerHTML = Object.keys(VARS).map(function (k) {
-        var v = VARS[k];
-        var usos = AGENTES.filter(function (a) { return a.vars.indexOf(k) >= 0; })
-          .map(function (a) { return a.nome; });
+        var v = VARS[k], u = usosDaVar(k);
+        var afeta = u.length
+          ? u.map(function (x) { return '<b>' + x.agente + '</b> · ' + x.regra; }).join('<br>')
+          : '<span class="ap-dim">ninguém ainda</span>';
         return '<tr><td><b>' + v.nome + '</b></td><td>' + v.tipo + '</td><td>' + v.fonte + '</td>' +
-          '<td>' + (usos.length ? usos.length + ' agente(s)' : '<span class="ap-dim">ninguém</span>') + '</td>' +
-          '<td>' + v.v + '</td>' + (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
-          '<td>' + v.ausencia + '</td></tr>';
+          '<td>' + v.ausencia + '</td>' +
+          (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
+          '<td style="white-space:normal">' + afeta + '</td>' +
+          '<td><button class="ap-mini" type="button" data-vedit="' + k + '">Editar</button></td></tr>';
       }).join('');
+
+      document.querySelectorAll('[data-vedit]').forEach(function (b) {
+        b.addEventListener('click', function () { abrirVar(b.dataset.vedit); });
+      });
+      /* a linha inteira também abre, não só o botão */
+      document.querySelectorAll('#rowsVars tr').forEach(function (tr) {
+        var b = tr.querySelector('[data-vedit]');
+        if (!b) return;
+        tr.style.cursor = 'pointer';
+        tr.addEventListener('click', function (e) {
+          if (e.target.closest('[data-vedit]')) return;
+          abrirVar(b.dataset.vedit);
+        });
+      });
+    }
+
+    /* Excluir mostra o estrago antes, e o que fica quebrado depois. */
+    function excluirVar(k) {
+      var v = VARS[k], u = usosDaVar(k);
+      cpAbrirPainel();
+      cpAgente = null;
+      document.getElementById('cpTitulo').textContent = 'Excluir variável';
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+      document.getElementById('cpConfig').hidden = true;
+      document.getElementById('cpForm').hidden = true;
+      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + v.nome + ' · ' + v.fonte + '</p>';
+
+      if (!u.length) {
+        cpBolha('bot', 'Esta variável não é usada por nenhum agente. Excluir não quebra nada.');
+      } else {
+        cpBolha('bot', 'Antes de excluir: <b>' + u.length + ' regra(s)</b> dependem dela e param de funcionar.<br>' +
+          u.map(function (x) { return '· ' + x.agente + ' · ' + x.regra; }).join('<br>'));
+      }
+      cpChips([
+        { t:'Excluir mesmo assim', faz:function () {
+            delete VARS[k];
+            AGENTES.forEach(function (a) {
+              var i = a.vars.indexOf(k);
+              if (i >= 0) { a.vars.splice(i, 1); a.risco = 'A variável que alimentava esta regra foi excluída, então ela não roda mais.'; a.estado = 'warn'; }
+            });
+            pintarVars(); pintarAnalises(); pintarCrits();
+            cpBolha('bot', 'Excluída. As regras que dependiam dela ficaram marcadas para você reescrever.');
+            settleToast('Variável excluída');
+          }},
+        { t:'Deixar como está', faz:function () { cpBolha('bot', 'Nada foi alterado.'); } }
+      ]);
     }
 
     /* ---------- abas ---------- */
@@ -1664,7 +1726,19 @@
 
     var via = 'lic';
 
+    var CABECALHO = {
+      agentes:{ titulo:'Agentes',
+        lead:'Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra, edita e vê o que ele produziu na última execução.' },
+      variaveis:{ titulo:'Variáveis',
+        lead:'Informação extraída uma vez e reaproveitada por qualquer agente. Antes de alterar ou excluir uma, a tabela mostra quais regras dependem dela.' }
+    };
+
     function abaAtiva(tab) {
+      var c = CABECALHO[tab];
+      if (c) {
+        document.getElementById('phTitle').textContent = c.titulo;
+        document.getElementById('phLead').textContent = c.lead;
+      }
       document.querySelectorAll('[data-tab]').forEach(function (o) {
         var on = o.dataset.tab === tab;
         o.classList.toggle('active', on);
@@ -1864,6 +1938,7 @@
     function abrirFx(base) {
       fx = base || fxNovo();
       editando = -1;
+      modoModal = 'outro';
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Novo agente';
@@ -1902,6 +1977,7 @@
     });
 
     document.getElementById('fxAtivar').addEventListener('click', function () {
+      if (modoModal === 'variavel') return salvarVar();
       AGENTES.push({ id:'fx' + AGENTES.length, nome:fx.nome || 'Agente sem nome', destino:'score',
         escopo:'licitacao', agregacao:null, instr:'Fluxo com ' + fx.blocos.length + ' passos, montado no construtor.',
         vars:fx.blocos.filter(function (b) { return b.t === 'extrair'; }).map(function (b) { return b.v; }),
@@ -1914,33 +1990,56 @@
 
     /* ---------- nova variável ---------- */
 
-    function abrirVar() {
-      document.getElementById('fxTitle').textContent = 'Nova variável';
-      document.getElementById('fxStatus').textContent = 'Rascunho';
+    /* Serve para criar e para editar: com uma chave, abre preenchida e avisa
+       quais regras vão sentir a mudança. */
+    function abrirVar(k) {
+      var v = k ? VARS[k] : null, u = k ? usosDaVar(k) : [];
+      document.getElementById('fxTitle').textContent = v ? v.nome : 'Nova variável';
+      document.getElementById('fxStatus').textContent = v ? 'Em uso' : 'Rascunho';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
-      document.getElementById('fxAtivar').textContent = 'Criar variável';
+      document.getElementById('fxAtivar').hidden = false;
+      document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
       document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO ? 'O custo depende da fonte escolhida' : '';
-      document.getElementById('fxBody').innerHTML =
+
+      var chips = function (grupo, opcoes, atual) {
+        return '<div class="ap-chips" data-g="' + grupo + '">' + opcoes.map(function (o) {
+          var val = o.split(' <')[0];
+          return '<button class="ap-chip" type="button" data-val="' + val + '" aria-pressed="' +
+                 (val === atual) + '">' + o + '</button>';
+        }).join('') + '</div>';
+      };
+
+      var impacto = v
+        ? '<div class="alert' + (u.length ? ' alert-warning' : '') + '">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+          '<div class="alert-title">' + (u.length
+            ? 'Mexer aqui afeta ' + u.length + ' regra(s)'
+            : 'Nenhuma regra usa esta variável ainda') + '</div>' +
+          '<div class="alert-description"><p>' + (u.length
+            ? u.map(function (x) { return x.agente + ' · ' + x.regra; }).join('<br>') +
+              '<br>A mudança vale para todas as licitações analisadas daqui para frente.'
+            : 'Você pode mudar o que quiser sem quebrar nada.') + '</p></div></div>'
+        : '<div class="alert"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+          '<div class="alert-title">A variável existe sozinha</div><div class="alert-description"><p>Depois de criada, ela pode ser usada por qualquer agente, no Score, no Resumo ou no match, sem ser extraída de novo.</p></div></div>';
+
+      document.getElementById('fxBody').innerHTML = impacto +
         '<div class="ap-field"><label for="vNome">O que você quer extrair</label>' +
         '<p class="ap-fhint">Escreva como pergunta. É assim que a Settle vai procurar no documento.</p>' +
-        '<input class="ap-input" id="vNome" type="text" placeholder="Ex.: exige atestado de capacidade técnica?" /></div>' +
-        '<div class="ap-field"><span class="ap-flabel">De onde vem</span><div class="ap-chips">' +
-        ['Portal de origem', 'Edital', 'Termo de Referência', 'Anexos']
-          .map(function (o, j) { return '<button class="ap-chip" type="button" aria-pressed="' + (j === 1) + '">' + o + '</button>'; }).join('') +
-        '</div></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span><div class="ap-chips">' +
-        ['sim ou não', 'número', 'texto', 'lista', 'categoria']
-          .map(function (o, j) { return '<button class="ap-chip" type="button" aria-pressed="' + (j === 0) + '">' + o + '</button>'; }).join('') +
-        '</div><p class="ap-fhint" style="margin-top:8px">O tipo decide onde essa variável pode ser usada depois: só número entra no Score.</p></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar</span><div class="ap-chips">' +
-        ['Marcar como não encontrado <small>recomendado</small>', 'Assumir que não exige', 'Perguntar depois']
-          .map(function (o, j) { return '<button class="ap-chip" type="button" aria-pressed="' + (j === 0) + '">' + o + '</button>'; }).join('') +
-        '</div></div>' +
-        '<div class="alert"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
-        '<div class="alert-title">A variável existe sozinha</div><div class="alert-description"><p>Depois de criada, ela pode ser usada por qualquer agente, no Score, no Resumo ou no match, sem ser extraída de novo.</p></div></div>';
+        '<input class="ap-input" id="vNome" type="text" value="' + (v ? v.nome.replace(/"/g, '&quot;') : '') +
+        '" placeholder="Ex.: exige atestado de capacidade técnica?" /></div>' +
+        '<div class="ap-field"><span class="ap-flabel">De onde vem</span>' +
+        chips('fonte', ['Portal de origem', 'Edital', 'Termo de Referência', 'Edital e anexos'], v ? v.fonte : 'Edital') + '</div>' +
+        '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
+        chips('tipo', ['sim ou não', 'número', 'texto', 'lista', 'categoria', 'calculada'], v ? v.tipo : 'sim ou não') +
+        '<p class="ap-fhint" style="margin-top:8px">O tipo decide onde essa variável pode ser usada depois: só número entra no Score.</p></div>' +
+        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar</span>' +
+        chips('ausencia', ['marca como não encontrado', 'assume que não exige', 'não pontua e sinaliza'],
+              v ? v.ausencia : 'marca como não encontrado') + '</div>' +
+        (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
+
       document.querySelectorAll('#fxBody .ap-chips').forEach(function (g) {
         g.querySelectorAll('.ap-chip').forEach(function (b) {
           b.addEventListener('click', function () {
@@ -1948,9 +2047,47 @@
           });
         });
       });
+      var ex = document.getElementById('vExcluir');
+      if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
+
+      varEditando = k || null;
+      modoModal = 'variavel';
     }
 
-    document.getElementById('btnNovaVar').addEventListener('click', abrirVar);
+    var varEditando = null, modoModal = 'outro';
+
+    function valorDe(grupo) {
+      var b = document.querySelector('#fxBody [data-g="' + grupo + '"] .ap-chip[aria-pressed="true"]');
+      return b ? b.dataset.val : '';
+    }
+
+    function salvarVar() {
+      var nome = document.getElementById('vNome').value.trim();
+      if (!nome) { settleToast('Escreva o que a variável deve extrair'); return; }
+      var k = varEditando, novo = !k;
+      if (novo) k = 'nv' + Object.keys(VARS).length;
+      var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
+      VARS[k] = {
+        nome:nome, tipo:valorDe('tipo'), fonte:valorDe('fonte'), ausencia:valorDe('ausencia'),
+        v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
+        depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
+        calc:novo ? undefined : VARS[k].calc
+      };
+      var u = usosDaVar(k);
+      pintarVars(); pintarAnalises(); pintarCrits();
+      fecharFx();
+      settleToast(novo ? 'Variável criada'
+        : 'Variável atualizada' + (u.length ? ' · ' + u.length + ' regra(s) passam a usar a nova definição' : ''), {
+        undoLabel:'Desfazer',
+        onUndo:function () {
+          if (novo) delete VARS[k]; else VARS[k] = antes;
+          pintarVars(); pintarAnalises(); pintarCrits();
+        }
+      });
+    }
+
+    document.getElementById('btnNovaVar').addEventListener('click', function () { abrirVar(null); });
+
 
 
 
@@ -2033,6 +2170,7 @@
 
     function abrirAnalise(an) {
       document.getElementById('fxTitle').textContent = an.nome;
+      modoModal = 'outro';
       document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
