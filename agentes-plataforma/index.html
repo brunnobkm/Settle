@@ -358,17 +358,17 @@
     };
 
     var VARS = {
-      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Dados do portal',            v:'v2', custo:0,    ausencia:'não se aplica' },
-      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Dados do portal e bases públicas', v:'v3', custo:0.01, ausencia:'não pontua e sinaliza',
+      esfera:    { nome:'Esfera',                   tipo:'categoria', fonte:'Dados do portal',            v:'v2', custo:0,    ausencia:'registra como não se aplica' },
+      capag:     { nome:'CAPAG',                    tipo:'categoria', fonte:'Dados do portal e bases públicas', v:'v3', custo:0.01, ausencia:'registra como não encontrado',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
-      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Dados do portal',            v:'v3', custo:0, ausencia:'fica fora do match' },
-      populacao: { nome:'População',                tipo:'número',    fonte:'Dados do portal e bases públicas', v:'v1', custo:0,    ausencia:'não pontua',
+      segmento:  { nome:'Segmento da licitação',    tipo:'lista',     fonte:'Dados do portal',            v:'v3', custo:0, ausencia:'registra como não encontrado' },
+      populacao: { nome:'População',                tipo:'número',    fonte:'Dados do portal e bases públicas', v:'v1', custo:0,    ausencia:'registra como não encontrado',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
-      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.04, ausencia:'considera que não exige' },
-      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.03, ausencia:'não pontua e sinaliza' },
+      atestado:  { nome:'Atestado exigido',         tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.04, ausencia:'assume que não exige' },
+      subcontr:  { nome:'Permite subcontratação',   tipo:'sim ou não',fonte:'Edital e anexos',            v:'v1', custo:0.03, ausencia:'registra como não encontrado' },
       qtdveic:   { nome:'Quantidade total de veículos', tipo:'calculada', fonte:'Edital e anexos',            v:'v1', custo:0.05,
-                   ausencia:'não pontua e sinaliza',
+                   ausencia:'registra como não encontrado',
                    /* Variável que não sai de um trecho: sai de uma conta sobre vários.
                       Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
                    calc:{ operacao:'soma', campo:'quantidade', unidade:'veículos',
@@ -383,9 +383,9 @@
                          suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
                      ],
                      faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
-      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',            v:'v1', custo:0.06, ausencia:'exibe não encontrado' },
-      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Edital e anexos',            v:'v2', custo:0.02, ausencia:'item fica sem análise técnica' },
-      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos',            v:'v1', custo:0.01, ausencia:'marca o componente como não avaliado' }
+      docshab:   { nome:'Documentos de habilitação',tipo:'lista',     fonte:'Edital e anexos',            v:'v1', custo:0.06, ausencia:'registra como não encontrado' },
+      componentes:{ nome:'Componentes do item',    tipo:'lista',     fonte:'Edital e anexos',            v:'v2', custo:0.02, ausencia:'registra como não encontrado' },
+      especificacao:{ nome:'Especificação exigida',tipo:'texto',     fonte:'Edital e anexos',            v:'v1', custo:0.01, ausencia:'registra como não avaliado' }
     };
 
     var AGENTES = [
@@ -460,7 +460,7 @@
         dado:'48 veículos', dadoCalc:true,
         regraTexto:'Até 20 veículos soma 0 · de 21 a 50 soma 10 · acima de 50 soma 15',
         prov:'Somado de 5 itens do quadro de quantitativos', ramifica:true,
-        ausencia:'não pontua e sinaliza' },
+        ausencia:'registra como não encontrado' },
 
       { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
         instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
@@ -1077,17 +1077,6 @@
     }
 
     /* ---------- abas ---------- */
-    document.querySelectorAll('[data-tab]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        document.querySelectorAll('[data-tab]').forEach(function (o) {
-          o.classList.toggle('active', o === b);
-          o.setAttribute('aria-selected', o === b ? 'true' : 'false');
-        });
-        ['licitacao', 'tecnica', 'agentes', 'variaveis'].forEach(function (p) {
-          document.getElementById('panel-' + p).hidden = (p !== b.dataset.tab);
-        });
-      });
-    });
 
 
     /* =====================================================================
@@ -2051,12 +2040,15 @@
         'como órgão, valor, prazo, CAPAG e habitantes. Não precisa ler documento.</p>' +
         '<p class="ap-fhint" style="margin-top:10px">Documento que a Settle não conseguiu classificar fica ' +
         'de fora por padrão. Marcando, ele entra na busca.</p></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
-        chips('tipo', ['sim ou não', 'número', 'texto', 'lista', 'categoria', 'calculada'], v ? v.tipo : 'sim ou não') +
-        '<p class="ap-fhint" style="margin-top:8px">O tipo decide onde essa variável pode ser usada depois: só número entra no Score.</p></div>' +
-        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar</span>' +
-        chips('ausencia', ['marca como não encontrado', 'assume que não exige', 'não pontua e sinaliza'],
-              v ? v.ausencia : 'marca como não encontrado') + '</div>' +
+        '<div class="ap-field"><span class="ap-flabel">Formato da resposta</span>' +
+        '<p class="ap-fhint">A Settle deduz pelo que você escreveu. Troque só se estiver errado: é o formato que ' +
+        'decide onde a variável pode ser usada, e só número entra numa regra de pontuação por faixa.</p>' +
+        chips('tipo', ['sim ou não', 'número', 'texto', 'lista', 'categoria'], v ? v.tipo : 'sim ou não') + '</div>' +
+        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar no documento</span>' +
+        '<p class="ap-fhint">O que registrar quando a resposta não está lá. <b>O que fazer com esse resultado</b> ' +
+        'é decisão de cada regra que usar a variável, não dela.</p>' +
+        chips('ausencia', ['registra como não encontrado', 'assume que não exige'],
+              v ? v.ausencia : 'registra como não encontrado') + '</div>' +
         (v ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>' : '');
 
       document.querySelectorAll('#fxBody .ap-chips[data-g]').forEach(function (g) {
@@ -2073,6 +2065,28 @@
           });
         });
       });
+      /* Deduz o formato pelo enunciado, para a pessoa não ter que pensar nisso. */
+      function deduzTipo(txt) {
+        var t = txt.toLowerCase();
+        if (/quantidade|quantos|número de|total de|peso|valor|prazo de|percentual/.test(t)) return 'número';
+        if (/documentos|lista de|itens|relação de/.test(t)) return 'lista';
+        if (/exig|permite|possui|aceita|obriga|é exclusiv/.test(t)) return 'sim ou não';
+        if (/esfera|porte|categoria|classificação|nota/.test(t)) return 'categoria';
+        return 'texto';
+      }
+
+      var campoNome = document.getElementById('vNome');
+      campoNome.addEventListener('input', function () {
+        if (campoNome.dataset.tocado === 'tipo') return;   // a pessoa já escolheu à mão
+        var t = deduzTipo(campoNome.value);
+        document.querySelectorAll('#fxBody [data-g="tipo"] .ap-chip').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.val === t));
+        });
+      });
+      document.querySelectorAll('#fxBody [data-g="tipo"] .ap-chip').forEach(function (b) {
+        b.addEventListener('click', function () { campoNome.dataset.tocado = 'tipo'; });
+      });
+
       var ex = document.getElementById('vExcluir');
       if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
 
