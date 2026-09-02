@@ -824,10 +824,11 @@ table.items .col-seg{display:flex;gap:6px;}
 .tut-pop b{color:var(--foreground);font-weight:600;}
 .tut-nav{display:flex;align-items:center;gap:8px;margin-top:15px;}
 .tut-count{flex:1;font-size:12px;color:var(--muted-foreground);font-variant-numeric:tabular-nums;}
-.tut-fab{position:fixed;right:24px;bottom:24px;z-index:39;display:inline-flex;align-items:center;gap:8px;
+.tut-fab{position:fixed;left:76px;bottom:24px;z-index:39;display:inline-flex;align-items:center;gap:8px;
   padding:12px 18px;border:none;border-radius:9999px;background:var(--accent);color:#fff;
   font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
 .tut-fab:hover{background:var(--accent-600);}
+body.sb-open .tut-fab{left:304px;}
 .tut-fab svg{width:17px;height:17px;}
 .tut-fab[hidden]{display:none;}
 
