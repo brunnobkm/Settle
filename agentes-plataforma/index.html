@@ -185,11 +185,7 @@
 
     <nav class="sb-content">
       <div class="sb-group">
-        <a class="sb-item active" href="#" id="viaLic" aria-current="page" title="Análise da licitação">
-          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5 6h6M5 8.6h6M5 11.2h3.5" stroke-linecap="round"/></svg></span>
-          <span class="sb-label">Análise da licitação</span>
-        </a>
-        <a class="sb-item" href="#" id="viaCons" title="Agentes">
+        <a class="sb-item active" href="#" id="viaCons" aria-current="page" title="Agentes">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Agentes</span>
         </a>
@@ -219,79 +215,23 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="eyebrow" id="phEyebrow">Análise da licitação</p>
-        <h1 class="title" id="phTitle">PE 90014/2026</h1>
-        <p class="ap-lead" id="phLead">A regra que produziu cada número desta tela é sua e pode ser editada daqui.
-          O que você mudar vale para todas as licitações do espaço de trabalho.</p>
+        <p class="eyebrow">Configuração</p>
+        <h1 class="title">Agentes</h1>
+        <p class="ap-lead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
+          edita e vê o que ele produziu na última execução. Para conversar com um deles, use o painel à direita.</p>
       </div>
 
       <div class="fp-tabs" role="tablist" aria-label="Seções" id="tabs" style="margin-bottom:18px">
-        <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="licitacao" data-via="lic">Licitação</button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="tecnica" data-via="lic">Análise técnica <span class="fp-c">3</span></button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="agentes" data-via="cons" hidden>Agentes <span class="fp-c" id="cntAg">4</span></button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis" data-via="cons" hidden>Variáveis <span class="fp-c" id="cntVar">6</span></button>
+        <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="agentes">Agentes <span class="fp-c" id="cntAg">4</span></button>
+        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c" id="cntVar">6</span></button>
       </div>
 
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
-      <section class="ap-panel" id="panel-licitacao" role="tabpanel" aria-label="Licitação">
-
-        <div class="ap-demo">
-          <span>Só no protótipo, para ver os quatro momentos:</span>
-          <div class="ap-chips" id="estadoDemo">
-            <button class="ap-chip" type="button" data-est="pronto" aria-pressed="true">Calculado</button>
-            <button class="ap-chip" type="button" data-est="nao_enviado" aria-pressed="false">Ainda não enviado</button>
-            <button class="ap-chip" type="button" data-est="calculando" aria-pressed="false">Calculando</button>
-            <button class="ap-chip" type="button" data-est="falhou" aria-pressed="false">Falhou</button>
-          </div>
-        </div>
-
-        <div class="ap-two">
-
-          <div class="ap-box">
-            <div class="ap-box-head"><h2>Secretaria de Estado da Saúde de Minas Gerais</h2>
-              <span class="tag-light">estadual</span></div>
-            <div class="ap-box-body">
-              <p class="ap-obj"><b>Objeto:</b> Contratação de empresa especializada na prestação de serviços
-                de locação de veículos automotores, sem motorista, para atendimento das unidades regionais
-                de saúde, pelo período de 24 meses.</p>
-              <div class="ap-facts">
-                <span>UASG <b>925467</b></span>
-                <span>Valor estimado <b>R$ 8.240.000,00</b></span>
-                <span>Sessão <b>08/09/2026 09:00</b></span>
-                <span>Itens <b>12</b></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ap-box">
-            <div class="ap-box-head" id="boxScore"><h2>Score</h2>
-              <button class="ap-linkbtn" type="button" id="btnComoCalcula">Como isso é calculado</button></div>
-            <div class="ap-box-body" id="scoreBody"></div>
-          </div>
-
-        </div>
-
-        <div class="ap-box" style="margin-top:16px">
-          <div class="ap-box-head"><h2>De onde vieram os pontos</h2>
-            <span class="ap-fhint" style="margin:0">produzido pelo agente <b>Score</b></span></div>
-          <div class="ap-box-body" id="crits"></div>
-        </div>
-      </section>
-
-      <!-- ============ ANÁLISE TÉCNICA: escopo por componente + agregação ============ -->
-      <section class="ap-panel" id="panel-tecnica" role="tabpanel" aria-label="Análise técnica" hidden>
-        <p class="ap-lead" style="margin-bottom:16px">Aqui o agente não roda uma vez por licitação: ele roda
-          <b>uma vez por componente</b>. Os componentes não existem antes de alguém ler o Termo de Referência,
-          então a lista abaixo foi descoberta na própria execução. O status de cada item é calculado a partir
-          dos componentes, por uma regra que é sua.</p>
-        <div id="itens"></div>
-      </section>
-
       <!-- ============ AGENTES ============ -->
       <section class="ap-panel" id="panel-agentes" role="tabpanel" aria-label="Agentes" hidden>
         <p class="ap-lead" style="margin-bottom:16px">Tudo que roda sozinho nas suas licitações.
-          Cada análise é <b>um agente</b> que produz vários resultados. O Score é uma análise com 7 regras dentro,
-          e não 7 agentes soltos.</p>
+          Cada análise é <b>um agente</b> que produz vários resultados: o Score é uma análise com as regras dentro,
+          e não uma dezena de agentes soltos.</p>
         <div style="display:flex;gap:8px;margin-bottom:16px">
           <button class="btn btn-primary" type="button" id="btnNovoAgente">Novo agente</button>
           <button class="btn btn-outline" type="button" id="btnNovaVarA">Nova variável</button>
@@ -397,7 +337,7 @@
 
   <button class="tut-fab" type="button" id="fabTutorial">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.6"/><path d="M8 7.7c0-1.1.9-2 2-2s2 .9 2 2c0 1.4-2 1.5-2 3" stroke-linecap="round"/><circle cx="10" cy="14" r=".9" fill="currentColor" stroke="none"/></svg>
-    <span id="fabLabel">Ver tutorial</span>
+    <span>Ver tutorial</span>
   </button>
 
   <div id="toasts"></div>
@@ -627,6 +567,7 @@
 
     function pintarTecnica() {
       var box = document.getElementById('itens');
+      if (!box) return;
       var custo = ITENS.reduce(function (t, i) { return t + i.comps.length; }, 0) * AGENTE_TEC.custo;
       var h = '<div class="alert">' +
         '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
@@ -759,8 +700,13 @@
       return h;
     }
 
-    function pintarCrits() {
+    var destinoAberto = 'score';
+
+    function pintarCrits(destino) {
       var box = document.getElementById('crits');
+      if (!box) return;
+      if (destino) destinoAberto = destino;
+      var lista = AGENTES.filter(function (a) { return a.destino === destinoAberto; });
 
       if (estadoExec === 'nao_enviado') {
         box.innerHTML = '<div class="empty-state"><strong>Nada calculado ainda</strong>' +
@@ -774,11 +720,11 @@
           '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.6 14.2 13H1.8z" stroke-linejoin="round"/><path d="M8 6.4v2.6" stroke-linecap="round"/></svg>' +
           '<div class="alert-title">3 de 8 regras rodaram</div>' +
           '<div class="alert-description"><p>As que dependem do edital ficaram sem fonte. As que usam dados do portal estão abaixo.</p></div></div>' +
-          AGENTES.filter(function (a) { return !a.vars.length && a.destino === 'score'; }).map(critHTML).join('');
+          lista.filter(function (a) { return !a.vars.length; }).map(critHTML).join('');
         return;
       }
 
-      box.innerHTML = AGENTES.map(critHTML).join('');
+      box.innerHTML = lista.map(critHTML).join('');
 
       box.querySelectorAll('[data-exp]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -851,6 +797,7 @@
 
     function pintarScoreBox() {
       var el = document.getElementById('scoreBody');
+      if (!el) return;
       if (estadoExec === 'nao_enviado') {
         el.innerHTML =
           '<div class="ap-num ap-dim">—</div>' +
@@ -911,6 +858,7 @@
 
     function setEstado(e) {
       estadoExec = e;
+      if (!document.getElementById('scoreBody')) return;
       document.querySelectorAll('[data-est]').forEach(function (b) {
         b.setAttribute('aria-pressed', String(b.dataset.est === e));
       });
@@ -1090,13 +1038,6 @@
       });
     });
 
-    document.querySelectorAll('[data-est]').forEach(function (b) {
-      b.addEventListener('click', function () { setEstado(b.dataset.est); });
-    });
-
-    document.getElementById('btnComoCalcula').addEventListener('click', function () {
-      document.getElementById('crits').scrollIntoView({ behavior:'smooth', block:'start' });
-    });
 
     /* =====================================================================
        PAINEL DE AGENTES
@@ -1736,40 +1677,21 @@
 
     var via = 'lic';
 
-    var CABECALHO = {
-      lic:{ eyebrow:'Análise da licitação', titulo:'PE 90014/2026',
-        lead:'Cada número aqui diz de qual agente veio. Para mudar a regra por trás, fale com esse agente no painel à direita ou abra a configuração dele.' },
-      cons:{ eyebrow:'Configuração', titulo:'Agentes',
-        lead:'Aqui você cadastra e edita os agentes e as variáveis que eles usam. É o lugar onde a regra vive; a licitação é onde o resultado dela aparece.' }
-    };
-
-    function setVia(v) {
-      via = v;
-      document.getElementById('viaLic').classList.toggle('active', v === 'lic');
-      document.getElementById('viaCons').classList.toggle('active', v === 'cons');
-      var c = CABECALHO[v];
-      document.getElementById('phEyebrow').textContent = c.eyebrow;
-      document.getElementById('phTitle').textContent = c.titulo;
-      document.getElementById('phLead').textContent = c.lead;
-      document.querySelectorAll('[data-via]').forEach(function (b) { b.hidden = b.dataset.via !== v; });
-      document.getElementById('fabLabel').textContent =
-        v === 'lic' ? 'Tutorial: editar pela licitação' : 'Tutorial: construtor de agentes';
-      abaAtiva(v === 'lic' ? 'licitacao' : 'agentes');
-    }
-
     function abaAtiva(tab) {
       document.querySelectorAll('[data-tab]').forEach(function (o) {
         var on = o.dataset.tab === tab;
         o.classList.toggle('active', on);
         o.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['licitacao', 'tecnica', 'agentes', 'variaveis'].forEach(function (pn) {
+      ['agentes', 'variaveis'].forEach(function (pn) {
         document.getElementById('panel-' + pn).hidden = (pn !== tab);
       });
     }
 
-    document.getElementById('viaLic').addEventListener('click', function (e) { e.preventDefault(); setVia('lic'); });
-    document.getElementById('viaCons').addEventListener('click', function (e) { e.preventDefault(); setVia('cons'); });
+    /* Compatibilidade: chamadas antigas de troca de área agora só garantem
+       que a lista de agentes está visível. */
+    function setVia() { abaAtiva('agentes'); }
+
 
     /* =====================================================================
        CONSTRUTOR DE FLUXO (abordagem B)
@@ -2120,16 +2042,25 @@
       document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
-      document.getElementById('fxValidar').hidden = an.formato === 'estruturado';
-      document.getElementById('fxAtivar').hidden = an.formato === 'estruturado';
+      document.getElementById('fxValidar').hidden = an.formato !== 'texto';
+      document.getElementById('fxAtivar').hidden = an.formato !== 'texto';
       document.getElementById('fxAtivar').disabled = false;
 
       if (an.formato === 'texto') return pintarTextoVars();
 
+      /* Análise técnica: o resultado dela é por componente, com agregação. */
       if (an.formato === 'composicao') {
-        document.getElementById('fxModal').hidden = true;
-        document.getElementById('ovl').hidden = true;
-        abrir(AGENTE_TEC);
+        document.getElementById('fxCusto').textContent = '15 execuções na última licitação';
+        document.getElementById('fxBody').innerHTML =
+          '<p class="ap-fhint">' + an.desc + ' Roda <b>uma vez por componente</b>: a lista não existe antes de ' +
+          'alguém ler o Termo de Referência.</p>' +
+          '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+            '<button class="btn btn-outline" type="button" id="anCfg">Configurar o agente</button></div>' +
+          '<div id="itens"></div>';
+        pintarTecnica();
+        document.getElementById('anCfg').addEventListener('click', function () {
+          document.getElementById('fxModal').hidden = true; abrir(AGENTE_TEC);
+        });
         return;
       }
 
@@ -2138,38 +2069,46 @@
         .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
       var cond = rs.filter(function (r) { return r.condicao; })
         .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
+
+      document.getElementById('fxCusto').textContent = rs.length + ' regras' +
+        (pts ? ' · ' + pts + ' pontos fixos' : '') + (cond ? ' + ' + cond + ' condicionais' : '');
+
       var h = '<p class="ap-fhint">' + (an.destino === 'score'
-        ? 'Uma análise, ' + rs.length + ' regras, ' + pts + ' pontos fixos' +
-          (cond ? ' e ' + cond + ' condicionais, que só entram no total da licitação em que se aplicam' : '') +
-          '. Não são ' + rs.length + ' agentes: é o Score inteiro, e as regras vivem dentro dele.'
+        ? 'Uma análise com ' + rs.length + ' regras dentro. Não são ' + rs.length + ' agentes.'
         : 'Os campos do Resumo e a fonte de cada um.') + '</p>';
 
-      rs.forEach(function (r) {
-        h += '<div class="ap-varline" style="align-items:flex-start">' +
-             '<span style="flex:1;min-width:0"><span class="nm">' + r.nome +
-               (r.condicao ? ' <span class="tag-light">condicional</span>' : '') + '</span>' +
-             (r.regraTexto ? '<span class="meta" style="display:block">' + r.regraTexto + '</span>' : '') +
-             (r.vars.length ? '<span class="meta" style="display:block">usa ' +
-                r.vars.map(function (k) { return VARS[k].nome; }).join(', ') + '</span>' : '') + '</span>' +
-             (r.pontos !== null ? '<span class="ap-pts">' + r.pontos + (r.condicao ? '*' : '') + '</span>' : '') +
-             '<button class="ap-mini" type="button" data-anedit="' + r.id + '">Editar</button></div>';
-      });
+      if (an.destino === 'score') {
+        h += '<div class="ap-demo"><span>Só no protótipo, para ver os quatro momentos:</span>' +
+          '<div class="ap-chips" id="estadoDemo">' +
+          '<button class="ap-chip" type="button" data-est="pronto" aria-pressed="true">Calculado</button>' +
+          '<button class="ap-chip" type="button" data-est="nao_enviado" aria-pressed="false">Ainda não enviado</button>' +
+          '<button class="ap-chip" type="button" data-est="calculando" aria-pressed="false">Calculando</button>' +
+          '<button class="ap-chip" type="button" data-est="falhou" aria-pressed="false">Falhou</button>' +
+          '</div></div>' +
+          '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head" id="boxScore">' +
+            '<h2>Última execução</h2><span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
+            '<div class="ap-box-body" id="scoreBody"></div></div>';
+      }
 
-      h += '<div class="alert" style="margin-top:16px"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
-        '<div class="alert-title">Por que estruturado e não texto livre</div>' +
-        '<div class="alert-description"><p>Numa análise de pontuação, escolher a variável e dar a nota é mais rápido e menos ambíguo do que descrever tudo por escrito. Texto livre com variáveis dentro é o formato da análise jurídica, onde a resposta é um parecer e não um número.</p></div></div>';
+      h += '<div class="ap-box"><div class="ap-box-head"><h2>Regras</h2>' +
+           '<button class="btn btn-outline" type="button" id="anNova">Nova regra</button></div>' +
+           '<div class="ap-box-body" id="crits"></div></div>';
 
-      document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO
-        ? 'Custo: ' + moeda(rs.reduce(function (t, r) { return t + r.custo; }, 0)) + ' por licitação'
-        : rs.length + ' regras nesta análise';
       document.getElementById('fxBody').innerHTML = h;
-      document.querySelectorAll('[data-anedit]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          document.getElementById('fxModal').hidden = true;
-          abrir(acharAgente(b.dataset.anedit));
+
+      if (an.destino === 'score') {
+        document.querySelectorAll('[data-est]').forEach(function (b) {
+          b.addEventListener('click', function () { setEstado(b.dataset.est); });
         });
+        pintarScoreBox();
+      }
+      pintarCrits(an.destino);
+      document.getElementById('anNova').addEventListener('click', function () {
+        document.getElementById('fxModal').hidden = true;
+        criarDaqui(an.destino);
       });
     }
+
 
 
     /* =====================================================================
@@ -2377,149 +2316,79 @@
 
     function clic(sel) { var e = document.querySelector(sel); if (e) e.click(); }
 
-    var TOUR_LIC = [
-      { titulo:'Editar pela licitação', kicker:'Abordagem 1 de 2',
-        texto:'Esta é a abordagem que a gente recomenda. A ideia central: <b>ninguém acorda querendo criar um agente</b>. A pessoa abre uma licitação, discorda de um número e é aí que ela quer mexer na regra.<p>A outra abordagem está no menu da esquerda, e tem tutorial próprio.</p>',
-        antes:function () { setVia('lic'); } },
+    var TOUR = [
+      { titulo:'Agentes', kicker:'Tutorial',
+        texto:'Toda a configuração mora aqui. Um agente é uma análise que roda sozinha nas suas licitações, e cada um tem as regras e as variáveis dele.<p>Para conversar com um agente ou corrigir o que ele fez, use o painel à direita, que fica disponível em qualquer tela da plataforma.</p>',
+        antes:function () { cpFecharPainel(); abaAtiva('agentes'); } },
 
-      { alvo:'#boxScore', titulo:'O número que inicia tudo', texto:'Esta licitação tirou 78 de 100. O score já existia antes de qualquer configuração: o cliente recebe pronto e é isso que ele questiona.' },
+      { alvo:'#gridAgentes', titulo:'Uma análise é um agente',
+        texto:'Quatro agentes, não trinta. O <b>Score</b> é uma análise com 9 regras dentro, e não 9 agentes soltos. Foi a primeira coisa que ficou confusa quando a Alice viu.' },
 
-      { alvo:'#crit-ate', titulo:'Um critério que está errado',
-        texto:'Este critério somou <b>15 pontos</b> por não ter encontrado exigência de atestado. Só que não encontrar não é a mesma coisa que não existir: em 3 das últimas 10 análises a exigência estava em anexo separado.<p>O aviso âmbar aparece porque a operação já mostrou que essa regra falha.</p>',
-        antes:function () { abaAtiva('licitacao'); } },
+      { alvo:'#scoreBody', titulo:'O que ele produziu da última vez',
+        texto:'Abrindo um agente, a primeira coisa é o resultado real da última licitação analisada. É por aqui que se percebe que uma regra está errada.<p>Os quatro botões acima existem só no protótipo, para ver os momentos em que ainda não há número: não enviado, calculando e falhou.</p>',
+        antes:function () { abrirAnalise(ANALISES[0]); }, espera:340 },
 
-      { alvo:'#estadoDemo', titulo:'Antes de existir número',
-        texto:'O score só é calculado quando a licitação é <b>enviada para análise</b>, e não quando ela entra no match: nada roda no que você vai descartar na triagem.<p>Estes botões existem só no protótipo, para ver os quatro momentos: ainda não enviado, calculando com o que já ficou pronto, calculado e falhou.</p>',
-        antes:function () { setEstado('pronto'); } },
-
-      { alvo:'#crit-cap', titulo:'O dado extraído, não só a nota',
-        texto:'Cada linha mostra <b>o que foi extraído</b> e a <b>regra por trás</b>. Antes aparecia só a pontuação, e o cliente não tinha como saber a qual CAPAG ou a qual população o número se referia.<p>Aqui a variável vem qualificada: CAPAG estadual, porque o órgão é do estado.</p>' },
+      { alvo:'#crit-ate', titulo:'A linha mostra só o resultado',
+        texto:'Nome, dado extraído e pontos. A regra por trás e a origem ficam no detalhe, a um clique. Só o que precisa de atenção ganha marcador: este critério somou <b>15 pontos</b> sem ter encontrado a exigência de atestado.' },
 
       { alvo:'#det-ate', titulo:'O detalhe abre no lugar',
-        texto:'Um clique mostra a instrução, as variáveis com versão, o tratamento de ausência e o <b>trecho de origem</b>. E duas ações: falar com o agente ou abrir a configuração dele.',
+        texto:'A regra em português, a variável com a versão, o tratamento de ausência e o <b>trecho de origem</b>. E duas ações: falar com o agente ou abrir a configuração da regra.',
         antes:function () { clic('[data-exp="ate"]'); } },
 
-      { alvo:'#crit-ate', titulo:'Ensinar o agente onde ele errou',
-        texto:'"Está errado" abre a correção no lugar onde o erro apareceu. A pessoa diz que a exigência estava no anexo, e aí vem a escolha que importa: corrigir só esta licitação, ou <b>ensinar a variável a olhar os anexos</b>, o que vale para todas as análises que usam ela.<p>Corrigir é pontual. Ensinar melhora o sistema.</p>' },
+      { alvo:'#crit-frota', titulo:'A variável que é uma conta',
+        texto:'Caso trazido pela Larissa: aqui o valor não sai de um trecho, sai da <b>soma de vários</b>. A marcação diz que é cálculo, e o detalhe abre a memória com cada parcela, a que veio errada e a que não foi extraída.',
+        antes:function () { clic('[data-exp="ate"]'); clic('[data-exp="frota"]'); }, espera:260 },
 
-      { alvo:'#fInstr', titulo:'A regra em texto, não em código',
-        texto:'"Ajustar a regra" abre o editor com a regra escrita como uma pessoa explicaria para a equipe. Nada de nó, aresta ou operador.',
-        antes:function () { clic('[data-edit="ate"]'); }, espera:320 },
+      { alvo:'#crit-iso', titulo:'Regra que não vale para toda licitação',
+        texto:'Esta só existe quando o segmento é transporte de passageiros. Como esta licitação é de frota, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.',
+        antes:function () { clic('[data-exp="frota"]'); } },
 
-      { alvo:'#fieldDestino', titulo:'O destino manda no formato',
-        texto:'Escolher onde o resultado aparece <b>fecha o que a regra pode devolver</b>: o Score exige número, o Resumo aceita texto ou lista. Análise técnica e Match aparecem bloqueados, com o tipo que exigem à vista.<p>Isso não é enfeite: é o que faz o mesmo modelo servir a plataforma inteira.</p>' },
-
-      { alvo:'#fieldVars', titulo:'Variável é objeto próprio',
-        texto:'Fonte é o documento. Variável é a informação extraída dele, com tipo, versão e custo. É ela que pode ser reaproveitada por outros agentes sem extrair de novo.' },
-
-      { alvo:'#fieldEscopo', titulo:'O que existe mas ainda não tem tela',
-        texto:'Escopo e agregação aparecem travados de propósito. Eles existem no modelo desde já para que a análise técnica entre depois <b>sem reescrita</b>. É a regra que a gente adotou: adiar a interface, não o modelo.' },
+      { alvo:'#fInstr', titulo:'A configuração da regra',
+        texto:'Escrita como uma pessoa explicaria para a equipe. O destino define o formato da resposta, as variáveis aparecem com versão, e escopo e agregação existem mesmo travados, para a análise técnica entrar depois sem reescrita.',
+        antes:function () { clic('[data-exp="ate"]'); setTimeout(function () { clic('[data-edit="ate"]'); }, 180); }, espera:520 },
 
       { alvo:'.ap-gap', titulo:'A revisão reabre o que está falhando',
-        texto:'Aqui está a diferença que mais importa. A revisão não pergunta só o que está em branco: como a operação mostrou que este tratamento vem falhando, ela <b>reabre a decisão</b> e mostra o dado que justifica.',
+        texto:'A revisão não pergunta só o que está em branco. Como a operação mostrou que este tratamento vem falhando, ela <b>reabre a decisão</b> e mostra o dado que justifica.',
         antes:function () { clic('#btnAvancar'); }, espera:320 },
 
       { alvo:'.ap-prev', titulo:'Conferir antes de valer para todo mundo',
-        texto:'Escolhida a opção, o sistema roda em três licitações reais sem alterar nada nelas. A primeira é a que está aberta, marcada como tal. Aqui erra barato; em produção, uma regra errada muda o score que a equipe inteira vê.',
+        texto:'Escolhida a opção, roda em três licitações reais sem alterar nada nelas. Aqui errar é barato; em produção, uma regra errada muda o score que a equipe inteira vê.',
         antes:function () { clic('[data-lac="semdado"]'); setTimeout(function () { clic('#btnAvancar'); }, 200); }, espera:520 },
 
-      { alvo:'#boxScore', titulo:'O resultado muda na hora',
-        texto:'Salvou, o score caiu de 78 para <b>63</b> e o critério passou a dizer "não encontrado, sinalizado para revisão". A pessoa vê a consequência da própria decisão no mesmo lugar onde ela discordou.',
-        antes:function () { clic('#btnAvancar'); }, espera:420 },
+      { alvo:'#panel-variaveis .datatable', titulo:'As variáveis são objeto próprio',
+        texto:'Extraídas uma vez, reaproveitadas por qualquer agente. Cada uma com tipo, fonte, versão e o que fazer quando não encontra. É o que a Settle entrega e um construtor de prompt genérico não entrega.',
+        antes:function () { clic('#btnAvancar'); setTimeout(function () { fechar(); fecharFx(); abaAtiva('variaveis'); }, 220); }, espera:520 },
 
-      { alvo:'#crit-iso', titulo:'Regra que não vale para toda licitação',
-        texto:'Esta regra só existe quando o segmento é transporte de passageiros. Como esta licitação é de frota, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.<p>O denominador do score muda de licitação para licitação, e o cabeçalho diz quantos pontos saíram e por quê.</p>' },
+      { alvo:'#fxBody', titulo:'Variável dentro do texto',
+        texto:'Em análise jurídica a instrução é texto, porque a resposta é um parecer. As partes destacadas são variáveis de verdade, com proveniência própria. Digitando <b>/</b> dá para inserir uma existente ou criar uma nova ali mesmo.',
+        antes:function () { abaAtiva('agentes'); setTimeout(function () { abrirAnalise(ANALISES[3]); }, 200); }, espera:520 },
 
-      { alvo:'#cpAbrir', titulo:'De qualquer lugar da plataforma',
-        texto:'O painel fica a um clique em qualquer tela. É por ele que se fala com um agente, se chega na configuração e se cria um novo, sem ter que caçar onde a regra mora.',
-        antes:function () { cpFecharPainel(); } },
-
-      { alvo:'#panel-tecnica .alert', titulo:'O mesmo modelo, em outra análise',
-        texto:'A análise técnica é o caso que quebrava o modelo. Ela roda <b>por componente</b>, e os componentes não existem antes de alguém ler o Termo de Referência: foram descobertos na execução.<p>São 15 execuções nesta licitação, contra uma de um agente que rodasse uma vez só.</p>',
-        antes:function () { abaAtiva('tecnica'); } },
-
-      { alvo:'#item-2', titulo:'Não avaliado não é não atende',
-        texto:'Este item ficou <b>inconclusivo</b>, não reprovado, porque a blindagem não pôde ser avaliada. A frase acima da tabela explica como o status do item foi calculado a partir dos componentes: essa é a regra de agregação, e ela é do cliente.' },
+      { alvo:'#itens', titulo:'A análise que roda por componente',
+        texto:'Os 15 componentes não existiam antes de ler o Termo de Referência. O status do item vem de uma <b>regra de agregação</b> que é do cliente, e "não avaliado" deixa o item inconclusivo em vez de reprovado.',
+        antes:function () { fecharFx(); setTimeout(function () { abrirAnalise(ANALISES[2]); }, 200); }, espera:520 },
 
       { alvo:'#cp', titulo:'O painel de agentes',
-        texto:'Ele está em qualquer tela. Você escolhe com quem falar, e o mesmo painel dá acesso à configuração daquele agente pela engrenagem.<p>Chegando por um resultado, o agente já vem selecionado e o caso já está na mesa.</p>',
-        antes:function () { abaAtiva('licitacao'); falarSobre(acharAgente('ate')); }, espera:380 },
+        texto:'Disponível em qualquer tela. O cabeçalho abre a lista, você escolhe com quem falar, e a engrenagem leva à configuração daquele agente.',
+        antes:function () { fecharFx(); cpAbrirPainel(); cpSelecionar('score', acharAgente('ate')); }, espera:420 },
 
       { alvo:'.cp-prop', titulo:'A conversa propõe, você aprova',
-        texto:'O ponto que a Alice fez questão: a conversa é uma coisa, o que foi construído é outra. A correção vira <b>proposta com antes e depois</b>, dizendo o alcance da mudança, e só passa a valer quando você aplica.',
+        texto:'O ponto que a Alice fez questão: a conversa é uma coisa, o que foi construído é outra. A correção vira <b>proposta com antes e depois</b>, dizendo o alcance, e só passa a valer quando aplicada.',
         antes:function () {
           var ch = document.querySelector('#cpBody .ap-chips'); if (ch) ch.remove();
           cpBolha('me', 'O dado extraído está errado, está no anexo');
           cpPropor(acharAgente('ate'), 'anexo');
         }, espera:340 },
 
-      { titulo:'Resumindo esta abordagem',
-        texto:'A pessoa nunca partiu de uma tela em branco. Ela discordou de um número, viu o dado e a regra, corrigiu e viu o efeito na hora.<p>Agora veja a outra abordagem no menu da esquerda, onde ficam as análises inteiras e o construtor.</p>',
+      { titulo:'É isso',
+        texto:'Uma área para configurar, um painel para conversar e corrigir de qualquer lugar. O que ainda depende de decisão está em VALIDACAO.md, junto com o roteiro do teste com cliente.',
         antes:function () { cpFecharPainel(); } }
     ];
 
-    var TOUR_CONS = [
-      { titulo:'Construtor de agentes', kicker:'Abordagem 2 de 2',
-        texto:'Esta é a abordagem que a Alice descreveu na conversa de 21/08: uma área própria onde o cliente <b>cadastra a variável, monta o fluxo com as caixinhas, define o gatilho e onde exibe</b>.<p>O agente existe antes de qualquer licitação.</p>',
-        antes:function () { setVia('cons'); } },
-
-      { alvo:'#panel-variaveis .datatable', titulo:'Primeiro a variável',
-        texto:'Aqui a variável é cadastrada explicitamente, com fonte, tipo, versão e custo. É a "fonte de dado criada pelo cliente ou pela rede" da conversa original.',
-        antes:function () { abaAtiva('variaveis'); } },
-
-      { alvo:'#fxBody', titulo:'Criar uma variável',
-        texto:'A pessoa escreve a pergunta, escolhe de onde vem, o tipo da resposta e o que fazer quando não encontrar.<p>Repare: <b>o tipo decide onde ela vai poder ser usada</b>. Só número entra no Score.</p>',
-        antes:function () { abrirVar(); }, espera:320 },
-
-      { alvo:'#gridAgentes', titulo:'Uma análise é um agente, não vários',
-        texto:'São quatro análises, não vinte agentes soltos. O <b>Score é uma análise com 7 regras dentro</b>, somando 100 pontos. Clicar nela mostra todas as regras juntas, que era a pergunta de onde ver o score inteiro.',
-        antes:function () { fecharFx(); abaAtiva('agentes'); }, espera:300 },
-
-      { alvo:'#fxBody', titulo:'Cada formato serve a um tipo de análise',
-        texto:'A análise jurídica é <b>texto com variáveis dentro</b>, porque a resposta é um parecer. O Score continua estruturado, com variável e nota, que é mais rápido e menos ambíguo para pontuar.<p>Digitando <b>/</b> a pessoa insere uma variável existente ou cria uma nova sem sair da escrita, com os quatro campos que fazem o sistema saber que ali existe uma extração com proveniência própria.</p>',
-        antes:function () { abrirAnalise(ANALISES[3]); }, espera:340 },
-
-      { alvo:'#fxAdd', titulo:'O fluxo é montado passo a passo',
-        texto:'Quatro tipos de caixinha: <b>Extrair</b> pega a informação, <b>Decidir</b> separa caminhos, <b>Pontuar</b> transforma em pontos e <b>Exibir</b> diz onde aparece.<p>É o mesmo vocabulário que a Harvey usa no Agent Builder: input, lógica, ação e saída.</p>',
-        antes:function () { abrirFx(null); fx.nome = 'Saúde financeira do órgão'; pintarFx(); }, espera:340 },
-
-      { alvo:'[data-blk="0"]', titulo:'Primeiro passo: extrair',
-        texto:'A caixinha de extração aponta para uma variável da biblioteca. Ela já traz fonte, versão e custo, porque a variável foi cadastrada antes.',
-        antes:function () { addBloco('extrair', 'capag'); editando = -1; pintarFx(); } },
-
-      { alvo:'[data-blk="2"]', titulo:'Pontuar e exibir',
-        texto:'Com a informação em mãos, a regra de pontuação e o destino fecham o fluxo. Neste ponto o cliente acha que terminou.',
-        antes:function () { addBloco('pontuar'); fx.blocos[1].regra = 'CAPAG A ou B soma 10 pontos; C ou D soma 0';
-                            addBloco('exibir'); editando = -1; pintarFx(); } },
-
-      { alvo:'.ap-gap', titulo:'E aqui aparece a diferença entre as duas abordagens',
-        texto:'A validação acusa que <b>falta um caminho para órgão federal</b>. Nesta abordagem o problema só aparece agora, depois de montar tudo, porque o fluxo é do cliente e o sistema não tem opinião sobre ele.<p>Na abordagem 1, o sistema pergunta isso antes, na revisão.</p>',
-        antes:function () { clic('#fxValidar'); }, espera:320 },
-
-      { alvo:'[data-blk="1"]', titulo:'Corrigindo: a caixinha de decisão',
-        texto:'A decisão sobre a esfera cria os três caminhos, e o federal ganha tratamento próprio. É exatamente o "se for A ou B soma, e se for federal?" da conversa original, resolvido à mão pelo cliente.',
-        antes:function () { pintarFx(); fx.blocos.splice(1, 0, { t:'decidir', sobre:'esfera', ramos:ramosDe('esfera') });
-                            editando = -1; pintarFx(); } },
-
-      { alvo:'#fxCusto', titulo:'Gatilho e passos',
-        texto:'O cliente escolhe quando o agente roda, e o rodapé acompanha os passos que ele adicionou.' },
-
-      { alvo:'.ap-prev', titulo:'Validar de novo',
-        texto:'Agora as três licitações passam, inclusive a federal, porque existe caminho para ela. Só então o agente é ativado e passa a rodar sozinho.',
-        antes:function () { clic('#fxValidar'); }, espera:320 },
-
-      { titulo:'As duas lado a lado',
-        texto:'<b>Construtor:</b> poder total, o cliente desenha o processo, e descobre o que esqueceu na validação. Serve para quem já sabe o que quer.<p><b>Pela licitação:</b> parte do erro concreto, e o sistema aponta as lacunas antes. Serve para quem não sabe que esqueceu.</p><p>A pesquisa com clientes é o que decide qual das duas ganha. O roteiro está em VALIDACAO.md.</p>',
-        antes:function () { fecharFx(); } }
-    ];
-
-    document.getElementById('fabTutorial').addEventListener('click', function () {
-      settleTour(via === 'lic' ? TOUR_LIC : TOUR_CONS);
-    });
+    document.getElementById('fabTutorial').addEventListener('click', function () { settleTour(TOUR); });
 
     /* ---------- boot ---------- */
-    pintarCrits(); pintarTecnica(); pintarAnalises(); pintarVars();
-    setVia('lic');
+    pintarAnalises(); pintarVars();
+    abaAtiva('agentes');
   })();
   </script>
 </body>
