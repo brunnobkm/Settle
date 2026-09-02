@@ -124,3 +124,15 @@ E uma sexta, que apareceu construindo a análise técnica:
    pergunta de modelagem é: a lista é saída de um agente ou é uma variável do tipo
    lista, reutilizável como qualquer outra? A segunda resposta é mais barata e cabe
    no modelo atual.
+
+---
+
+## Sétima decisão, aberta em 02/09
+
+7. **Onde o resultado do agente aparece: no contexto ou numa seção própria?**
+   Esta é diferente das outras seis: não depende da Alice, depende de teste com
+   usuário. As duas posições estão registradas em MODELO.md, e nenhuma das duas é
+   obviamente melhor. Sugestão de tarefa para o teste: "Você mandou o agente
+   avaliar a compatibilidade técnica desta licitação. Mostre onde você olharia
+   para conferir o que ele decidiu." Sem apontar caminho, e observando onde a
+   pessoa procura primeiro.

@@ -940,3 +940,53 @@ body.sb-open .tut-fab{left:304px;}
 .ap-crit-btn[aria-expanded="true"] .ap-chev{transform:rotate(90deg);}
 .ap-det{padding:2px 8px 16px;}
 .ap-det-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+/* ==========================================================================
+   21. LISTA ORDENADA DE FONTES
+   A fonte da variável não é um conjunto, é uma ordem: "procure primeiro na
+   minuta do contrato, depois no edital". Caso trazido pelo Bruno Ortiz em
+   02/09 (o CNPJ que quase sempre está na minuta).
+   ========================================================================== */
+.ord{display:flex;flex-direction:column;gap:6px;margin:0 0 8px;}
+.ord-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border);
+  border-radius:var(--radius-field);background:var(--card);font-size:13px;}
+.ord-n{width:20px;height:20px;flex:none;display:grid;place-items:center;border-radius:999px;
+  background:var(--primary);color:var(--primary-foreground);font-size:11px;font-weight:600;}
+.ord-nm{flex:1;min-width:0;}
+.ord-btns{display:flex;gap:2px;}
+.ord-empty{font-size:13px;color:var(--muted-foreground);padding:9px 10px;border:1px dashed var(--border);
+  border-radius:var(--radius-field);margin:0 0 8px;}
+
+/* ==========================================================================
+   22. PERMISSÕES DO AGENTE
+   Cada ação que o agente pode executar na plataforma tem três estados: não
+   pode, pede aprovação, executa sozinho.
+   ========================================================================== */
+.perm{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.perm:last-child{border-bottom:0;}
+.perm-txt{flex:1;min-width:0;display:block;}
+.perm-nm{display:block;font-size:13px;font-weight:500;}
+.perm-sub{display:block;font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+
+/* ==========================================================================
+   23. HISTÓRICO DE EXECUÇÃO
+   ========================================================================== */
+.exec{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.exec:last-child{border-bottom:0;}
+.exec-when{width:104px;flex:none;display:block;color:var(--muted-foreground);font-size:12px;}
+.exec-what{flex:1;min-width:0;display:block;}
+.exec-sub{display:block;font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+
+/* ==========================================================================
+   24. BARRA DE SELEÇÃO EM LOTE
+   ========================================================================== */
+.lote{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);
+  border-radius:var(--radius-box);background:var(--muted);margin:0 0 12px;font-size:13px;}
+.lote-n{flex:1;min-width:0;font-weight:500;}
+
+/* ==========================================================================
+   25. CAIXA DE MARCAÇÃO COM RÓTULO AO LADO
+   ========================================================================== */
+.ap-check{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:19px;cursor:pointer;}
+.ap-check input{margin:2px 0 0;flex:none;accent-color:var(--accent);}
+.ap-check span{color:var(--foreground);}
