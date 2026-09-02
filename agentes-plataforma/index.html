@@ -61,6 +61,7 @@
     .ap-num{font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
     .ap-num small{font-size:15px;font-weight:500;color:var(--muted-foreground);}
     .ap-bar{height:6px;border-radius:3px;background:var(--muted);overflow:hidden;margin:12px 0 4px;}
+    .ap-tabsbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
     .ap-bar i{display:block;height:100%;background:var(--accent);}
     .ap-crit-main{flex:1;min-width:0;display:block;}
     .ap-crit-name{font-size:14px;font-weight:600;display:block;color:var(--foreground);}
@@ -215,15 +216,18 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="eyebrow">Configuração</p>
         <h1 class="title">Agentes</h1>
         <p class="ap-lead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
-          edita e vê o que ele produziu na última execução. Para conversar com um deles, use o painel à direita.</p>
+          edita e vê o que ele produziu na última execução.</p>
       </div>
 
-      <div class="fp-tabs" role="tablist" aria-label="Seções" id="tabs" style="margin-bottom:18px">
-        <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="agentes">Agentes <span class="fp-c" id="cntAg">4</span></button>
-        <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c" id="cntVar">6</span></button>
+      <div class="ap-tabsbar">
+        <div class="fp-tabs" role="tablist" aria-label="Seções" id="tabs">
+          <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-tab="agentes">Agentes <span class="fp-c" id="cntAg">4</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c" id="cntVar">6</span></button>
+        </div>
+        <button class="btn btn-primary" type="button" id="btnNovoAgente" data-daaba="agentes">Novo agente</button>
+        <button class="btn btn-primary" type="button" id="btnNovaVar" data-daaba="variaveis" hidden>Nova variável</button>
       </div>
 
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
@@ -232,10 +236,6 @@
         <p class="ap-lead" style="margin-bottom:16px">Tudo que roda sozinho nas suas licitações.
           Cada análise é <b>um agente</b> que produz vários resultados: o Score é uma análise com as regras dentro,
           e não uma dezena de agentes soltos.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="btn btn-primary" type="button" id="btnNovoAgente">Novo agente</button>
-          <button class="btn btn-outline" type="button" id="btnNovaVarA">Nova variável</button>
-        </div>
         <div class="ap-grid" id="gridAgentes"></div>
       </section>
 
@@ -243,9 +243,6 @@
       <section class="ap-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
         <p class="ap-lead" style="margin-bottom:16px">Uma variável é uma informação extraída uma vez e
           reutilizada em qualquer lugar. Alterar uma variável afeta todos os agentes que a usam.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="btn btn-primary" type="button" id="btnNovaVar">Nova variável</button>
-        </div>
         <div class="datatable">
           <div class="dt-top">
             <div class="dt-title"><h3>Biblioteca de variáveis</h3><span class="dt-chip" id="cntVar2">6</span></div>
@@ -1686,7 +1683,15 @@
       ['agentes', 'variaveis'].forEach(function (pn) {
         document.getElementById('panel-' + pn).hidden = (pn !== tab);
       });
+      /* cada aba tem a própria ação de criar, alinhada com ela */
+      document.querySelectorAll('[data-daaba]').forEach(function (b) {
+        b.hidden = b.dataset.daaba !== tab;
+      });
     }
+
+    document.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { abaAtiva(b.dataset.tab); });
+    });
 
     /* Compatibilidade: chamadas antigas de troca de área agora só garantem
        que a lista de agentes está visível. */
@@ -1956,7 +1961,6 @@
     }
 
     document.getElementById('btnNovaVar').addEventListener('click', abrirVar);
-    document.getElementById('btnNovaVarA').addEventListener('click', abrirVar);
 
 
 
