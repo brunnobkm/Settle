@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902g" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902i" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:35</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:45</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -360,7 +360,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902g" defer></script>
+  <script src="../assets/settle.js?v=20260902i" defer></script>
   <script>
   (function () {
     'use strict';
@@ -473,6 +473,12 @@
        booleano vira select de três opções, número vira campo numérico, e só
        texto é realmente livre. */
     var TIPOS_VAR = ['texto', 'número', 'sim ou não', 'data'];
+
+    /* Três listas da tela são fechadas pela Settle, não pelo cliente: tipo da
+       resposta, onde procurar e quando roda. Na reunião de 02/09 o José Victor
+       ficou de passar as três (10:04 sobre os tipos, 15:07 sobre as fontes,
+       25:21 sobre o gatilho). Até chegarem, o que está aqui é provisório. */
+    var PENDENTE = '<span class="ap-pend">Lista provisória: as opções de verdade vêm do backend, e ficaram de ser passadas pelo José Victor e pelo Bruno Ortiz (reunião de 02/09).</span>';
 
     /* As fontes possíveis, em dois níveis. O nível fino existe porque dentro
        de "Edital e anexos" há documento que vale e documento que já não vale:
@@ -1162,8 +1168,13 @@
           return '<span title="' + i.replace(/"/g, '&quot;') + '">' +
                  (i.length > 90 ? i.slice(0, 88) + '…' : i) + '</span>';
         }, largo:true },
-      { k:'fonte', t:'Onde procurar', kind:'texto',
-        val:function (v) { return fonteTxt(v); },
+      /* A célula tem várias fontes, então o filtro é por fonte solta: marcar
+         "Minuta do contrato" traz toda variável que procura lá, em qualquer
+         posição da ordem. */
+      { k:'fonte', t:'Onde procurar', kind:'multi',
+        val:function (v) {
+          return (v.fontes || []).concat(v.resto ? ['resto dos arquivos'] : []);
+        },
         cel:function (v) { return fonteTags(v); }, largo:true },
       { k:'padrao', t:'O que fazer quando não encontrar a variável', kind:'texto',
         val:function (v) { return v.padrao || ''; },
@@ -1172,7 +1183,8 @@
         val:function (v) { return v.settle ? 'Settle' : 'B Design'; },
         cel:function (v) {
           return v.settle
-            ? '<span class="origem settle"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
+            ? '<span class="origem settle" title="Cadastrada pela Settle. Você pode usar em qualquer ' +
+              'agente, mas não editar a definição."><svg viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
               'stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.5" y="7" width="9" ' +
               'height="6" rx="1.5"/><path d="M5.8 7V5.4a2.2 2.2 0 0 1 4.4 0V7"/></svg>Settle</span>'
             : '<span class="origem minha">B Design</span>';
@@ -1206,7 +1218,9 @@
         var f = filtroCol[c.k];
         if (!f || !ok) return;
         var val = c.val(v, k);
-        if (c.kind === 'opcoes') {
+        if (c.kind === 'multi') {
+          if (f.length && !val.some(function (x) { return f.indexOf(x) >= 0; })) ok = false;
+        } else if (c.kind === 'opcoes') {
           if (f.length && f.indexOf(val) < 0) ok = false;
         } else if (String(val).toLowerCase().indexOf(f.toLowerCase()) < 0) {
           ok = false;
@@ -1219,14 +1233,16 @@
       var o = [];
       Object.keys(VARS).forEach(function (k) {
         var val = c.val(VARS[k], k);
-        if (o.indexOf(val) < 0) o.push(val);
+        (c.kind === 'multi' ? val : [val]).forEach(function (x) {
+          if (o.indexOf(x) < 0) o.push(x);
+        });
       });
       return o.sort();
     }
 
     function temFiltro(c) {
       var f = filtroCol[c.k];
-      return c.kind === 'opcoes' ? !!(f && f.length) : !!f;
+      return c.kind === 'texto' ? !!f : !!(f && f.length);
     }
 
     function pintarCabecalho() {
@@ -1273,7 +1289,7 @@
           '" type="button" data-ord="desc">Ordenar de Z a A</button>' +
         '<div class="col-sep"></div>';
 
-      if (c.kind === 'opcoes') {
+      if (c.kind !== 'texto') {
         var sel = filtroCol[c.k] || [];
         h += '<div class="fb-list-head"><span>Mostrar</span>' +
              '<button class="fb-selall" type="button" data-todas="1">' +
@@ -1350,7 +1366,8 @@
       if (ordemVar.k) {
         var c = COLS.filter(function (x) { return x.k === ordemVar.k; })[0];
         chaves.sort(function (a, b) {
-          var x = String(c.val(VARS[a], a)), y = String(c.val(VARS[b], b));
+          var x = [].concat(c.val(VARS[a], a)).join(', ');
+          var y = [].concat(c.val(VARS[b], b)).join(', ');
           var n = c.k === 'usos' ? (+x) - (+y) : x.localeCompare(y, 'pt-BR');
           return ordemVar.dir === 'asc' ? n : -n;
         });
@@ -2119,7 +2136,7 @@
     var fx = null, editando = -1;
 
     function fxNovo() {
-      return { nome:'', blocos:[], gatilho:'analise', onde:'Score', ativo:false };
+      return { nome:'', texto:'', blocos:[], gatilho:'analise', onde:'Score', ativo:false };
     }
 
     function fxExemplo() {
@@ -2178,12 +2195,26 @@
       return '<div style="margin-top:10px">' + h + '</div>';
     }
 
+    /* Criar um agente é escrever a instrução dele, não montar caixinhas: foi o
+       que o José Victor e o Bruno Ortiz defenderam em 02/09 ("é mais fácil pedir
+       em forma de texto, a pessoa não precisa aprender a usar UI"). O fluxo em
+       blocos continua existindo abaixo, para quando a regra ramifica. */
     function pintarFx() {
       var h = '<div class="ap-field"><label for="fxNome">Nome do agente</label>' +
               '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Análise de prazos" /></div>';
 
-      h += '<div class="ap-field"><span class="ap-flabel">O fluxo</span>' +
-           '<p class="ap-fhint">Cada caixinha é um passo. O agente executa de cima para baixo.</p>';
+      h += campoInstrHTML('Instruções', '', fx.texto,
+        'Ex.: verifique se o prazo de entrega cabe na nossa operação. Digite / para usar uma variável.');
+
+      h += '<div class="ap-field"><label for="fxGat">Quando roda</label>' +
+           '<p class="ap-fhint">' + PENDENTE + '</p>' +
+           '<select class="ap-input" id="fxGat">' +
+           Object.keys(GATILHOS_FX).map(function (g) {
+             return '<option value="' + g + '"' + (fx.gatilho === g ? ' selected' : '') + '>' +
+                    GATILHOS_FX[g] + '</option>';
+           }).join('') + '</select></div>';
+
+      h += '<div class="ap-field"><span class="ap-flabel">O fluxo</span>';
 
       if (!fx.blocos.length) {
         h += '<div class="empty-state"><strong>Nenhum passo ainda</strong>Comece extraindo a informação que a regra precisa.</div>';
@@ -2209,13 +2240,15 @@
              return '<button class="ap-chip" type="button" data-fxnew="' + t + '">' + TIPOS[t].k + ' <small>' + TIPOS[t].d + '</small></button>';
            }).join('') + '</div></div>';
 
-      h += '<div class="ap-field"><span class="ap-flabel">Quando roda</span><div class="ap-chips">' +
-           Object.keys(GATILHOS_FX).map(function (g) {
-             return '<button class="ap-chip" type="button" data-fxgat="' + g + '" aria-pressed="' + (fx.gatilho === g) + '">' + GATILHOS_FX[g] + '</button>';
-           }).join('') + '</div></div>';
+      h += '</div>';
 
       document.getElementById('fxBody').innerHTML = h;
 
+      ligarCampoInstr(function () {
+        fx.texto = htmlParaTexto(document.getElementById('vfCampo'));
+        atualizarRodapeFx();
+      });
+      document.getElementById('fxGat').addEventListener('change', function (e) { fx.gatilho = e.target.value; });
       document.getElementById('fxNome').addEventListener('input', function (e) { fx.nome = e.target.value; });
       document.getElementById('fxAdd').addEventListener('click', function () {
         var m = document.getElementById('fxMenu'); m.hidden = !m.hidden;
@@ -2244,16 +2277,7 @@
           fx.blocos[parseInt(b.dataset.i, 10)].onde = b.dataset.onde; fx.onde = b.dataset.onde; pintarFx();
         });
       });
-      document.querySelectorAll('[data-fxgat]').forEach(function (b) {
-        b.addEventListener('click', function () { fx.gatilho = b.dataset.fxgat; pintarFx(); });
-      });
-
-      var n = fx.blocos.length;
-      document.getElementById('fxCusto').textContent = n
-        ? (MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação · ' : '') + n + ' passo(s)'
-        : 'Sem passos ainda';
-      document.getElementById('fxValidar').disabled = !n;
-      document.getElementById('fxAtivar').disabled = !n;
+      atualizarRodapeFx();
     }
 
     function ramosDe(k) {
@@ -2283,11 +2307,24 @@
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
-      document.getElementById('fxStatus').hidden = false;
-      document.getElementById('fxStatus').textContent = fx.ativo ? 'Ativo' : 'Rascunho';
+      document.getElementById('fxStatus').hidden = !fx.ativo;
+      document.getElementById('fxStatus').textContent = 'Ativo';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       pintarFx();
+    }
+
+    function atualizarRodapeFx() {
+      if (!fx) return;
+      var n = fx.blocos.length;
+      var temTexto = !!(fx.texto || '').trim();
+      document.getElementById('fxCusto').textContent = temTexto || n
+        ? (MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação · ' : '') +
+          varsNoTexto().length + (varsNoTexto().length === 1 ? ' variável' : ' variáveis') +
+          (n ? ' · ' + n + (n === 1 ? ' passo' : ' passos') : '')
+        : 'Escreva a instrução do agente';
+      document.getElementById('fxValidar').disabled = !(temTexto || n);
+      document.getElementById('fxAtivar').disabled = !(temTexto || n);
     }
 
     function fecharFx() {
@@ -2320,9 +2357,12 @@
 
     document.getElementById('fxAtivar').addEventListener('click', function () {
       if (modoModal === 'variavel') return salvarVar();
+      var texto = (fx.texto || '').trim();
       AGENTES.push({ id:'fx' + AGENTES.length, nome:fx.nome || 'Agente sem nome', destino:'score',
-        escopo:'licitacao', agregacao:null, instr:'Fluxo com ' + fx.blocos.length + ' passos, montado no construtor.',
-        vars:fx.blocos.filter(function (b) { return b.t === 'extrair'; }).map(function (b) { return b.v; }),
+        escopo:'licitacao', agregacao:null,
+        instr:texto || ('Fluxo com ' + fx.blocos.length + ' passos, montado no construtor.'),
+        vars:varsNoTexto().concat(fx.blocos.filter(function (b) { return b.t === 'extrair'; })
+          .map(function (b) { return b.v; })),
         pontos:10, ganhos:10, estado:'run', gatilho:GATILHOS_FX[fx.gatilho], custo:fxCusto(),
         prov:'Ativado pelo construtor de fluxo', ramifica:fx.blocos.some(function (b) { return b.t === 'decidir'; }) });
       pintarAnalises(); pintarVars(); pintarCrits();
@@ -2353,24 +2393,23 @@
     /* O valor padrão segue o tipo. É a regra que o José Victor colocou em
        02/09: uma variável de data não pode ter "abacaxi" como padrão, senão
        quebra na hora de usar no Score. Só texto é realmente livre. */
-    function padraoCampo(tipo, valor) {
+    function padraoCampo(tipo, valor, travado) {
       valor = valor === undefined || valor === null ? '' : String(valor);
+      var dis = travado ? ' disabled' : '';
       if (tipo === 'sim ou não') {
-        return '<select class="ap-input" id="vPadrao">' +
+        return '<select class="ap-input" id="vPadrao"' + dis + '>' +
           ['sim', 'não', 'nenhum'].map(function (o) {
             return '<option value="' + o + '"' + (o === valor ? ' selected' : '') + '>' + o + '</option>';
-          }).join('') + '</select>' +
-          '<p class="ap-fhint" style="margin:6px 0 0">"nenhum" é uma resposta: a regra que depende ' +
-          'desta variável não pontua.</p>';
+          }).join('') + '</select>';
       }
       if (tipo === 'número') {
-        return '<input class="ap-input" id="vPadrao" type="number" step="any" value="' + valor +
+        return '<input class="ap-input" id="vPadrao" type="number" step="any"' + dis + ' value="' + valor +
                '" placeholder="Ex.: 0" />';
       }
       if (tipo === 'data') {
-        return '<input class="ap-input" id="vPadrao" type="date" value="' + valor + '" />';
+        return '<input class="ap-input" id="vPadrao" type="date"' + dis + ' value="' + valor + '" />';
       }
-      return '<input class="ap-input" id="vPadrao" type="text" value="' + valor.replace(/"/g, '&quot;') +
+      return '<input class="ap-input" id="vPadrao" type="text"' + dis + ' value="' + valor.replace(/"/g, '&quot;') +
              '" placeholder="Ex.: não encontrado" />';
     }
 
@@ -2487,7 +2526,6 @@
       document.getElementById('fxBody').innerHTML = aviso +
 
         '<div class="ap-field"><label for="vNome">Nome</label>' +
-        '<p class="ap-fhint">Escolha um nome curto. É este nome que irá representar a variável.</p>' +
         '<input class="ap-input" id="vNome" type="text"' + dis + ' value="' +
         (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: CNPJ do órgão" /></div>' +
 
@@ -2497,28 +2535,25 @@
           : '') +
 
         '<div class="ap-field"><label for="vTipo">Tipo da resposta</label>' +
-        '<p class="ap-fhint">Define o que a Settle aceita como resposta.</p>' +
+        '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<select class="ap-input" id="vTipo"' + dis + '>' + tiposCom(vForm.tipo).map(function (t) {
           return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + t + '</option>';
         }).join('') + '</select></div>' +
 
         '<div class="ap-field"><label for="vPrompt">Instruções</label>' +
-        '<p class="ap-fhint">Escreva como explicaria para alguém que vai ler o documento por você.</p>' +
         '<textarea class="ap-input" id="vPrompt" rows="3"' + dis + ' placeholder="Ex.: encontre o número do ' +
         'CNPJ do órgão que está contratando, com 14 dígitos.">' +
         (v ? (v.prompt || '') : '') + '</textarea></div>' +
 
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
-        '<p class="ap-fhint">Marque onde a Settle deve procurar e organize a ordem: ela procura na ' +
-        'primeira e só passa para a seguinte se não achar. Arraste ou use as setas.</p>' +
+        '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<div id="vOrdem"></div>' +
         '<label class="ap-check" style="margin-top:10px"><input type="checkbox" id="vResto"' + dis +
         (vForm.resto ? ' checked' : '') + ' /> <span>Se não achar em nenhuma delas, procurar no resto dos ' +
         'arquivos da licitação</span></label></div>' +
 
         '<div class="ap-field"><span class="ap-flabel">O que fazer quando não encontrar a variável</span>' +
-        '<p class="ap-fhint">Escolha qual valor deve ser informado se não encontrarmos a variável.</p>' +
-        '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '') + '</div></div>' +
+        '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '', travado) + '</div></div>' +
 
         (v && !travado
           ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>'
@@ -2530,7 +2565,7 @@
          impede um padrão incompatível de ser salvo. */
       document.getElementById('vTipo').addEventListener('change', function (e) {
         vForm.tipo = e.target.value;
-        document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '');
+        document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '', travado);
       });
 
       var ex = document.getElementById('vExcluir');
@@ -2979,10 +3014,64 @@
       });
     }
 
+    /* Volta do contenteditable para o texto com {{variavel}}, que é o formato
+       em que a instrução é guardada. */
+    function htmlParaTexto(campo) {
+      var t = '';
+      [].slice.call(campo.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) t += n.nodeValue;
+        else if (n.classList && n.classList.contains('varchip')) t += '{{' + n.dataset.v + '}}';
+        else t += n.textContent || '';
+      });
+      return t;
+    }
+
     function varsNoTexto() {
       var campo = document.getElementById('vfCampo');
       if (!campo) return [];
       return [].slice.call(campo.querySelectorAll('.varchip')).map(function (c) { return c.dataset.v; });
+    }
+
+    /* O campo de instrução com variáveis, usado tanto na análise jurídica
+       quanto na criação de um agente novo. O botão ao lado do título faz o
+       mesmo que a barra: quem não descobre o atalho tem por onde clicar. */
+    function campoInstrHTML(titulo, dica, texto, ph) {
+      return '<div class="ap-field"><div class="ap-flabel-row">' +
+        '<span class="ap-flabel">' + titulo + '</span>' +
+        '<button class="ap-mini" type="button" id="vfAdd">Adicionar variável</button></div>' +
+        (dica ? '<p class="ap-fhint">' + dica + '</p>' : '') +
+        '<div class="vf-wrap">' +
+          '<div class="vf" id="vfCampo" contenteditable="true" role="textbox" aria-multiline="true" ' +
+          'aria-label="' + titulo + '" data-ph="' + ph + '">' + textoParaHTML(texto) + '</div>' +
+          '<div class="vf-menu" id="vfMenu" hidden></div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    /* Quem montou o campo diz o que fazer quando ele muda. Vale tanto para o
+       que a pessoa digita quanto para a variável inserida pelo menu, que mexe
+       no DOM sem disparar input. */
+    var aoMudarInstr = null;
+
+    function ligarCampoInstr(aoMudar) {
+      aoMudarInstr = aoMudar || null;
+      var campo = document.getElementById('vfCampo');
+      campo.addEventListener('keydown', function (e) {
+        if (e.key === '/') { e.preventDefault(); salvarRange(); abrirMenuVar(); }
+      });
+      campo.addEventListener('input', function () { if (aoMudarInstr) aoMudarInstr(); });
+      document.getElementById('vfAdd').addEventListener('click', function (e) {
+        e.stopPropagation();
+        campo.focus();
+        var sel = window.getSelection();
+        if (!campo.contains(sel.anchorNode)) {
+          var r = document.createRange();
+          r.selectNodeContents(campo); r.collapse(false);
+          sel.removeAllRanges(); sel.addRange(r);
+        }
+        salvarRange();
+        abrirMenuVar();
+      });
     }
 
     function pintarTextoVars(an) {
@@ -2990,29 +3079,18 @@
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar análise';
 
-      var h = '<div class="ap-field"><span class="ap-flabel">O que a Settle deve analisar</span>' +
-        '<p class="ap-fhint">Aqui a instrução é texto, porque a resposta é um parecer e não um número. ' +
-        'As partes destacadas são <b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.</p>' +
-        '<div class="vf-wrap">' +
-          '<div class="vf" id="vfCampo" contenteditable="true" role="textbox" aria-multiline="true" ' +
-          'aria-label="Instrução da análise" data-ph="Descreva o que analisar. Digite / para inserir uma variável.">' +
-          textoParaHTML(JURIDICA.texto) + '</div>' +
-          '<div class="vf-menu" id="vfMenu" hidden></div>' +
-        '</div>' +
-        '<p class="vf-hint">Digite <kbd>/</kbd> para inserir uma variável existente ou criar uma nova aqui mesmo.</p>' +
-        '</div>' +
+      var h = campoInstrHTML('Instruções',
+          'A instrução é texto, porque a resposta é um parecer e não um número. As partes destacadas são ' +
+          '<b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.',
+          JURIDICA.texto,
+          'Descreva o que analisar. Digite / para inserir uma variável.') +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
         '<div id="vfLista"></div></div>' +
         (an ? permsHTML(an) + execHTML(an) : '');
 
       document.getElementById('fxBody').innerHTML = h;
       if (an) { ligarPerms(an); ligarExec(an); }
-
-      var campo = document.getElementById('vfCampo');
-      campo.addEventListener('keydown', function (e) {
-        if (e.key === '/') { e.preventDefault(); salvarRange(); abrirMenuVar(); }
-      });
-      campo.addEventListener('input', listaDeVars);
+      ligarCampoInstr(listaDeVars);
       listaDeVars();
     }
 
@@ -3089,7 +3167,7 @@
       range.collapse(false);
       sel.removeAllRanges(); sel.addRange(range);
       fecharMenuVar();
-      listaDeVars();
+      if (aoMudarInstr) aoMudarInstr();
     }
 
     /* Criação a partir da escrita: os mesmos campos obrigatórios da modal
