@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902n" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902o" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:18</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:20</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -377,7 +377,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902n" defer></script>
+  <script src="../assets/settle.js?v=20260902o" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3472,10 +3472,9 @@
       var ks = Object.keys(VARS).filter(function (k) {
         return VARS[k].nome.toLowerCase().indexOf(filtro.toLowerCase()) >= 0;
       });
-      var h = '<div class="h">Variáveis já extraídas</div>' +
+      var h = '<div class="h">Variáveis</div>' +
         (ks.length ? ks.map(function (k) {
-          return '<button class="vf-opt" type="button" data-ins="' + k + '"><b>' + VARS[k].nome + '</b>' +
-                 '<span>' + VARS[k].tipo + ' · ' + fonteTxt(VARS[k]) + '</span></button>';
+          return '<button class="vf-opt" type="button" data-ins="' + k + '">' + VARS[k].nome + '</button>';
         }).join('') : '<div class="ap-fhint" style="padding:4px 9px">Nenhuma com esse nome.</div>') +
         '<button class="vf-opt criar" type="button" data-criar="1">Criar uma variável nova aqui</button>';
       menu.innerHTML = h;
