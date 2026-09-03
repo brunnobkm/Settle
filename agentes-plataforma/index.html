@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260903d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903e" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -83,8 +83,6 @@
     .ap-quote{display:block;margin-top:5px;padding:7px 9px;background:var(--muted);border-radius:var(--radius-field);font-size:12px;line-height:17px;color:var(--foreground);}
     .ap-risk{background:var(--warning-bg);border-radius:var(--radius-field);padding:8px 10px;margin-top:8px;font-size:12.5px;line-height:18px;color:var(--warning);}
     .ap-risk b{display:block;font-weight:700;}
-    .ap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-    @media (max-width:900px){ .ap-grid{grid-template-columns:1fr;} }
     .ap-card{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:8px;text-align:left;font-family:inherit;cursor:pointer;}
     .ap-card:hover{border-color:var(--border-strong);}
     .ap-card.off{background:var(--muted);}
@@ -217,7 +215,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:22</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:25</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -235,7 +233,7 @@
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
       <!-- ============ AGENTES ============ -->
       <section class="ap-panel" id="panel-agentes" role="tabpanel" aria-label="Agentes" hidden>
-        <div class="ap-grid" id="gridAgentes"></div>
+        <div id="gridAgentes"></div>
       </section>
 
       <!-- ============ VARIÁVEIS ============ -->
@@ -381,7 +379,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260903d" defer></script>
+  <script src="../assets/settle.js?v=20260903e" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3200,10 +3198,10 @@
       var g = document.getElementById('gridAgentes');
       g.innerHTML = '';
       ANALISES.forEach(function (an) {
-        var el = document.createElement('button');
-        el.type = 'button';
-        el.className = 'ap-card' + (an.id === 'juridica' ? ' off' : '');
+        var el = document.createElement('div');
         var rascunho = an.id === 'juridica';
+        var ativo = an.ativo !== false && !rascunho;
+        el.className = 'ag-card' + (ativo ? '' : ' off');
         var resumo, custo;
         if (an.formato === 'estruturado') {
           var rs = regrasDa(an);
@@ -3231,13 +3229,23 @@
         if (instr.length > 160) instr = instr.slice(0, 158) + '…';
 
         el.innerHTML =
-          '<span class="ap-card-title">' + an.nome + '</span>' +
-          '<span class="ap-card-instr">' + instr + '</span>' +
-          '<span class="ap-card-foot">' +
-            (rascunho ? '<span class="gat gat-off">Rascunho</span>' : gatTag(an.gatilho)) +
-            (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
-          '</span>';
-        el.addEventListener('click', function () { abrirAnalise(an); });
+          '<button class="ag-abrir" type="button">' +
+            '<span class="ag-card-nome">' + an.nome + '</span>' +
+            '<span class="ag-card-instr">' + instr + '</span>' +
+            '<span class="ag-card-foot">' +
+              (rascunho ? '<span class="gat gat-off">Rascunho</span>' : gatTag(an.gatilho)) +
+              (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
+            '</span>' +
+          '</button>' +
+          '<label class="sw"><input type="checkbox"' + (ativo ? ' checked' : '') +
+          ' /><i></i><span class="sr-only">Ativar ' + an.nome + '</span></label>';
+
+        el.querySelector('.ag-abrir').addEventListener('click', function () { abrirAnalise(an); });
+        el.querySelector('.sw input').addEventListener('change', function (e) {
+          an.ativo = e.target.checked;
+          pintarAnalises();
+          settleToast(an.ativo ? an.nome + ' ativado' : an.nome + ' pausado');
+        });
         g.appendChild(el);
       });
     }
