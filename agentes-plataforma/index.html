@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:50</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:54</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -2413,10 +2413,7 @@
            }).join('') + '</select></div>';
 
       fx.perms = fx.perms || { mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' };
-      h += permsHTML(fx);
-
       document.getElementById('fxBody').innerHTML = h;
-      ligarPerms(fx);
 
       ligarCampoInstr(function () {
         fx.texto = htmlParaTexto(document.getElementById('vfCampo'));
@@ -2489,10 +2486,8 @@
       if (!fx) return;
       var n = fx.blocos.length;
       var temTexto = !!(fx.texto || '').trim();
-      document.getElementById('fxCusto').textContent = temTexto
-        ? (MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação · ' : '') +
-          varsNoTexto().length + (varsNoTexto().length === 1 ? ' variável' : ' variáveis')
-        : '';
+      document.getElementById('fxCusto').textContent =
+        temTexto && MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação' : '';
       document.getElementById('fxAtivar').disabled = !(temTexto || n);
     }
 
@@ -2932,6 +2927,9 @@
 
     /* =====================================================================
        O QUE O AGENTE PODE FAZER, E O QUE PRECISA DE APROVAÇÃO
+       (fora da tela desde 03/09: a configuração ficou com os três campos da
+       criação. O modelo continua aqui, e a fila de aprovações segue na aba
+       própria, porque é dela que a operação depende.)
        "Você tem que dizer para o agente, na configuração do agente, o que ele
        pode ou o que ele não pode fazer dentro da plataforma. E tem ações que
        deveriam ser aprovadas por ser humano" (Bruno Ortiz, 46:33 de 02/09).
@@ -3288,34 +3286,27 @@
 
       /* Análise técnica: o resultado dela é por componente, com agregação. */
       if (an.formato === 'composicao') {
-        document.getElementById('fxCusto').textContent = '15 execuções na última licitação';
+        document.getElementById('fxCusto').textContent = '';
         document.getElementById('fxBody').innerHTML = campoNome(an) +
           campoInstrHTML('Instruções', '', instrucaoDe(an),
             'Descreva o que o agente deve avaliar em cada componente.') +
-          campoGatilho(an) + permsHTML(an);
-        ligarCabecalhoConfig(an); ligarPerms(an);
+          campoGatilho(an);
+        ligarCabecalhoConfig(an);
         ligarCampoInstr(function () {
           an.texto = htmlParaTexto(document.getElementById('vfCampo'));
         });
         return;
       }
 
-      var rs = regrasDa(an);
-      var pts = rs.filter(function (r) { return !r.condicao; })
-        .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
-      var cond = rs.filter(function (r) { return r.condicao; })
-        .reduce(function (t, r) { return t + (r.pontos || 0); }, 0);
-
-      document.getElementById('fxCusto').textContent = rs.length + ' regras' +
-        (pts ? ' · ' + pts + ' pontos fixos' : '') + (cond ? ' + ' + cond + ' condicionais' : '');
+      document.getElementById('fxCusto').textContent = '';
 
       var h = campoNome(an) +
         campoInstrHTML('Instruções', '', instrucaoDe(an),
           'Descreva o que o agente deve analisar. Digite / para inserir uma variável.') +
-        campoGatilho(an) + permsHTML(an);
+        campoGatilho(an);
 
       document.getElementById('fxBody').innerHTML = h;
-      ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
+      ligarCabecalhoConfig(an);
       ligarCampoInstr(function () {
         an.texto = htmlParaTexto(document.getElementById('vfCampo'));
       });
@@ -3431,10 +3422,10 @@
           'Descreva o que analisar. Digite / para inserir uma variável.') +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
         '<div id="vfLista"></div></div>' +
-        campoGatilho(an) + (an ? permsHTML(an) : '');
+        campoGatilho(an);
 
       document.getElementById('fxBody').innerHTML = h;
-      if (an) { ligarCabecalhoConfig(an); ligarPerms(an); }
+      if (an) ligarCabecalhoConfig(an);
       ligarCampoInstr(function () {
         var alvo = textoDe(an);
         alvo.texto = htmlParaTexto(document.getElementById('vfCampo'));
@@ -3462,8 +3453,8 @@
       }
       var custo = ks.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
       document.getElementById('fxCusto').textContent = MOSTRAR_CUSTO
-        ? 'Custo: ' + moeda(custo) + ' por licitação · ' + ks.length + ' variáveis'
-        : ks.length + ' variáveis nesta instrução';
+        ? 'Custo: ' + moeda(custo) + ' por licitação'
+        : '';
     }
 
     function salvarRange() {
