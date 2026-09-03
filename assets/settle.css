@@ -1159,3 +1159,16 @@ table.dt td.c-sel .ap-check{gap:0;}
 
 /* Card do agente: a instrução ocupa duas linhas, não mais. */
 .ap-card-instr{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* Card de agente em linha inteira: a instrução é texto corrido e ganha em
+   largura. O interruptor fica fora do botão que abre. */
+.ag-card{display:flex;align-items:flex-start;gap:14px;border:1px solid var(--border);
+  border-radius:var(--radius-box);background:var(--card);padding:14px 16px;margin-bottom:10px;}
+.ag-card:hover{border-color:var(--border-strong);}
+.ag-card.off{background:var(--muted);}
+.ag-abrir{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+  border:0;background:transparent;padding:0;font-family:inherit;text-align:left;cursor:pointer;}
+.ag-card-nome{font-size:15px;font-weight:600;line-height:21px;color:var(--foreground);}
+.ag-card-instr{font-size:13px;line-height:19px;color:var(--muted-foreground);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ag-card-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px;}
