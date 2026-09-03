@@ -189,6 +189,10 @@
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Agentes e Variáveis</span>
         </a>
+        <a class="sb-item" href="#" id="viaWork" title="Workspace da licitação">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="11" height="10" rx="1.6"/><path d="M2.5 6.2h11M6.2 6.2V13" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Workspace da licitação</span>
+        </a>
       </div>
     </nav>
 
@@ -214,8 +218,10 @@
 
     <main class="content">
 
+      <div id="areaAgentes">
+
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 13:31</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 16:35</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -289,6 +295,97 @@
           </table>
         </div>
       </section>
+
+      </div><!-- /areaAgentes -->
+
+      <!-- ============ WORKSPACE DA LICITAÇÃO ============
+           A tela onde o resultado de um agente vira widget: em vez de uma tela
+           fixa por análise, o card do resultado é alocado no contexto em que a
+           pessoa está (Alice, 03/09: "o resultado do cara fica no contexto
+           dele"). Reproduz a tela real da plataforma, node 8478-14665.
+           ================================================ -->
+      <div id="areaWorkspace" hidden>
+
+        <div class="wk-top">
+          <nav class="wk-bread" aria-label="Trilha">
+            <a href="#">Licitações</a><span aria-hidden="true">›</span>
+            <a href="#">Em andamento</a><span aria-hidden="true">›</span>
+            <b>PE 90014/2026</b>
+          </nav>
+          <div class="wk-acts">
+            <button class="btn btn-outline" type="button">Ignorar</button>
+            <button class="btn btn-primary" type="button">Enviar para Workflow</button>
+            <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
+            <span class="avatars" aria-label="Time nesta licitação">
+              <span class="av">MC</span><span class="av">RS</span><span class="av">BK</span>
+              <span class="av add">+</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="segments">
+            <span class="seg">Frota e locação</span>
+            <span class="seg">Gestão de frota</span>
+          </div>
+          <p class="ap-obj"><b>Órgão:</b> Secretaria de Estado de Saúde de Minas Gerais
+            <span class="tag-light">ME · EPP</span></p>
+          <p class="ap-obj"><b>Objeto:</b> Contratação de empresa especializada na prestação de serviços
+            de locação de veículos automotores, sem motorista, para atender às unidades administrativas
+            da Secretaria. Inclui manutenção preventiva e corretiva por 24 meses.</p>
+          <p class="valor">Valor global: R$ 8.240.000,00</p>
+
+          <div class="grid-box">
+            <div class="grid-left">
+              <div class="pair">
+                <div class="fld"><div class="k">Adicionada</div><div class="v">04/08/2026</div></div>
+                <div class="fld"><div class="k">Atualizada</div><div class="v">26/08/2026</div></div>
+              </div>
+              <div class="fld"><div class="k">Envio da proposta</div>
+                <div class="v warn">11/09/2026</div></div>
+            </div>
+            <div class="grid-main">
+              <div class="fld"><div class="k">ID</div><div class="v">1078513</div></div>
+              <div class="fld"><div class="k">UASG</div><div class="v">986531</div></div>
+              <div class="fld"><div class="k">Modalidade</div><div class="v">Pregão · Eletrônico</div></div>
+              <div class="fld"><div class="k">Julgamento</div><div class="v">Menor preço por item</div></div>
+              <div class="fld"><div class="k">Estado</div><div class="v">MG</div></div>
+              <div class="fld"><div class="k">Cidade</div><div class="v">Belo Horizonte</div></div>
+              <div class="fld"><div class="k">Habitantes</div><div class="v">2.315.560</div></div>
+              <div class="fld"><div class="k">CAPAG Estadual</div>
+                <div class="v"><span class="capag b">B</span></div></div>
+              <div class="fld"><div class="k">CAPAG Municipal</div>
+                <div class="v"><span class="capag c">C</span></div></div>
+              <div class="fld"><div class="k">Portal de disputa</div>
+                <div class="v">compras.mg.gov.br</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="wk-sec-head">
+            <h2 class="wk-sec-title">
+              <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3h7l3 3v11H5z" stroke-linejoin="round"/><path d="M12 3v3h3" stroke-linejoin="round"/></svg>
+              Anotações
+            </h2>
+          </div>
+          <div class="empty-state">
+            <strong>Nada anotado ainda</strong>
+            Registre os pontos que decidem a participação e combine checklists com
+            <span class="q">@menções</span> para puxar o time quando precisar.
+            <div style="margin-top:12px"><button class="btn btn-primary" type="button">Começar a anotar</button></div>
+          </div>
+        </div>
+
+        <div class="fp-tabs" role="tablist" aria-label="Seções da licitação" id="wkTabs">
+          <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-wk="itens">Itens <span class="fp-c">3</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="tecnica">Análise técnica</button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="manif">Manifestações <span class="fp-c">4</span></button>
+        </div>
+
+        <div id="wkPainel"></div>
+
+      </div><!-- /areaWorkspace -->
 
     </main>
   </div>
@@ -3935,6 +4032,97 @@
     /* O tutorial continua montado, mas sem botão na tela: roda por
        window.settleTour(TOUR) quando for apresentar. */
     window.tourAgentes = function () { settleTour(TOUR); };
+
+    /* =====================================================================
+       WORKSPACE DA LICITAÇÃO
+       ===================================================================== */
+
+    var MANIF = [
+      { t:'Aviso', quando:'26/08/2026 às 14:12',
+        m:'Fica remarcada a sessão pública para 11/09/2026, às 09h00, no mesmo endereço eletrônico.' },
+      { t:'Esclarecimento', quando:'22/08/2026 às 17:40',
+        m:'Sobre o item 7.3: a exigência de atestado de capacidade técnica admite soma de atestados, ' +
+          'desde que emitidos por pessoa jurídica de direito público ou privado.' },
+      { t:'Impugnação', quando:'19/08/2026 às 11:05',
+        m:'Impugnação ao item 5.2 do Termo de Referência, que restringe a participação a empresas ' +
+          'com frota própria já disponível na data da assinatura.' },
+      { t:'Aviso', quando:'14/08/2026 às 09:22',
+        m:'Publicada a errata do Anexo II, com correção do quantitativo do item 11.' }
+    ];
+
+    var wkAba = 'itens';
+
+    function pintarWorkspace() {
+      var box = document.getElementById('wkPainel');
+      if (!box) return;
+
+      if (wkAba === 'itens') {
+        box.innerHTML = '<div class="datatable"><table class="dt"><thead><tr>' +
+          '<th scope="col">Item</th><th scope="col">Descrição</th><th scope="col">Quantidade</th>' +
+          '<th scope="col">Valor unitário</th><th scope="col">Valor total</th></tr></thead><tbody>' +
+          [['1', 'Veículo hatch 1.0, 4 portas, ar-condicionado', '24', 'R$ 2.180,00', 'R$ 52.320,00'],
+           ['2', 'Veículo SUV 4x4 diesel, tração integral', '6', 'R$ 5.940,00', 'R$ 35.640,00'],
+           ['3', 'Van de 15 lugares, adaptada para transporte de equipe', '4', 'R$ 7.310,00', 'R$ 29.240,00']]
+            .map(function (l) {
+              return '<tr><td>' + l[0] + '</td><td style="white-space:normal">' + l[1] + '</td>' +
+                     '<td class="num">' + l[2] + '</td><td class="num">' + l[3] + '</td>' +
+                     '<td class="num">' + l[4] + '</td></tr>';
+            }).join('') + '</tbody></table></div>';
+        return;
+      }
+
+      if (wkAba === 'tecnica') {
+        box.innerHTML = '<div class="empty-state"><strong>Nada avaliado ainda</strong>' +
+          'A análise técnica roda quando a licitação é enviada para o Workflow.</div>';
+        return;
+      }
+
+      box.innerHTML =
+        '<div class="fp-tabs" style="margin-bottom:14px">' +
+          '<button class="fp-tab active" type="button">Todas <span class="fp-c">' + MANIF.length + '</span></button>' +
+          '<button class="fp-tab" type="button">Avisos <span class="fp-c">2</span></button>' +
+          '<button class="fp-tab" type="button">Esclarecimentos <span class="fp-c">1</span></button>' +
+          '<button class="fp-tab" type="button">Impugnações <span class="fp-c">1</span></button>' +
+        '</div>' +
+        MANIF.map(function (x) {
+          return '<div class="wk-manif"><div class="wk-manif-top">' +
+            '<span class="tag-light">' + x.t + '</span>' +
+            '<span class="wk-manif-quando">Atualizado em ' + x.quando + '</span></div>' +
+            '<p>' + x.m + '</p></div>';
+        }).join('');
+    }
+
+    document.querySelectorAll('[data-wk]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        wkAba = b.dataset.wk;
+        document.querySelectorAll('[data-wk]').forEach(function (o) {
+          var on = o === b;
+          o.classList.toggle('active', on);
+          o.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        pintarWorkspace();
+      });
+    });
+
+    /* A sidebar alterna entre a configuração e a licitação: é na licitação que
+       o resultado do agente precisa aparecer. */
+    function irPara(area) {
+      document.getElementById('areaAgentes').hidden = area !== 'agentes';
+      document.getElementById('areaWorkspace').hidden = area !== 'workspace';
+      [['viaCons', 'agentes'], ['viaWork', 'workspace']].forEach(function (par) {
+        var el = document.getElementById(par[0]), on = par[1] === area;
+        el.classList.toggle('active', on);
+        if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
+      });
+      if (area === 'workspace') pintarWorkspace();
+    }
+
+    document.getElementById('viaCons').addEventListener('click', function (e) {
+      e.preventDefault(); irPara('agentes');
+    });
+    document.getElementById('viaWork').addEventListener('click', function (e) {
+      e.preventDefault(); irPara('workspace');
+    });
 
     /* ---------- boot ---------- */
     /* A instrução é derivada uma vez, no começo: se ficasse para a primeira
