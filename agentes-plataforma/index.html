@@ -215,7 +215,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:45</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 13:31</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -1204,7 +1204,7 @@
       { k:'nome', t:'Nome da variável', kind:'texto',
         val:function (v) { return v.nome; },
         cel:function (v) { return '<b>' + v.nome + '</b>'; }, largo:true },
-      { k:'tipo', t:'Tipo da resposta', kind:'opcoes',
+      { k:'tipo', t:'Tipo', kind:'opcoes',
         val:function (v) { return cap(v.tipo); },
         /* A lista do filtro é a mesma do formulário, mesmo que um tipo ainda
            não esteja em uso: as duas listas não podem divergir. */
@@ -2797,7 +2797,7 @@
             '<p class="ap-fhint" style="margin:0">' + v.desc + '</p></div>'
           : '') +
 
-        '<div class="ap-field"><label for="vTipo">Tipo da resposta</label>' +
+        '<div class="ap-field"><label for="vTipo">Tipo</label>' +
         '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<select class="ap-input" id="vTipo"' + dis + '>' + TIPOS_VAR.map(function (t) {
           return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + cap(t) + '</option>';
@@ -3792,7 +3792,7 @@
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">Nome</label>' +
           '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: CNPJ do órgão" />' +
-          '<p class="ap-fhint" style="margin:10px 0 4px">Tipo da resposta</p><div class="ap-chips" data-g="tipo">' +
+          '<p class="ap-fhint" style="margin:10px 0 4px">Tipo</p><div class="ap-chips" data-g="tipo">' +
             TIPOS_VAR.map(function (t, i) {
               return '<button class="ap-chip" type="button" data-val="' + t + '" aria-pressed="' +
                      (i === 0) + '">' + cap(t) + '</button>';
