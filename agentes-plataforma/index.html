@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:29</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:31</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -299,7 +299,6 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4 6 10l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <h2 id="mTitle">Editar critério</h2>
-      <span class="tag-light" id="mStatus">Ativo</span>
       <button class="icon-btn" type="button" id="btnFechar" aria-label="Fechar">
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
@@ -320,7 +319,6 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4 6 10l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <h2 id="fxTitle">Adicionar agente</h2>
-      <span class="tag-light" id="fxStatus">Rascunho</span>
       <button class="icon-btn" type="button" id="fxX" aria-label="Fechar">
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
@@ -1867,7 +1865,6 @@
       draft.mudou = {};
       etapa = 'form'; lacunas = []; vistaFluxo = false;
       document.getElementById('mTitle').textContent = a.nome;
-      document.getElementById('mStatus').textContent = a.sistema ? 'Padrão Settle' : 'Ativo';
       document.getElementById('btnAvancar').hidden = false;
       document.getElementById('btnAvancar').disabled = false;
       document.getElementById('ovl').hidden = false;
@@ -2506,8 +2503,6 @@
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
-      document.getElementById('fxStatus').hidden = !fx.ativo;
-      document.getElementById('fxStatus').textContent = 'Ativo';
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
@@ -2580,7 +2575,6 @@
              'Adicione um passo de decisão sobre a esfera para tratar esse caso.</div></div>';
       }
       document.getElementById('fxBody').innerHTML = h;
-      document.getElementById('fxStatus').textContent = 'Validado';
     });
 
     document.getElementById('fxAtivar').addEventListener('click', function () {
@@ -2761,8 +2755,6 @@
       var travado = !!(v && v.settle);
 
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Adicionar variável';
-      /* Sem selo: o aviso no corpo já diz que a variável é da Settle. */
-      document.getElementById('fxStatus').hidden = true;
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
@@ -3248,8 +3240,6 @@
       varDestaque = kDestaque || null;
       document.getElementById('fxTitle').textContent = an.nome;
       modoModal = 'outro';
-      document.getElementById('fxStatus').hidden = false;
-      document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
