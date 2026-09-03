@@ -213,7 +213,28 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
       </button>
       <span class="sep" aria-hidden="true"></span>
-      <span class="hello">Olá, Brunno</span>
+      <span class="hello" id="navHello">Olá, Brunno</span>
+
+      <nav class="wk-bread" id="navBread" aria-label="Trilha" hidden>
+        <a href="#">Licitações</a><span aria-hidden="true">›</span>
+        <a href="#">Em andamento</a><span aria-hidden="true">›</span>
+        <b>PE 90014/2026</b>
+      </nav>
+      <div class="wk-acts" id="navActs" hidden>
+        <button class="btn btn-outline" type="button">Ignorar</button>
+        <button class="btn btn-primary" type="button">Enviar para Workflow</button>
+        <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
+        <span class="avatars" aria-label="Time nesta licitação">
+          <span class="av">MC</span><span class="av">RS</span><span class="av">BK</span>
+          <span class="av add">+</span>
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="icon-btn" type="button" aria-label="Copiar link da licitação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Compartilhar"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14.5" cy="5.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="14.5" r="2"/><path d="M7.3 9 12.7 6.4M7.3 11l5.4 2.6" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Documentos da licitação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3h5l3 3v11H6z" stroke-linejoin="round"/><path d="M11 3v3h3" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Pastas"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6.5h5l1.4 1.6H17V15H3z" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Comentários"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 5h12v8H8.5L5 15.5V13H4z" stroke-linejoin="round"/></svg></button>
+      </div>
     </header>
 
     <main class="content">
@@ -221,7 +242,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 16:35</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 16:42</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -306,23 +327,6 @@
            ================================================ -->
       <div id="areaWorkspace" hidden>
 
-        <div class="wk-top">
-          <nav class="wk-bread" aria-label="Trilha">
-            <a href="#">Licitações</a><span aria-hidden="true">›</span>
-            <a href="#">Em andamento</a><span aria-hidden="true">›</span>
-            <b>PE 90014/2026</b>
-          </nav>
-          <div class="wk-acts">
-            <button class="btn btn-outline" type="button">Ignorar</button>
-            <button class="btn btn-primary" type="button">Enviar para Workflow</button>
-            <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
-            <span class="avatars" aria-label="Time nesta licitação">
-              <span class="av">MC</span><span class="av">RS</span><span class="av">BK</span>
-              <span class="av add">+</span>
-            </span>
-          </div>
-        </div>
-
         <div class="card">
           <div class="segments">
             <span class="seg">Frota e locação</span>
@@ -368,8 +372,48 @@
               <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3h7l3 3v11H5z" stroke-linejoin="round"/><path d="M12 3v3h3" stroke-linejoin="round"/></svg>
               Anotações
             </h2>
+            <div class="wk-tb" role="toolbar" aria-label="Formatação">
+              <span class="wk-tb-g">
+                <button type="button" aria-label="Refazer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 8H8.5a3.5 3.5 0 1 0 0 7H12" stroke-linecap="round"/><path d="M12.5 5 15.5 8l-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" aria-label="Desfazer"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 8h6.5a3.5 3.5 0 1 1 0 7H8" stroke-linecap="round"/><path d="M7.5 5 4.5 8l3 3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </span>
+              <span class="wk-tb-g"><button type="button" aria-label="Título">H1</button></span>
+              <span class="wk-tb-g">
+                <button type="button" aria-label="Negrito" style="font-weight:700">B</button>
+                <button type="button" aria-label="Itálico" style="font-style:italic">I</button>
+                <button type="button" aria-label="Sublinhado" style="text-decoration:underline">U</button>
+                <button type="button" aria-label="Riscado" style="text-decoration:line-through">S</button>
+                <button type="button" aria-label="Marca-texto"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 15h10M7 12l6-6 2.5 2.5-6 6H7z" stroke-linejoin="round"/></svg></button>
+              </span>
+              <span class="wk-tb-g">
+                <button type="button" aria-label="Alinhar à esquerda"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6h12M4 10h8M4 14h11" stroke-linecap="round"/></svg></button>
+                <button type="button" aria-label="Centralizar"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6h12M6 10h8M5 14h10" stroke-linecap="round"/></svg></button>
+                <button type="button" aria-label="Alinhar à direita"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6h12M8 10h8M5 14h11" stroke-linecap="round"/></svg></button>
+                <button type="button" aria-label="Justificar"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6h12M4 10h12M4 14h12" stroke-linecap="round"/></svg></button>
+              </span>
+              <span class="wk-tb-g">
+                <button type="button" aria-label="Lista"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 6h9M7 10h9M7 14h9" stroke-linecap="round"/><circle cx="4.3" cy="6" r=".9" fill="currentColor" stroke="none"/><circle cx="4.3" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="4.3" cy="14" r=".9" fill="currentColor" stroke="none"/></svg></button>
+                <button type="button" aria-label="Lista numerada"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 6h9M7 10h9M7 14h9" stroke-linecap="round"/><path d="M3.6 4.6h.8v2.8M3.4 9.4h1.4l-1.4 1.6h1.4M3.4 13.2h1.4l-1.2 1.2 1.2 1.2H3.4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" aria-label="Lista de tarefas"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 6h8M8 10h8M8 14h8" stroke-linecap="round"/><path d="m3 6 1 1 1.6-2M3 10l1 1 1.6-2M3 14l1 1 1.6-2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" aria-label="Recuo"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 6h8M8 10h8M8 14h8M3 8l2 2-2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </span>
+              <span class="wk-tb-g">
+                <button type="button" aria-label="Sobrescrito">x²</button>
+                <button type="button" aria-label="Subscrito">x₂</button>
+              </span>
+              <span class="wk-tb-g"><button type="button" aria-label="Código"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7.5 6 4 10l3.5 4M12.5 6 16 10l-3.5 4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>
+              <span class="wk-tb-g"><button type="button" aria-label="Inserir link"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" stroke-linecap="round"/></svg></button></span>
+              <span class="wk-tb-g"><button type="button" aria-label="Recolher as anotações"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 12l4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>
+            </div>
           </div>
           <div class="empty-state">
+            <svg viewBox="0 0 64 64" width="56" height="56" fill="none" aria-hidden="true">
+              <rect x="14" y="10" width="34" height="42" rx="3" fill="#fff" stroke="#d4d4d4" stroke-width="2"/>
+              <path d="M14 18h34M14 26h34" stroke="#e5e5e5" stroke-width="2"/>
+              <path d="M22 34h14M22 41h10" stroke="#d4d4d4" stroke-width="2" stroke-linecap="round"/>
+              <path d="M44 30l6 6-11 11-7 1 1-7z" fill="#fff" stroke="#3a9b9e" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M44 30l6 6" stroke="#3a9b9e" stroke-width="2"/>
+            </svg>
             <strong>Nada anotado ainda</strong>
             Registre os pontos que decidem a participação e combine checklists com
             <span class="q">@menções</span> para puxar o time quando precisar.
@@ -378,9 +422,9 @@
         </div>
 
         <div class="fp-tabs" role="tablist" aria-label="Seções da licitação" id="wkTabs">
-          <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-wk="itens">Itens <span class="fp-c">3</span></button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="itens">Itens <span class="fp-c">3</span></button>
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="tecnica">Análise técnica</button>
-          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="manif">Manifestações <span class="fp-c">4</span></button>
+          <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-wk="manif">Manifestações <span class="fp-c">4</span></button>
         </div>
 
         <div id="wkPainel"></div>
@@ -4038,19 +4082,19 @@
        ===================================================================== */
 
     var MANIF = [
-      { t:'Aviso', quando:'26/08/2026 às 14:12',
+      { t:'Aviso', quando:'26/08/2026 às 14:12', publicada:'26/08/2026 às 14:12',
         m:'Fica remarcada a sessão pública para 11/09/2026, às 09h00, no mesmo endereço eletrônico.' },
-      { t:'Esclarecimento', quando:'22/08/2026 às 17:40',
+      { t:'Questionamento', quando:'22/08/2026 às 17:40', publicada:'21/08/2026 às 16:03',
         m:'Sobre o item 7.3: a exigência de atestado de capacidade técnica admite soma de atestados, ' +
-          'desde que emitidos por pessoa jurídica de direito público ou privado.' },
-      { t:'Impugnação', quando:'19/08/2026 às 11:05',
+          'desde que emitidos por pessoa jurídica de direito público ou privado?' },
+      { t:'Impugnação', quando:'19/08/2026 às 11:05', publicada:'18/08/2026 às 09:47',
         m:'Impugnação ao item 5.2 do Termo de Referência, que restringe a participação a empresas ' +
           'com frota própria já disponível na data da assinatura.' },
-      { t:'Aviso', quando:'14/08/2026 às 09:22',
+      { t:'Não identificada', quando:'14/08/2026 às 09:22', publicada:'14/08/2026 às 09:22',
         m:'Publicada a errata do Anexo II, com correção do quantitativo do item 11.' }
     ];
 
-    var wkAba = 'itens';
+    var wkAba = 'manif';
 
     function pintarWorkspace() {
       var box = document.getElementById('wkPainel');
@@ -4077,18 +4121,32 @@
         return;
       }
 
+      var conta = function (t) {
+        return MANIF.filter(function (x) { return x.t === t; }).length;
+      };
+
       box.innerHTML =
-        '<div class="fp-tabs" style="margin-bottom:14px">' +
-          '<button class="fp-tab active" type="button">Todas <span class="fp-c">' + MANIF.length + '</span></button>' +
-          '<button class="fp-tab" type="button">Avisos <span class="fp-c">2</span></button>' +
-          '<button class="fp-tab" type="button">Esclarecimentos <span class="fp-c">1</span></button>' +
-          '<button class="fp-tab" type="button">Impugnações <span class="fp-c">1</span></button>' +
+        '<div class="wk-sub">' +
+          '<div class="fp-tabs">' +
+            '<button class="fp-tab active" type="button">Todas <span class="fp-c">' + MANIF.length + '</span></button>' +
+            '<button class="fp-tab" type="button">Avisos <span class="fp-c">' + conta('Aviso') + '</span></button>' +
+            '<button class="fp-tab" type="button">Questionamentos <span class="fp-c">' + conta('Questionamento') + '</span></button>' +
+            '<button class="fp-tab" type="button">Impugnações <span class="fp-c">' + conta('Impugnação') + '</span></button>' +
+            '<button class="fp-tab" type="button">Não identificadas <span class="fp-c">' + conta('Não identificada') + '</span></button>' +
+          '</div>' +
+          '<select class="ap-input" style="width:auto" aria-label="Filtrar manifestações">' +
+            '<option>Manifestações aguardando resposta</option>' +
+            '<option>Todas as manifestações</option>' +
+            '<option>Manifestações respondidas</option>' +
+          '</select>' +
         '</div>' +
         MANIF.map(function (x) {
           return '<div class="wk-manif"><div class="wk-manif-top">' +
             '<span class="tag-light">' + x.t + '</span>' +
             '<span class="wk-manif-quando">Atualizado em ' + x.quando + '</span></div>' +
-            '<p>' + x.m + '</p></div>';
+            '<div class="wk-manif-div"></div>' +
+            '<div class="wk-manif-data">' + x.publicada + '</div>' +
+            '<p><b>Mensagem:</b> ' + x.m + '</p></div>';
         }).join('');
     }
 
@@ -4107,8 +4165,14 @@
     /* A sidebar alterna entre a configuração e a licitação: é na licitação que
        o resultado do agente precisa aparecer. */
     function irPara(area) {
-      document.getElementById('areaAgentes').hidden = area !== 'agentes';
-      document.getElementById('areaWorkspace').hidden = area !== 'workspace';
+      var naLic = area === 'workspace';
+      document.getElementById('areaAgentes').hidden = naLic;
+      document.getElementById('areaWorkspace').hidden = !naLic;
+      /* Na licitação, a barra do topo é da licitação: trilha e ações no lugar
+         da saudação. */
+      document.getElementById('navHello').hidden = naLic;
+      document.getElementById('navBread').hidden = !naLic;
+      document.getElementById('navActs').hidden = !naLic;
       [['viaCons', 'agentes'], ['viaWork', 'workspace']].forEach(function (par) {
         var el = document.getElementById(par[0]), on = par[1] === area;
         el.classList.toggle('active', on);
