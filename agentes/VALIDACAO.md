@@ -136,3 +136,42 @@ E uma sexta, que apareceu construindo a análise técnica:
    avaliar a compatibilidade técnica desta licitação. Mostre onde você olharia
    para conferir o que ele decidiu." Sem apontar caminho, e observando onde a
    pessoa procura primeiro.
+
+---
+
+## Reunião de 03/09 com a Alice: o que fechou e o que ficou
+
+**Fechado**
+
+7. **Onde o resultado aparece** (a sétima decisão, aberta desde 02/09): o agente
+   escolhe onde exibir, e o resultado vira **widget alocado no contexto**, não uma
+   tela por análise. *"O resultado do cara fica no contexto dele"* (Alice, 11:25).
+   Ela quer inclusive o resultado no card da licitação (11:09).
+8. **Um botão de agentes por contexto**, não um por aba (objeção dela em 04:52).
+9. **Dois tipos de agente convivem**, análise e ação (06:51). A divisão é
+   conceitual: o que separa os dois na prática é o campo Permissões, não um tipo
+   declarado.
+10. **O chat serve para os dois casos**: falar com um agente ou perguntar sobre o
+    edital sem agente nenhum (13:36).
+
+**Em aberto, em ordem de urgência**
+
+1. **Como a validação funciona.** Decisão de 03/09 (Brunno): acontece pelo chat,
+   como no Claude, e não numa tela de formulário. O resultado precisa ficar
+   materializado fora da conversa, que é o requisito da Alice desde 21/08.
+2. **Versionamento de agente** (Alice, 19:29): qual versão rodou em cada licitação,
+   e se as licitações em aberto são reprocessadas. Adiado por decisão de 03/09.
+3. **Benchmark de governança de agentes para enterprise** (Alice, 21:52). Fica
+   junto do handoff, não do teste com usuário.
+4. **Regras de negócio para a documentação do handoff**: validação, execução,
+   governança, confidencialidade, relacionamentos, e o efeito de alterar ou
+   excluir uma variável nos agentes que a usam. Alice, 21:15: não precisa para o
+   teste, precisa de uma sessão antes de passar para o time.
+5. **O que a tela mostra antes de "enviar para análise"** (22:48). Tratado como
+   tarefa separada.
+6. **Escopo do painel dentro da licitação** (Alice, 16:15): listar o histórico de
+   todas as licitações dentro de uma licitação vira ruído. O painel precisa mudar
+   de escopo conforme a tela.
+
+**Casos de uso escolhidos para o teste de usabilidade** (Alice, 17:09): o **Score**
+e a **habilitação por atestados técnicos**.
