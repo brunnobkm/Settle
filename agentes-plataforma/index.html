@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:46</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:50</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -2412,7 +2412,11 @@
                     GATILHOS_FX[g] + '</option>';
            }).join('') + '</select></div>';
 
+      fx.perms = fx.perms || { mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' };
+      h += permsHTML(fx);
+
       document.getElementById('fxBody').innerHTML = h;
+      ligarPerms(fx);
 
       ligarCampoInstr(function () {
         fx.texto = htmlParaTexto(document.getElementById('vfCampo'));
@@ -2556,8 +2560,7 @@
         })(),
         gatilho:GATILHOS_FX[fx.gatilho],
         texto:texto, vars:varsNoTexto(),
-        perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
-        execs:[], ativo:true
+        perms:fx.perms, execs:[], ativo:true
       };
       ANALISES.push(an);
       pintarAnalises(); pintarVars(); pintarCrits();
@@ -3289,12 +3292,8 @@
         document.getElementById('fxBody').innerHTML = campoNome(an) +
           campoInstrHTML('Instruções', '', instrucaoDe(an),
             'Descreva o que o agente deve avaliar em cada componente.') +
-          campoGatilho(an) + permsHTML(an) +
-          '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Última execução</h2>' +
-          '<span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
-          '<div class="ap-box-body"><div id="itens"></div></div></div>' + execHTML(an);
-        pintarTecnica();
-        ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
+          campoGatilho(an) + permsHTML(an);
+        ligarCabecalhoConfig(an); ligarPerms(an);
         ligarCampoInstr(function () {
           an.texto = htmlParaTexto(document.getElementById('vfCampo'));
         });
@@ -3315,44 +3314,12 @@
           'Descreva o que o agente deve analisar. Digite / para inserir uma variável.') +
         campoGatilho(an) + permsHTML(an);
 
-      if (an.destino === 'score') {
-        h += '<div class="ap-demo"><span>Só no protótipo, para ver os quatro momentos:</span>' +
-          '<div class="ap-chips" id="estadoDemo">' +
-          '<button class="ap-chip" type="button" data-est="pronto" aria-pressed="true">Calculado</button>' +
-          '<button class="ap-chip" type="button" data-est="nao_enviado" aria-pressed="false">Ainda não enviado</button>' +
-          '<button class="ap-chip" type="button" data-est="calculando" aria-pressed="false">Calculando</button>' +
-          '<button class="ap-chip" type="button" data-est="falhou" aria-pressed="false">Falhou</button>' +
-          '</div></div>' +
-          '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head" id="boxScore">' +
-            '<h2>Última execução</h2><span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
-            '<div class="ap-box-body" id="scoreBody"></div>' +
-            '<div class="ap-box-body" id="crits" style="padding-top:0"></div></div>';
-      } else {
-        h += '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Última execução</h2>' +
-          '<button class="ap-mini" type="button" id="anNova">Adicionar campo</button></div>' +
-          '<div class="ap-box-body" id="crits"></div></div>';
-      }
-
-      h += execHTML(an);
-
       document.getElementById('fxBody').innerHTML = h;
       ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
       ligarCampoInstr(function () {
         an.texto = htmlParaTexto(document.getElementById('vfCampo'));
       });
 
-      if (an.destino === 'score') {
-        document.querySelectorAll('[data-est]').forEach(function (b) {
-          b.addEventListener('click', function () { setEstado(b.dataset.est); });
-        });
-        pintarScoreBox();
-      }
-      pintarCrits(an.destino);
-      var nova = document.getElementById('anNova');
-      if (nova) nova.addEventListener('click', function () {
-        document.getElementById('fxModal').hidden = true;
-        criarDaqui(an.destino);
-      });
     }
 
 
@@ -3464,11 +3431,10 @@
           'Descreva o que analisar. Digite / para inserir uma variável.') +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
         '<div id="vfLista"></div></div>' +
-        campoGatilho(an) +
-        (an ? permsHTML(an) + execHTML(an) : '');
+        campoGatilho(an) + (an ? permsHTML(an) : '');
 
       document.getElementById('fxBody').innerHTML = h;
-      if (an) { ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an); }
+      if (an) { ligarCabecalhoConfig(an); ligarPerms(an); }
       ligarCampoInstr(function () {
         var alvo = textoDe(an);
         alvo.texto = htmlParaTexto(document.getElementById('vfCampo'));
