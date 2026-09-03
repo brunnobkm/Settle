@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:36</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:40</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -3195,6 +3195,38 @@
 
     var analiseAberta = null, varDestaque = null;
 
+    /* A modal de um agente é a configuração dele, com os campos preenchidos.
+       Nome e Quando roda valem para todos; o que muda no meio é a forma da
+       instrução: texto para os de parecer, lista de regras para o Score e o
+       Resumo, componentes para a análise técnica. O resultado da última
+       execução vem depois da configuração, não antes dela. */
+    function cabecalhoConfig(an) {
+      return '<div class="ap-field"><label for="anNome">Nome do agente</label>' +
+        '<input class="ap-input" id="anNome" type="text" value="' +
+        an.nome.replace(/"/g, '&quot;') + '" /></div>' +
+        '<div class="ap-field"><label for="anGat">Quando roda</label>' +
+        '<p class="ap-fhint">' + PENDENTE + '</p>' +
+        '<select class="ap-input" id="anGat">' +
+        Object.keys(GATILHOS_FX).map(function (g) {
+          return '<option value="' + g + '"' +
+                 (GATILHOS_FX[g] === an.gatilho ? ' selected' : '') + '>' + GATILHOS_FX[g] + '</option>';
+        }).join('') + '</select></div>';
+    }
+
+    function ligarCabecalhoConfig(an) {
+      var nome = document.getElementById('anNome');
+      if (nome) nome.addEventListener('input', function () {
+        an.nome = nome.value;
+        document.getElementById('fxTitle').textContent = an.nome;
+        pintarAnalises();
+      });
+      var gat = document.getElementById('anGat');
+      if (gat) gat.addEventListener('change', function () {
+        an.gatilho = GATILHOS_FX[gat.value];
+        pintarAnalises();
+      });
+    }
+
     function abrirAnalise(an, kDestaque) {
       analiseAberta = an;
       varDestaque = kDestaque || null;
@@ -3212,14 +3244,17 @@
       /* Análise técnica: o resultado dela é por componente, com agregação. */
       if (an.formato === 'composicao') {
         document.getElementById('fxCusto').textContent = '15 execuções na última licitação';
-        document.getElementById('fxBody').innerHTML =
-          '<p class="ap-fhint">' + an.desc + ' Roda <b>uma vez por componente</b>: a lista não existe antes de ' +
-          'alguém ler o Termo de Referência.</p>' +
-          '<div style="display:flex;gap:8px;margin-bottom:14px">' +
-            '<button class="btn btn-outline" type="button" id="anCfg">Configurar o agente</button></div>' +
-          '<div id="itens"></div>' + permsHTML(an) + execHTML(an);
+        document.getElementById('fxBody').innerHTML = cabecalhoConfig(an) +
+          '<div class="ap-field"><div class="ap-flabel-row"><span class="ap-flabel">Instruções</span>' +
+          '<button class="ap-mini" type="button" id="anCfg">Abrir a regra</button></div>' +
+          '<p class="ap-fhint">Roda <b>uma vez por componente</b>: a lista não existe antes de alguém ' +
+          'ler o Termo de Referência.</p></div>' +
+          permsHTML(an) +
+          '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Última execução</h2>' +
+          '<span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
+          '<div class="ap-box-body"><div id="itens"></div></div></div>' + execHTML(an);
         pintarTecnica();
-        ligarPerms(an); ligarExec(an);
+        ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
         document.getElementById('anCfg').addEventListener('click', function () {
           document.getElementById('fxModal').hidden = true; abrir(AGENTE_TEC);
         });
@@ -3235,9 +3270,10 @@
       document.getElementById('fxCusto').textContent = rs.length + ' regras' +
         (pts ? ' · ' + pts + ' pontos fixos' : '') + (cond ? ' + ' + cond + ' condicionais' : '');
 
-      var h = '<p class="ap-fhint">' + (an.destino === 'score'
-        ? 'Uma análise com ' + rs.length + ' regras dentro. Não são ' + rs.length + ' agentes.'
-        : 'Os campos do Resumo e a fonte de cada um.') + '</p>';
+      var h = cabecalhoConfig(an) +
+        '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Instruções</h2>' +
+        '<button class="ap-mini" type="button" id="anNova">Adicionar regra</button></div>' +
+        '<div class="ap-box-body" id="crits"></div></div>' + permsHTML(an);
 
       if (an.destino === 'score') {
         h += '<div class="ap-demo"><span>Só no protótipo, para ver os quatro momentos:</span>' +
@@ -3252,12 +3288,10 @@
             '<div class="ap-box-body" id="scoreBody"></div></div>';
       }
 
-      h += '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Regras</h2>' +
-           '<button class="btn btn-outline" type="button" id="anNova">Nova regra</button></div>' +
-           '<div class="ap-box-body" id="crits"></div></div>' + permsHTML(an) + execHTML(an);
+      h += execHTML(an);
 
       document.getElementById('fxBody').innerHTML = h;
-      ligarPerms(an); ligarExec(an);
+      ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
 
       if (an.destino === 'score') {
         document.querySelectorAll('[data-est]').forEach(function (b) {
@@ -3375,7 +3409,7 @@
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar análise';
 
-      var h = campoInstrHTML('Instruções',
+      var h = cabecalhoConfig(an) + campoInstrHTML('Instruções',
           'A instrução é texto, porque a resposta é um parecer e não um número. As partes destacadas são ' +
           '<b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.',
           textoDe(an).texto,
@@ -3385,7 +3419,7 @@
         (an ? permsHTML(an) + execHTML(an) : '');
 
       document.getElementById('fxBody').innerHTML = h;
-      if (an) { ligarPerms(an); ligarExec(an); }
+      if (an) { ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an); }
       ligarCampoInstr(function () {
         var alvo = textoDe(an);
         alvo.texto = htmlParaTexto(document.getElementById('vfCampo'));
