@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260903f" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903r" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -224,6 +224,10 @@
         <button class="btn btn-outline" type="button">Ignorar</button>
         <button class="btn btn-primary" type="button">Enviar para análise</button>
         <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
+        <button class="btn-score" type="button" id="btnScore">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
+          78/100
+        </button>
         <span class="avatars" aria-label="Time nesta licitação">
           <span class="av">MC</span><span class="av">RS</span><span class="av">BK</span>
           <span class="av add">+</span>
@@ -242,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 17:36</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 18:28</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -339,8 +343,6 @@
             design de interface e manutenção de design system, para os canais digitais da Secretaria,
             pelo período de 24 meses.</p>
           <p class="valor">Valor global: R$ 2.480.000,00</p>
-
-          <div id="wgScore" style="margin-bottom:14px"></div>
 
           <div class="grid-box">
             <div class="grid-left">
@@ -493,14 +495,17 @@
        ============================================================== -->
   <button class="cp-fab" type="button" id="cpAbrir">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
-    Agentes
+    Settle AI
   </button>
 
-  <aside class="cp" id="cp" hidden aria-label="Painel de agentes">
+  <aside class="cp" id="cp" hidden aria-label="Settle AI">
     <div class="cp-head">
       <button class="cp-title" type="button" id="cpLista" aria-expanded="false">
-        <span id="cpTitulo">Agentes</span>
+        <span id="cpTitulo">Converse com a Settle AI</span>
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" type="button" id="cpAgentes" aria-label="Ver os agentes">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpConfig" aria-label="Abrir a configuração deste agente" hidden>
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
@@ -510,11 +515,25 @@
       </button>
     </div>
     <div class="cp-body" id="cpBody"></div>
-    <form class="cp-foot" id="cpForm" hidden>
-      <label class="sr-only" for="cpIn">Mensagem para o agente</label>
-      <input class="ap-input" id="cpIn" type="text" placeholder="O que está errado ou o que quer mudar" />
-      <button class="btn btn-primary" type="submit">Enviar</button>
+    <form class="cp-foot" id="cpForm">
+      <div class="cp-ctx" id="cpCtx"></div>
+      <div class="cp-linha">
+        <label class="sr-only" for="cpIn">Mensagem para a Settle AI</label>
+        <input class="ap-input" id="cpIn" type="text" placeholder="Pergunte qualquer coisa" />
+        <button class="btn btn-primary" type="submit">Enviar</button>
+      </div>
     </form>
+  </aside>
+
+  <div class="pn-ovl" id="pnOvl" hidden></div>
+  <aside class="pn" id="pn" hidden aria-label="Score da licitação">
+    <div class="pn-head">
+      <h2 id="pnTitulo">Score</h2>
+      <button class="icon-btn" type="button" id="pnFechar" aria-label="Fechar o painel">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="pn-body" id="pnBody"></div>
   </aside>
 
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
@@ -529,7 +548,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260903f" defer></script>
+  <script src="../assets/settle.js?v=20260903r" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1789,10 +1808,111 @@
 
     var cpAgente = null, cpProposta = null;
 
+    /* O painel abre como conversa comum, não como lista: a lista fica atrás do
+       ícone de agentes, como o Notion faz. */
     function cpAbrirPainel() {
       document.getElementById('cp').hidden = false;
       document.body.classList.add('cp-open');
-      if (!cpAgente) cpPintarLista();
+      document.getElementById('cpAbrir').hidden = false;
+      if (!cpAgente) cpNovaConversa();
+    }
+
+    /* O contexto em que a pergunta vai ser feita. A página em que a pessoa está
+       entra sozinha; o "+" acrescenta outras. */
+    var cpContextos = [];
+
+    function paginaAtual() {
+      return document.getElementById('areaWorkspace').hidden
+        ? { id:'agentes', nome:'Agentes e Variáveis' }
+        : { id:'lic', nome:'PE 90014/2026' };
+    }
+
+    function cpPintarCtx() {
+      var box = document.getElementById('cpCtx');
+      box.innerHTML = cpContextos.map(function (c, i) {
+        return '<span class="cp-ctx-item">' + c.nome +
+          '<button type="button" data-ctxdel="' + i + '" aria-label="Tirar ' + c.nome +
+          ' do contexto"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" ' +
+          'stroke-width="2"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg></button></span>';
+      }).join('') +
+      '<button class="cp-mais" type="button" id="cpMais" aria-label="Adicionar contexto">' +
+      '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">' +
+      '<path d="M8 3.5v9M3.5 8h9" stroke-linecap="round"/></svg></button>';
+
+      box.querySelectorAll('[data-ctxdel]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          cpContextos.splice(+b.dataset.ctxdel, 1); cpPintarCtx();
+        });
+      });
+      document.getElementById('cpMais').addEventListener('click', function (e) {
+        e.stopPropagation();
+        cpMenuContexto();
+      });
+    }
+
+    function cpMenuContexto() {
+      var opcoes = [
+        { id:'lic', nome:'PE 90014/2026' },
+        { id:'edital', nome:'Edital e anexos' },
+        { id:'tr', nome:'Termo de Referência' },
+        { id:'catalogo', nome:'Catálogo da B Design' },
+        { id:'agentes', nome:'Agentes e Variáveis' }
+      ].filter(function (o) {
+        return !cpContextos.some(function (c) { return c.id === o.id; });
+      });
+      if (!opcoes.length) { settleToast('Tudo o que existe já está no contexto'); return; }
+
+      fecharMenuCol();
+      var pop = document.createElement('div');
+      pop.className = 'fb-pop col-pop';
+      pop.innerHTML = '<div class="fb-list-head"><span>Adicionar contexto</span></div>' +
+        opcoes.map(function (o) {
+          return '<button class="col-acao" type="button" data-ctxadd="' + o.id + '">' + o.nome + '</button>';
+        }).join('');
+      posicionarPop(pop, document.getElementById('cpMais'));
+      pop.addEventListener('click', function (e) { e.stopPropagation(); });
+      pop.querySelectorAll('[data-ctxadd]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          cpContextos.push(opcoes.filter(function (o) { return o.id === b.dataset.ctxadd; })[0]);
+          fecharMenuCol(); cpPintarCtx();
+        });
+      });
+    }
+
+    /* Conversa comum: sem agente escolhido, com o contexto da página. */
+    function cpNovaConversa() {
+      cpAgente = null;
+      cpProposta = null;
+      cpContextos = [paginaAtual()];
+      document.getElementById('cpTitulo').textContent = 'Converse com a Settle AI';
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+      document.getElementById('cpConfig').hidden = true;
+      document.getElementById('cpForm').hidden = false;
+
+      document.getElementById('cpBody').innerHTML =
+        '<div class="cp-vazio"><h3>Como posso ajudar?</h3>' +
+        [['Perguntar sobre este edital', 'M4 5h12v10H4z'],
+         ['Comparar com uma licitação parecida', 'M3 10h6M11 10h6'],
+         ['Criar um agente novo', 'M10 4v12M4 10h12']].map(function (o, i) {
+          return '<button class="cp-sug" type="button" data-sug="' + i + '">' +
+            '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" ' +
+            'stroke-width="1.6" aria-hidden="true"><path d="' + o[1] + '" stroke-linecap="round" ' +
+            'stroke-linejoin="round"/></svg>' + o[0] + '</button>';
+        }).join('') + '</div>';
+
+      cpPintarCtx();
+
+      document.querySelectorAll('#cpBody [data-sug]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (b.dataset.sug === '2') {
+            cpFecharPainel(); abaAtiva('agentes'); abrirFx(null);
+            return;
+          }
+          document.getElementById('cpBody').innerHTML = '';
+          cpBolha('me', b.textContent.trim());
+          cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
+        });
+      });
     }
 
     function cpFecharPainel() {
@@ -1808,6 +1928,10 @@
       return 'score';
     }
 
+    /* A lista de agentes, agrupada: os que rodam na página em que a pessoa está
+       vêm primeiro, e os outros abaixo. */
+    var AGENTES_DA_PAGINA = { lic:['score', 'habil', 'tecnica'], agentes:[] };
+
     function cpPintarLista() {
       cpAgente = null;
       document.getElementById('cpTitulo').textContent = 'Agentes';
@@ -1815,16 +1939,30 @@
       document.getElementById('cpConfig').hidden = true;
       document.getElementById('cpForm').hidden = true;
 
-      var h = '<p class="cp-agente">Escolha com quem falar. Cada agente conhece as próprias regras e o que produziu em cada licitação.</p>';
-      ANALISES.forEach(function (an) {
+      var pag = paginaAtual();
+      var daPagina = AGENTES_DA_PAGINA[pag.id] || [];
+      var linha = function (an) {
         var sub = an.formato === 'estruturado'
           ? regrasDa(an).length + ' regras · ' + an.gatilho.toLowerCase()
-          : (an.id === 'tecnica' ? 'roda por componente · 15 execuções aqui' : 'instrução em texto');
-        h += '<button class="cp-item" type="button" data-cpsel="' + an.id + '">' +
-             '<span class="cp-item-main"><span class="cp-item-nome">' + an.nome + '</span>' +
-             '<span class="cp-item-sub">' + sub + '</span></span></button>';
-      });
-      h += '<button class="cp-item" type="button" data-cpnovo="1">' +
+          : (an.id === 'tecnica' ? 'roda por componente' : 'instrução em texto');
+        return '<button class="cp-item" type="button" data-cpsel="' + an.id + '">' +
+               '<span class="cp-item-main"><span class="cp-item-nome">' + an.nome + '</span>' +
+               '<span class="cp-item-sub">' + sub + '</span></span></button>';
+      };
+
+      var aqui = ANALISES.filter(function (a) { return daPagina.indexOf(a.id) >= 0; });
+      var resto = ANALISES.filter(function (a) { return daPagina.indexOf(a.id) < 0; });
+
+      var h = '';
+      if (aqui.length) {
+        h += '<div class="cp-grupo">Agentes desta página · ' + pag.nome + '</div>' +
+             aqui.map(linha).join('');
+      }
+      if (resto.length) {
+        h += '<div class="cp-grupo">Outros agentes</div>' + resto.map(linha).join('');
+      }
+      h += '<div class="cp-grupo">Criar</div>' +
+           '<button class="cp-item" type="button" data-cpnovo="1">' +
            '<span class="cp-item-main"><span class="cp-item-nome">Criar um agente novo</span>' +
            '<span class="cp-item-sub">abre a configuração em branco</span></span></button>';
 
@@ -1994,6 +2132,8 @@
     document.getElementById('cpAbrir').addEventListener('click', function () {
       if (document.getElementById('cp').hidden) cpAbrirPainel(); else cpFecharPainel();
     });
+
+    document.getElementById('cpAgentes').addEventListener('click', cpPintarLista);
     document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
     document.getElementById('cpLista').addEventListener('click', cpPintarLista);
     document.getElementById('cpConfig').addEventListener('click', function () {
@@ -4165,19 +4305,71 @@
       });
     }
 
-    /* Caso 1 do teste: o Score aparece no próprio card da licitação. */
-    function pintarWgScore() {
-      var el = document.getElementById('wgScore');
-      if (!el) return;
-      var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
-      if (!an) { el.innerHTML = ''; return; }
-      el.innerHTML = wgHTML(an,
-        '<div class="wg-nota"><b>78</b><span>de 100</span></div>' +
-        '<div class="ap-bar" style="margin-top:10px"><i style="width:78%"></i></div>',
-        'Calculado em 26/08 às 09:12, com 8 das 9 regras. 10 pontos não se aplicam a esta ' +
-        'licitação, então saíram do total.');
-      ligarWidget(el);
+    /* Caso 1 do teste: o Score é um botão na barra de ações e abre um painel
+       lateral com a nota e as variáveis que a compõem, como na plataforma. Cada
+       variável é uma pergunta, com o valor extraído, os pontos e se atende. */
+    var SCORE_VARS = [
+      { q:'Quantos segmentos em comum com o nosso catálogo?', v:'2 segmentos: design de produto, pesquisa com usuários', pt:'+20', st:'ok' },
+      { q:'Qual o valor estimado da licitação?', v:'R$ 2.480.000,00', pt:'+10', st:'ok' },
+      { q:'Exige atestado de capacidade técnica?', v:'Não encontrado', pt:'+15', st:'ok' },
+      { q:'Qual a saúde financeira do órgão?', v:'CAPAG B, esfera estadual', pt:'+10', st:'ok' },
+      { q:'Quantos dias até a sessão pública?', v:'9 dias', pt:'+8', st:'ok' },
+      { q:'Permite subcontratação?', v:'Não permite', pt:'0', st:'no' },
+      { q:'É exclusiva para ME/EPP?', v:'Ampla concorrência', pt:'0', st:'no' },
+      { q:'Qual o porte do projeto?', v:'2.840 horas', pt:'+10', st:'ok' },
+      { q:'Exige ISO 27001 de segurança da informação?', v:'Não se aplica a este segmento', pt:'fora do total', st:'na' }
+    ];
+
+    function abrirPainelScore() {
+      var badge = { ok:'<span class="ap-tag run">Atende</span>',
+                    no:'<span class="ap-tag warn">Não atende</span>',
+                    na:'<span class="ap-tag pause">Não se aplica</span>' };
+      document.getElementById('pnTitulo').textContent = 'Score';
+      document.getElementById('pnBody').innerHTML =
+        '<div class="pn-nota">78/100</div>' +
+        '<div class="pn-sec"><div class="pn-sec-head"><span>Variáveis para cálculo do Score</span></div>' +
+        SCORE_VARS.map(function (x) {
+          return '<div class="pn-var"><span class="pn-var-txt">' +
+            '<span class="pn-var-q">' + x.q + '</span>' +
+            '<span class="pn-var-v">' + x.v + '</span></span>' +
+            '<span class="pn-var-pt">' + x.pt + '</span>' + badge[x.st] + '</div>';
+        }).join('') + '</div>' +
+        '<div class="wg-foot"><button class="ap-mini" type="button" id="pnFalar">Falar com o agente</button>' +
+        '<button class="ap-mini" type="button" id="pnCfg">Abrir a configuração</button></div>';
+
+      document.getElementById('pnOvl').hidden = false;
+      document.getElementById('pn').hidden = false;
+
+      document.getElementById('pnCfg').addEventListener('click', function () {
+        fecharPainelScore();
+        var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
+        if (an) abrirAnalise(an);
+      });
+      document.getElementById('pnFalar').addEventListener('click', function () {
+        fecharPainelScore();
+        var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
+        if (!an) return;
+        cpAbrirPainel();
+        cpAgente = an.id;
+        document.getElementById('cpTitulo').textContent = an.nome;
+        document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+        document.getElementById('cpConfig').hidden = false;
+        document.getElementById('cpForm').hidden = false;
+        document.getElementById('cpBody').innerHTML =
+          '<p class="cp-agente">PE 90014/2026 · Secretaria de Estado de Saúde de MG</p>';
+        cpBolha('bot', 'Cheguei em 78 de 100 nesta licitação. Pode me perguntar por que uma regra ' +
+          'pontuou assim, ou dizer o que ficou errado.');
+      });
     }
+
+    function fecharPainelScore() {
+      document.getElementById('pnOvl').hidden = true;
+      document.getElementById('pn').hidden = true;
+    }
+
+    document.getElementById('btnScore').addEventListener('click', abrirPainelScore);
+    document.getElementById('pnFechar').addEventListener('click', fecharPainelScore);
+    document.getElementById('pnOvl').addEventListener('click', fecharPainelScore);
 
     /* Caso 2 do teste: habilitação por atestados, na aba que o agente escolheu. */
     var HABIL = [
@@ -4292,7 +4484,7 @@
         el.classList.toggle('active', on);
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
-      if (area === 'workspace') { pintarWgScore(); pintarWorkspace(); }
+      if (area === 'workspace') pintarWorkspace();
     }
 
     document.getElementById('viaCons').addEventListener('click', function (e) {
