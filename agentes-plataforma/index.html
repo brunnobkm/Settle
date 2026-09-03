@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902p" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902q" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:54</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:56</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -375,7 +375,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902p" defer></script>
+  <script src="../assets/settle.js?v=20260902q" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1589,6 +1589,7 @@
         var textoAntes = JURIDICA.texto;
         var varsJur = JURIDICA.vars.slice(), varsTec = AGENTE_TEC.vars.slice();
 
+        VARS_EX[k] = v.nome;
         delete VARS[k];
         AGENTES.forEach(function (a) {
           var i = a.vars.indexOf(k);
@@ -1602,7 +1603,6 @@
         /* As análises que guardam variável fora de AGENTES também precisam ser
            limpas, senão elas continuam somando o custo de algo que não existe. */
         JURIDICA.vars = JURIDICA.vars.filter(function (x) { return x !== k; });
-        JURIDICA.texto = JURIDICA.texto.split('{{' + k + '}}').join(antes.nome);
         AGENTE_TEC.vars = AGENTE_TEC.vars.filter(function (x) { return x !== k; });
 
         pintarVars(); pintarAnalises(); pintarCrits();
@@ -1611,6 +1611,7 @@
           undoLabel:'Desfazer',
           onUndo:function () {
             VARS[k] = antes;
+            delete VARS_EX[k];
             afetadas.forEach(function (f) {
               f.a.vars.push(k); f.a.risco = f.risco; f.a.estado = f.estado;
             });
@@ -2822,11 +2823,15 @@
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
       var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
+      var mudou = !novo && (antes.nome !== nome || antes.tipo !== vForm.tipo ||
+        antes.prompt !== prompt || (antes.padrao || '') !== padrao ||
+        fonteTxt(antes) !== fonteTxt({ fontes:fontesMarcadas(), resto:document.getElementById('vResto').checked }));
       VARS[k] = {
         nome:nome, desc:novo ? '' : VARS[k].desc,
         tipo:vForm.tipo, prompt:prompt,
         fontes:fontes, resto:document.getElementById('vResto').checked,
         padrao:padrao,
+        alterada:novo ? false : (mudou || VARS[k].alterada),
         v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
         depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
         calc:novo ? undefined : VARS[k].calc
@@ -2885,6 +2890,7 @@
         var afetadas = [];
 
         podem.forEach(function (k) {
+          VARS_EX[k] = antes[k].nome;
           delete VARS[k];
           AGENTES.forEach(function (a) {
             var i = a.vars.indexOf(k);
@@ -2896,7 +2902,6 @@
             }
           });
           JURIDICA.vars = JURIDICA.vars.filter(function (x) { return x !== k; });
-          JURIDICA.texto = JURIDICA.texto.split('{{' + k + '}}').join(antes[k].nome);
           AGENTE_TEC.vars = AGENTE_TEC.vars.filter(function (x) { return x !== k; });
         });
 
@@ -2905,7 +2910,7 @@
         settleToast(podem.length + (podem.length === 1 ? ' variável excluída' : ' variáveis excluídas'), {
           undoLabel:'Desfazer',
           onUndo:function () {
-            Object.keys(antes).forEach(function (k) { VARS[k] = antes[k]; });
+            Object.keys(antes).forEach(function (k) { VARS[k] = antes[k]; delete VARS_EX[k]; });
             afetadas.forEach(function (f) {
               f.a.vars.push(f.k); f.a.risco = f.risco; f.a.estado = f.estado;
             });
@@ -3328,14 +3333,32 @@
 
     var rangeSalvo = null;
 
+    /* Nomes das variáveis que já foram excluídas, para o chip continuar dizendo
+       de quem ele fala mesmo depois de a variável sumir. */
+    var VARS_EX = {};
+
+    /* Três estados: em ordem, funcionando, alterada desde que a instrução foi
+       escrita, e excluída. O verde não pode ser o único estado: hoje quem
+       exclui uma variável não vê nada mudar nos agentes que a usavam. */
     function chipHTML(k, novo) {
-      return '<span class="varchip' + (novo ? ' novo' : '') + '" contenteditable="false" data-v="' + k + '">' +
-             VARS[k].nome + '</span>';
+      var v = VARS[k];
+      if (!v) {
+        return '<span class="varchip quebrada" contenteditable="false" data-v="' + k + '" ' +
+               'data-tip="Esta variável foi excluída. A instrução não tem mais como preencher ' +
+               'este pedaço.">' + (VARS_EX[k] || k) + '</span>';
+      }
+      var cls = novo ? ' novo' : (v.alterada ? ' alterada' : '');
+      var tip = v.alterada
+        ? ' data-tip="Esta variável mudou depois que a instrução foi escrita. Confira se ela ' +
+          'ainda faz o que você espera aqui."'
+        : '';
+      return '<span class=' + JSON.stringify('varchip' + cls) + ' contenteditable="false" data-v="' +
+             k + '"' + tip + '>' + v.nome + '</span>';
     }
 
     function textoParaHTML(t) {
       return (t || '').replace(/\{\{(\w+)\}\}/g, function (_, k) {
-        return VARS[k] ? chipHTML(k) : '{{' + k + '}}';
+        return chipHTML(k);
       }).split('\n').join('<br>');
     }
 
