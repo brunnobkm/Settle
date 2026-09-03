@@ -161,8 +161,10 @@ E uma sexta, que apareceu construindo a análise técnica:
    materializado fora da conversa, que é o requisito da Alice desde 21/08.
 2. **Versionamento de agente** (Alice, 19:29): qual versão rodou em cada licitação,
    e se as licitações em aberto são reprocessadas. Adiado por decisão de 03/09.
-3. **Benchmark de governança de agentes para enterprise** (Alice, 21:52). Fica
-   junto do handoff, não do teste com usuário.
+3. **Benchmark de governança de agentes para enterprise** (Alice, 21:52): quais
+   são as boas práticas que empresas de governança de IA aplicam, para virar
+   argumento de venda. Confirmado em 03/09 que fica junto do handoff, não do
+   teste com usuário.
 4. **Regras de negócio para a documentação do handoff**: validação, execução,
    governança, confidencialidade, relacionamentos, e o efeito de alterar ou
    excluir uma variável nos agentes que a usam. Alice, 21:15: não precisa para o
