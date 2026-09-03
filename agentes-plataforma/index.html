@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:40</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:46</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -326,6 +326,7 @@
     <div class="ap-mbody" id="fxBody"></div>
     <div class="ap-mfoot">
       <span class="ap-money" id="fxCusto"></span>
+      <button class="btn btn-outline" type="button" id="fxValidar" hidden>Validar em 3 licitações</button>
       <button class="btn btn-danger" type="button" id="fxExcluir" hidden>Excluir esta variável</button>
       <button class="btn btn-primary" type="button" id="fxAtivar">Ativar agente</button>
     </div>
@@ -2471,6 +2472,7 @@
       editando = -1;
       modoModal = 'outro';
       document.getElementById('fxExcluir').hidden = true;
+      document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
       pintarVoltar();
@@ -2526,8 +2528,22 @@
     document.getElementById('fxX').addEventListener('click', fecharFx);
     document.getElementById('btnNovoAgente').addEventListener('click', function () { abrirFx(null); });
 
+    /* Testar antes de ativar é ideia do protótipo, não decisão de ninguém: veio
+       do benchmark do Harvey Agent Builder. Fica como intenção declarada até
+       alguém definir o que a validação faz. */
+    document.getElementById('fxValidar').addEventListener('click', function () {
+      settleToast('Ainda não definimos como a validação funciona: quantas licitações, ' +
+        'quais, e o que acontece com o resultado');
+    });
+
     document.getElementById('fxAtivar').addEventListener('click', function () {
       if (modoModal === 'variavel') return salvarVar();
+      if (analiseAberta && !document.getElementById('fxModal').hidden && modoModal === 'outro' && !fx) {
+        pintarAnalises();
+        fecharFx();
+        settleToast('Agente atualizado');
+        return;
+      }
       var texto = (fx.texto || '').trim();
       if (!texto) { settleToast('Escreva as instruções do agente'); return; }
 
@@ -2716,6 +2732,7 @@
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
+      document.getElementById('fxValidar').hidden = true;
       document.getElementById('fxAtivar').hidden = travado;
       document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
@@ -3200,17 +3217,39 @@
        instrução: texto para os de parecer, lista de regras para o Score e o
        Resumo, componentes para a análise técnica. O resultado da última
        execução vem depois da configuração, não antes dela. */
-    function cabecalhoConfig(an) {
+    function campoNome(an) {
       return '<div class="ap-field"><label for="anNome">Nome do agente</label>' +
         '<input class="ap-input" id="anNome" type="text" value="' +
-        an.nome.replace(/"/g, '&quot;') + '" /></div>' +
-        '<div class="ap-field"><label for="anGat">Quando roda</label>' +
+        an.nome.replace(/"/g, '&quot;') + '" /></div>';
+    }
+
+    function campoGatilho(an) {
+      return '<div class="ap-field"><label for="anGat">Quando roda</label>' +
         '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<select class="ap-input" id="anGat">' +
         Object.keys(GATILHOS_FX).map(function (g) {
           return '<option value="' + g + '"' +
                  (GATILHOS_FX[g] === an.gatilho ? ' selected' : '') + '>' + GATILHOS_FX[g] + '</option>';
         }).join('') + '</select></div>';
+    }
+
+    /* Score e Resumo nasceram como lista de regras, antes de a instrução em
+       texto virar a forma de criar agente. A instrução deles é derivada uma vez
+       das regras, com as variáveis já como variáveis, e a partir daí é texto
+       como a de qualquer outro. */
+    function textoDasRegras(an) {
+      return regrasDa(an).map(function (r) {
+        var v = (r.vars || []).map(function (k) { return '{{' + k + '}}'; }).join(' e ');
+        return r.nome + ': ' + (r.regraTexto || r.instr) + (v ? ' Use ' + v + '.' : '');
+      }).join('\n');
+    }
+
+    function instrucaoDe(an) {
+      if (an.texto === undefined) {
+        an.texto = an.formato === 'estruturado' ? textoDasRegras(an)
+          : an.formato === 'composicao' ? AGENTE_TEC.instr : '';
+      }
+      return an.texto;
     }
 
     function ligarCabecalhoConfig(an) {
@@ -3236,27 +3275,28 @@
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxExcluir').hidden = true;
-      document.getElementById('fxAtivar').hidden = an.formato !== 'texto';
+      document.getElementById('fxValidar').hidden = false;
+      document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').disabled = false;
+      document.getElementById('fxAtivar').textContent =
+        an.id === 'juridica' ? 'Ativar análise' : 'Salvar alterações';
 
       if (an.formato === 'texto') return pintarTextoVars(an);
 
       /* Análise técnica: o resultado dela é por componente, com agregação. */
       if (an.formato === 'composicao') {
         document.getElementById('fxCusto').textContent = '15 execuções na última licitação';
-        document.getElementById('fxBody').innerHTML = cabecalhoConfig(an) +
-          '<div class="ap-field"><div class="ap-flabel-row"><span class="ap-flabel">Instruções</span>' +
-          '<button class="ap-mini" type="button" id="anCfg">Abrir a regra</button></div>' +
-          '<p class="ap-fhint">Roda <b>uma vez por componente</b>: a lista não existe antes de alguém ' +
-          'ler o Termo de Referência.</p></div>' +
-          permsHTML(an) +
+        document.getElementById('fxBody').innerHTML = campoNome(an) +
+          campoInstrHTML('Instruções', '', instrucaoDe(an),
+            'Descreva o que o agente deve avaliar em cada componente.') +
+          campoGatilho(an) + permsHTML(an) +
           '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Última execução</h2>' +
           '<span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
           '<div class="ap-box-body"><div id="itens"></div></div></div>' + execHTML(an);
         pintarTecnica();
         ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
-        document.getElementById('anCfg').addEventListener('click', function () {
-          document.getElementById('fxModal').hidden = true; abrir(AGENTE_TEC);
+        ligarCampoInstr(function () {
+          an.texto = htmlParaTexto(document.getElementById('vfCampo'));
         });
         return;
       }
@@ -3270,10 +3310,10 @@
       document.getElementById('fxCusto').textContent = rs.length + ' regras' +
         (pts ? ' · ' + pts + ' pontos fixos' : '') + (cond ? ' + ' + cond + ' condicionais' : '');
 
-      var h = cabecalhoConfig(an) +
-        '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Instruções</h2>' +
-        '<button class="ap-mini" type="button" id="anNova">Adicionar regra</button></div>' +
-        '<div class="ap-box-body" id="crits"></div></div>' + permsHTML(an);
+      var h = campoNome(an) +
+        campoInstrHTML('Instruções', '', instrucaoDe(an),
+          'Descreva o que o agente deve analisar. Digite / para inserir uma variável.') +
+        campoGatilho(an) + permsHTML(an);
 
       if (an.destino === 'score') {
         h += '<div class="ap-demo"><span>Só no protótipo, para ver os quatro momentos:</span>' +
@@ -3285,13 +3325,21 @@
           '</div></div>' +
           '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head" id="boxScore">' +
             '<h2>Última execução</h2><span class="ap-fhint" style="margin:0">PE 90014/2026 · Secretaria de Saúde de MG</span></div>' +
-            '<div class="ap-box-body" id="scoreBody"></div></div>';
+            '<div class="ap-box-body" id="scoreBody"></div>' +
+            '<div class="ap-box-body" id="crits" style="padding-top:0"></div></div>';
+      } else {
+        h += '<div class="ap-box" style="margin-bottom:14px"><div class="ap-box-head"><h2>Última execução</h2>' +
+          '<button class="ap-mini" type="button" id="anNova">Adicionar campo</button></div>' +
+          '<div class="ap-box-body" id="crits"></div></div>';
       }
 
       h += execHTML(an);
 
       document.getElementById('fxBody').innerHTML = h;
       ligarCabecalhoConfig(an); ligarPerms(an); ligarExec(an);
+      ligarCampoInstr(function () {
+        an.texto = htmlParaTexto(document.getElementById('vfCampo'));
+      });
 
       if (an.destino === 'score') {
         document.querySelectorAll('[data-est]').forEach(function (b) {
@@ -3300,7 +3348,8 @@
         pintarScoreBox();
       }
       pintarCrits(an.destino);
-      document.getElementById('anNova').addEventListener('click', function () {
+      var nova = document.getElementById('anNova');
+      if (nova) nova.addEventListener('click', function () {
         document.getElementById('fxModal').hidden = true;
         criarDaqui(an.destino);
       });
@@ -3327,9 +3376,9 @@
     }
 
     function textoParaHTML(t) {
-      return t.replace(/\{\{(\w+)\}\}/g, function (_, k) {
+      return (t || '').replace(/\{\{(\w+)\}\}/g, function (_, k) {
         return VARS[k] ? chipHTML(k) : '{{' + k + '}}';
-      });
+      }).split('\n').join('<br>');
     }
 
     /* Volta do contenteditable para o texto com {{variavel}}, que é o formato
@@ -3338,7 +3387,9 @@
       var t = '';
       [].slice.call(campo.childNodes).forEach(function (n) {
         if (n.nodeType === 3) t += n.nodeValue;
+        else if (n.nodeName === 'BR') t += '\n';
         else if (n.classList && n.classList.contains('varchip')) t += '{{' + n.dataset.v + '}}';
+        else if (n.nodeName === 'DIV') t += '\n' + (n.textContent || '');
         else t += n.textContent || '';
       });
       return t;
@@ -3407,15 +3458,13 @@
 
     function pintarTextoVars(an) {
       document.getElementById('fxAtivar').hidden = false;
-      document.getElementById('fxAtivar').textContent = 'Ativar análise';
 
-      var h = cabecalhoConfig(an) + campoInstrHTML('Instruções',
-          'A instrução é texto, porque a resposta é um parecer e não um número. As partes destacadas são ' +
-          '<b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.',
-          textoDe(an).texto,
+      var h = campoNome(an) +
+        campoInstrHTML('Instruções', '', textoDe(an).texto,
           'Descreva o que analisar. Digite / para inserir uma variável.') +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
         '<div id="vfLista"></div></div>' +
+        campoGatilho(an) +
         (an ? permsHTML(an) + execHTML(an) : '');
 
       document.getElementById('fxBody').innerHTML = h;
