@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:12</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:14</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -480,7 +480,7 @@
     /* Os tipos que o backend aceita. O tipo decide o formato do valor padrão:
        booleano vira select de três opções, número vira campo numérico, e só
        texto é realmente livre. */
-    var TIPOS_VAR = ['texto', 'número', 'sim ou não', 'data', 'lista', 'categoria'];
+    var TIPOS_VAR = ['texto', 'número', 'sim ou não', 'data'];
 
     /* As fontes possíveis, em dois níveis. O nível fino existe porque dentro
        de "Edital e anexos" há documento que vale e documento que já não vale:
@@ -488,6 +488,13 @@
        o que rege (José Victor, 14:24). */
     var FONTES = ['Edital e anexos', 'Termo de referência', 'Minuta do contrato',
                   'Estudo técnico preliminar', 'Manifestações', 'Arquivos de resultado'];
+
+    /* O select oferece os quatro tipos. Se a variável já estava salva com um
+       tipo que saiu da lista, ele entra junto: trocar o tipo por conta própria
+       mudaria o que a variável aceita como resposta. */
+    function tiposCom(atual) {
+      return TIPOS_VAR.indexOf(atual) >= 0 ? TIPOS_VAR : TIPOS_VAR.concat([atual]);
+    }
 
     function fonteTxt(v) {
       var f = (v.fontes || []).join(' > ');
@@ -2300,9 +2307,8 @@
           : '') +
 
         '<div class="ap-field"><label for="vTipo">Tipo da resposta</label>' +
-        '<p class="ap-fhint">Define o que a Settle aceita como resposta. Só número entra em regra de ' +
-        'faixa, só sim ou não entra em regra de condição.</p>' +
-        '<select class="ap-input" id="vTipo"' + dis + '>' + TIPOS_VAR.map(function (t) {
+        '<p class="ap-fhint">Define o que a Settle aceita como resposta.</p>' +
+        '<select class="ap-input" id="vTipo"' + dis + '>' + tiposCom(vForm.tipo).map(function (t) {
           return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + t + '</option>';
         }).join('') + '</select></div>' +
 
