@@ -990,3 +990,22 @@ body.sb-open .tut-fab{left:304px;}
 .ap-check{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:19px;cursor:pointer;}
 .ap-check input{margin:2px 0 0;flex:none;accent-color:var(--accent);}
 .ap-check span{color:var(--foreground);}
+
+/* ==========================================================================
+   26. SELECT DE PROPRIEDADE
+   Um select nativo é mais legível que uma fileira de chips quando as opções
+   são exclusivas: mostra a escolhida sem obrigar a ler as outras.
+   ========================================================================== */
+select.ap-input{appearance:none;background-color:var(--card);cursor:pointer;padding-right:34px;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23737373' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.5 8 10.5l4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;}
+select.ap-input:disabled{cursor:default;opacity:.7;}
+
+/* Lista de fontes: cada linha é uma opção que pode entrar ou não, e a ordem
+   das que entraram é o que a Settle segue. */
+.ord-item.off{background:var(--muted);color:var(--muted-foreground);}
+.ord-item[draggable="true"]{cursor:grab;}
+.ord-item.dragging{opacity:.45;}
+.ord-item.over{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.ord-n.off{background:transparent;border:1px solid var(--border);color:var(--muted-foreground);}
+.ord-grip{flex:none;color:var(--muted-foreground);cursor:grab;}

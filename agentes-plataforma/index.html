@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902a" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902b" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 21:53</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:08</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -243,14 +243,15 @@
       <section class="ap-panel" id="panel-variaveis" role="tabpanel" aria-label="Variáveis" hidden>
         <div class="ap-field" style="max-width:360px">
           <label class="sr-only" for="vBusca">Procurar variável</label>
-          <input class="ap-input" id="vBusca" type="search" placeholder="Procurar por nome ou descrição" />
+          <input class="ap-input" id="vBusca" type="search" placeholder="Procurar variável" />
         </div>
         <div class="datatable">
           <table class="dt">
             <thead>
               <tr>
-                <th scope="col">Variável</th><th scope="col">Tipo</th><th scope="col">Onde procurar</th>
-                <th scope="col">Valor padrão</th>
+                <th scope="col">Nome</th><th scope="col">Tipo da resposta</th>
+                <th scope="col">Instruções</th><th scope="col">Onde procurar</th>
+                <th scope="col">Quando não encontrar</th>
                 <th scope="col" data-col="custo" hidden>Custo</th>
                 <th scope="col">Mexer nela afeta</th><th scope="col"><span class="sr-only">Ações</span></th>
               </tr>
@@ -368,7 +369,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902a" defer></script>
+  <script src="../assets/settle.js?v=20260902b" defer></script>
   <script>
   (function () {
     'use strict';
@@ -403,6 +404,21 @@
          está na minuta do contrato, procure lá primeiro".
        - settle:true são as que a Settle cadastra. O cliente lê, não edita. */
     var VARS = {
+      /* As três primeiras existem para quem abre a tela pela primeira vez: o
+         que elas extraem se entende sem saber nada de licitação, e entre elas
+         cobrem texto, data e número. */
+      cnpj:      { nome:'CNPJ do órgão', tipo:'texto', v:'v1', custo:0.01,
+                   desc:'Número de CNPJ de quem está contratando.',
+                   prompt:'Encontre o número do CNPJ do órgão que está contratando, com 14 dígitos.',
+                   fontes:['Minuta do contrato', 'Edital e anexos'], resto:true, padrao:'' },
+      sessao:    { nome:'Data da sessão pública', tipo:'data', v:'v1', custo:0.01,
+                   desc:'Dia e hora da abertura das propostas.',
+                   prompt:'Encontre a data e a hora da sessão pública de abertura das propostas.',
+                   fontes:['Edital e anexos'], resto:true, padrao:'' },
+      valorest:  { nome:'Valor estimado', tipo:'número', v:'v1', custo:0.02,
+                   desc:'Valor total estimado da contratação.',
+                   prompt:'Encontre o valor total estimado da contratação, somando todos os itens ou lotes.',
+                   fontes:['Edital e anexos', 'Termo de referência'], resto:true, padrao:'' },
       esfera:    { nome:'Esfera', tipo:'categoria', settle:true, v:'v2', custo:0,
                    desc:'Se o órgão é federal, estadual ou municipal.',
                    prompt:'Identifique a esfera administrativa do órgão que publicou o edital.',
@@ -1128,19 +1144,24 @@
 
       if (!chaves.length) {
         document.getElementById('rowsVars').innerHTML =
-          '<tr><td colspan="6"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
+          '<tr><td colspan="7"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
         return;
       }
 
+      /* As colunas são os campos do formulário, na mesma ordem, mais quem
+         depende da variável, que é o que se precisa saber antes de mexer. */
       document.getElementById('rowsVars').innerHTML = chaves.map(function (k) {
         var v = VARS[k], u = usosDaVar(k);
         var afeta = u.length
           ? u.map(function (x) { return '<b>' + x.agente + '</b> · ' + x.regra; }).join('<br>')
           : '<span class="ap-dim">ninguém ainda</span>';
+        var instr = v.prompt || '';
+        var curta = instr.length > 90 ? instr.slice(0, 88) + '…' : instr;
         return '<tr><td style="white-space:normal"><b>' + v.nome + '</b>' +
           (v.settle ? ' <span class="ap-tag">Settle</span>' : '') +
-          (v.desc ? '<div class="ap-dim" style="font-size:12px;margin-top:2px">' + v.desc + '</div>' : '') +
-          '</td><td>' + v.tipo + '</td><td style="white-space:normal">' + fonteTxt(v) + '</td>' +
+          '</td><td>' + v.tipo + '</td>' +
+          '<td style="white-space:normal" title="' + instr.replace(/"/g, '&quot;') + '">' + curta + '</td>' +
+          '<td style="white-space:normal">' + fonteTxt(v) + '</td>' +
           '<td>' + padraoTxt(v) + '</td>' +
           (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
           '<td style="white-space:normal">' + afeta + '</td>' +
@@ -2060,6 +2081,7 @@
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Novo agente';
+      document.getElementById('fxStatus').hidden = false;
       document.getElementById('fxStatus').textContent = fx.ativo ? 'Ativo' : 'Rascunho';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
@@ -2108,9 +2130,23 @@
 
     /* ---------- nova variável ---------- */
 
-    /* Estado do formulário enquanto ele está aberto. As fontes são uma lista
-       ordenada, então precisam de estado próprio: chip não guarda ordem. */
-    var vForm = { fontes:[], resto:true, tipo:'texto' };
+    /* Estado do formulário enquanto ele está aberto. A lista de fontes guarda
+       todas as opções, marcadas ou não, porque a ordem também vale para as que
+       ainda não estão marcadas: a pessoa organiza e depois liga. */
+    var vForm = { lista:[], resto:true, tipo:'texto' };
+
+    function listaDeFontes(v) {
+      var atual = v ? (v.fontes || []) : ['Edital e anexos'];
+      var l = atual.map(function (f) { return { f:f, on:true }; });
+      FONTES.forEach(function (f) {
+        if (atual.indexOf(f) < 0) l.push({ f:f, on:false });
+      });
+      return l;
+    }
+
+    function fontesMarcadas() {
+      return vForm.lista.filter(function (i) { return i.on; }).map(function (i) { return i.f; });
+    }
 
     /* O valor padrão segue o tipo. É a regra que o José Victor colocou em
        02/09: uma variável de data não pode ter "abacaxi" como padrão, senão
@@ -2118,13 +2154,13 @@
     function padraoCampo(tipo, valor) {
       valor = valor === undefined || valor === null ? '' : String(valor);
       if (tipo === 'sim ou não') {
-        return '<div class="ap-chips" data-g="padrao">' +
+        return '<select class="ap-input" id="vPadrao">' +
           ['sim', 'não', 'nenhum'].map(function (o) {
-            return '<button class="ap-chip" type="button" data-val="' + o + '" aria-pressed="' +
-                   (o === valor) + '">' + o + '</button>';
-          }).join('') + '</div>' +
-          '<p class="ap-fhint" style="margin:6px 0 0">"nenhum" deixa a variável sem valor, e a regra que ' +
-          'depende dela não pontua.</p>';
+            return '<option value="' + (o === 'nenhum' ? '' : o) + '"' +
+                   (o === valor || (o === 'nenhum' && !valor) ? ' selected' : '') + '>' + o + '</option>';
+          }).join('') + '</select>' +
+          '<p class="ap-fhint" style="margin:6px 0 0">"nenhum" deixa a variável sem valor, e a regra ' +
+          'que depende dela não pontua.</p>';
       }
       if (tipo === 'número') {
         return '<input class="ap-input" id="vPadrao" type="number" step="any" value="' + valor +
@@ -2136,58 +2172,75 @@
                '<p class="ap-fhint" style="margin:6px 0 0">Em branco, a variável fica sem data.</p>';
       }
       return '<input class="ap-input" id="vPadrao" type="text" value="' + valor.replace(/"/g, '&quot;') +
-             '" placeholder="Ex.: não avaliado" /><p class="ap-fhint" style="margin:6px 0 0">' +
+             '" placeholder="Ex.: não encontrado" /><p class="ap-fhint" style="margin:6px 0 0">' +
              'Em branco, a variável fica sem valor.</p>';
     }
 
-    /* A lista ordenada de fontes: o que vem primeiro é procurado primeiro. */
+    /* A lista de fontes: todas as opções aparecem, marcadas ou não. A ordem das
+       marcadas é a ordem em que a Settle procura, e muda pelas setas ou
+       arrastando. */
     function pintarOrdem(travado) {
       var box = document.getElementById('vOrdem');
       if (!box) return;
-      box.innerHTML = vForm.fontes.length
-        ? '<div class="ord">' + vForm.fontes.map(function (f, i) {
-            return '<div class="ord-item"><span class="ord-n">' + (i + 1) + '</span>' +
-              '<span class="ord-nm">' + f + '</span>' +
-              (travado ? '' : '<span class="ord-btns">' +
-                '<button class="ap-mini" type="button" data-sobe="' + i + '" aria-label="Subir ' + f + '"' +
-                  (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
-                '<button class="ap-mini" type="button" data-desce="' + i + '" aria-label="Descer ' + f + '"' +
-                  (i === vForm.fontes.length - 1 ? ' disabled' : '') + '>&darr;</button>' +
-                '<button class="ap-mini" type="button" data-tira="' + i + '" aria-label="Remover ' + f + '">Remover</button>' +
-              '</span>') + '</div>';
-          }).join('') + '</div>'
-        : '<p class="ord-empty">Nenhuma fonte escolhida. Adicione pelo menos uma.</p>';
+      var pos = 0;
+      box.innerHTML = '<div class="ord">' + vForm.lista.map(function (it, i) {
+        if (it.on) pos++;
+        return '<div class="ord-item' + (it.on ? '' : ' off') + '" data-i="' + i + '"' +
+          (travado ? '' : ' draggable="true"') + '>' +
+          (travado ? '' : '<svg class="ord-grip" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="6" cy="4" r="1.1"/><circle cx="10" cy="4" r="1.1"/><circle cx="6" cy="8" r="1.1"/><circle cx="10" cy="8" r="1.1"/><circle cx="6" cy="12" r="1.1"/><circle cx="10" cy="12" r="1.1"/></svg>') +
+          '<span class="ord-n' + (it.on ? '' : ' off') + '">' + (it.on ? pos : '') + '</span>' +
+          '<label class="ap-check ord-nm"><input type="checkbox" data-on="' + i + '"' +
+            (it.on ? ' checked' : '') + (travado ? ' disabled' : '') + ' /> <span>' + it.f + '</span></label>' +
+          (travado ? '' : '<span class="ord-btns">' +
+            '<button class="ap-mini" type="button" data-sobe="' + i + '" aria-label="Subir ' + it.f + '"' +
+              (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
+            '<button class="ap-mini" type="button" data-desce="' + i + '" aria-label="Descer ' + it.f + '"' +
+              (i === vForm.lista.length - 1 ? ' disabled' : '') + '>&darr;</button>' +
+          '</span>') + '</div>';
+      }).join('') + '</div>';
 
-      box.querySelectorAll('[data-sobe]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var i = +b.dataset.sobe, t = vForm.fontes[i - 1];
-          vForm.fontes[i - 1] = vForm.fontes[i]; vForm.fontes[i] = t; pintarOrdem(travado);
+      box.querySelectorAll('[data-on]').forEach(function (c) {
+        c.addEventListener('change', function () {
+          vForm.lista[+c.dataset.on].on = c.checked;
+          pintarOrdem(travado);
         });
+      });
+      box.querySelectorAll('[data-sobe]').forEach(function (b) {
+        b.addEventListener('click', function () { mover(+b.dataset.sobe, -1, travado); });
       });
       box.querySelectorAll('[data-desce]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var i = +b.dataset.desce, t = vForm.fontes[i + 1];
-          vForm.fontes[i + 1] = vForm.fontes[i]; vForm.fontes[i] = t; pintarOrdem(travado);
-        });
+        b.addEventListener('click', function () { mover(+b.dataset.desce, 1, travado); });
       });
-      box.querySelectorAll('[data-tira]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          vForm.fontes.splice(+b.dataset.tira, 1); pintarOrdem(travado); pintarAddFonte(travado);
-        });
-      });
+      if (!travado) ligarArrasto(box, travado);
     }
 
-    function pintarAddFonte(travado) {
-      var box = document.getElementById('vAddFonte');
-      if (!box) return;
-      var livres = FONTES.filter(function (f) { return vForm.fontes.indexOf(f) < 0; });
-      box.innerHTML = travado || !livres.length ? '' :
-        '<div class="ap-chips">' + livres.map(function (f) {
-          return '<button class="ap-chip" type="button" data-add="' + f + '">+ ' + f + '</button>';
-        }).join('') + '</div>';
-      box.querySelectorAll('[data-add]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          vForm.fontes.push(b.dataset.add); pintarOrdem(travado); pintarAddFonte(travado);
+    function mover(i, d, travado) {
+      var j = i + d;
+      if (j < 0 || j >= vForm.lista.length) return;
+      var t = vForm.lista[j];
+      vForm.lista[j] = vForm.lista[i];
+      vForm.lista[i] = t;
+      pintarOrdem(travado);
+    }
+
+    function ligarArrasto(box, travado) {
+      var origem = null;
+      box.querySelectorAll('.ord-item').forEach(function (el) {
+        el.addEventListener('dragstart', function () {
+          origem = +el.dataset.i; el.classList.add('dragging');
+        });
+        el.addEventListener('dragend', function () { el.classList.remove('dragging'); });
+        el.addEventListener('dragover', function (e) { e.preventDefault(); el.classList.add('over'); });
+        el.addEventListener('dragleave', function () { el.classList.remove('over'); });
+        el.addEventListener('drop', function (e) {
+          e.preventDefault();
+          el.classList.remove('over');
+          var destino = +el.dataset.i;
+          if (origem === null || origem === destino) return;
+          var it = vForm.lista.splice(origem, 1)[0];
+          vForm.lista.splice(destino, 0, it);
+          origem = null;
+          pintarOrdem(travado);
         });
       });
     }
@@ -2199,7 +2252,8 @@
       var travado = !!(v && v.settle);
 
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Nova variável';
-      document.getElementById('fxStatus').textContent = travado ? 'Da Settle' : (v ? 'Em uso' : 'Rascunho');
+      document.getElementById('fxStatus').textContent = travado ? 'Da Settle' : 'Em uso';
+      document.getElementById('fxStatus').hidden = !v;
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
@@ -2208,7 +2262,7 @@
       document.getElementById('fxAtivar').disabled = false;
       document.getElementById('fxCusto').textContent = '';
 
-      vForm.fontes = v ? (v.fontes || []).slice() : ['Edital e anexos'];
+      vForm.lista = listaDeFontes(v);
       vForm.resto = v ? !!v.resto : true;
       vForm.tipo = v ? v.tipo : 'texto';
 
@@ -2235,40 +2289,38 @@
       document.getElementById('fxBody').innerHTML = aviso +
 
         '<div class="ap-field"><label for="vNome">Nome</label>' +
-        '<p class="ap-fhint">Curto. É por este nome que a variável aparece dentro das regras.</p>' +
+        '<p class="ap-fhint">Escolha um nome curto. É este nome que irá representar a variável.</p>' +
         '<input class="ap-input" id="vNome" type="text"' + dis + ' value="' +
-        (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: prazo de entrega" /></div>' +
+        (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: CNPJ do órgão" /></div>' +
 
         (travado && v.desc
           ? '<div class="ap-field"><span class="ap-flabel">Descrição</span>' +
             '<p class="ap-fhint" style="margin:0">' + v.desc + '</p></div>'
           : '') +
 
-        '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
-        '<p class="ap-fhint">Define o que a Settle aceita como resposta e como o valor padrão é preenchido. ' +
-        'Só número entra em regra de faixa, só sim ou não entra em regra de condição.</p>' +
-        '<div class="ap-chips" data-g="tipo" id="vTipo">' + TIPOS_VAR.map(function (t) {
-          return '<button class="ap-chip" type="button"' + dis + ' data-val="' + t + '" aria-pressed="' +
-                 (t === vForm.tipo) + '">' + t + '</button>';
-        }).join('') + '</div></div>' +
+        '<div class="ap-field"><label for="vTipo">Tipo da resposta</label>' +
+        '<p class="ap-fhint">Define o que a Settle aceita como resposta. Só número entra em regra de ' +
+        'faixa, só sim ou não entra em regra de condição.</p>' +
+        '<select class="ap-input" id="vTipo"' + dis + '>' + TIPOS_VAR.map(function (t) {
+          return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + t + '</option>';
+        }).join('') + '</select></div>' +
 
-        '<div class="ap-field"><label for="vPrompt">O que a Settle deve procurar</label>' +
-        '<p class="ap-fhint">A instrução de extração. Escreva como explicaria para alguém que vai ler o ' +
-        'documento por você.</p>' +
-        '<textarea class="ap-input" id="vPrompt" rows="3"' + dis + ' placeholder="Ex.: encontre o prazo, em dias, ' +
-        'para a entrega do objeto contado a partir da assinatura do contrato.">' +
+        '<div class="ap-field"><label for="vPrompt">Instruções</label>' +
+        '<p class="ap-fhint">Escreva como explicaria para alguém que vai ler o documento por você.</p>' +
+        '<textarea class="ap-input" id="vPrompt" rows="3"' + dis + ' placeholder="Ex.: encontre o número do ' +
+        'CNPJ do órgão que está contratando, com 14 dígitos.">' +
         (v ? (v.prompt || '') : '') + '</textarea></div>' +
 
-        '<div class="ap-field"><span class="ap-flabel">Onde procurar, nesta ordem</span>' +
-        '<p class="ap-fhint">A Settle procura na primeira fonte e só passa para a seguinte se não achar.</p>' +
-        '<div id="vOrdem"></div><div id="vAddFonte"></div>' +
+        '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
+        '<p class="ap-fhint">Marque onde a Settle deve procurar e organize a ordem: ela procura na ' +
+        'primeira e só passa para a seguinte se não achar. Arraste ou use as setas.</p>' +
+        '<div id="vOrdem"></div>' +
         '<label class="ap-check" style="margin-top:10px"><input type="checkbox" id="vResto"' + dis +
         (vForm.resto ? ' checked' : '') + ' /> <span>Se não achar em nenhuma delas, procurar no resto dos ' +
         'arquivos da licitação</span></label></div>' +
 
-        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar no documento</span>' +
-        '<p class="ap-fhint">O valor que a variável assume quando a informação não está em lugar ' +
-        'nenhum. O formato segue o tipo escolhido acima.</p>' +
+        '<div class="ap-field"><span class="ap-flabel">O que fazer quando não encontrar a variável</span>' +
+        '<p class="ap-fhint">Escolha qual valor deve ser informado se não encontrarmos a variável.</p>' +
         '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '') + '</div></div>' +
 
         (v && !travado
@@ -2276,21 +2328,13 @@
           : '');
 
       pintarOrdem(travado);
-      pintarAddFonte(travado);
 
       /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
          impede um padrão incompatível de ser salvo. */
-      var gt = document.getElementById('vTipo');
-      gt.querySelectorAll('.ap-chip').forEach(function (b) {
-        b.addEventListener('click', function () {
-          if (travado) return;
-          gt.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-          vForm.tipo = b.dataset.val;
-          document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '');
-          ligarChipsPadrao();
-        });
+      document.getElementById('vTipo').addEventListener('change', function (e) {
+        vForm.tipo = e.target.value;
+        document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '');
       });
-      ligarChipsPadrao();
 
       var ex = document.getElementById('vExcluir');
       if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
@@ -2299,40 +2343,20 @@
       modoModal = 'variavel';
     }
 
-    function ligarChipsPadrao() {
-      var g = document.querySelector('#vPadraoBox .ap-chips[data-g="padrao"]');
-      if (!g) return;
-      g.querySelectorAll('.ap-chip').forEach(function (b) {
-        b.addEventListener('click', function () {
-          g.querySelectorAll('.ap-chip').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-        });
-      });
-    }
-
     var varEditando = null, modoModal = 'outro';
-
-    function valorDe(grupo) {
-      var b = document.querySelector('#fxBody [data-g="' + grupo + '"] .ap-chip[aria-pressed="true"]');
-      return b ? b.dataset.val : '';
-    }
 
     function salvarVar() {
       var nome = document.getElementById('vNome').value.trim();
       if (!nome) { settleToast('Dê um nome à variável'); return; }
       var prompt = document.getElementById('vPrompt').value.trim();
-      if (!prompt) { settleToast('Escreva o que a Settle deve procurar'); return; }
-      if (!vForm.fontes.length && !document.getElementById('vResto').checked) {
-        settleToast('Escolha pelo menos um lugar para procurar'); return;
+      if (!prompt) { settleToast('Escreva as instruções da extração'); return; }
+      var fontes = fontesMarcadas();
+      if (!fontes.length && !document.getElementById('vResto').checked) {
+        settleToast('Marque pelo menos um lugar para procurar'); return;
       }
 
-      var padrao;
-      if (vForm.tipo === 'sim ou não') {
-        padrao = valorDe('padrao');
-        if (padrao === 'nenhum') padrao = '';
-      } else {
-        var campo = document.getElementById('vPadrao');
-        padrao = campo ? campo.value.trim() : '';
-      }
+      var campo = document.getElementById('vPadrao');
+      var padrao = campo ? campo.value.trim() : '';
 
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
@@ -2340,7 +2364,7 @@
       VARS[k] = {
         nome:nome, desc:novo ? '' : VARS[k].desc,
         tipo:vForm.tipo, prompt:prompt,
-        fontes:vForm.fontes.slice(), resto:document.getElementById('vResto').checked,
+        fontes:fontes, resto:document.getElementById('vResto').checked,
         padrao:padrao,
         v:novo ? 'v1' : VARS[k].v, custo:novo ? 0.02 : VARS[k].custo,
         depende:novo ? undefined : VARS[k].depende, qualifica:novo ? undefined : VARS[k].qualifica,
@@ -2658,6 +2682,7 @@
     function abrirAnalise(an) {
       document.getElementById('fxTitle').textContent = an.nome;
       modoModal = 'outro';
+      document.getElementById('fxStatus').hidden = false;
       document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
@@ -2878,15 +2903,15 @@
         '<div class="h">Nova variável</div>' +
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">Nome</label>' +
-          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: prazo de entrega" />' +
+          '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: CNPJ do órgão" />' +
           '<p class="ap-fhint" style="margin:10px 0 4px">Tipo da resposta</p><div class="ap-chips" data-g="tipo">' +
             TIPOS_VAR.map(function (t, i) {
               return '<button class="ap-chip" type="button" data-val="' + t + '" aria-pressed="' +
                      (i === 0) + '">' + t + '</button>';
             }).join('') +
           '</div>' +
-          '<label class="ap-fhint" for="nvPrompt" style="display:block;margin:10px 0 4px">O que a Settle deve procurar</label>' +
-          '<textarea class="ap-input" id="nvPrompt" rows="2" placeholder="Ex.: encontre o prazo, em dias, para a entrega do objeto."></textarea>' +
+          '<label class="ap-fhint" for="nvPrompt" style="display:block;margin:10px 0 4px">Instruções</label>' +
+          '<textarea class="ap-input" id="nvPrompt" rows="2" placeholder="Ex.: encontre o número do CNPJ do órgão que está contratando."></textarea>' +
           '<p class="ap-fhint" style="margin:10px 0 4px">Procurar primeiro em</p><div class="ap-chips" data-g="fonte">' +
             FONTES.slice(0, 4).map(function (f, i) {
               return '<button class="ap-chip" type="button" data-val="' + f + '" aria-pressed="' +
@@ -2908,7 +2933,7 @@
         var nome = document.getElementById('nvNome').value.trim();
         if (!nome) { settleToast('Dê um nome à variável'); return; }
         var prompt = document.getElementById('nvPrompt').value.trim();
-        if (!prompt) { settleToast('Escreva o que a Settle deve procurar'); return; }
+        if (!prompt) { settleToast('Escreva as instruções da extração'); return; }
         var val = function (g) {
           var b = menu.querySelector('[data-g="' + g + '"] .ap-chip[aria-pressed="true"]');
           return b ? b.dataset.val : '';
