@@ -215,7 +215,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:43</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:45</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -2581,7 +2581,7 @@
         })(),
         gatilho:GATILHOS_FX[fx.gatilho],
         texto:texto, vars:varsNoTexto(),
-        aprovacao:fx.aprovacao || 'aprovar', execs:[], ativo:true
+        aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
       };
       ANALISES.push(an);
       pintarAnalises(); pintarVars(); pintarCrits();
@@ -3352,22 +3352,23 @@
        existir sem alguém ter dito que quer aprovar. Fica um controle só: o
        agente age sozinho, ou pede antes. */
     var APROVACAO = {
-      aprovar:'Pedir minha aprovação antes de agir na plataforma',
-      auto:'Executar sozinho, sem me perguntar'
+      manual:{ t:'Aprovar manualmente',
+        d:'O agente pausa para você aprovar cada ação na plataforma.' },
+      auto:{ t:'Aprovar automaticamente',
+        d:'O agente age sozinho e só pausa quando a ação parecer arriscada.' },
+      nunca:{ t:'Ignorar todas as aprovações',
+        d:'O agente nunca pausa, mesmo em ação arriscada.' }
     };
 
     function campoAprovacao(alvo) {
-      var atual = alvo.aprovacao || 'aprovar';
-      return '<div class="ap-field"><label for="anAprov">Ações na plataforma</label>' +
+      var atual = alvo.aprovacao || 'manual';
+      return '<div class="ap-field"><label for="anAprov">Permissões</label>' +
         '<select class="ap-input" id="anAprov">' +
         Object.keys(APROVACAO).map(function (k) {
           return '<option value="' + k + '"' + (k === atual ? ' selected' : '') + '>' +
-                 APROVACAO[k] + '</option>';
+                 APROVACAO[k].t + '</option>';
         }).join('') + '</select>' +
-        '<p class="ap-fhint" style="margin:6px 0 0">' + (atual === 'auto'
-          ? 'O agente move card, muda status e marca responsável sem avisar. Se ele errar, ' +
-            'ninguém vê antes.'
-          : 'Cada ação cai na aba Aprovações e só acontece depois que você aprova.') + '</p></div>';
+        '<p class="ap-fhint" style="margin:6px 0 0">' + APROVACAO[atual].d + '</p></div>';
     }
 
     function ligarAprovacao(alvo, aoMudar) {
@@ -3475,8 +3476,8 @@
           '<div>' +
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
             '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) + '</p></div>' +
-            '<div class="ag-sec"><h3>Ações na plataforma</h3><p>' +
-              APROVACAO[an.aprovacao || 'aprovar'] + '</p></div>' +
+            '<div class="ag-sec"><h3>Permissões</h3><p>' +
+              APROVACAO[an.aprovacao || 'manual'].t + '</p></div>' +
             '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
               (vs.length ? '<div class="ag-vars">' + vs.map(function (k) { return chipHTML(k); }).join('') + '</div>'
                          : '<p class="ap-dim" style="font-size:13px">Nenhuma.</p>') +
