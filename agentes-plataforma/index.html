@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260903b" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903c" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:08</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:15</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -381,7 +381,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260903b" defer></script>
+  <script src="../assets/settle.js?v=20260903c" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2783,7 +2783,7 @@
 
       document.getElementById('fxBody').innerHTML = aviso +
 
-        '<div class="ap-field"><label for="vNome">Nome</label>' +
+        '<div class="ap-field"><label for="vNome">Nome da variável</label>' +
         '<input class="ap-input" id="vNome" type="text"' + dis + ' value="' +
         (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: CNPJ do órgão" /></div>' +
 
@@ -3416,12 +3416,13 @@
       });
     }
 
-    document.addEventListener('click', function (e) {
+    /* "Ver mudanças" abre a variável e dá a mudança por vista: quem voltar
+       encontra o chip normal de novo. */
+    document.addEventListener('tip-acao', function (e) {
       var b = e.target.closest ? e.target.closest('[data-verva]') : null;
       if (!b) return;
-      e.preventDefault();
-      e.stopPropagation();
       var k = b.dataset.verva, an = analiseAberta;
+      if (VARS[k]) VARS[k].alterada = false;
       if (an) abrirComVolta(function () { abrirAnalise(an); }, function () { abrirVar(k); });
       else abrirVar(k);
     });
@@ -3476,20 +3477,14 @@
                'este pedaço.">' + (VARS_EX[k] || k) + '</span>';
       }
       var cls = novo ? ' novo' : (v.alterada ? ' alterada' : '');
+      /* Avisar que mudou sem dar como conferir é meio caminho, mas o atalho fica
+         no tooltip: o chip é a variável, e não pode virar dois elementos. */
       var tip = v.alterada
-        ? ' data-tip="Esta variável mudou depois que a instrução foi escrita. Abra para ver o que ' +
-          'mudou e confira se ela ainda faz o que você espera aqui."'
-        : '';
-      /* Avisar que mudou sem dar como conferir é meio caminho: o chip alterado
-         leva para a variável, e o cabeçalho traz de volta. */
-      var ir = v.alterada
-        ? '<button class="ir" type="button" data-verva="' + k + '" aria-label="Abrir a variável ' +
-          v.nome.replace(/"/g, '&quot;') + '"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
-          'stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" ' +
-          'stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+        ? ' data-tip="Esta variável mudou depois que a instrução foi escrita." ' +
+          'data-tip-acao="Ver mudanças" data-verva="' + k + '"'
         : '';
       return '<span class=' + JSON.stringify('varchip' + cls) + ' contenteditable="false" data-v="' +
-             k + '"' + tip + '>' + v.nome + ir + '</span>';
+             k + '"' + tip + '>' + v.nome + '</span>';
     }
 
     function textoParaHTML(t) {
