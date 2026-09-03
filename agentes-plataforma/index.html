@@ -242,7 +242,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 17:10</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 17:36</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -340,6 +340,8 @@
             pelo período de 24 meses.</p>
           <p class="valor">Valor global: R$ 2.480.000,00</p>
 
+          <div id="wgScore" style="margin-bottom:14px"></div>
+
           <div class="grid-box">
             <div class="grid-left">
               <div class="pair">
@@ -425,6 +427,7 @@
         <div class="fp-tabs" role="tablist" aria-label="Seções da licitação" id="wkTabs">
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="itens">Itens <span class="fp-c">3</span></button>
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="tecnica">Análise técnica</button>
+          <button class="fp-tab" type="button" role="tab" aria-selected="false" data-wk="habil">Habilitação <span class="fp-c">1</span></button>
           <button class="fp-tab active" type="button" role="tab" aria-selected="true" data-wk="manif">Manifestações <span class="fp-c">4</span></button>
         </div>
 
@@ -3331,6 +3334,23 @@
           { quando:'hoje, 14:22', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Avaliou 15 componentes em 3 itens · pediu para mover para Em análise', st:'aguardando' },
           { quando:'ontem, 17:40', lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'Avaliou 9 componentes · pediu acesso ao catálogo do fabricante', st:'aguardando' }
         ] },
+      /* Segundo caso de uso do teste com usuário (Alice, 17:09 de 03/09): a
+         pessoa sobe os atestados que a empresa tem, e o agente compara com o
+         que o edital exige. */
+      { id:'habil', nome:'Tenho todos os documentos de habilitação?', formato:'texto',
+        desc:'Compara a lista de documentos e atestados da B Design com as exigências do edital.',
+        gatilho:'Assim que entra no match', aprovacao:'manual',
+        texto:'Compare os documentos e atestados cadastrados da B Design com as exigências de ' +
+              'habilitação do edital e diga o que falta. Considere {{docshab}} e {{atestado}}. ' +
+              'Some a carga horária dos atestados quando o edital admitir soma.',
+        vars:['docshab', 'atestado'],
+        execs:[
+          { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Estado de Saúde de MG',
+            o:'3 de 5 exigências atendidas · 1 não atende · 1 não avaliada', st:'ok' },
+          { quando:'ontem, 11:02', lic:'PE 00471/2026 · Prefeitura de Contagem/MG',
+            o:'5 de 5 exigências atendidas', st:'ok' }
+        ] },
+
       { id:'juridica', nome:'Análise jurídica', formato:'texto', ativo:false,
         desc:'Texto livre com variáveis dentro.',
         gatilho:'Ao enviar para análise',
@@ -4098,6 +4118,78 @@
 
     var wkAba = 'manif';
 
+    /* =====================================================================
+       WIDGET DE AGENTE
+       O resultado alocado no contexto, não numa tela por análise: a decisão da
+       Alice em 03/09. O widget diz de qual agente veio, mostra o resultado e
+       leva de volta para a conversa e para a configuração.
+       ===================================================================== */
+
+    function wgHTML(an, corpo, por) {
+      return '<div class="wg"><div class="wg-head">' +
+        '<span class="wg-marca">' +
+          '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5.5" width="11" height="8" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.3" r="1"/><path d="M6 8.6v1.4M10 8.6v1.4" stroke-linecap="round"/></svg>' +
+          'Agente</span>' +
+        '<span class="wg-nome">' + an.nome + '</span>' +
+        '</div>' +
+        '<div class="wg-corpo">' + corpo + '</div>' +
+        (por ? '<div class="wg-por">' + por + '</div>' : '') +
+        '<div class="wg-foot">' +
+          '<button class="ap-mini" type="button" data-wgfalar="' + an.id + '">Falar com o agente</button>' +
+          '<button class="ap-mini" type="button" data-wgcfg="' + an.id + '">Abrir a configuração</button>' +
+        '</div></div>';
+    }
+
+    function ligarWidget(el) {
+      el.querySelectorAll('[data-wgcfg]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgcfg; })[0];
+          if (an) abrirAnalise(an);
+        });
+      });
+      el.querySelectorAll('[data-wgfalar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgfalar; })[0];
+          if (!an) return;
+          cpAbrirPainel();
+          cpAgente = an.id;
+          document.getElementById('cpTitulo').textContent = an.nome;
+          document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+          document.getElementById('cpConfig').hidden = false;
+          document.getElementById('cpForm').hidden = false;
+          document.getElementById('cpBody').innerHTML =
+            '<p class="cp-agente">PE 90014/2026 · Secretaria de Estado de Saúde de MG</p>';
+          cpBolha('bot', 'Este é o resultado que produzi nesta licitação. Pode me dizer o que ficou ' +
+            'errado, ou pedir para eu explicar como cheguei nele.');
+        });
+      });
+    }
+
+    /* Caso 1 do teste: o Score aparece no próprio card da licitação. */
+    function pintarWgScore() {
+      var el = document.getElementById('wgScore');
+      if (!el) return;
+      var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
+      if (!an) { el.innerHTML = ''; return; }
+      el.innerHTML = wgHTML(an,
+        '<div class="wg-nota"><b>78</b><span>de 100</span></div>' +
+        '<div class="ap-bar" style="margin-top:10px"><i style="width:78%"></i></div>',
+        'Calculado em 26/08 às 09:12, com 8 das 9 regras. 10 pontos não se aplicam a esta ' +
+        'licitação, então saíram do total.');
+      ligarWidget(el);
+    }
+
+    /* Caso 2 do teste: habilitação por atestados, na aba que o agente escolheu. */
+    var HABIL = [
+      { st:'ok', doc:'Atestado de capacidade técnica em design de produto digital',
+        nosso:'3 atestados somam 2.100 h, acima do mínimo de 1.500 h' },
+      { st:'ok', doc:'Certidão negativa de débitos federais', nosso:'válida até 14/10/2026' },
+      { st:'ok', doc:'Balanço patrimonial do último exercício', nosso:'2025, com índice de liquidez 1,8' },
+      { st:'no', doc:'Atestado com equipe alocada presencialmente', nosso:'nossos atestados são de trabalho remoto' },
+      { st:'na', doc:'Registro em conselho profissional',
+        nosso:'o edital não diz qual conselho, e design não tem registro obrigatório' }
+    ];
+
     function pintarWorkspace() {
       var box = document.getElementById('wkPainel');
       if (!box) return;
@@ -4114,6 +4206,26 @@
                      '<td class="num">' + l[2] + '</td><td class="num">' + l[3] + '</td>' +
                      '<td class="num">' + l[4] + '</td></tr>';
             }).join('') + '</tbody></table></div>';
+        return;
+      }
+
+      if (wkAba === 'habil') {
+        var anH = ANALISES.filter(function (x) { return x.id === 'habil'; })[0];
+        var marca = { ok:'ap-ok', no:'ap-warn', na:'ap-dim' };
+        var icone = {
+          ok:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+          no:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke-linecap="round"/></svg>',
+          na:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h8" stroke-linecap="round"/></svg>'
+        };
+        box.innerHTML = '<div class="card">' + wgHTML(anH,
+          '<ul class="wg-lista">' + HABIL.map(function (x) {
+            return '<li><span class="st ' + marca[x.st] + '">' + icone[x.st] + '</span>' +
+              '<span><b>' + x.doc + '</b><br>' +
+              '<span class="ap-dim">' + x.nosso + '</span></span></li>';
+          }).join('') + '</ul>',
+          '3 de 5 exigências atendidas. 1 não atende e 1 não foi avaliada, porque o edital não ' +
+          'diz qual conselho profissional.') + '</div>';
+        ligarWidget(box);
         return;
       }
 
@@ -4180,7 +4292,7 @@
         el.classList.toggle('active', on);
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
-      if (area === 'workspace') pintarWorkspace();
+      if (area === 'workspace') { pintarWgScore(); pintarWorkspace(); }
     }
 
     document.getElementById('viaCons').addEventListener('click', function (e) {

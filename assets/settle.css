@@ -1235,3 +1235,30 @@ table.dt td.c-sel .ap-check{gap:0;}
 /* Os blocos do workspace respiram entre si. */
 #areaWorkspace>.card,#areaWorkspace>.fp-tabs{margin-bottom:16px;}
 #areaWorkspace #wkPainel .card{margin-bottom:0;}
+
+/* ==========================================================================
+   33. WIDGET DE AGENTE
+   O resultado de um agente alocado no contexto: no card da licitação, numa aba,
+   onde a pessoa configurou. O contorno e a marca dizem que aquilo foi produzido
+   por um agente, e não é campo fixo da tela.
+   ========================================================================== */
+.wg{border:1px solid color-mix(in srgb, var(--accent) 30%, var(--card));
+  border-radius:var(--radius-box);background:color-mix(in srgb, var(--accent) 4%, var(--card));
+  padding:14px 16px;}
+.wg-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.wg-marca{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  color:var(--accent-600);background:var(--card);border:1px solid color-mix(in srgb, var(--accent) 30%, var(--card));
+  border-radius:999px;padding:2px 8px;}
+.wg-nome{flex:1;min-width:0;font-size:14px;font-weight:600;}
+.wg-acts{display:flex;gap:6px;flex:none;}
+.wg-corpo{font-size:14px;line-height:21px;}
+.wg-nota{display:flex;align-items:baseline;gap:8px;}
+.wg-nota b{font-size:30px;font-weight:700;line-height:1;}
+.wg-nota span{color:var(--muted-foreground);}
+.wg-por{font-size:12px;line-height:18px;color:var(--muted-foreground);margin-top:8px;}
+.wg-lista{margin:0;padding:0;list-style:none;}
+.wg-lista li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);
+  font-size:13px;line-height:19px;}
+.wg-lista li:last-child{border-bottom:0;}
+.wg-lista .st{flex:none;margin-top:1px;}
+.wg-foot{display:flex;gap:8px;margin-top:12px;}
