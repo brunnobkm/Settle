@@ -1058,3 +1058,9 @@ table.dt th.col{position:relative;padding:0;}
 .fnt-result{background:#e6f4ea;color:#186434;}
 .fnt-portal{background:#e9edf2;color:#334155;}
 .fnt-resto{background:var(--muted);color:var(--muted-foreground);}
+
+/* Título de campo com ação ao lado. */
+.ap-flabel-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+
+/* Pendência de protótipo: valor que ainda depende de alguém de fora. */
+.ap-pend{display:block;margin-top:4px;font-size:12px;line-height:17px;color:var(--warning);}
