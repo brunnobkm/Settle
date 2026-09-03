@@ -242,7 +242,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 17:02</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 17:10</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -329,15 +329,16 @@
 
         <div class="card">
           <div class="segments">
-            <span class="seg">Frota e locação</span>
-            <span class="seg">Gestão de frota</span>
+            <span class="seg">Design de produto</span>
+            <span class="seg">Pesquisa com usuários</span>
           </div>
           <p class="ap-obj"><b>Órgão:</b> Secretaria de Estado de Saúde de Minas Gerais
             <span class="tag-light">ME · EPP</span></p>
           <p class="ap-obj"><b>Objeto:</b> Contratação de empresa especializada na prestação de serviços
-            de locação de veículos automotores, sem motorista, para atender às unidades administrativas
-            da Secretaria. Inclui manutenção preventiva e corretiva por 24 meses.</p>
-          <p class="valor">Valor global: R$ 8.240.000,00</p>
+            de design de produto digital, compreendendo pesquisa com usuários, arquitetura de informação,
+            design de interface e manutenção de design system, para os canais digitais da Secretaria,
+            pelo período de 24 meses.</p>
+          <p class="valor">Valor global: R$ 2.480.000,00</p>
 
           <div class="grid-box">
             <div class="grid-left">
@@ -602,24 +603,24 @@
                    desc:'Se o edital autoriza subcontratar parte do objeto.',
                    prompt:'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.',
                    fontes:['Edital e anexos', 'Minuta do contrato'], resto:true, padrao:'nenhum' },
-      qtdveic:   { nome:'Quantidade total de veículos', tipo:'número', v:'v1', custo:0.05,
-                   desc:'Soma das quantidades de todos os itens de veículo leve.',
+      qtdveic:   { nome:'Total de horas do projeto', tipo:'número', v:'v1', custo:0.05,
+                   desc:'Soma da carga horária de todos os itens de serviço de design.',
                    prompt:'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus.',
                    fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'0',
                    /* Variável que não sai de um trecho: sai de uma conta sobre vários.
                       Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
-                   calc:{ operacao:'soma', campo:'quantidade', unidade:'veículos',
-                     criterio:'itens cujo objeto é veículo leve para locação',
+                   calc:{ operacao:'soma', campo:'carga horária', unidade:'horas',
+                     criterio:'itens cujo objeto é serviço de design ou pesquisa',
                      parcelas:[
-                       { item:'Item 1',  desc:'Veículo hatch 1.0, 4 portas',      qtd:24, onde:'TR 5.2, quadro de quantitativos', on:true },
-                       { item:'Item 2',  desc:'Veículo SUV 4x4 diesel',           qtd:6,  onde:'TR 6.1, quadro de quantitativos', on:true },
-                       { item:'Item 3',  desc:'Van de 15 lugares',                qtd:4,  onde:'TR 7.1, quadro de quantitativos', on:true },
-                       { item:'Item 7',  desc:'Utilitário leve tipo furgão',      qtd:9,  onde:'TR 10.3, quadro de quantitativos', on:true },
-                       { item:'Item 9',  desc:'Picape cabine dupla',              qtd:5,  onde:'TR 12.1, quadro de quantitativos', on:true },
-                       { item:'Item 11', desc:'Veículo de representação',         qtd:480, onde:'TR 14.2, linha quebrada em duas páginas', on:false,
-                         suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
+                       { item:'Item 1', desc:'Design de interface',        qtd:1200, onde:'TR 5.2, quadro de quantitativos', on:true },
+                       { item:'Item 2', desc:'Pesquisa com usuários',      qtd:480,  onde:'TR 6.1, quadro de quantitativos', on:true },
+                       { item:'Item 3', desc:'Design system',              qtd:640,  onde:'TR 7.1, quadro de quantitativos', on:true },
+                       { item:'Item 5', desc:'Arquitetura de informação',  qtd:320,  onde:'TR 10.3, quadro de quantitativos', on:true },
+                       { item:'Item 6', desc:'Redação de conteúdo digital', qtd:200, onde:'TR 12.1, quadro de quantitativos', on:true },
+                       { item:'Item 8', desc:'Consultoria de acessibilidade', qtd:19000, onde:'TR 14.2, linha quebrada em duas páginas', on:false,
+                         suspeito:'Dez vezes maior que o projeto inteiro. O trecho provavelmente juntou a carga horária com o valor da hora.' }
                      ],
-                     faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
+                     faltando:[ { item:'Item 9', desc:'Treinamento da equipe interna', motivo:'a carga horária está em uma imagem, não em texto' } ] } },
       docshab:   { nome:'Documentos de habilitação', tipo:'texto', v:'v1', custo:0.06,
                    desc:'Relação dos documentos exigidos para habilitação.',
                    prompt:'Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.',
@@ -690,9 +691,9 @@
       { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Compare o objeto e os itens da licitação com os segmentos cadastrados da empresa.',
         vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
-        dado:'2 segmentos em comum: locação de frota, gestão de frota',
+        dado:'2 segmentos em comum: design de produto, pesquisa com usuários',
         regraTexto:'Cada segmento em comum soma 10, até o teto de 20',
-        prov:'Objeto: locação de veículos automotores, sem motorista', sistema:true, ramifica:false },
+        prov:'Objeto: serviços de design de produto digital', sistema:true, ramifica:false },
 
       { id:'val',  nome:'Valor estimado da licitação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Pontue por faixa de valor global estimado: até R$ 1 mi vale 5, de R$ 1 mi a R$ 5 mi vale 10, acima de R$ 5 mi vale 20.',
@@ -740,23 +741,23 @@
         regraTexto:'Exclusiva para ME/EPP soma 5 · ampla concorrência soma 0',
         prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
 
-      { id:'iso', nome:'Certificação ISO 39001 de segurança viária', destino:'score', escopo:'licitacao', agregacao:null,
-        instr:'Se o edital exigir ISO 39001 e a empresa tiver o certificado válido, some 10 pontos.',
+      { id:'iso', nome:'Certificação ISO 27001 de segurança da informação', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Se o edital exigir ISO 27001 e a empresa tiver o certificado válido, some 10 pontos.',
         vars:['segmento'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
         regraTexto:'Exige e temos soma 10 · exige e não temos soma 0',
         prov:'Regra condicionada ao segmento da licitação', ramifica:false,
         /* Regra que só existe em parte das licitações. Alice, 10:37 de 31/08:
            "se for o segmento A, quero saber se exige o certificado; se for o
            segmento B, não precisa. Como que a gente exibe isso para o cliente?" */
-        condicao:{ ok:false, var:'segmento', esperado:'transporte de passageiros',
-          texto:'Só se aplica quando o segmento da licitação é transporte de passageiros',
-          porque:'Esta licitação é de locação e gestão de frota, e nesse segmento a ISO 39001 não costuma ser exigida. A regra ficou de fora do total.' } },
+        condicao:{ ok:false, var:'segmento', esperado:'desenvolvimento de software',
+          texto:'Só se aplica quando o segmento da licitação é desenvolvimento de software',
+          porque:'Esta licitação é de serviços de design, e nesse segmento a ISO 27001 não costuma ser exigida. A regra ficou de fora do total.' } },
 
-      { id:'frota', nome:'Porte da frota exigida', destino:'score', escopo:'licitacao', agregacao:null,
-        instr:'Some a quantidade de todos os itens de veículo leve e pontue pela faixa.',
+      { id:'frota', nome:'Porte do projeto', destino:'score', escopo:'licitacao', agregacao:null,
+        instr:'Some a carga horária de todos os itens de serviço de design e pontue pela faixa.',
         vars:['qtdveic'], pontos:15, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.05,
-        dado:'48 veículos', dadoCalc:true,
-        regraTexto:'Até 20 veículos soma 0 · de 21 a 50 soma 10 · acima de 50 soma 15',
+        dado:'2.840 horas', dadoCalc:true,
+        regraTexto:'Até 1.000 h soma 0 · de 1.001 a 4.000 h soma 10 · acima de 4.000 h soma 15',
         prov:'Somado de 5 itens do quadro de quantitativos', ramifica:true,
         ausencia:'registra como não encontrado' },
 
@@ -780,26 +781,26 @@
     };
 
     var ITENS = [
-      { n:1, nome:'Veículo hatch 1.0, 4 portas', qtd:24, comps:[
-        { nome:'Motorização mínima 1.0 flex',    critico:true,  st:'ok', tr:'TR 5.2.1', nosso:'1.0 flex, 3 cilindros' },
-        { nome:'Ar-condicionado de fábrica',      critico:false, st:'ok', tr:'TR 5.2.2', nosso:'de série em toda a frota' },
-        { nome:'Quilometragem livre',             critico:true,  st:'no', tr:'TR 5.2.5', nosso:'contrato padrão limita 2.000 km/mês' },
-        { nome:'Seguro total sem franquia',       critico:true,  st:'na', tr:'não localizado no TR', nosso:'seguro com franquia de R$ 2.500,00' },
-        { nome:'Rastreamento por telemetria',     critico:false, st:'pt', tr:'TR 5.2.8', nosso:'telemetria básica, sem relatório mensal' },
-        { nome:'Prazo de entrega de 15 dias',     critico:false, st:'ok', tr:'TR 8.1',   nosso:'12 dias úteis' }
+      { n:1, nome:'Design de interface', qtd:1200, comps:[
+        { nome:'Protótipo navegável de alta fidelidade', critico:true,  st:'ok', tr:'TR 5.2.1', nosso:'entregamos em Figma, com fluxo clicável' },
+        { nome:'Versão responsiva de cada tela',         critico:false, st:'ok', tr:'TR 5.2.2', nosso:'padrão em todos os projetos' },
+        { nome:'Acessibilidade nível AA da WCAG',        critico:true,  st:'no', tr:'TR 5.2.5', nosso:'entregamos AA parcial, sem auditoria externa' },
+        { nome:'Cessão total dos arquivos-fonte',        critico:true,  st:'na', tr:'não localizado no TR', nosso:'cedemos os arquivos, com licença de uso' },
+        { nome:'Entrega em Figma com biblioteca compartilhada', critico:false, st:'pt', tr:'TR 5.2.8', nosso:'biblioteca compartilhada, sem versionamento publicado' },
+        { nome:'Prazo de 15 dias por lote de telas',     critico:false, st:'ok', tr:'TR 8.1',   nosso:'12 dias úteis' }
       ]},
-      { n:2, nome:'Veículo SUV 4x4 diesel', qtd:6, comps:[
-        { nome:'Tração 4x4 integral',             critico:true,  st:'ok', tr:'TR 6.1.1', nosso:'4x4 com reduzida' },
-        { nome:'Motor diesel mínimo 2.0',         critico:true,  st:'ok', tr:'TR 6.1.2', nosso:'2.2 turbodiesel' },
-        { nome:'Blindagem nível III-A',           critico:true,  st:'na', tr:'TR 6.4, sem dizer se é exigência ou opcional', nosso:'não fornecemos blindagem' },
-        { nome:'Capacidade de carga de 500 kg',   critico:false, st:'ok', tr:'TR 6.1.5', nosso:'620 kg' },
-        { nome:'Manutenção preventiva inclusa',   critico:false, st:'ok', tr:'TR 9.2',   nosso:'inclusa no contrato' }
+      { n:2, nome:'Pesquisa com usuários', qtd:480, comps:[
+        { nome:'Entrevistas em profundidade',            critico:true,  st:'ok', tr:'TR 6.1.1', nosso:'roteiro e análise inclusos' },
+        { nome:'Teste de usabilidade moderado',          critico:true,  st:'ok', tr:'TR 6.1.2', nosso:'5 a 8 participantes por rodada' },
+        { nome:'Recrutamento de participantes pelo fornecedor', critico:true, st:'na', tr:'TR 6.4, sem dizer se é exigência ou opcional', nosso:'não recrutamos, usamos a base do cliente' },
+        { nome:'Relatório com recomendações priorizadas', critico:false, st:'ok', tr:'TR 6.1.5', nosso:'entregue por rodada' },
+        { nome:'Gravação das sessões com consentimento', critico:false, st:'ok', tr:'TR 9.2',   nosso:'termo de consentimento padrão' }
       ]},
-      { n:3, nome:'Van de 15 lugares', qtd:4, comps:[
-        { nome:'Mínimo de 15 lugares',            critico:true,  st:'ok', tr:'TR 7.1.1', nosso:'16 lugares' },
-        { nome:'Cinto de três pontos em todos os assentos', critico:true, st:'ok', tr:'TR 7.1.4', nosso:'de série' },
-        { nome:'Ar-condicionado com dupla evaporadora', critico:false, st:'ok', tr:'TR 7.1.6', nosso:'dupla evaporadora' },
-        { nome:'Prazo de entrega de 30 dias',     critico:false, st:'ok', tr:'TR 8.1',   nosso:'22 dias úteis' }
+      { n:3, nome:'Design system', qtd:640, comps:[
+        { nome:'Biblioteca de componentes documentada',  critico:true,  st:'ok', tr:'TR 7.1.1', nosso:'componentes com estados e variações' },
+        { nome:'Tokens de cor, tipografia e espaçamento', critico:true, st:'ok', tr:'TR 7.1.4', nosso:'tokens exportáveis em JSON' },
+        { nome:'Manutenção evolutiva por 12 meses',      critico:false, st:'ok', tr:'TR 7.1.6', nosso:'incluída no contrato' },
+        { nome:'Treinamento da equipe interna',          critico:false, st:'ok', tr:'TR 8.1',   nosso:'2 workshops de 4 horas' }
       ]}
     ];
 
@@ -1229,7 +1230,7 @@
     function recalcularFrota() {
       var a = acharAgente('frota'), calc = calcDe(a);
       var t = totalDe(calc);
-      a.dado = t.toLocaleString('pt-BR') + ' veículos';
+      a.dado = t.toLocaleString('pt-BR') + ' horas';
       a.ganhos = faixaDaFrota(t);
       pintarCrits();
     }
@@ -1287,7 +1288,7 @@
           calc.parcelas.push({ item:f.item, desc:f.desc, qtd:qtd, onde:'informado por você em 31/08', on:true });
           calc.faltando.splice(parseInt(b.dataset.add, 10), 1);
           recalcularFrota();
-          settleToast(f.item + ' entrou na conta com ' + qtd + ' veículos');
+          settleToast(f.item + ' entrou na conta com ' + qtd + ' horas');
         });
       });
     }
@@ -2181,7 +2182,7 @@
           else if (!draft.condicao) {
             draft.condicao = { ok:false, var:'segmento', esperado:'transporte de passageiros',
               texto:'Só se aplica quando o segmento da licitação é transporte de passageiros',
-              porque:'Esta licitação é de locação e gestão de frota, então a regra fica fora do total.' };
+              porque:'Esta licitação é de serviços de design, então a regra fica fora do total.' };
           }
           draft.mudou.condicao = true;
           pintarForm();
@@ -3222,7 +3223,7 @@
       { id:'a2', lic:'PE 00023/2026', org:'Prefeitura de Itapevi/SP', agente:'Score',
         acao:'Mover para Descartadas', por:'Score 34 de 100, abaixo do corte de 50', quando:'hoje, 14:22' },
       { id:'a3', lic:'PE 90112/2026', org:'Tribunal Regional Federal da 4ª Região', agente:'Análise técnica',
-        acao:'Marcar Michele como responsável', por:'Órgão federal com objeto de frota, faixa dela', quando:'hoje, 11:08' },
+        acao:'Marcar Michele como responsável', por:'Órgão federal com objeto de design, faixa dela', quando:'hoje, 11:08' },
       { id:'a4', lic:'PE 00471/2026', org:'Prefeitura de Contagem/MG', agente:'Análise técnica',
         acao:'Consultar o catálogo do fabricante', por:'Componente sem especificação equivalente no catálogo interno', quando:'ontem, 17:40' },
       { id:'a5', lic:'PE 00088/2026', org:'Secretaria de Educação do RS', agente:'Score',
@@ -4021,7 +4022,7 @@
         antes:function () { clic('[data-exp="ate"]'); clic('[data-exp="frota"]'); }, espera:260 },
 
       { alvo:'#crit-iso', titulo:'Regra que não vale para toda licitação',
-        texto:'Esta só existe quando o segmento é transporte de passageiros. Como esta licitação é de frota, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.',
+        texto:'Esta só existe quando o segmento é desenvolvimento de software. Como esta licitação é de serviços de design, ela <b>sai do total</b> em vez de virar zero, senão a licitação pareceria pior do que é.',
         antes:function () { clic('[data-exp="frota"]'); } },
 
       { alvo:'#fInstr', titulo:'A configuração da regra',
@@ -4085,13 +4086,14 @@
       { t:'Aviso', quando:'26/08/2026 às 14:12', publicada:'26/08/2026 às 14:12',
         m:'Fica remarcada a sessão pública para 11/09/2026, às 09h00, no mesmo endereço eletrônico.' },
       { t:'Questionamento', quando:'22/08/2026 às 17:40', publicada:'21/08/2026 às 16:03',
-        m:'Sobre o item 7.3: a exigência de atestado de capacidade técnica admite soma de atestados, ' +
-          'desde que emitidos por pessoa jurídica de direito público ou privado?' },
+        m:'Sobre o item 7.3: a exigência de atestado de capacidade técnica em projetos de design ' +
+          'digital admite soma de atestados, desde que emitidos por pessoa jurídica de direito ' +
+          'público ou privado?' },
       { t:'Impugnação', quando:'19/08/2026 às 11:05', publicada:'18/08/2026 às 09:47',
         m:'Impugnação ao item 5.2 do Termo de Referência, que restringe a participação a empresas ' +
-          'com frota própria já disponível na data da assinatura.' },
+          'com equipe de design alocada presencialmente na sede do órgão.' },
       { t:'Não identificada', quando:'14/08/2026 às 09:22', publicada:'14/08/2026 às 09:22',
-        m:'Publicada a errata do Anexo II, com correção do quantitativo do item 11.' }
+        m:'Publicada a errata do Anexo II, com correção da carga horária do item 3.' }
     ];
 
     var wkAba = 'manif';
@@ -4102,11 +4104,11 @@
 
       if (wkAba === 'itens') {
         box.innerHTML = '<div class="datatable"><table class="dt"><thead><tr>' +
-          '<th scope="col">Item</th><th scope="col">Descrição</th><th scope="col">Quantidade</th>' +
-          '<th scope="col">Valor unitário</th><th scope="col">Valor total</th></tr></thead><tbody>' +
-          [['1', 'Veículo hatch 1.0, 4 portas, ar-condicionado', '24', 'R$ 2.180,00', 'R$ 52.320,00'],
-           ['2', 'Veículo SUV 4x4 diesel, tração integral', '6', 'R$ 5.940,00', 'R$ 35.640,00'],
-           ['3', 'Van de 15 lugares, adaptada para transporte de equipe', '4', 'R$ 7.310,00', 'R$ 29.240,00']]
+          '<th scope="col">Item</th><th scope="col">Descrição</th><th scope="col">Horas</th>' +
+          '<th scope="col">Valor da hora</th><th scope="col">Valor total</th></tr></thead><tbody>' +
+          [['1', 'Design de interface: telas de novos fluxos, com protótipo navegável', '1.200 h', 'R$ 190,00', 'R$ 228.000,00'],
+           ['2', 'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', '480 h', 'R$ 210,00', 'R$ 100.800,00'],
+           ['3', 'Design system: componentes, documentação e manutenção evolutiva', '640 h', 'R$ 205,00', 'R$ 131.200,00']]
             .map(function (l) {
               return '<tr><td>' + l[0] + '</td><td style="white-space:normal">' + l[1] + '</td>' +
                      '<td class="num">' + l[2] + '</td><td class="num">' + l[3] + '</td>' +
