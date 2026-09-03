@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902l" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902n" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:11</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:18</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -295,6 +295,9 @@
 
   <div class="ap-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
     <div class="ap-mhead">
+      <button class="icon-btn" type="button" id="mVoltar" aria-label="Voltar para a tela anterior" hidden>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4 6 10l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <h2 id="mTitle">Editar critério</h2>
       <span class="tag-light" id="mStatus">Ativo</span>
       <button class="icon-btn" type="button" id="btnFechar" aria-label="Fechar">
@@ -362,11 +365,6 @@
     </form>
   </aside>
 
-  <button class="tut-fab" type="button" id="fabTutorial">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.6"/><path d="M8 7.7c0-1.1.9-2 2-2s2 .9 2 2c0 1.4-2 1.5-2 3" stroke-linecap="round"/><circle cx="10" cy="14" r=".9" fill="currentColor" stroke="none"/></svg>
-    <span>Ver tutorial</span>
-  </button>
-
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
   <div class="cfm" id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitulo" hidden>
     <h2 id="cfmTitulo"></h2>
@@ -379,7 +377,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902l" defer></script>
+  <script src="../assets/settle.js?v=20260902n" defer></script>
   <script>
   (function () {
     'use strict';
@@ -872,6 +870,17 @@
 
       box.innerHTML = lista.map(critHTML).join('');
 
+      /* Quem chegou aqui por uma variável precisa achar, entre nove regras, as
+         que usam justamente ela. */
+      if (varDestaque) {
+        lista.forEach(function (a) {
+          if (a.vars.indexOf(varDestaque) < 0) return;
+          var el = document.getElementById('crit-' + a.id);
+          if (el) el.classList.add('usa-var');
+          detsAbertos[a.id] = true;
+        });
+      }
+
       box.querySelectorAll('[data-exp]').forEach(function (b) {
         b.addEventListener('click', function () {
           var a = acharAgente(b.dataset.exp), el = document.getElementById('det-' + a.id);
@@ -1034,7 +1043,20 @@
 
     function ligarAcoes(el) {
       el.querySelectorAll('[data-edit]').forEach(function (b) {
-        b.addEventListener('click', function () { abrir(acharAgente(b.dataset.edit)); });
+        b.addEventListener('click', function () {
+          var regra = acharAgente(b.dataset.edit);
+          /* Veio de uma análise: guarda o caminho de volta e esconde a modal de
+             trás, para não ficarem duas empilhadas na tela. */
+          if (analiseAberta && !document.getElementById('fxModal').hidden) {
+            var an = analiseAberta, kd = varDestaque;
+            abrirComVolta(function () { abrirAnalise(an, kd); }, function () {
+              document.getElementById('fxModal').hidden = true;
+              abrir(regra);
+            });
+          } else {
+            abrir(regra);
+          }
+        });
       });
       el.querySelectorAll('[data-falar]').forEach(function (b) {
         b.addEventListener('click', function () { falarSobre(acharAgente(b.dataset.falar)); });
@@ -1550,7 +1572,7 @@
     });
 
     /* Excluir mostra o estrago antes, e o que fica quebrado depois. */
-    function excluirVar(k) {
+    function excluirVar(k, daModal) {
       var v = VARS[k], u = usosDaVar(k);
       var corpo = u.length
         ? '<p><b>' + u.length + ' regra(s)</b> dependem desta variável e param de funcionar.</p>' +
@@ -1560,6 +1582,9 @@
         : '<p>Nenhum agente usa esta variável. Excluir não quebra nada.</p>';
 
       confirmar('Excluir "' + v.nome + '"?', corpo, 'Excluir variável', function () {
+        /* Só fecha a configuração depois de confirmado: quem cancela volta para
+           onde estava. */
+        if (daModal) fecharFx();
         var antes = JSON.parse(JSON.stringify(v));
         var afetadas = [];
         var textoAntes = JURIDICA.texto;
@@ -1614,12 +1639,14 @@
       document.getElementById('cp').hidden = false;
       document.body.classList.add('cp-open');
       document.getElementById('cpAbrir').hidden = true;
+      document.getElementById('cpAbrir').hidden = true;
       if (!cpAgente) cpPintarLista();
     }
 
     function cpFecharPainel() {
       document.getElementById('cp').hidden = true;
       document.body.classList.remove('cp-open');
+      document.getElementById('cpAbrir').hidden = false;
       document.getElementById('cpAbrir').hidden = false;
     }
 
@@ -1844,6 +1871,7 @@
       document.getElementById('btnAvancar').disabled = false;
       document.getElementById('ovl').hidden = false;
       document.getElementById('modal').hidden = false;
+      pintarVoltar();
       pintarForm();
     }
 
@@ -1852,6 +1880,10 @@
         var i = AGENTES.map(function (a) { return a.id; }).indexOf(draft.id);
         if (i >= 0 && AGENTES[i].novo) { AGENTES.splice(i, 1); pintarCrits(); pintarAnalises(); }
       }
+      pilhaModal = [];
+      document.getElementById('mVoltar').hidden = true;
+      document.getElementById('fxVoltar').hidden = true;
+      document.getElementById('fxModal').hidden = true;
       document.getElementById('ovl').hidden = true;
       document.getElementById('modal').hidden = true;
     }
@@ -2505,13 +2537,20 @@
     }
 
     function pintarVoltar() {
-      document.getElementById('fxVoltar').hidden = !pilhaModal.length;
+      var tem = !!pilhaModal.length;
+      document.getElementById('fxVoltar').hidden = !tem;
+      document.getElementById('mVoltar').hidden = !tem;
     }
 
-    document.getElementById('fxVoltar').addEventListener('click', function () {
+    function voltarModal() {
       var f = pilhaModal.pop();
-      if (f) f();
-    });
+      if (!f) return;
+      document.getElementById('modal').hidden = true;
+      f();
+    }
+
+    document.getElementById('fxVoltar').addEventListener('click', voltarModal);
+    document.getElementById('mVoltar').addEventListener('click', voltarModal);
 
     function fecharFx() {
       pilhaModal = [];
@@ -2708,7 +2747,7 @@
           e.preventDefault();
           var alvo = ANALISES.filter(function (x) { return x.nome === a.dataset.vai; })[0];
           if (!alvo) return;
-          abrirComVolta(function () { abrirVar(k); }, function () { abrirAnalise(alvo); });
+          abrirComVolta(function () { abrirVar(k); }, function () { abrirAnalise(alvo, k); });
         });
       });
     }
@@ -2734,7 +2773,7 @@
          não é a ação esperada. */
       var btnEx = document.getElementById('fxExcluir');
       btnEx.hidden = !(v && !travado);
-      btnEx.onclick = function () { fecharFx(); excluirVar(k); };
+      btnEx.onclick = function () { excluirVar(k, true); };
 
       vForm.lista = listaDeFontes(v);
       vForm.resto = v ? !!v.resto : true;
@@ -3199,7 +3238,11 @@
       });
     }
 
-    function abrirAnalise(an) {
+    var analiseAberta = null, varDestaque = null;
+
+    function abrirAnalise(an, kDestaque) {
+      analiseAberta = an;
+      varDestaque = kDestaque || null;
       document.getElementById('fxTitle').textContent = an.nome;
       modoModal = 'outro';
       document.getElementById('fxStatus').hidden = false;
@@ -3609,7 +3652,9 @@
         antes:function () { cpFecharPainel(); } }
     ];
 
-    document.getElementById('fabTutorial').addEventListener('click', function () { settleTour(TOUR); });
+    /* O tutorial continua montado, mas sem botão na tela: roda por
+       window.settleTour(TOUR) quando for apresentar. */
+    window.tourAgentes = function () { settleTour(TOUR); };
 
     /* ---------- boot ---------- */
     pintarAnalises(); pintarVars(); pintarAprov();
