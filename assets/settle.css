@@ -1172,3 +1172,10 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ag-card-instr{font-size:13px;line-height:19px;color:var(--muted-foreground);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .ag-card-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px;}
+
+/* Seleção do card: some até o mouse chegar, para a lista respirar. */
+.ag-sel{display:flex;align-items:center;padding-top:2px;opacity:0;transition:opacity .12s;}
+.ag-sel input{margin:0;accent-color:var(--accent);cursor:pointer;}
+.ag-card:hover .ag-sel,.ag-sel:focus-within,.ag-card.sel .ag-sel{opacity:1;}
+.ag-card.sel{border-color:var(--accent);}
+.ag-acts{display:flex;align-items:center;gap:2px;flex:none;}
