@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:48</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:54</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -401,7 +401,7 @@
       cnpj:      { nome:'CNPJ do órgão', tipo:'texto', v:'v1', custo:0.01,
                    desc:'Número de CNPJ de quem está contratando.',
                    prompt:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.',
-                   fontes:['Minuta do contrato', 'Edital e anexos'], resto:true, padrao:'' },
+                   fontes:['Minuta do contrato', 'Edital e anexos'], resto:true, padrao:'não encontrado' },
       sessao:    { nome:'Data da sessão pública', tipo:'data', v:'v1', custo:0.01,
                    desc:'Dia e hora da abertura das propostas.',
                    prompt:'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
@@ -409,25 +409,25 @@
       valorest:  { nome:'Valor estimado', tipo:'número', v:'v1', custo:0.02,
                    desc:'Valor total estimado da contratação.',
                    prompt:'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum.',
-                   fontes:['Edital e anexos', 'Termo de referência'], resto:true, padrao:'' },
+                   fontes:['Edital e anexos', 'Termo de referência'], resto:true, padrao:'0' },
       esfera:    { nome:'Esfera', tipo:'categoria', settle:true, v:'v2', custo:0,
                    desc:'Se o órgão é federal, estadual ou municipal.',
                    prompt:'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
-                   fontes:['Dados do portal'], resto:false, padrao:'' },
+                   fontes:['Dados do portal'], resto:false, padrao:'não se aplica' },
       capag:     { nome:'CAPAG', tipo:'categoria', settle:true, v:'v3', custo:0.01,
                    desc:'Nota de capacidade de pagamento do ente, de A a D.',
                    prompt:'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
-                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'',
+                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'não encontrado',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
       segmento:  { nome:'Segmento da licitação', tipo:'lista', settle:true, v:'v3', custo:0,
                    desc:'Os segmentos de mercado a que o objeto pertence.',
                    prompt:'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
-                   fontes:['Dados do portal'], resto:false, padrao:'' },
+                   fontes:['Dados do portal'], resto:false, padrao:'não encontrado' },
       populacao: { nome:'População', tipo:'número', settle:true, v:'v1', custo:0,
                    desc:'População do ente, usada para estimar porte.',
                    prompt:'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet consectetur.',
-                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'',
+                   fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'0',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
       atestado:  { nome:'Atestado exigido', tipo:'sim ou não', v:'v1', custo:0.04,
                    desc:'Se o edital pede atestado de capacidade técnica na habilitação.',
@@ -458,11 +458,11 @@
       docshab:   { nome:'Documentos de habilitação', tipo:'lista', v:'v1', custo:0.06,
                    desc:'Relação dos documentos exigidos para habilitação.',
                    prompt:'Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.',
-                   fontes:['Edital e anexos'], resto:true, padrao:'' },
+                   fontes:['Edital e anexos'], resto:true, padrao:'não encontrado' },
       componentes:{ nome:'Componentes do item', tipo:'lista', v:'v2', custo:0.02,
                    desc:'Os componentes que formam cada item do Termo de Referência.',
                    prompt:'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis.',
-                   fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'' },
+                   fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'não encontrado' },
       especificacao:{ nome:'Especificação exigida', tipo:'texto', v:'v1', custo:0.01,
                    desc:'O texto da especificação técnica de um componente.',
                    prompt:'Omnis voluptas assumenda est, omnis dolor repellendus in eligendi optio.',
@@ -2396,52 +2396,28 @@
     /* O valor padrão segue o tipo. É a regra que o José Victor colocou em
        02/09: uma variável de data não pode ter "abacaxi" como padrão, senão
        quebra na hora de usar no Score. Só texto é realmente livre. */
-    /* "Não encontrar" é sempre uma escolha, nunca um campo em branco. Para sim
-       ou não as três respostas cabem num select só; nos outros tipos, primeiro
-       se decide entre registrar sem valor e usar um valor fixo, e só então o
-       campo do tipo aparece. Assim o campo é obrigatório sem obrigar a inventar
-       uma data ou um número que a variável não tem. */
+    /* O campo segue o tipo: texto, número e data abrem direto para escrever,
+       e sim ou não vira select porque as respostas possíveis são todas. */
     function padraoCampo(tipo, valor, travado) {
       valor = valor === undefined || valor === null ? '' : String(valor);
       var dis = travado ? ' disabled' : '';
 
       if (tipo === 'sim ou não') {
-        return '<select class="ap-input" id="vPadraoModo"' + dis + '>' +
-          [['', 'Registrar sem valor'], ['sim', 'Responder sim'], ['não', 'Responder não']]
-            .map(function (o) {
-              return '<option value="' + o[0] + '"' + (o[0] === valor ? ' selected' : '') + '>' +
-                     o[1] + '</option>';
-            }).join('') + '</select>';
+        return '<select class="ap-input" id="vPadrao"' + dis + '>' +
+          [['', 'nenhum'], ['sim', 'sim'], ['não', 'não']].map(function (o) {
+            return '<option value="' + o[0] + '"' + (o[0] === valor ? ' selected' : '') + '>' +
+                   o[1] + '</option>';
+          }).join('') + '</select>';
       }
-
-      var fixo = valor !== '';
-      var campo;
       if (tipo === 'número') {
-        campo = '<input class="ap-input" id="vPadrao" type="number" step="any"' + dis +
-                ' value="' + valor + '" placeholder="Ex.: 0" />';
-      } else if (tipo === 'data') {
-        campo = '<input class="ap-input" id="vPadrao" type="date"' + dis + ' value="' + valor + '" />';
-      } else {
-        campo = '<input class="ap-input" id="vPadrao" type="text"' + dis + ' value="' +
-                valor.replace(/"/g, '&quot;') + '" placeholder="Ex.: não encontrado" />';
+        return '<input class="ap-input" id="vPadrao" type="number" step="any"' + dis +
+               ' value="' + valor + '" placeholder="Ex.: 0" />';
       }
-
-      return '<select class="ap-input" id="vPadraoModo"' + dis + '>' +
-        '<option value="vazio"' + (fixo ? '' : ' selected') + '>Registrar sem valor</option>' +
-        '<option value="fixo"' + (fixo ? ' selected' : '') + '>Usar um valor fixo</option>' +
-        '</select>' +
-        '<div id="vPadraoVal" style="margin-top:8px"' + (fixo ? '' : ' hidden') + '>' + campo + '</div>';
-    }
-
-    /* O select de cima decide se o campo de valor aparece. */
-    function ligarPadrao() {
-      var modo = document.getElementById('vPadraoModo');
-      var val = document.getElementById('vPadraoVal');
-      if (!modo || !val) return;
-      modo.addEventListener('change', function () {
-        val.hidden = modo.value !== 'fixo';
-        if (!val.hidden) { var c = document.getElementById('vPadrao'); if (c) c.focus(); }
-      });
+      if (tipo === 'data') {
+        return '<input class="ap-input" id="vPadrao" type="date"' + dis + ' value="' + valor + '" />';
+      }
+      return '<input class="ap-input" id="vPadrao" type="text"' + dis + ' value="' +
+             valor.replace(/"/g, '&quot;') + '" placeholder="Ex.: não encontrado" />';
     }
 
     /* A lista de fontes: todas as opções aparecem, marcadas ou não. A ordem das
@@ -2591,14 +2567,12 @@
           : '');
 
       pintarOrdem(travado);
-      ligarPadrao();
 
       /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
          impede um padrão incompatível de ser salvo. */
       document.getElementById('vTipo').addEventListener('change', function (e) {
         vForm.tipo = e.target.value;
         document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '', travado);
-        ligarPadrao();
       });
 
       var ex = document.getElementById('vExcluir');
@@ -2620,14 +2594,7 @@
         settleToast('Marque pelo menos um lugar para procurar'); return;
       }
 
-      var modo = document.getElementById('vPadraoModo');
-      var padrao = '';
-      if (vForm.tipo === 'sim ou não') {
-        padrao = modo.value;
-      } else if (modo.value === 'fixo') {
-        padrao = (document.getElementById('vPadrao').value || '').trim();
-        if (!padrao) { settleToast('Escreva o valor fixo, ou escolha registrar sem valor'); return; }
-      }
+      var padrao = (document.getElementById('vPadrao').value || '').trim();
 
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
