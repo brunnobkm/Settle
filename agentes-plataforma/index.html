@@ -187,9 +187,9 @@
 
     <nav class="sb-content">
       <div class="sb-group">
-        <a class="sb-item active" href="#" id="viaCons" aria-current="page" title="Agentes">
+        <a class="sb-item active" href="#" id="viaCons" aria-current="page" title="Agentes e Variáveis">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
-          <span class="sb-label">Agentes</span>
+          <span class="sb-label">Agentes e Variáveis</span>
         </a>
       </div>
     </nav>
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:45</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:48</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -2066,9 +2066,12 @@
       if (etapa === 'revisao') pintarForm(); else pintarRevisao();
     });
     document.getElementById('btnFechar').addEventListener('click', fechar);
-    document.getElementById('ovl').addEventListener('click', fechar);
+    /* Clique no overlay não fecha: quem preencheu meia configuração não pode
+       perder tudo por um clique fora. Sai pelo X ou pelo botão de confirmar. */
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !document.getElementById('modal').hidden) fechar();
+      if (e.key !== 'Escape') return;
+      if (!document.getElementById('modal').hidden) fechar();
+      else if (!document.getElementById('fxModal').hidden) fecharFx();
     });
 
 
@@ -2393,24 +2396,52 @@
     /* O valor padrão segue o tipo. É a regra que o José Victor colocou em
        02/09: uma variável de data não pode ter "abacaxi" como padrão, senão
        quebra na hora de usar no Score. Só texto é realmente livre. */
+    /* "Não encontrar" é sempre uma escolha, nunca um campo em branco. Para sim
+       ou não as três respostas cabem num select só; nos outros tipos, primeiro
+       se decide entre registrar sem valor e usar um valor fixo, e só então o
+       campo do tipo aparece. Assim o campo é obrigatório sem obrigar a inventar
+       uma data ou um número que a variável não tem. */
     function padraoCampo(tipo, valor, travado) {
       valor = valor === undefined || valor === null ? '' : String(valor);
       var dis = travado ? ' disabled' : '';
+
       if (tipo === 'sim ou não') {
-        return '<select class="ap-input" id="vPadrao"' + dis + '>' +
-          ['sim', 'não', 'nenhum'].map(function (o) {
-            return '<option value="' + o + '"' + (o === valor ? ' selected' : '') + '>' + o + '</option>';
-          }).join('') + '</select>';
+        return '<select class="ap-input" id="vPadraoModo"' + dis + '>' +
+          [['', 'Registrar sem valor'], ['sim', 'Responder sim'], ['não', 'Responder não']]
+            .map(function (o) {
+              return '<option value="' + o[0] + '"' + (o[0] === valor ? ' selected' : '') + '>' +
+                     o[1] + '</option>';
+            }).join('') + '</select>';
       }
+
+      var fixo = valor !== '';
+      var campo;
       if (tipo === 'número') {
-        return '<input class="ap-input" id="vPadrao" type="number" step="any"' + dis + ' value="' + valor +
-               '" placeholder="Ex.: 0" />';
+        campo = '<input class="ap-input" id="vPadrao" type="number" step="any"' + dis +
+                ' value="' + valor + '" placeholder="Ex.: 0" />';
+      } else if (tipo === 'data') {
+        campo = '<input class="ap-input" id="vPadrao" type="date"' + dis + ' value="' + valor + '" />';
+      } else {
+        campo = '<input class="ap-input" id="vPadrao" type="text"' + dis + ' value="' +
+                valor.replace(/"/g, '&quot;') + '" placeholder="Ex.: não encontrado" />';
       }
-      if (tipo === 'data') {
-        return '<input class="ap-input" id="vPadrao" type="date"' + dis + ' value="' + valor + '" />';
-      }
-      return '<input class="ap-input" id="vPadrao" type="text"' + dis + ' value="' + valor.replace(/"/g, '&quot;') +
-             '" placeholder="Ex.: não encontrado" />';
+
+      return '<select class="ap-input" id="vPadraoModo"' + dis + '>' +
+        '<option value="vazio"' + (fixo ? '' : ' selected') + '>Registrar sem valor</option>' +
+        '<option value="fixo"' + (fixo ? ' selected' : '') + '>Usar um valor fixo</option>' +
+        '</select>' +
+        '<div id="vPadraoVal" style="margin-top:8px"' + (fixo ? '' : ' hidden') + '>' + campo + '</div>';
+    }
+
+    /* O select de cima decide se o campo de valor aparece. */
+    function ligarPadrao() {
+      var modo = document.getElementById('vPadraoModo');
+      var val = document.getElementById('vPadraoVal');
+      if (!modo || !val) return;
+      modo.addEventListener('change', function () {
+        val.hidden = modo.value !== 'fixo';
+        if (!val.hidden) { var c = document.getElementById('vPadrao'); if (c) c.focus(); }
+      });
     }
 
     /* A lista de fontes: todas as opções aparecem, marcadas ou não. A ordem das
@@ -2560,12 +2591,14 @@
           : '');
 
       pintarOrdem(travado);
+      ligarPadrao();
 
       /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
          impede um padrão incompatível de ser salvo. */
       document.getElementById('vTipo').addEventListener('change', function (e) {
         vForm.tipo = e.target.value;
         document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '', travado);
+        ligarPadrao();
       });
 
       var ex = document.getElementById('vExcluir');
@@ -2587,9 +2620,14 @@
         settleToast('Marque pelo menos um lugar para procurar'); return;
       }
 
-      var campo = document.getElementById('vPadrao');
-      var padrao = campo ? campo.value.trim() : '';
-      if (!padrao) { settleToast('Escolha o que fazer quando a variável não for encontrada'); return; }
+      var modo = document.getElementById('vPadraoModo');
+      var padrao = '';
+      if (vForm.tipo === 'sim ou não') {
+        padrao = modo.value;
+      } else if (modo.value === 'fixo') {
+        padrao = (document.getElementById('vPadrao').value || '').trim();
+        if (!padrao) { settleToast('Escreva o valor fixo, ou escolha registrar sem valor'); return; }
+      }
 
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
