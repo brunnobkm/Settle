@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902b" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:08</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:10</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -249,7 +249,7 @@
           <table class="dt">
             <thead>
               <tr>
-                <th scope="col">Nome</th><th scope="col">Tipo da resposta</th>
+                <th scope="col">Nome</th><th scope="col">Origem</th><th scope="col">Tipo da resposta</th>
                 <th scope="col">Instruções</th><th scope="col">Onde procurar</th>
                 <th scope="col">Quando não encontrar</th>
                 <th scope="col" data-col="custo" hidden>Custo</th>
@@ -369,7 +369,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902b" defer></script>
+  <script src="../assets/settle.js?v=20260902d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1144,7 +1144,7 @@
 
       if (!chaves.length) {
         document.getElementById('rowsVars').innerHTML =
-          '<tr><td colspan="7"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
+          '<tr><td colspan="8"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
         return;
       }
 
@@ -1157,9 +1157,13 @@
           : '<span class="ap-dim">ninguém ainda</span>';
         var instr = v.prompt || '';
         var curta = instr.length > 90 ? instr.slice(0, 88) + '…' : instr;
-        return '<tr><td style="white-space:normal"><b>' + v.nome + '</b>' +
-          (v.settle ? ' <span class="ap-tag">Settle</span>' : '') +
-          '</td><td>' + v.tipo + '</td>' +
+        return '<tr data-clicavel="1"><td style="white-space:normal"><b>' + v.nome + '</b></td>' +
+          '<td>' + (v.settle
+            ? '<span class="origem settle"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
+              'stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.5" y="7" width="9" ' +
+              'height="6" rx="1.5"/><path d="M5.8 7V5.4a2.2 2.2 0 0 1 4.4 0V7"/></svg>Settle</span>'
+            : '<span class="origem minha">Sua</span>') + '</td>' +
+          '<td>' + v.tipo + '</td>' +
           '<td style="white-space:normal" title="' + instr.replace(/"/g, '&quot;') + '">' + curta + '</td>' +
           '<td style="white-space:normal">' + fonteTxt(v) + '</td>' +
           '<td>' + padraoTxt(v) + '</td>' +
@@ -1176,7 +1180,6 @@
       document.querySelectorAll('#rowsVars tr').forEach(function (tr) {
         var b = tr.querySelector('[data-vedit]');
         if (!b) return;
-        tr.style.cursor = 'pointer';
         tr.addEventListener('click', function (e) {
           if (e.target.closest('[data-vedit]')) return;
           abrirVar(b.dataset.vedit);
