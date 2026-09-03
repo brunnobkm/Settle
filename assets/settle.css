@@ -1018,5 +1018,43 @@ select.ap-input:disabled{cursor:default;opacity:.7;}
 /* Marcador de origem da variável. */
 .origem{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:16px;
   padding:2px 8px;border-radius:999px;border:1px solid var(--border);white-space:nowrap;}
-.origem.settle{background:var(--muted);color:var(--muted-foreground);}
-.origem.minha{background:var(--card);color:var(--foreground);}
+.origem.settle{background:var(--muted);color:var(--muted-foreground);border-color:var(--border);}
+.origem.minha{background:color-mix(in srgb, var(--accent) 14%, var(--card));
+  border-color:color-mix(in srgb, var(--accent) 34%, var(--card));color:var(--accent-600);}
+
+/* ==========================================================================
+   27. CABEÇALHO DE COLUNA COM FILTRO
+   Clicar no título abre ordenação e filtro daquela coluna, como no Notion.
+   ========================================================================== */
+table.dt th.col{position:relative;padding:0;}
+.col-btn{width:100%;display:flex;align-items:center;gap:6px;background:transparent;border:none;
+  padding:8px;font-family:inherit;font-size:14px;font-weight:500;line-height:20px;color:var(--foreground);
+  cursor:pointer;text-align:left;}
+.col-btn:hover{background:var(--muted);}
+.col-btn.ativo{color:var(--accent-600);}
+.col-car{margin-left:auto;flex:none;display:inline-flex;color:var(--muted-foreground);}
+.col-btn.ativo .col-car{color:var(--accent-600);}
+.col-pop{min-width:230px;max-width:280px;font-weight:400;}
+.col-sep{height:1px;background:var(--border);margin:6px 4px;}
+.col-acao{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;
+  font-size:13px;width:100%;border:none;background:transparent;font-family:inherit;color:var(--foreground);
+  text-align:left;}
+.col-acao:hover{background:var(--muted);}
+.col-acao.on{color:var(--accent-600);font-weight:600;}
+.col-opts{max-height:210px;overflow:auto;}
+
+/* ==========================================================================
+   28. ETIQUETA DE FONTE
+   Cada origem de documento tem a própria cor, para a ordem de busca ser lida
+   de relance na tabela. A cor identifica a fonte, não decora.
+   ========================================================================== */
+.fnt{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;margin:2px 4px 2px 0;
+  font-size:11px;line-height:16px;white-space:nowrap;}
+.fnt-edital{background:#e8eefb;color:#1e3a8a;}
+.fnt-tr{background:#e2f1f0;color:#0f5f5c;}
+.fnt-minuta{background:#fbeedd;color:#8a4b09;}
+.fnt-etp{background:#efe9fa;color:#553c9a;}
+.fnt-manif{background:#fbe7ef;color:#9b1c48;}
+.fnt-result{background:#e6f4ea;color:#186434;}
+.fnt-portal{background:#e9edf2;color:#334155;}
+.fnt-resto{background:var(--muted);color:var(--muted-foreground);}
