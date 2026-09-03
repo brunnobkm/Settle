@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260903e" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903f" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -215,7 +215,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:33</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:37</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -233,6 +233,11 @@
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
       <!-- ============ AGENTES ============ -->
       <section class="ap-panel" id="panel-agentes" role="tabpanel" aria-label="Agentes" hidden>
+        <div class="lote" id="loteAg" hidden>
+          <span class="lote-n" id="loteAgN"></span>
+          <button class="btn btn-outline" type="button" id="loteAgNada">Limpar seleção</button>
+          <button class="btn btn-danger" type="button" id="loteAgDel">Excluir selecionados</button>
+        </div>
         <div id="gridAgentes"></div>
       </section>
 
@@ -379,7 +384,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260903e" defer></script>
+  <script src="../assets/settle.js?v=20260903f" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3194,6 +3199,36 @@
       return [];
     }
 
+    /* Seleção em lote na lista de agentes: como nas variáveis, a única ação que
+       faz sentido em vários ao mesmo tempo é excluir. */
+    var agSel = {};
+
+    function pintarLoteAg() {
+      var sel = ANALISES.filter(function (a) { return agSel[a.id]; });
+      var barra = document.getElementById('loteAg');
+      barra.hidden = !sel.length;
+      if (!sel.length) return;
+      document.getElementById('loteAgN').textContent = sel.length +
+        (sel.length === 1 ? ' agente selecionado' : ' agentes selecionados');
+    }
+
+    function excluirAgente(an, aoFechar) {
+      confirmar('Excluir "' + an.nome + '"?',
+        '<p>O agente para de rodar nas próximas licitações. As variáveis que ele usa continuam ' +
+        'existindo, e podem ser usadas por outros agentes.</p>',
+        'Excluir agente', function () {
+          var i = ANALISES.indexOf(an);
+          if (i >= 0) ANALISES.splice(i, 1);
+          delete agSel[an.id];
+          if (aoFechar) aoFechar();
+          pintarAnalises(); pintarVars();
+          settleToast('Agente excluído', {
+            undoLabel:'Desfazer',
+            onUndo:function () { ANALISES.splice(i, 0, an); pintarAnalises(); pintarVars(); }
+          });
+        });
+    }
+
     function pintarAnalises() {
       var g = document.getElementById('gridAgentes');
       g.innerHTML = '';
@@ -3228,6 +3263,9 @@
         if (instr.length > 160) instr = instr.slice(0, 158) + '…';
 
         el.innerHTML =
+          '<label class="ag-sel"><input type="checkbox" data-agsel="' + an.id + '"' +
+            (agSel[an.id] ? ' checked' : '') + ' /><span class="sr-only">Selecionar ' + an.nome +
+            '</span></label>' +
           '<button class="ag-abrir" type="button">' +
             '<span class="ag-card-nome">' + an.nome + '</span>' +
             '<span class="ag-card-instr">' + instr + '</span>' +
@@ -3236,8 +3274,15 @@
               (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
             '</span>' +
           '</button>' +
-          '<label class="sw"><input type="checkbox"' + (ativo ? ' checked' : '') +
-          ' /><i></i><span class="sr-only">Ativar ' + an.nome + '</span></label>';
+          '<span class="ag-acts">' +
+            '<label class="sw"><input type="checkbox"' + (ativo ? ' checked' : '') +
+            ' /><i></i><span class="sr-only">Ativar ' + an.nome + '</span></label>' +
+            '<button class="icon-btn" type="button" data-agdel="' + an.id + '" aria-label="Excluir ' +
+            an.nome.replace(/"/g, '&quot;') + '"><svg viewBox="0 0 20 20" width="17" height="17" ' +
+            'fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4.5 6h11M8 6V4.6h4V6M6 6l.7 9.4h6.6L14 6" ' +
+            'stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+          '</span>';
+        if (agSel[an.id]) el.classList.add('sel');
 
         el.querySelector('.ag-abrir').addEventListener('click', function () { abrirAnalise(an); });
         el.querySelector('.sw input').addEventListener('change', function (e) {
@@ -3245,9 +3290,39 @@
           pintarAnalises();
           settleToast(an.ativo ? an.nome + ' ativado' : an.nome + ' pausado');
         });
+        /* Marcar não redesenha a lista: só o card e a barra mudam. */
+        el.querySelector('[data-agsel]').addEventListener('change', function (e) {
+          agSel[an.id] = e.target.checked;
+          el.classList.toggle('sel', e.target.checked);
+          pintarLoteAg();
+        });
+        el.querySelector('[data-agdel]').addEventListener('click', function () { excluirAgente(an); });
         g.appendChild(el);
       });
+      pintarLoteAg();
     }
+
+    document.getElementById('loteAgNada').addEventListener('click', function () {
+      agSel = {}; pintarAnalises();
+    });
+
+    document.getElementById('loteAgDel').addEventListener('click', function () {
+      var sel = ANALISES.filter(function (a) { return agSel[a.id]; });
+      if (!sel.length) return;
+      confirmar('Excluir ' + sel.length + (sel.length === 1 ? ' agente?' : ' agentes?'),
+        '<p>Eles param de rodar nas próximas licitações. As variáveis que usam continuam existindo.</p>' +
+        '<div class="cfm-lista">' + sel.map(function (a) { return '· ' + a.nome; }).join('<br>') + '</div>',
+        'Excluir ' + (sel.length === 1 ? 'agente' : 'agentes'), function () {
+          var antes = ANALISES.slice();
+          ANALISES = ANALISES.filter(function (a) { return !agSel[a.id]; });
+          agSel = {};
+          pintarAnalises(); pintarVars();
+          settleToast(sel.length + (sel.length === 1 ? ' agente excluído' : ' agentes excluídos'), {
+            undoLabel:'Desfazer',
+            onUndo:function () { ANALISES = antes; pintarAnalises(); pintarVars(); }
+          });
+        });
+    });
 
     var analiseAberta = null, varDestaque = null;
 
@@ -3452,21 +3527,7 @@
     });
 
     document.getElementById('agExcluir').addEventListener('click', function () {
-      var an = analiseAberta;
-      if (!an) return;
-      confirmar('Excluir "' + an.nome + '"?',
-        '<p>O agente para de rodar nas próximas licitações. As variáveis que ele usa continuam ' +
-        'existindo, e podem ser usadas por outros agentes.</p>',
-        'Excluir agente', function () {
-          var i = ANALISES.indexOf(an);
-          if (i >= 0) ANALISES.splice(i, 1);
-          fecharFx();
-          pintarAnalises(); pintarVars();
-          settleToast('Agente excluído', {
-            undoLabel:'Desfazer',
-            onUndo:function () { ANALISES.splice(i, 0, an); pintarAnalises(); pintarVars(); }
-          });
-        });
+      if (analiseAberta) excluirAgente(analiseAberta, fecharFx);
     });
 
     /* =====================================================================
