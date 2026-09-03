@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902i" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902l" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:54</p>
+        <p class="ap-selo">protótipo · versão de 02/09 23:05</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -243,6 +243,11 @@
         <div class="ap-field" style="max-width:360px">
           <label class="sr-only" for="vBusca">Procurar variável</label>
           <input class="ap-input" id="vBusca" type="search" placeholder="Procurar variável" />
+        </div>
+        <div class="lote" id="loteVars" hidden>
+          <span class="lote-n" id="loteVarsN"></span>
+          <button class="btn btn-outline" type="button" id="loteVarsNada">Limpar seleção</button>
+          <button class="btn btn-danger" type="button" id="loteVarsDel">Excluir selecionadas</button>
         </div>
         <div class="datatable">
           <table class="dt">
@@ -318,6 +323,7 @@
     <div class="ap-mfoot">
       <span class="ap-money" id="fxCusto"></span>
       <button class="btn btn-outline" type="button" id="fxValidar">Validar em 3 licitações</button>
+      <button class="btn btn-danger" type="button" id="fxExcluir" hidden>Excluir esta variável</button>
       <button class="btn btn-primary" type="button" id="fxAtivar">Ativar agente</button>
     </div>
   </div>
@@ -358,9 +364,19 @@
     <span>Ver tutorial</span>
   </button>
 
+  <div class="cfm-ovl" id="cfmOvl" hidden></div>
+  <div class="cfm" id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitulo" hidden>
+    <h2 id="cfmTitulo"></h2>
+    <div id="cfmCorpo"></div>
+    <div class="cfm-acts">
+      <button class="btn btn-outline" type="button" id="cfmNao">Cancelar</button>
+      <button class="btn btn-danger" type="button" id="cfmSim">Excluir</button>
+    </div>
+  </div>
+
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902i" defer></script>
+  <script src="../assets/settle.js?v=20260902l" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1245,9 +1261,28 @@
       return c.kind === 'texto' ? !!f : !!(f && f.length);
     }
 
+    /* Seleção em lote: por enquanto a única ação que faz sentido em várias
+       variáveis ao mesmo tempo é excluir. */
+    var varSel = {}, chavesVisiveis = [];
+
+    function selecionadasVars() {
+      return chavesVisiveis.filter(function (k) { return varSel[k]; });
+    }
+
+    function pintarLoteVars() {
+      var sel = selecionadasVars();
+      var barra = document.getElementById('loteVars');
+      barra.hidden = !sel.length;
+      if (!sel.length) return;
+      document.getElementById('loteVarsN').textContent = sel.length +
+        (sel.length === 1 ? ' variável selecionada' : ' variáveis selecionadas');
+    }
+
     function pintarCabecalho() {
       var tr = document.getElementById('colsVars');
-      tr.innerHTML = COLS.map(function (c) {
+      tr.innerHTML = '<th scope="col" class="c-sel"><label class="ap-check">' +
+        '<input type="checkbox" id="varTodas" /> <span class="sr-only">Selecionar todas</span>' +
+        '</label></th>' + COLS.map(function (c) {
         var ativo = temFiltro(c) || ordemVar.k === c.k;
         return '<th scope="col" class="col"><button class="col-btn' + (ativo ? ' ativo' : '') +
           '" type="button" data-col="' + c.k + '" aria-haspopup="true" aria-expanded="false">' + c.t +
@@ -1261,6 +1296,14 @@
           '</span></button></th>';
       }).join('') + '<th scope="col"><span class="sr-only">Ações</span></th>';
 
+      var todas = document.getElementById('varTodas');
+      todas.checked = !!chavesVisiveis.length &&
+        chavesVisiveis.every(function (k) { return varSel[k]; });
+      todas.addEventListener('change', function () {
+        chavesVisiveis.forEach(function (k) { varSel[k] = todas.checked; });
+        pintarVars();
+      });
+
       tr.querySelectorAll('[data-col]').forEach(function (b) {
         b.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -1269,10 +1312,56 @@
       });
     }
 
+    /* As ações da linha ficam atrás do "mais opções": a coluna some, e excluir
+       deixa de disputar espaço com editar. */
+    function abrirMenuLinha(botao, k) {
+      var jaAberto = botao.getAttribute('aria-expanded') === 'true';
+      fecharMenuCol();
+      if (jaAberto) return;
+      botao.setAttribute('aria-expanded', 'true');
+
+      var v = VARS[k];
+      var pop = document.createElement('div');
+      pop.className = 'fb-pop col-pop';
+      pop.innerHTML = '<button class="col-acao" type="button" data-ver="1">' +
+          (v.settle ? 'Ver definição' : 'Editar variável') + '</button>' +
+        (v.settle ? '' : '<div class="col-sep"></div>' +
+          '<button class="col-acao perigo" type="button" data-del="1">Excluir variável</button>');
+      posicionarPop(pop, botao, true);
+      pop.addEventListener('click', function (e) { e.stopPropagation(); });
+      pop.querySelector('[data-ver]').addEventListener('click', function () {
+        fecharMenuCol(); abrirVar(k);
+      });
+      var d = pop.querySelector('[data-del]');
+      if (d) d.addEventListener('click', function () { fecharMenuCol(); excluirVar(k); });
+    }
+
+    /* Posiciona o menu abaixo do botão que o abriu, sem sair da janela. */
+    function posicionarPop(pop, botao, aDireita) {
+      document.body.appendChild(pop);
+      var r = botao.getBoundingClientRect();
+      var W = window.innerWidth || document.documentElement.clientWidth || 0;
+      var H = window.innerHeight || document.documentElement.clientHeight || 0;
+      var w = pop.offsetWidth || 240, h = pop.offsetHeight || 240;
+
+      var x = aDireita ? r.right - w : r.left;
+      if (W) x = Math.max(12, Math.min(x, W - w - 12));
+
+      var y = r.bottom + 6;
+      if (H && y + h > H - 12) y = Math.max(12, r.top - h - 6);
+
+      pop.style.left = Math.round(x) + 'px';
+      pop.style.top = Math.round(y) + 'px';
+    }
+
     function fecharMenuCol() {
       document.querySelectorAll('.col-pop').forEach(function (p) { p.remove(); });
-      document.querySelectorAll('.col-btn[aria-expanded="true"]')
-        .forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+      document.querySelectorAll('[aria-expanded="true"]')
+        .forEach(function (b) {
+          if (b.classList.contains('col-btn') || b.hasAttribute('data-vmais')) {
+            b.setAttribute('aria-expanded', 'false');
+          }
+        });
     }
 
     function abrirMenuCol(botao, c) {
@@ -1311,7 +1400,7 @@
         h += '<div class="col-sep"></div><button class="col-acao" type="button" data-limpar="1">Limpar esta coluna</button>';
       }
       pop.innerHTML = h;
-      botao.parentNode.appendChild(pop);
+      posicionarPop(pop, botao);
       pop.addEventListener('click', function (e) { e.stopPropagation(); });
 
       pop.querySelectorAll('[data-ord]').forEach(function (b) {
@@ -1354,8 +1443,6 @@
     function pintarVars() {
       document.getElementById('cntAg').textContent = ANALISES.length;
       document.getElementById('cntVar').textContent = Object.keys(VARS).length;
-      pintarCabecalho();
-
       var q = filtroVar.trim().toLowerCase();
       var chaves = Object.keys(VARS).filter(function (k) {
         var v = VARS[k];
@@ -1373,67 +1460,139 @@
         });
       }
 
+      chavesVisiveis = chaves;
+      pintarCabecalho();
+
       if (!chaves.length) {
         document.getElementById('rowsVars').innerHTML =
-          '<tr><td colspan="' + (COLS.length + 1) + '"><span class="ap-dim">' +
+          '<tr><td colspan="' + (COLS.length + 2) + '"><span class="ap-dim">' +
           'Nenhuma variável com esses filtros.</span></td></tr>';
+        pintarLoteVars();
         return;
       }
 
       document.getElementById('rowsVars').innerHTML = chaves.map(function (k) {
         var v = VARS[k];
-        return '<tr data-clicavel="1">' + COLS.map(function (c) {
+        return '<tr data-clicavel="1">' +
+          '<td class="c-sel"><label class="ap-check"><input type="checkbox" data-sel="' + k + '"' +
+          (varSel[k] ? ' checked' : '') + ' /> <span class="sr-only">Selecionar ' + v.nome + '</span>' +
+          '</label></td>' + COLS.map(function (c) {
           return '<td' + (c.largo ? ' style="white-space:normal"' : '') + '>' +
                  (c.cel ? c.cel(v, k) : c.val(v, k)) + '</td>';
         }).join('') +
-          '<td><button class="ap-mini" type="button" data-vedit="' + k + '">' +
-          (v.settle ? 'Ver' : 'Editar') + '</button></td></tr>';
+          '<td class="acoes-cel"><button class="icon-btn" type="button" data-vmais="' + k + '" ' +
+          'aria-label="Mais opções de ' + v.nome.replace(/"/g, '&quot;') + '" aria-haspopup="true" ' +
+          'aria-expanded="false"><svg viewBox="0 0 20 20" width="17" height="17" fill="currentColor" ' +
+          'aria-hidden="true"><circle cx="10" cy="4.5" r="1.5"/><circle cx="10" cy="10" r="1.5"/>' +
+          '<circle cx="10" cy="15.5" r="1.5"/></svg></button></td></tr>';
       }).join('');
 
-      document.querySelectorAll('[data-vedit]').forEach(function (b) {
-        b.addEventListener('click', function () { abrirVar(b.dataset.vedit); });
+      document.querySelectorAll('#rowsVars [data-sel]').forEach(function (c) {
+        c.addEventListener('click', function (e) { e.stopPropagation(); });
+        c.addEventListener('change', function () {
+          varSel[c.dataset.sel] = c.checked;
+          pintarLoteVars();
+          document.getElementById('varTodas').checked = !!chavesVisiveis.length &&
+            chavesVisiveis.every(function (k) { return varSel[k]; });
+        });
       });
-      /* a linha inteira também abre, não só o botão */
+      pintarLoteVars();
+
+      document.querySelectorAll('[data-vmais]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          abrirMenuLinha(b, b.dataset.vmais);
+        });
+      });
+      /* a linha inteira também abre, não só o menu */
       document.querySelectorAll('#rowsVars tr').forEach(function (tr) {
-        var b = tr.querySelector('[data-vedit]');
+        var b = tr.querySelector('[data-vmais]');
         if (!b) return;
         tr.addEventListener('click', function (e) {
-          if (e.target.closest('[data-vedit]')) return;
-          abrirVar(b.dataset.vedit);
+          if (e.target.closest('[data-vmais]')) return;
+          abrirVar(b.dataset.vmais);
         });
       });
     }
 
+    /* Confirmação para o que não dá para desfazer sozinho. O corpo diz o
+       estrago antes, não depois. */
+    var cfmAcao = null;
+
+    function confirmar(titulo, corpo, rotulo, faz) {
+      document.getElementById('cfmTitulo').textContent = titulo;
+      document.getElementById('cfmCorpo').innerHTML = corpo;
+      document.getElementById('cfmSim').textContent = rotulo;
+      cfmAcao = faz;
+      document.getElementById('cfmOvl').hidden = false;
+      document.getElementById('cfm').hidden = false;
+      document.getElementById('cfmNao').focus();
+    }
+
+    function fecharConfirmacao() {
+      cfmAcao = null;
+      document.getElementById('cfmOvl').hidden = true;
+      document.getElementById('cfm').hidden = true;
+    }
+
+    document.getElementById('cfmNao').addEventListener('click', fecharConfirmacao);
+    document.getElementById('cfmOvl').addEventListener('click', fecharConfirmacao);
+    document.getElementById('cfmSim').addEventListener('click', function () {
+      var f = cfmAcao;
+      fecharConfirmacao();
+      if (f) f();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('cfm').hidden) fecharConfirmacao();
+    });
+
     /* Excluir mostra o estrago antes, e o que fica quebrado depois. */
     function excluirVar(k) {
       var v = VARS[k], u = usosDaVar(k);
-      cpAbrirPainel();
-      cpAgente = null;
-      document.getElementById('cpTitulo').textContent = 'Excluir variável';
-      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-      document.getElementById('cpConfig').hidden = true;
-      document.getElementById('cpForm').hidden = true;
-      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + v.nome + ' · ' + fonteTxt(v) + '</p>';
+      var corpo = u.length
+        ? '<p><b>' + u.length + ' regra(s)</b> dependem desta variável e param de funcionar.</p>' +
+          '<div class="cfm-lista">' + u.map(function (x) {
+            return '· <b>' + x.agente + '</b> · ' + x.regra;
+          }).join('<br>') + '</div>'
+        : '<p>Nenhum agente usa esta variável. Excluir não quebra nada.</p>';
 
-      if (!u.length) {
-        cpBolha('bot', 'Esta variável não é usada por nenhum agente. Excluir não quebra nada.');
-      } else {
-        cpBolha('bot', 'Antes de excluir: <b>' + u.length + ' regra(s)</b> dependem dela e param de funcionar.<br>' +
-          u.map(function (x) { return '· ' + x.agente + ' · ' + x.regra; }).join('<br>'));
-      }
-      cpChips([
-        { t:'Excluir mesmo assim', faz:function () {
-            delete VARS[k];
-            AGENTES.forEach(function (a) {
-              var i = a.vars.indexOf(k);
-              if (i >= 0) { a.vars.splice(i, 1); a.risco = 'A variável que alimentava esta regra foi excluída, então ela não roda mais.'; a.estado = 'warn'; }
+      confirmar('Excluir "' + v.nome + '"?', corpo, 'Excluir variável', function () {
+        var antes = JSON.parse(JSON.stringify(v));
+        var afetadas = [];
+        var textoAntes = JURIDICA.texto;
+        var varsJur = JURIDICA.vars.slice(), varsTec = AGENTE_TEC.vars.slice();
+
+        delete VARS[k];
+        AGENTES.forEach(function (a) {
+          var i = a.vars.indexOf(k);
+          if (i >= 0) {
+            afetadas.push({ a:a, risco:a.risco, estado:a.estado });
+            a.vars.splice(i, 1);
+            a.risco = 'A variável que alimentava esta regra foi excluída, então ela não roda mais.';
+            a.estado = 'warn';
+          }
+        });
+        /* As análises que guardam variável fora de AGENTES também precisam ser
+           limpas, senão elas continuam somando o custo de algo que não existe. */
+        JURIDICA.vars = JURIDICA.vars.filter(function (x) { return x !== k; });
+        JURIDICA.texto = JURIDICA.texto.split('{{' + k + '}}').join(antes.nome);
+        AGENTE_TEC.vars = AGENTE_TEC.vars.filter(function (x) { return x !== k; });
+
+        pintarVars(); pintarAnalises(); pintarCrits();
+        settleToast('Variável excluída' + (afetadas.length
+          ? ' · ' + afetadas.length + ' regra(s) ficaram para reescrever' : ''), {
+          undoLabel:'Desfazer',
+          onUndo:function () {
+            VARS[k] = antes;
+            afetadas.forEach(function (f) {
+              f.a.vars.push(k); f.a.risco = f.risco; f.a.estado = f.estado;
             });
+            JURIDICA.vars = varsJur; JURIDICA.texto = textoAntes;
+            AGENTE_TEC.vars = varsTec;
             pintarVars(); pintarAnalises(); pintarCrits();
-            cpBolha('bot', 'Excluída. As regras que dependiam dela ficaram marcadas para você reescrever.');
-            settleToast('Variável excluída');
-          }},
-        { t:'Deixar como está', faz:function () { cpBolha('bot', 'Nada foi alterado.'); } }
-      ]);
+          }
+        });
+      });
     }
 
     /* ---------- abas ---------- */
@@ -2308,6 +2467,7 @@
       editando = -1;
       modoModal = 'outro';
       document.getElementById('fxValidar').hidden = false;
+      document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
       document.getElementById('fxStatus').hidden = !fx.ativo;
@@ -2489,6 +2649,44 @@
       });
     }
 
+    /* Quem sente a mudança, dito em uma frase, com o nome de cada agente
+       clicável: quem vai alterar a variável precisa poder conferir o agente
+       antes de mexer. */
+    function listaDeNomes(nomes) {
+      if (nomes.length === 1) return nomes[0];
+      return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
+    }
+
+    function impactoHTML(k) {
+      var ags = agentesDaVar(k);
+      if (!ags.length) {
+        return '<div class="alert">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+          '<div class="alert-title">Nenhum agente usa esta variável ainda</div>' +
+          '<div class="alert-description"><p>Você pode mudar o que quiser sem quebrar nada.</p></div></div>';
+      }
+      var links = ags.map(function (nome) {
+        return '<a href="#" class="ap-linkbtn" data-vai="' + nome.replace(/"/g, '&quot;') + '">' + nome + '</a>';
+      });
+      return '<div class="alert alert-warning">' +
+        '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
+        '<div class="alert-title">Variável em uso</div>' +
+        '<div class="alert-description"><p>Esta variável está sendo utilizada em ' + ags.length +
+        (ags.length === 1 ? ' agente (' : ' agentes (') + listaDeNomes(links) +
+        '). Qualquer mudança aqui irá afetar ' + (ags.length === 1 ? 'esse agente' : 'esses agentes') +
+        ', em todas as licitações analisadas daqui para frente.</p></div></div>';
+    }
+
+    function ligarImpacto() {
+      document.querySelectorAll('#fxBody [data-vai]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          var alvo = ANALISES.filter(function (x) { return x.nome === a.dataset.vai; })[0];
+          if (alvo) abrirAnalise(alvo);
+        });
+      });
+    }
+
     /* Serve para criar e para editar: com uma chave, abre preenchida e avisa
        quais regras vão sentir a mudança. Variável da Settle abre travada. */
     function abrirVar(k) {
@@ -2496,8 +2694,8 @@
       var travado = !!(v && v.settle);
 
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Adicionar variável';
-      document.getElementById('fxStatus').textContent = travado ? 'Da Settle' : 'Em uso';
-      document.getElementById('fxStatus').hidden = !v;
+      document.getElementById('fxStatus').textContent = 'Da Settle';
+      document.getElementById('fxStatus').hidden = !travado;
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
@@ -2505,6 +2703,11 @@
       document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
       document.getElementById('fxCusto').textContent = '';
+      /* Excluir fica junto de salvar, em vermelho: é ação da mesma tela, mas
+         não é a ação esperada. */
+      var btnEx = document.getElementById('fxExcluir');
+      btnEx.hidden = !(v && !travado);
+      btnEx.onclick = function () { fecharFx(); excluirVar(k); };
 
       vForm.lista = listaDeFontes(v);
       vForm.resto = v ? !!v.resto : true;
@@ -2518,17 +2721,7 @@
           '<div class="alert-title">Variável cadastrada pela Settle</div>' +
           '<div class="alert-description"><p>Você pode usá-la em qualquer agente, mas não editar a definição. ' +
           'Para uma regra diferente, crie uma variável sua.</p></div></div>'
-        : (v
-          ? '<div class="alert' + (u.length ? ' alert-warning' : '') + '">' +
-            '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 7.4v3.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor" stroke="none"/></svg>' +
-            '<div class="alert-title">' + (u.length
-              ? 'Mexer aqui afeta ' + u.length + ' regra(s)'
-              : 'Nenhuma regra usa esta variável ainda') + '</div>' +
-            '<div class="alert-description"><p>' + (u.length
-              ? u.map(function (x) { return x.agente + ' · ' + x.regra; }).join('<br>') +
-                '<br>A mudança vale para todas as licitações analisadas daqui para frente.'
-              : 'Você pode mudar o que quiser sem quebrar nada.') + '</p></div></div>'
-          : '');
+        : (v ? impactoHTML(k) : '');
 
       document.getElementById('fxBody').innerHTML = aviso +
 
@@ -2562,11 +2755,10 @@
         '<div class="ap-field"><span class="ap-flabel">O que fazer quando não encontrar a variável</span>' +
         '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '', travado) + '</div></div>' +
 
-        (v && !travado
-          ? '<div class="ap-det-acts"><button class="btn btn-outline" type="button" id="vExcluir">Excluir esta variável</button></div>'
-          : '');
+        '';
 
       pintarOrdem(travado);
+      ligarImpacto();
 
       /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
          impede um padrão incompatível de ser salvo. */
@@ -2575,8 +2767,6 @@
         document.getElementById('vPadraoBox').innerHTML = padraoCampo(vForm.tipo, '', travado);
       });
 
-      var ex = document.getElementById('vExcluir');
-      if (ex) ex.addEventListener('click', function () { fecharFx(); excluirVar(k); });
 
       varEditando = k || null;
       modoModal = 'variavel';
@@ -2625,6 +2815,71 @@
 
     document.getElementById('vBusca').addEventListener('input', function (e) {
       filtroVar = e.target.value; pintarVars();
+    });
+
+    document.getElementById('loteVarsNada').addEventListener('click', function () {
+      varSel = {}; pintarVars();
+    });
+
+    /* Excluir em lote passa pela mesma confirmação, somando o estrago de todas. */
+    document.getElementById('loteVarsDel').addEventListener('click', function () {
+      var sel = selecionadasVars();
+      if (!sel.length) return;
+      var daSettle = sel.filter(function (k) { return VARS[k].settle; });
+      var podem = sel.filter(function (k) { return !VARS[k].settle; });
+
+      if (!podem.length) {
+        settleToast('Variáveis da Settle não podem ser excluídas');
+        return;
+      }
+
+      var regras = 0;
+      podem.forEach(function (k) { regras += usosDaVar(k).length; });
+
+      var corpo = '<p>' + podem.length + (podem.length === 1
+          ? ' variável será excluída.' : ' variáveis serão excluídas.') + '</p>' +
+        (regras ? '<p><b>' + regras + ' regra(s)</b> dependem delas e param de funcionar.</p>' : '') +
+        (daSettle.length ? '<p>' + daSettle.length + ' da Settle ficam de fora: elas não podem ser excluídas.</p>' : '') +
+        '<div class="cfm-lista">' + podem.map(function (k) {
+          return '· ' + VARS[k].nome;
+        }).join('<br>') + '</div>';
+
+      confirmar('Excluir ' + podem.length +
+        (podem.length === 1 ? ' variável?' : ' variáveis?'), corpo,
+        'Excluir ' + (podem.length === 1 ? 'variável' : 'variáveis'), function () {
+        var antes = {};
+        podem.forEach(function (k) { antes[k] = JSON.parse(JSON.stringify(VARS[k])); });
+        var afetadas = [];
+
+        podem.forEach(function (k) {
+          delete VARS[k];
+          AGENTES.forEach(function (a) {
+            var i = a.vars.indexOf(k);
+            if (i >= 0) {
+              afetadas.push({ a:a, k:k, risco:a.risco, estado:a.estado });
+              a.vars.splice(i, 1);
+              a.risco = 'A variável que alimentava esta regra foi excluída, então ela não roda mais.';
+              a.estado = 'warn';
+            }
+          });
+          JURIDICA.vars = JURIDICA.vars.filter(function (x) { return x !== k; });
+          JURIDICA.texto = JURIDICA.texto.split('{{' + k + '}}').join(antes[k].nome);
+          AGENTE_TEC.vars = AGENTE_TEC.vars.filter(function (x) { return x !== k; });
+        });
+
+        varSel = {};
+        pintarVars(); pintarAnalises(); pintarCrits();
+        settleToast(podem.length + (podem.length === 1 ? ' variável excluída' : ' variáveis excluídas'), {
+          undoLabel:'Desfazer',
+          onUndo:function () {
+            Object.keys(antes).forEach(function (k) { VARS[k] = antes[k]; });
+            afetadas.forEach(function (f) {
+              f.a.vars.push(f.k); f.a.risco = f.risco; f.a.estado = f.estado;
+            });
+            pintarVars(); pintarAnalises(); pintarCrits();
+          }
+        });
+      });
     });
 
 
@@ -2925,6 +3180,7 @@
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = an.formato !== 'texto';
+      document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxAtivar').hidden = an.formato !== 'texto';
       document.getElementById('fxAtivar').disabled = false;
 

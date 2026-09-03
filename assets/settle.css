@@ -1034,7 +1034,9 @@ table.dt th.col{position:relative;padding:0;}
 .col-btn.ativo{color:var(--accent-600);}
 .col-car{margin-left:auto;flex:none;display:inline-flex;color:var(--muted-foreground);}
 .col-btn.ativo .col-car{color:var(--accent-600);}
-.col-pop{min-width:230px;max-width:280px;font-weight:400;}
+/* Solto do fluxo: a tabela rola na horizontal e cortaria o menu se ele
+   ficasse dentro dela. */
+.col-pop{position:fixed;top:auto;left:auto;z-index:110;min-width:230px;max-width:280px;font-weight:400;}
 .col-sep{height:1px;background:var(--border);margin:6px 4px;}
 .col-acao{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;
   font-size:13px;width:100%;border:none;background:transparent;font-family:inherit;color:var(--foreground);
@@ -1064,3 +1066,27 @@ table.dt th.col{position:relative;padding:0;}
 
 /* Pendência de protótipo: valor que ainda depende de alguém de fora. */
 .ap-pend{display:block;margin-top:4px;font-size:12px;line-height:17px;color:var(--warning);}
+
+/* ==========================================================================
+   29. AÇÃO DESTRUTIVA E CONFIRMAÇÃO
+   ========================================================================== */
+.btn-danger{background:var(--card);border:1px solid var(--destructive);color:var(--destructive);}
+.btn-danger:hover{background:color-mix(in srgb, var(--destructive) 8%, var(--card));}
+.col-acao.perigo{color:var(--destructive);}
+.col-acao.perigo:hover{background:color-mix(in srgb, var(--destructive) 8%, var(--card));}
+
+.cfm-ovl{position:fixed;inset:0;z-index:120;background:rgba(23,23,23,.42);}
+.cfm{position:fixed;z-index:121;top:50%;left:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px));
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-box);
+  box-shadow:var(--shadow-pop);padding:20px;}
+.cfm h2{margin:0 0 8px;font-size:17px;font-weight:600;}
+.cfm p{margin:0 0 6px;font-size:14px;line-height:21px;color:var(--muted-foreground);}
+.cfm-lista{margin:8px 0 0;font-size:13px;line-height:20px;color:var(--foreground);}
+.cfm-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+
+/* Menu de ações da linha da tabela. */
+.acoes-cel{position:relative;text-align:right;}
+
+/* Coluna de seleção da tabela. */
+table.dt th.c-sel,table.dt td.c-sel{width:38px;padding-right:0;}
+table.dt td.c-sel .ap-check{gap:0;}
