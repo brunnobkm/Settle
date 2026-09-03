@@ -1062,7 +1062,8 @@ table.dt th.col{position:relative;padding:0;}
 .fnt-manif{background:#fbe7ef;color:#9b1c48;}
 .fnt-result{background:#e6f4ea;color:#186434;}
 .fnt-portal{background:#e9edf2;color:#334155;}
-.fnt-resto{background:var(--muted);color:var(--muted-foreground);}
+.fnt-bases{background:#f3ecdf;color:#6b4f14;}
+.fnt-outros{background:#eceaf6;color:#4a4468;}
 
 /* Título de campo com ação ao lado. */
 .ap-flabel-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -1097,3 +1098,12 @@ table.dt td.c-sel .ap-check{gap:0;}
 /* Regra que usa a variável de onde a pessoa veio. */
 .ap-crit.usa-var{box-shadow:inset 3px 0 0 var(--accent);}
 .ap-crit.usa-var .ap-crit-name{color:var(--accent-600);}
+
+/* ==========================================================================
+   30. TOOLTIP
+   O title nativo demora quase um segundo para aparecer, o que na prática faz
+   a informação não existir. Este responde em 120ms.
+   ========================================================================== */
+.tip{position:fixed;z-index:200;max-width:280px;background:var(--primary);color:var(--primary-foreground);
+  font-size:12px;line-height:17px;padding:6px 9px;border-radius:7px;box-shadow:var(--shadow-pop);
+  pointer-events:none;}

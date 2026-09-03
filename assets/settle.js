@@ -267,3 +267,51 @@
     boot();
   }
 })();
+
+/* ---------- tooltip ----------
+   Usa data-tip em vez de title: o nativo só aparece depois de quase um
+   segundo, tempo suficiente para a pessoa desistir. */
+(function () {
+  var balao = null, timer = null;
+
+  function esconder() {
+    clearTimeout(timer);
+    if (balao) { balao.remove(); balao = null; }
+  }
+
+  function mostrar(alvo) {
+    var texto = alvo.getAttribute('data-tip');
+    if (!texto) return;
+    esconder();
+    balao = document.createElement('div');
+    balao.className = 'tip';
+    balao.setAttribute('role', 'tooltip');
+    balao.textContent = texto;
+    document.body.appendChild(balao);
+
+    var r = alvo.getBoundingClientRect();
+    var W = window.innerWidth || document.documentElement.clientWidth || 0;
+    var x = r.left + r.width / 2 - balao.offsetWidth / 2;
+    if (W) x = Math.max(8, Math.min(x, W - balao.offsetWidth - 8));
+    var y = r.top - balao.offsetHeight - 8;
+    if (y < 8) y = r.bottom + 8;
+    balao.style.left = Math.round(x) + 'px';
+    balao.style.top = Math.round(y) + 'px';
+  }
+
+  document.addEventListener('mouseover', function (e) {
+    var alvo = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (!alvo) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () { mostrar(alvo); }, 120);
+  });
+  document.addEventListener('mouseout', function (e) {
+    if (e.target.closest && e.target.closest('[data-tip]')) esconder();
+  });
+  document.addEventListener('focusin', function (e) {
+    var alvo = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (alvo) mostrar(alvo);
+  });
+  document.addEventListener('focusout', esconder);
+  window.addEventListener('scroll', esconder, true);
+})();
