@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 17:33</p>
+        <p class="ap-selo">protótipo · versão de 02/09 21:53</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
           edita e vê o que ele produziu na última execução.</p>
@@ -2239,11 +2239,10 @@
         '<input class="ap-input" id="vNome" type="text"' + dis + ' value="' +
         (v ? v.nome.replace(/"/g, '&quot;') : '') + '" placeholder="Ex.: prazo de entrega" /></div>' +
 
-        '<div class="ap-field"><label for="vDesc">Descrição</label>' +
-        '<p class="ap-fhint">Uma linha para quem for usar entender o que ela guarda.</p>' +
-        '<input class="ap-input" id="vDesc" type="text"' + dis + ' value="' +
-        (v ? (v.desc || '').replace(/"/g, '&quot;') : '') +
-        '" placeholder="Ex.: prazo em dias para entregar o objeto" /></div>' +
+        (travado && v.desc
+          ? '<div class="ap-field"><span class="ap-flabel">Descrição</span>' +
+            '<p class="ap-fhint" style="margin:0">' + v.desc + '</p></div>'
+          : '') +
 
         '<div class="ap-field"><span class="ap-flabel">Tipo da resposta</span>' +
         '<p class="ap-fhint">Define o que a Settle aceita como resposta e como o valor padrão é preenchido. ' +
@@ -2267,9 +2266,9 @@
         (vForm.resto ? ' checked' : '') + ' /> <span>Se não achar em nenhuma delas, procurar no resto dos ' +
         'arquivos da licitação</span></label></div>' +
 
-        '<div class="ap-field"><span class="ap-flabel">Valor padrão quando não encontrar</span>' +
-        '<p class="ap-fhint">O que a variável vale quando a informação não está em lugar nenhum. ' +
-        'O formato segue o tipo escolhido acima.</p>' +
+        '<div class="ap-field"><span class="ap-flabel">Quando não encontrar no documento</span>' +
+        '<p class="ap-fhint">O valor que a variável assume quando a informação não está em lugar ' +
+        'nenhum. O formato segue o tipo escolhido acima.</p>' +
         '<div id="vPadraoBox">' + padraoCampo(vForm.tipo, v ? v.padrao : '') + '</div></div>' +
 
         (v && !travado
@@ -2339,7 +2338,7 @@
       if (novo) k = 'nv' + Object.keys(VARS).length;
       var antes = novo ? null : JSON.parse(JSON.stringify(VARS[k]));
       VARS[k] = {
-        nome:nome, desc:document.getElementById('vDesc').value.trim(),
+        nome:nome, desc:novo ? '' : VARS[k].desc,
         tipo:vForm.tipo, prompt:prompt,
         fontes:vForm.fontes.slice(), resto:document.getElementById('vResto').checked,
         padrao:padrao,
