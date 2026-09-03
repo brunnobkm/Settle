@@ -458,6 +458,11 @@ table.dt th:last-child{border-right:none;}
 table.dt td{font-size:12px;line-height:16px;color:var(--muted-foreground);padding:8px;height:36px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
 table.dt td:last-child{border-right:none;}
 table.dt tbody tr:last-child td{border-bottom:none;}
+/* A linha inteira é clicável, então o hover precisa ser visível de longe. */
+table.dt tbody tr[data-clicavel]{cursor:pointer;}
+table.dt tbody tr[data-clicavel]:hover td{background:var(--muted);
+  background:color-mix(in srgb, var(--accent) 9%, var(--card));}
+table.dt tbody tr[data-clicavel]:hover .ap-mini{border-color:var(--border-strong);}
 .dt .c-lote{width:56px;}
 .dt .c-nome{width:100%;}
 .dt .c-seg{white-space:nowrap;}
@@ -1009,3 +1014,9 @@ select.ap-input:disabled{cursor:default;opacity:.7;}
 .ord-item.over{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
 .ord-n.off{background:transparent;border:1px solid var(--border);color:var(--muted-foreground);}
 .ord-grip{flex:none;color:var(--muted-foreground);cursor:grab;}
+
+/* Marcador de origem da variável. */
+.origem{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:16px;
+  padding:2px 8px;border-radius:999px;border:1px solid var(--border);white-space:nowrap;}
+.origem.settle{background:var(--muted);color:var(--muted-foreground);}
+.origem.minha{background:var(--card);color:var(--foreground);}
