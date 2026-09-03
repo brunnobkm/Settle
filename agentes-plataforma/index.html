@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902q" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903a" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:56</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:04</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -319,6 +319,12 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4 6 10l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <h2 id="fxTitle">Adicionar agente</h2>
+      <button class="icon-btn" type="button" id="agEditar" aria-label="Editar este agente" hidden>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M13.4 3.9a1.6 1.6 0 0 1 2.3 2.3L7.4 14.5l-3 .7.7-3z" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" type="button" id="agExcluir" aria-label="Excluir este agente" hidden>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4.5 6h11M8 6V4.6h4V6M6 6l.7 9.4h6.6L14 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <button class="icon-btn" type="button" id="fxX" aria-label="Fechar">
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
@@ -375,7 +381,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902q" defer></script>
+  <script src="../assets/settle.js?v=20260903a" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2417,6 +2423,7 @@
       document.getElementById('fxBody').innerHTML = h;
 
       ligarCampoInstr(function () {
+        if (!fx) return;
         fx.texto = htmlParaTexto(document.getElementById('vfCampo'));
         atualizarRodapeFx();
       });
@@ -2473,6 +2480,7 @@
       fx = base || fxNovo();
       editando = -1;
       modoModal = 'outro';
+      analiseAberta = null;
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
@@ -2538,13 +2546,25 @@
 
     document.getElementById('fxAtivar').addEventListener('click', function () {
       if (modoModal === 'variavel') return salvarVar();
-      if (analiseAberta && !document.getElementById('fxModal').hidden && modoModal === 'outro' && !fx) {
+
+      var rotulo = document.getElementById('fxAtivar').textContent;
+      if (analiseAberta && rotulo === 'Executar agora') {
+        var alvo = analiseAberta;
+        alvo.execs = alvo.execs || [];
+        alvo.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
+          o:'Execução manual disparada por você', st:'ok' });
+        pintarDetalhe(alvo);
+        settleToast('Execução disparada nesta licitação');
+        return;
+      }
+      if (analiseAberta && rotulo === 'Salvar alterações') {
         pintarAnalises();
-        fecharFx();
+        pintarDetalhe(analiseAberta);
         settleToast('Agente atualizado');
         return;
       }
-      var texto = (fx.texto || '').trim();
+
+      var texto = (fx && fx.texto || '').trim();
       if (!texto) { settleToast('Escreva as instruções do agente'); return; }
 
       /* Um agente novo é uma análise nova, não uma regra dentro do Score. */
@@ -2560,8 +2580,9 @@
       };
       ANALISES.push(an);
       pintarAnalises(); pintarVars(); pintarCrits();
-      fecharFx();
       abaAtiva('agentes');
+      fx = null;
+      abrirAnalise(an);
       settleToast('Agente criado');
     });
 
@@ -2725,6 +2746,7 @@
        quais regras vão sentir a mudança. Variável da Settle abre travada. */
     function abrirVar(k) {
       var v = k ? VARS[k] : null, u = k ? usosDaVar(k) : [];
+      analiseAberta = null;
       var travado = !!(v && v.settle);
 
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Adicionar variável';
@@ -2732,6 +2754,8 @@
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
+      document.getElementById('agEditar').hidden = true;
+      document.getElementById('agExcluir').hidden = true;
       document.getElementById('fxAtivar').hidden = travado;
       document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
@@ -3272,53 +3296,147 @@
       });
     }
 
+    /* Abrir um agente mostra o que ele é e o que ele fez. Editar é outro
+       momento, atrás do lápis, e reusa o mesmo formulário da criação. */
     function abrirAnalise(an, kDestaque) {
       analiseAberta = an;
       varDestaque = kDestaque || null;
-      document.getElementById('fxTitle').textContent = an.nome;
       modoModal = 'outro';
-      pintarVoltar();
+      document.getElementById('fxTitle').textContent = an.nome;
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
+      pintarVoltar();
+      pintarDetalhe(an);
+    }
+
+    function proximaExecucao(an) {
+      if (an.ativo === false) return 'Não roda em licitação nova até ser retomado';
+      var e = (an.execs || [])[0];
+      return e ? 'Última execução ' + e.quando : 'Ainda não rodou';
+    }
+
+    function pintarDetalhe(an) {
+      document.getElementById('agEditar').hidden = false;
+      document.getElementById('agExcluir').hidden = false;
+      document.getElementById('fxExcluir').hidden = true;
+      document.getElementById('fxValidar').hidden = true;
+      document.getElementById('fxAtivar').hidden = false;
+      document.getElementById('fxAtivar').disabled = false;
+      document.getElementById('fxAtivar').textContent = 'Executar agora';
+      document.getElementById('fxCusto').textContent = '';
+
+      var ativo = an.ativo !== false && an.id !== 'juridica';
+      /* As variáveis vêm do próprio texto: é o que a instrução realmente usa. */
+      var vs = varsDoTexto(instrucaoDe(an));
+
+      document.getElementById('fxBody').innerHTML =
+        '<div class="ag-top">' +
+          '<label class="sw"><input type="checkbox" id="agAtivo"' + (ativo ? ' checked' : '') +
+          ' /><i></i><span class="sr-only">Agente ativo</span></label>' +
+          '<span class="ap-tag ' + (ativo ? 'run' : 'pause') + '">' + (ativo ? 'Ativo' : 'Pausado') + '</span>' +
+          '<span>' + proximaExecucao(an) + '</span>' +
+        '</div>' +
+        '<div class="ag-cols">' +
+          '<div><div class="ag-sec"><h3>Histórico</h3>' +
+            ((an.execs || []).length
+              ? an.execs.map(function (e, i) {
+                  return '<button class="ag-hist" type="button" data-exec="' + i + '">' + e.quando +
+                         '<span>' + e.lic + '</span></button>';
+                }).join('')
+              : '<p class="ap-dim" style="font-size:13px">Ainda não rodou em nenhuma licitação.</p>') +
+          '</div></div>' +
+          '<div>' +
+            '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
+            '<div class="ag-sec"><h3>Quando roda</h3><p>' + an.gatilho + '</p></div>' +
+            '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
+              (vs.length ? '<div class="ag-vars">' + vs.map(function (k) { return chipHTML(k); }).join('') + '</div>'
+                         : '<p class="ap-dim" style="font-size:13px">Nenhuma.</p>') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('agAtivo').addEventListener('change', function (e) {
+        an.ativo = e.target.checked;
+        pintarDetalhe(an); pintarAnalises();
+      });
+
+      /* Cada execução abre a conversa daquele resultado, no painel de agentes. */
+      document.querySelectorAll('#fxBody [data-exec]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var e = an.execs[+b.dataset.exec];
+          fecharFx();
+          cpAbrirPainel();
+          cpAgente = an.id;
+          document.getElementById('cpTitulo').textContent = an.nome;
+          document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+          document.getElementById('cpConfig').hidden = false;
+          document.getElementById('cpForm').hidden = false;
+          document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + e.lic + ' · ' + e.quando + '</p>';
+          cpBolha('bot', e.o + '.<br>' + (e.st === 'falhou'
+            ? 'Esta execução falhou. Posso explicar o que faltou.'
+            : e.st === 'aguardando'
+              ? 'Esta ação está esperando sua aprovação na aba Aprovações.'
+              : 'Pode me perguntar por que cheguei nesse resultado.'));
+        });
+      });
+    }
+
+    /* As variáveis citadas num texto, sem depender do campo estar montado. */
+    function varsDoTexto(t) {
+      var ks = [], m, re = /\{\{(\w+)\}\}/g;
+      while ((m = re.exec(t || ''))) { if (ks.indexOf(m[1]) < 0) ks.push(m[1]); }
+      return ks;
+    }
+
+    /* O mesmo formulário da criação, preenchido. */
+    function editarAnalise(an) {
+      analiseAberta = an;
+      modoModal = 'outro';
+      document.getElementById('agEditar').hidden = true;
+      document.getElementById('agExcluir').hidden = true;
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').disabled = false;
-      document.getElementById('fxAtivar').textContent =
-        an.id === 'juridica' ? 'Ativar análise' : 'Salvar alterações';
-
-      if (an.formato === 'texto') return pintarTextoVars(an);
-
-      /* Análise técnica: o resultado dela é por componente, com agregação. */
-      if (an.formato === 'composicao') {
-        document.getElementById('fxCusto').textContent = '';
-        document.getElementById('fxBody').innerHTML = campoNome(an) +
-          campoInstrHTML('Instruções', '', instrucaoDe(an),
-            'Descreva o que o agente deve avaliar em cada componente.') +
-          campoGatilho(an);
-        ligarCabecalhoConfig(an);
-        ligarCampoInstr(function () {
-          an.texto = htmlParaTexto(document.getElementById('vfCampo'));
-        });
-        return;
-      }
-
+      document.getElementById('fxAtivar').textContent = 'Salvar alterações';
       document.getElementById('fxCusto').textContent = '';
 
-      var h = campoNome(an) +
+      var alvo = textoDe(an);
+      document.getElementById('fxBody').innerHTML = campoNome(an) +
         campoInstrHTML('Instruções', '', instrucaoDe(an),
           'Descreva o que o agente deve analisar. Digite / para inserir uma variável.') +
         campoGatilho(an);
 
-      document.getElementById('fxBody').innerHTML = h;
       ligarCabecalhoConfig(an);
       ligarCampoInstr(function () {
-        an.texto = htmlParaTexto(document.getElementById('vfCampo'));
+        if (!an) return;
+        var t = htmlParaTexto(document.getElementById('vfCampo'));
+        an.texto = t;
+        if (alvo) { alvo.texto = t; alvo.vars = varsNoTexto(); }
       });
-
     }
 
+    document.getElementById('agEditar').addEventListener('click', function () {
+      if (analiseAberta) editarAnalise(analiseAberta);
+    });
 
+    document.getElementById('agExcluir').addEventListener('click', function () {
+      var an = analiseAberta;
+      if (!an) return;
+      confirmar('Excluir "' + an.nome + '"?',
+        '<p>O agente para de rodar nas próximas licitações. As variáveis que ele usa continuam ' +
+        'existindo, e podem ser usadas por outros agentes.</p>',
+        'Excluir agente', function () {
+          var i = ANALISES.indexOf(an);
+          if (i >= 0) ANALISES.splice(i, 1);
+          fecharFx();
+          pintarAnalises(); pintarVars();
+          settleToast('Agente excluído', {
+            undoLabel:'Desfazer',
+            onUndo:function () { ANALISES.splice(i, 0, an); pintarAnalises(); pintarVars(); }
+          });
+        });
+    });
 
     /* =====================================================================
        INSTRUÇÃO COM VARIÁVEIS DENTRO
