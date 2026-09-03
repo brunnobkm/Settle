@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:31</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:36</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -326,7 +326,6 @@
     <div class="ap-mbody" id="fxBody"></div>
     <div class="ap-mfoot">
       <span class="ap-money" id="fxCusto"></span>
-      <button class="btn btn-outline" type="button" id="fxValidar">Validar em 3 licitações</button>
       <button class="btn btn-danger" type="button" id="fxExcluir" hidden>Excluir esta variável</button>
       <button class="btn btn-primary" type="button" id="fxAtivar">Ativar agente</button>
     </div>
@@ -2390,10 +2389,13 @@
       return '<div style="margin-top:10px">' + h + '</div>';
     }
 
-    /* Criar um agente é escrever a instrução dele, não montar caixinhas: foi o
-       que o José Victor e o Bruno Ortiz defenderam em 02/09 ("é mais fácil pedir
-       em forma de texto, a pessoa não precisa aprender a usar UI"). O fluxo em
-       blocos continua existindo abaixo, para quando a regra ramifica. */
+    /* Criar um agente é escrever a instrução dele, não montar caixinhas. Foi o
+       que o José Victor e o Bruno Ortiz decidiram em 02/09: "por mim, eu
+       deixaria texto livre" (23:15) e "é mais fácil pedir em forma de texto, a
+       pessoa não precisa aprender a usar UI" (28:07).
+
+       O construtor de blocos continua no código, sem tela: ele é a hipótese que
+       a Alice defendia (fluxograma) e some da criação sem sumir do repositório. */
     function pintarFx() {
       var h = '<div class="ap-field"><label for="fxNome">Nome do agente</label>' +
               '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Análise de prazos" /></div>';
@@ -2409,34 +2411,6 @@
                     GATILHOS_FX[g] + '</option>';
            }).join('') + '</select></div>';
 
-      h += '<div class="ap-field"><span class="ap-flabel">O fluxo</span>';
-
-      if (!fx.blocos.length) {
-        h += '<div class="empty-state"><strong>Nenhum passo ainda</strong>Comece extraindo a informação que a regra precisa.</div>';
-      }
-
-      fx.blocos.forEach(function (b, i) {
-        if (i) h += '<div class="ap-conn" aria-hidden="true"></div>';
-        h += '<div class="ap-blk" data-blk="' + i + '"><div class="ap-node"><span class="k">' + TIPOS[b.t].k + '</span>' + blocoTexto(b) +
-             (editando === i ? blocoForm(b, i) : '') + '</div>' +
-             '<div class="ap-blk-acts">' +
-             '<button class="ap-mini" type="button" data-fxed="' + i + '">' + (editando === i ? 'Pronto' : 'Editar') + '</button>' +
-             '<button class="ap-mini" type="button" data-fxdel="' + i + '" aria-label="Remover passo">&times;</button></div></div>';
-        if (b.t === 'decidir' && editando !== i) {
-          h += '<div class="ap-branches">' + (b.ramos || []).map(function (r) {
-            return '<div class="ap-branch"><b>' + r.se + '</b><br>' + r.faz + '</div>';
-          }).join('') + '</div>';
-        }
-      });
-
-      h += '<button class="ap-add" type="button" id="fxAdd">+ Adicionar passo</button>';
-      h += '<div class="ap-chips" id="fxMenu" hidden style="margin-top:8px">' +
-           Object.keys(TIPOS).map(function (t) {
-             return '<button class="ap-chip" type="button" data-fxnew="' + t + '">' + TIPOS[t].k + ' <small>' + TIPOS[t].d + '</small></button>';
-           }).join('') + '</div></div>';
-
-      h += '</div>';
-
       document.getElementById('fxBody').innerHTML = h;
 
       ligarCampoInstr(function () {
@@ -2445,9 +2419,6 @@
       });
       document.getElementById('fxGat').addEventListener('change', function (e) { fx.gatilho = e.target.value; });
       document.getElementById('fxNome').addEventListener('input', function (e) { fx.nome = e.target.value; });
-      document.getElementById('fxAdd').addEventListener('click', function () {
-        var m = document.getElementById('fxMenu'); m.hidden = !m.hidden;
-      });
       document.querySelectorAll('[data-fxnew]').forEach(function (b) {
         b.addEventListener('click', function () { addBloco(b.dataset.fxnew); });
       });
@@ -2499,7 +2470,6 @@
       fx = base || fxNovo();
       editando = -1;
       modoModal = 'outro';
-      document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
@@ -2513,12 +2483,10 @@
       if (!fx) return;
       var n = fx.blocos.length;
       var temTexto = !!(fx.texto || '').trim();
-      document.getElementById('fxCusto').textContent = temTexto || n
+      document.getElementById('fxCusto').textContent = temTexto
         ? (MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação · ' : '') +
-          varsNoTexto().length + (varsNoTexto().length === 1 ? ' variável' : ' variáveis') +
-          (n ? ' · ' + n + (n === 1 ? ' passo' : ' passos') : '')
-        : 'Escreva a instrução do agente';
-      document.getElementById('fxValidar').disabled = !(temTexto || n);
+          varsNoTexto().length + (varsNoTexto().length === 1 ? ' variável' : ' variáveis')
+        : '';
       document.getElementById('fxAtivar').disabled = !(temTexto || n);
     }
 
@@ -2558,38 +2526,28 @@
     document.getElementById('fxX').addEventListener('click', fecharFx);
     document.getElementById('btnNovoAgente').addEventListener('click', function () { abrirFx(null); });
 
-    document.getElementById('fxValidar').addEventListener('click', function () {
-      var temFederal = fx.blocos.some(function (b) { return b.t === 'decidir' && b.sobre === 'esfera'; });
-      var h = '<p class="ap-fhint">Rodei o fluxo em três licitações reais, sem alterar nada nelas.</p>';
-      [['PE 90014/2026', 'SES-MG · estadual', '+10', 'ap-ok', 'CAPAG B: caminho estadual, dentro do favorável.'],
-       ['PE 00023/2026', 'Pref. Itapevi/SP · municipal', '0', 'ap-warn', 'CAPAG não encontrada no caminho municipal.'],
-       ['PE 90112/2026', 'TRF4 · federal', '0', 'ap-dim', temFederal ? 'Caminho federal: não pontua e explica no Resumo.' : 'Seu fluxo não tem caminho para órgão federal, então eu teria que decidir sozinho aqui.']]
-        .forEach(function (l) {
-          h += '<div class="ap-prev"><div class="ap-prev-main"><div class="ap-prev-ed">' + l[0] + '</div>' +
-               '<div class="ap-prev-org">' + l[1] + '</div><div class="ap-prev-why">' + l[4] + '</div></div>' +
-               '<div class=' + JSON.stringify('ap-prev-v ' + l[3]) + '>' + l[2] + '</div></div>';
-        });
-      if (!temFederal) {
-        h += '<div class="ap-gap"><div class="ap-gap-q">Falta um caminho para órgão federal</div>' +
-             '<div class="ap-gap-why">Nesta abordagem eu só encontro isso na validação, porque o fluxo é seu. ' +
-             'Adicione um passo de decisão sobre a esfera para tratar esse caso.</div></div>';
-      }
-      document.getElementById('fxBody').innerHTML = h;
-    });
-
     document.getElementById('fxAtivar').addEventListener('click', function () {
       if (modoModal === 'variavel') return salvarVar();
       var texto = (fx.texto || '').trim();
-      AGENTES.push({ id:'fx' + AGENTES.length, nome:fx.nome || 'Agente sem nome', destino:'score',
-        escopo:'licitacao', agregacao:null,
-        instr:texto || ('Fluxo com ' + fx.blocos.length + ' passos, montado no construtor.'),
-        vars:varsNoTexto().concat(fx.blocos.filter(function (b) { return b.t === 'extrair'; })
-          .map(function (b) { return b.v; })),
-        pontos:10, ganhos:10, estado:'run', gatilho:GATILHOS_FX[fx.gatilho], custo:fxCusto(),
-        prov:'Ativado pelo construtor de fluxo', ramifica:fx.blocos.some(function (b) { return b.t === 'decidir'; }) });
+      if (!texto) { settleToast('Escreva as instruções do agente'); return; }
+
+      /* Um agente novo é uma análise nova, não uma regra dentro do Score. */
+      var an = {
+        id:'nv' + ANALISES.length, nome:fx.nome || 'Agente sem nome', formato:'texto',
+        desc:(function () {
+          var t = textoLegivel(texto);
+          return t.length > 90 ? t.slice(0, 88) + '…' : t;
+        })(),
+        gatilho:GATILHOS_FX[fx.gatilho],
+        texto:texto, vars:varsNoTexto(),
+        perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
+        execs:[], ativo:true
+      };
+      ANALISES.push(an);
       pintarAnalises(); pintarVars(); pintarCrits();
       fecharFx();
-      settleToast('Agente ativado pelo construtor');
+      abaAtiva('agentes');
+      settleToast('Agente criado');
     });
 
     /* ---------- nova variável ---------- */
@@ -2758,7 +2716,6 @@
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
-      document.getElementById('fxValidar').hidden = true;
       document.getElementById('fxAtivar').hidden = travado;
       document.getElementById('fxAtivar').textContent = v ? 'Salvar alterações' : 'Criar variável';
       document.getElementById('fxAtivar').disabled = false;
@@ -3199,6 +3156,7 @@
         var el = document.createElement('button');
         el.type = 'button';
         el.className = 'ap-card' + (an.id === 'juridica' ? ' off' : '');
+        var rascunho = an.id === 'juridica';
         var resumo, custo;
         if (an.formato === 'estruturado') {
           var rs = regrasDa(an);
@@ -3216,15 +3174,17 @@
           resumo = '1 regra, aplicada a cada componente · 15 execuções nesta licitação';
           custo = AGENTE_TEC.custo * 15;
         } else {
-          resumo = '1 instrução em texto · ' + JURIDICA.vars.length + ' variáveis dentro';
-          custo = JURIDICA.vars.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
+          var alvo = textoDe(an), vs = (alvo.vars || []).filter(function (k) { return VARS[k]; });
+          resumo = '1 instrução em texto · ' + vs.length +
+                   (vs.length === 1 ? ' variável dentro' : ' variáveis dentro');
+          custo = vs.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
         }
         el.innerHTML =
           '<span class="ap-card-title">' + an.nome + '</span>' +
           '<span class="ap-card-instr">' + an.desc + '</span>' +
           '<span class="ap-card-foot">' +
-            '<span class="ap-tag ' + (an.id === 'juridica' ? 'pause' : 'run') + '">' +
-              (an.id === 'juridica' ? 'Rascunho' : an.gatilho) + '</span>' +
+            '<span class="ap-tag ' + (rascunho ? 'pause' : 'run') + '">' +
+              (rascunho ? 'Rascunho' : an.gatilho) + '</span>' +
             '<span class="ap-tag type">' + resumo + '</span>' +
             (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
           '</span>';
@@ -3243,7 +3203,6 @@
       pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
-      document.getElementById('fxValidar').hidden = an.formato !== 'texto';
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxAtivar').hidden = an.formato !== 'texto';
       document.getElementById('fxAtivar').disabled = false;
@@ -3399,15 +3358,27 @@
       });
     }
 
+    /* A análise jurídica guarda o texto no objeto JURIDICA; as criadas pelo
+       cliente guardam no próprio registro. */
+    /* Fora do campo de edição, a variável aparece pelo nome, não pela chave. */
+    function textoLegivel(t) {
+      return (t || '').replace(/\{\{(\w+)\}\}/g, function (m, k) {
+        return VARS[k] ? VARS[k].nome : m;
+      });
+    }
+
+    function textoDe(an) {
+      return an && an.id !== 'juridica' && an.texto !== undefined ? an : JURIDICA;
+    }
+
     function pintarTextoVars(an) {
-      document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar análise';
 
       var h = campoInstrHTML('Instruções',
           'A instrução é texto, porque a resposta é um parecer e não um número. As partes destacadas são ' +
           '<b>variáveis</b>: dado extraído uma vez, com proveniência própria, reaproveitável em outras análises.',
-          JURIDICA.texto,
+          textoDe(an).texto,
           'Descreva o que analisar. Digite / para inserir uma variável.') +
         '<div class="ap-field"><span class="ap-flabel">Variáveis usadas nesta análise</span>' +
         '<div id="vfLista"></div></div>' +
@@ -3415,7 +3386,12 @@
 
       document.getElementById('fxBody').innerHTML = h;
       if (an) { ligarPerms(an); ligarExec(an); }
-      ligarCampoInstr(listaDeVars);
+      ligarCampoInstr(function () {
+        var alvo = textoDe(an);
+        alvo.texto = htmlParaTexto(document.getElementById('vfCampo'));
+        alvo.vars = varsNoTexto();
+        listaDeVars();
+      });
       listaDeVars();
     }
 
