@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:26</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:28</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -1642,16 +1642,12 @@
     function cpAbrirPainel() {
       document.getElementById('cp').hidden = false;
       document.body.classList.add('cp-open');
-      document.getElementById('cpAbrir').hidden = true;
-      document.getElementById('cpAbrir').hidden = true;
       if (!cpAgente) cpPintarLista();
     }
 
     function cpFecharPainel() {
       document.getElementById('cp').hidden = true;
       document.body.classList.remove('cp-open');
-      document.getElementById('cpAbrir').hidden = false;
-      document.getElementById('cpAbrir').hidden = false;
     }
 
     /* Quem produziu cada resultado: é o nome que a pessoa procura na lista. */
@@ -1843,7 +1839,11 @@
       cpSelecionar(agenteDe(regra), regra);
     }
 
-    document.getElementById('cpAbrir').addEventListener('click', cpAbrirPainel);
+    /* O botão fica: com o painel flutuando acima dele, ele vira o interruptor
+       de abrir e fechar. */
+    document.getElementById('cpAbrir').addEventListener('click', function () {
+      if (document.getElementById('cp').hidden) cpAbrirPainel(); else cpFecharPainel();
+    });
     document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
     document.getElementById('cpLista').addEventListener('click', cpPintarLista);
     document.getElementById('cpConfig').addEventListener('click', function () {
