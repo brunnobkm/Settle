@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:07</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:11</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -313,6 +313,9 @@
   <!-- ====================== CONSTRUTOR DE FLUXO (abordagem da Alice) ====================== -->
   <div class="ap-modal" id="fxModal" role="dialog" aria-modal="true" aria-labelledby="fxTitle" hidden>
     <div class="ap-mhead">
+      <button class="icon-btn" type="button" id="fxVoltar" aria-label="Voltar para a tela anterior" hidden>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4 6 10l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <h2 id="fxTitle">Adicionar agente</h2>
       <span class="tag-light" id="fxStatus">Rascunho</span>
       <button class="icon-btn" type="button" id="fxX" aria-label="Fechar">
@@ -2472,6 +2475,7 @@
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
       document.getElementById('fxStatus').hidden = !fx.ativo;
       document.getElementById('fxStatus').textContent = 'Ativo';
+      pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       pintarFx();
@@ -2490,7 +2494,28 @@
       document.getElementById('fxAtivar').disabled = !(temTexto || n);
     }
 
+    /* Uma modal pode levar a outra: a variável mostra em que agentes ela está
+       em uso, e dali dá para abrir cada um. O caminho de volta fica no
+       cabeçalho, e some quando a modal fecha. */
+    var pilhaModal = [];
+
+    function abrirComVolta(voltar, abrir) {
+      pilhaModal.push(voltar);
+      abrir();
+    }
+
+    function pintarVoltar() {
+      document.getElementById('fxVoltar').hidden = !pilhaModal.length;
+    }
+
+    document.getElementById('fxVoltar').addEventListener('click', function () {
+      var f = pilhaModal.pop();
+      if (f) f();
+    });
+
     function fecharFx() {
+      pilhaModal = [];
+      document.getElementById('fxVoltar').hidden = true;
       document.getElementById('ovl').hidden = true;
       document.getElementById('fxModal').hidden = true;
     }
@@ -2673,16 +2698,17 @@
         '<div class="alert-title">Variável em uso</div>' +
         '<div class="alert-description"><p>Esta variável está sendo utilizada em ' + ags.length +
         (ags.length === 1 ? ' agente (' : ' agentes (') + listaDeNomes(links) +
-        '). Qualquer mudança aqui irá afetar ' + (ags.length === 1 ? 'esse agente' : 'esses agentes') +
-        ', em todas as licitações analisadas daqui para frente.</p></div></div>';
+        '). Qualquer mudança aqui irá afetar ' +
+        (ags.length === 1 ? 'esse agente.' : 'esses agentes.') + '</p></div></div>';
     }
 
-    function ligarImpacto() {
+    function ligarImpacto(k) {
       document.querySelectorAll('#fxBody [data-vai]').forEach(function (a) {
         a.addEventListener('click', function (e) {
           e.preventDefault();
           var alvo = ANALISES.filter(function (x) { return x.nome === a.dataset.vai; })[0];
-          if (alvo) abrirAnalise(alvo);
+          if (!alvo) return;
+          abrirComVolta(function () { abrirVar(k); }, function () { abrirAnalise(alvo); });
         });
       });
     }
@@ -2696,6 +2722,7 @@
       document.getElementById('fxTitle').textContent = v ? v.nome : 'Adicionar variável';
       document.getElementById('fxStatus').textContent = 'Da Settle';
       document.getElementById('fxStatus').hidden = !travado;
+      pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = true;
@@ -2758,7 +2785,7 @@
         '';
 
       pintarOrdem(travado);
-      ligarImpacto();
+      ligarImpacto(k);
 
       /* Trocar o tipo troca o campo do valor padrão junto: é a amarração que
          impede um padrão incompatível de ser salvo. */
@@ -3177,6 +3204,7 @@
       modoModal = 'outro';
       document.getElementById('fxStatus').hidden = false;
       document.getElementById('fxStatus').textContent = an.id === 'juridica' ? 'Rascunho' : 'Ativa';
+      pintarVoltar();
       document.getElementById('ovl').hidden = false;
       document.getElementById('fxModal').hidden = false;
       document.getElementById('fxValidar').hidden = an.formato !== 'texto';
