@@ -217,10 +217,9 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:10</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:12</p>
         <h1 class="title" id="phTitle">Agentes</h1>
-        <p class="ap-lead" id="phLead">Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra,
-          edita e vê o que ele produziu na última execução.</p>
+        <p class="ap-lead" id="phLead" hidden></p>
       </div>
 
       <div class="ap-tabsbar">
@@ -1864,10 +1863,8 @@
     var via = 'lic';
 
     var CABECALHO = {
-      agentes:{ titulo:'Agentes',
-        lead:'Cada agente é uma análise que roda sozinha nas suas licitações. Aqui você cadastra, edita e vê o que ele produziu na última execução.' },
-      variaveis:{ titulo:'Variáveis',
-        lead:'Informação extraída uma vez e reaproveitada por qualquer agente. Antes de alterar ou excluir uma, a tabela mostra quais regras dependem dela.' },
+      agentes:{ titulo:'Agentes', lead:'' },
+      variaveis:{ titulo:'Variáveis', lead:'' },
       aprovacoes:{ titulo:'Aprovações',
         lead:'As ações que os agentes querem executar e que dependem de você. Ficam todas aqui, de todas as licitações, para responder em lote.' }
     };
@@ -1877,6 +1874,7 @@
       if (c) {
         document.getElementById('phTitle').textContent = c.titulo;
         document.getElementById('phLead').textContent = c.lead;
+        document.getElementById('phLead').hidden = !c.lead;
       }
       document.querySelectorAll('[data-tab]').forEach(function (o) {
         var on = o.dataset.tab === tab;
