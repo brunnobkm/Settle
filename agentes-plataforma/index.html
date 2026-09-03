@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:28</p>
+        <p class="ap-selo">Protótipo atualizado no dia 2 de setembro às 23:29</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -427,17 +427,17 @@
                    desc:'Valor total estimado da contratação.',
                    prompt:'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum.',
                    fontes:['Edital e anexos', 'Termo de referência'], resto:true, padrao:'0' },
-      esfera:    { nome:'Esfera', tipo:'categoria', settle:true, v:'v2', custo:0,
+      esfera:    { nome:'Esfera', tipo:'texto', settle:true, v:'v2', custo:0,
                    desc:'Se o órgão é federal, estadual ou municipal.',
                    prompt:'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
                    fontes:['Dados do portal'], resto:false, padrao:'não se aplica' },
-      capag:     { nome:'CAPAG', tipo:'categoria', settle:true, v:'v3', custo:0.01,
+      capag:     { nome:'CAPAG', tipo:'texto', settle:true, v:'v3', custo:0.01,
                    desc:'Nota de capacidade de pagamento do ente, de A a D.',
                    prompt:'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
                    fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'não encontrado',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
-      segmento:  { nome:'Segmento da licitação', tipo:'lista', settle:true, v:'v3', custo:0,
+      segmento:  { nome:'Segmento da licitação', tipo:'texto', settle:true, v:'v3', custo:0,
                    desc:'Os segmentos de mercado a que o objeto pertence.',
                    prompt:'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
                    fontes:['Dados do portal'], resto:false, padrao:'não encontrado' },
@@ -472,11 +472,11 @@
                          suspeito:'Cem vezes maior que os outros itens. O trecho provavelmente juntou a quantidade com o valor unitário.' }
                      ],
                      faltando:[ { item:'Item 12', desc:'Micro-ônibus de 25 lugares', motivo:'a quantidade está em uma imagem, não em texto' } ] } },
-      docshab:   { nome:'Documentos de habilitação', tipo:'lista', v:'v1', custo:0.06,
+      docshab:   { nome:'Documentos de habilitação', tipo:'texto', v:'v1', custo:0.06,
                    desc:'Relação dos documentos exigidos para habilitação.',
                    prompt:'Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.',
                    fontes:['Edital e anexos'], resto:true, padrao:'não encontrado' },
-      componentes:{ nome:'Componentes do item', tipo:'lista', v:'v2', custo:0.02,
+      componentes:{ nome:'Componentes do item', tipo:'texto', v:'v2', custo:0.02,
                    desc:'Os componentes que formam cada item do Termo de Referência.',
                    prompt:'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis.',
                    fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'não encontrado' },
@@ -503,13 +503,6 @@
        o que rege (José Victor, 14:24). */
     var FONTES = ['Edital e anexos', 'Termo de referência', 'Minuta do contrato',
                   'Estudo técnico preliminar', 'Manifestações', 'Arquivos de resultado'];
-
-    /* O select oferece os quatro tipos. Se a variável já estava salva com um
-       tipo que saiu da lista, ele entra junto: trocar o tipo por conta própria
-       mudaria o que a variável aceita como resposta. */
-    function tiposCom(atual) {
-      return TIPOS_VAR.indexOf(atual) >= 0 ? TIPOS_VAR : TIPOS_VAR.concat([atual]);
-    }
 
     /* Cada fonte com a própria cor: numa tabela com muitas linhas, a ordem de
        busca se lê de relance. */
@@ -1205,7 +1198,10 @@
         val:function (v) { return v.nome; },
         cel:function (v) { return '<b>' + v.nome + '</b>'; }, largo:true },
       { k:'tipo', t:'Tipo da resposta', kind:'opcoes',
-        val:function (v) { return cap(v.tipo); } },
+        val:function (v) { return cap(v.tipo); },
+        /* A lista do filtro é a mesma do formulário, mesmo que um tipo ainda
+           não esteja em uso: as duas listas não podem divergir. */
+        opts:function () { return TIPOS_VAR.map(cap); } },
       { k:'prompt', t:'Instruções', kind:'texto',
         val:function (v) { return v.prompt || ''; },
         cel:function (v) {
@@ -1275,6 +1271,7 @@
     }
 
     function opcoesDe(c) {
+      if (c.opts) return c.opts();
       var o = [];
       Object.keys(VARS).forEach(function (k) {
         var val = c.val(VARS[k], k);
@@ -2808,7 +2805,7 @@
 
         '<div class="ap-field"><label for="vTipo">Tipo da resposta</label>' +
         '<p class="ap-fhint">' + PENDENTE + '</p>' +
-        '<select class="ap-input" id="vTipo"' + dis + '>' + tiposCom(vForm.tipo).map(function (t) {
+        '<select class="ap-input" id="vTipo"' + dis + '>' + TIPOS_VAR.map(function (t) {
           return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + cap(t) + '</option>';
         }).join('') + '</select></div>' +
 
