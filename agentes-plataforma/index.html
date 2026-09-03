@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260902d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260902g" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">protótipo · versão de 02/09 22:18</p>
+        <p class="ap-selo">protótipo · versão de 02/09 22:35</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -228,8 +228,8 @@
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="variaveis">Variáveis <span class="fp-c" id="cntVar">6</span></button>
           <button class="fp-tab" type="button" role="tab" aria-selected="false" data-tab="aprovacoes">Aprovações <span class="fp-c" id="cntAprov">0</span></button>
         </div>
-        <button class="btn btn-primary" type="button" id="btnNovoAgente" data-daaba="agentes">Novo agente</button>
-        <button class="btn btn-primary" type="button" id="btnNovaVar" data-daaba="variaveis" hidden>Nova variável</button>
+        <button class="btn btn-primary" type="button" id="btnNovoAgente" data-daaba="agentes">Adicionar agente</button>
+        <button class="btn btn-primary" type="button" id="btnNovaVar" data-daaba="variaveis" hidden>Adicionar variável</button>
       </div>
 
       <!-- ============ LICITAÇÃO: a entrada contextual ============ -->
@@ -246,15 +246,7 @@
         </div>
         <div class="datatable">
           <table class="dt">
-            <thead>
-              <tr>
-                <th scope="col">Nome</th><th scope="col">Origem</th><th scope="col">Tipo da resposta</th>
-                <th scope="col">Instruções</th><th scope="col">Onde procurar</th>
-                <th scope="col">Quando não encontrar</th>
-                <th scope="col" data-col="custo" hidden>Custo</th>
-                <th scope="col">Mexer nela afeta</th><th scope="col"><span class="sr-only">Ações</span></th>
-              </tr>
-            </thead>
+            <thead><tr id="colsVars"></tr></thead>
             <tbody id="rowsVars"></tbody>
           </table>
         </div>
@@ -316,7 +308,7 @@
   <!-- ====================== CONSTRUTOR DE FLUXO (abordagem da Alice) ====================== -->
   <div class="ap-modal" id="fxModal" role="dialog" aria-modal="true" aria-labelledby="fxTitle" hidden>
     <div class="ap-mhead">
-      <h2 id="fxTitle">Novo agente</h2>
+      <h2 id="fxTitle">Adicionar agente</h2>
       <span class="tag-light" id="fxStatus">Rascunho</span>
       <button class="icon-btn" type="button" id="fxX" aria-label="Fechar">
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
@@ -368,7 +360,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260902d" defer></script>
+  <script src="../assets/settle.js?v=20260902g" defer></script>
   <script>
   (function () {
     'use strict';
@@ -494,6 +486,22 @@
        mudaria o que a variável aceita como resposta. */
     function tiposCom(atual) {
       return TIPOS_VAR.indexOf(atual) >= 0 ? TIPOS_VAR : TIPOS_VAR.concat([atual]);
+    }
+
+    /* Cada fonte com a própria cor: numa tabela com muitas linhas, a ordem de
+       busca se lê de relance. */
+    var FONTE_CLASSE = {
+      'Edital e anexos':'edital', 'Termo de referência':'tr', 'Minuta do contrato':'minuta',
+      'Estudo técnico preliminar':'etp', 'Manifestações':'manif', 'Arquivos de resultado':'result',
+      'Dados do portal':'portal', 'Bases públicas':'portal'
+    };
+
+    function fonteTags(v) {
+      var t = (v.fontes || []).map(function (f) {
+        return '<span class="fnt fnt-' + (FONTE_CLASSE[f] || 'portal') + '">' + f + '</span>';
+      });
+      if (v.resto) t.push('<span class="fnt fnt-resto">resto dos arquivos</span>');
+      return t.join('');
     }
 
     function fonteTxt(v) {
@@ -1138,43 +1146,229 @@
 
     var filtroVar = '';
 
-    function pintarVars() {
-      document.getElementById('cntAg').textContent = ANALISES.length;
-      document.getElementById('cntVar').textContent = Object.keys(VARS).length;
-      var q = filtroVar.trim().toLowerCase();
-      var chaves = Object.keys(VARS).filter(function (k) {
-        if (!q) return true;
-        var v = VARS[k];
-        return (v.nome + ' ' + (v.desc || '')).toLowerCase().indexOf(q) >= 0;
-      });
-
-      if (!chaves.length) {
-        document.getElementById('rowsVars').innerHTML =
-          '<tr><td colspan="8"><span class="ap-dim">Nenhuma variável com esse nome.</span></td></tr>';
-        return;
-      }
-
-      /* As colunas são os campos do formulário, na mesma ordem, mais quem
-         depende da variável, que é o que se precisa saber antes de mexer. */
-      document.getElementById('rowsVars').innerHTML = chaves.map(function (k) {
-        var v = VARS[k], u = usosDaVar(k);
-        var afeta = u.length
-          ? u.map(function (x) { return '<b>' + x.agente + '</b> · ' + x.regra; }).join('<br>')
-          : '<span class="ap-dim">ninguém ainda</span>';
-        var instr = v.prompt || '';
-        var curta = instr.length > 90 ? instr.slice(0, 88) + '…' : instr;
-        return '<tr data-clicavel="1"><td style="white-space:normal"><b>' + v.nome + '</b></td>' +
-          '<td>' + (v.settle
+    /* As colunas são os campos do formulário, na mesma ordem e com os mesmos
+       títulos, mais duas que descrevem a variável em vez de defini-la: de quem
+       ela é, e quantos agentes dependem dela. */
+    var COLS = [
+      { k:'nome', t:'Nome', kind:'texto',
+        val:function (v) { return v.nome; },
+        cel:function (v) { return '<b>' + v.nome + '</b>'; }, largo:true },
+      { k:'tipo', t:'Tipo da resposta', kind:'opcoes',
+        val:function (v) { return v.tipo; } },
+      { k:'prompt', t:'Instruções', kind:'texto',
+        val:function (v) { return v.prompt || ''; },
+        cel:function (v) {
+          var i = v.prompt || '';
+          return '<span title="' + i.replace(/"/g, '&quot;') + '">' +
+                 (i.length > 90 ? i.slice(0, 88) + '…' : i) + '</span>';
+        }, largo:true },
+      { k:'fonte', t:'Onde procurar', kind:'texto',
+        val:function (v) { return fonteTxt(v); },
+        cel:function (v) { return fonteTags(v); }, largo:true },
+      { k:'padrao', t:'O que fazer quando não encontrar a variável', kind:'texto',
+        val:function (v) { return v.padrao || ''; },
+        cel:function (v) { return padraoTxt(v); } },
+      { k:'origem', t:'Quem criou', kind:'opcoes',
+        val:function (v) { return v.settle ? 'Settle' : 'B Design'; },
+        cel:function (v) {
+          return v.settle
             ? '<span class="origem settle"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
               'stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.5" y="7" width="9" ' +
               'height="6" rx="1.5"/><path d="M5.8 7V5.4a2.2 2.2 0 0 1 4.4 0V7"/></svg>Settle</span>'
-            : '<span class="origem minha">Sua</span>') + '</td>' +
-          '<td>' + v.tipo + '</td>' +
-          '<td style="white-space:normal" title="' + instr.replace(/"/g, '&quot;') + '">' + curta + '</td>' +
-          '<td style="white-space:normal">' + fonteTxt(v) + '</td>' +
-          '<td>' + padraoTxt(v) + '</td>' +
-          (MOSTRAR_CUSTO ? '<td>' + (v.custo ? moeda(v.custo) : 'sem custo') + '</td>' : '') +
-          '<td style="white-space:normal">' + afeta + '</td>' +
+            : '<span class="origem minha">B Design</span>';
+        } },
+      { k:'usos', t:'Agentes usando', kind:'opcoes',
+        val:function (v, k) { return String(agentesDaVar(k).length); },
+        cel:function (v, k) {
+          var a = agentesDaVar(k);
+          if (!a.length) return '<span class="ap-dim">nenhum</span>';
+          return '<span title="' + a.join(', ') + '">' + a.length +
+                 (a.length === 1 ? ' agente' : ' agentes') + '</span>';
+        } }
+    ];
+
+    /* Quantos agentes dependem dela, não quantas regras: a mesma análise pode
+       usar a variável em duas regras e continua sendo um agente só. */
+    function agentesDaVar(k) {
+      var nomes = [];
+      usosDaVar(k).forEach(function (u) {
+        if (nomes.indexOf(u.agente) < 0) nomes.push(u.agente);
+      });
+      return nomes;
+    }
+
+    var ordemVar = { k:null, dir:'asc' };
+    var filtroCol = {};
+
+    function passaFiltro(k) {
+      var v = VARS[k], ok = true;
+      COLS.forEach(function (c) {
+        var f = filtroCol[c.k];
+        if (!f || !ok) return;
+        var val = c.val(v, k);
+        if (c.kind === 'opcoes') {
+          if (f.length && f.indexOf(val) < 0) ok = false;
+        } else if (String(val).toLowerCase().indexOf(f.toLowerCase()) < 0) {
+          ok = false;
+        }
+      });
+      return ok;
+    }
+
+    function opcoesDe(c) {
+      var o = [];
+      Object.keys(VARS).forEach(function (k) {
+        var val = c.val(VARS[k], k);
+        if (o.indexOf(val) < 0) o.push(val);
+      });
+      return o.sort();
+    }
+
+    function temFiltro(c) {
+      var f = filtroCol[c.k];
+      return c.kind === 'opcoes' ? !!(f && f.length) : !!f;
+    }
+
+    function pintarCabecalho() {
+      var tr = document.getElementById('colsVars');
+      tr.innerHTML = COLS.map(function (c) {
+        var ativo = temFiltro(c) || ordemVar.k === c.k;
+        return '<th scope="col" class="col"><button class="col-btn' + (ativo ? ' ativo' : '') +
+          '" type="button" data-col="' + c.k + '" aria-haspopup="true" aria-expanded="false">' + c.t +
+          '<span class="col-car" aria-hidden="true">' + (ordemVar.k === c.k
+            ? (ordemVar.dir === 'asc'
+              ? '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12.5V4M4.5 7.5 8 4l3.5 3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+              : '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3.5V12M4.5 8.5 8 12l3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+            : (temFiltro(c)
+              ? '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2.5 4h11L9.5 9v4l-3-1.5V9z" stroke-linejoin="round"/></svg>'
+              : '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>')) +
+          '</span></button></th>';
+      }).join('') + '<th scope="col"><span class="sr-only">Ações</span></th>';
+
+      tr.querySelectorAll('[data-col]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          abrirMenuCol(b, COLS.filter(function (c) { return c.k === b.dataset.col; })[0]);
+        });
+      });
+    }
+
+    function fecharMenuCol() {
+      document.querySelectorAll('.col-pop').forEach(function (p) { p.remove(); });
+      document.querySelectorAll('.col-btn[aria-expanded="true"]')
+        .forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    }
+
+    function abrirMenuCol(botao, c) {
+      var jaAberto = botao.getAttribute('aria-expanded') === 'true';
+      fecharMenuCol();
+      if (jaAberto) return;
+      botao.setAttribute('aria-expanded', 'true');
+
+      var pop = document.createElement('div');
+      pop.className = 'fb-pop col-pop';
+      var h = '<button class="col-acao' + (ordemVar.k === c.k && ordemVar.dir === 'asc' ? ' on' : '') +
+          '" type="button" data-ord="asc">Ordenar de A a Z</button>' +
+        '<button class="col-acao' + (ordemVar.k === c.k && ordemVar.dir === 'desc' ? ' on' : '') +
+          '" type="button" data-ord="desc">Ordenar de Z a A</button>' +
+        '<div class="col-sep"></div>';
+
+      if (c.kind === 'opcoes') {
+        var sel = filtroCol[c.k] || [];
+        h += '<div class="fb-list-head"><span>Mostrar</span>' +
+             '<button class="fb-selall" type="button" data-todas="1">' +
+             (sel.length ? 'Limpar' : 'Todas') + '</button></div><div class="col-opts">' +
+          opcoesDe(c).map(function (o) {
+            var on = sel.indexOf(o) >= 0;
+            return '<div class="fb-opt' + (on ? ' on' : '') + '" data-opt="' + o + '" role="button" tabindex="0">' +
+              '<span class="box"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" ' +
+              'stroke-width="2.4"><path d="M3.5 8.5 6.5 11.5l6-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+              '<span>' + o + '</span></div>';
+          }).join('') + '</div>';
+      } else {
+        h += '<div class="fb-search" style="margin:4px"><label class="sr-only" for="colQ">Filtrar ' + c.t +
+             '</label><input id="colQ" type="text" placeholder="Contém…" value="' +
+             (filtroCol[c.k] || '').replace(/"/g, '&quot;') + '" /></div>';
+      }
+
+      if (temFiltro(c) || ordemVar.k === c.k) {
+        h += '<div class="col-sep"></div><button class="col-acao" type="button" data-limpar="1">Limpar esta coluna</button>';
+      }
+      pop.innerHTML = h;
+      botao.parentNode.appendChild(pop);
+      pop.addEventListener('click', function (e) { e.stopPropagation(); });
+
+      pop.querySelectorAll('[data-ord]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          ordemVar = { k:c.k, dir:b.dataset.ord };
+          fecharMenuCol(); pintarVars();
+        });
+      });
+      pop.querySelectorAll('[data-opt]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var sel = (filtroCol[c.k] || []).slice();
+          var o = el.dataset.opt, i = sel.indexOf(o);
+          if (i >= 0) sel.splice(i, 1); else sel.push(o);
+          filtroCol[c.k] = sel;
+          pintarVars();
+          abrirMenuCol(document.querySelector('[data-col="' + c.k + '"]'), c);
+        });
+      });
+      var todas = pop.querySelector('[data-todas]');
+      if (todas) todas.addEventListener('click', function () {
+        filtroCol[c.k] = [];
+        pintarVars();
+        abrirMenuCol(document.querySelector('[data-col="' + c.k + '"]'), c);
+      });
+      var campo = pop.querySelector('#colQ');
+      if (campo) {
+        campo.addEventListener('input', function () { filtroCol[c.k] = campo.value; pintarVars(); });
+        campo.focus();
+      }
+      var lim = pop.querySelector('[data-limpar]');
+      if (lim) lim.addEventListener('click', function () {
+        delete filtroCol[c.k];
+        if (ordemVar.k === c.k) ordemVar = { k:null, dir:'asc' };
+        fecharMenuCol(); pintarVars();
+      });
+    }
+
+    document.addEventListener('click', fecharMenuCol);
+
+    function pintarVars() {
+      document.getElementById('cntAg').textContent = ANALISES.length;
+      document.getElementById('cntVar').textContent = Object.keys(VARS).length;
+      pintarCabecalho();
+
+      var q = filtroVar.trim().toLowerCase();
+      var chaves = Object.keys(VARS).filter(function (k) {
+        var v = VARS[k];
+        if (q && (v.nome + ' ' + (v.desc || '')).toLowerCase().indexOf(q) < 0) return false;
+        return passaFiltro(k);
+      });
+
+      if (ordemVar.k) {
+        var c = COLS.filter(function (x) { return x.k === ordemVar.k; })[0];
+        chaves.sort(function (a, b) {
+          var x = String(c.val(VARS[a], a)), y = String(c.val(VARS[b], b));
+          var n = c.k === 'usos' ? (+x) - (+y) : x.localeCompare(y, 'pt-BR');
+          return ordemVar.dir === 'asc' ? n : -n;
+        });
+      }
+
+      if (!chaves.length) {
+        document.getElementById('rowsVars').innerHTML =
+          '<tr><td colspan="' + (COLS.length + 1) + '"><span class="ap-dim">' +
+          'Nenhuma variável com esses filtros.</span></td></tr>';
+        return;
+      }
+
+      document.getElementById('rowsVars').innerHTML = chaves.map(function (k) {
+        var v = VARS[k];
+        return '<tr data-clicavel="1">' + COLS.map(function (c) {
+          return '<td' + (c.largo ? ' style="white-space:normal"' : '') + '>' +
+                 (c.cel ? c.cel(v, k) : c.val(v, k)) + '</td>';
+        }).join('') +
           '<td><button class="ap-mini" type="button" data-vedit="' + k + '">' +
           (v.settle ? 'Ver' : 'Editar') + '</button></td></tr>';
       }).join('');
@@ -2088,7 +2282,7 @@
       modoModal = 'outro';
       document.getElementById('fxValidar').hidden = false;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
-      document.getElementById('fxTitle').textContent = fx.nome || 'Novo agente';
+      document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
       document.getElementById('fxStatus').hidden = false;
       document.getElementById('fxStatus').textContent = fx.ativo ? 'Ativo' : 'Rascunho';
       document.getElementById('ovl').hidden = false;
@@ -2255,7 +2449,7 @@
       var v = k ? VARS[k] : null, u = k ? usosDaVar(k) : [];
       var travado = !!(v && v.settle);
 
-      document.getElementById('fxTitle').textContent = v ? v.nome : 'Nova variável';
+      document.getElementById('fxTitle').textContent = v ? v.nome : 'Adicionar variável';
       document.getElementById('fxStatus').textContent = travado ? 'Da Settle' : 'Em uso';
       document.getElementById('fxStatus').hidden = !v;
       document.getElementById('ovl').hidden = false;
@@ -2904,7 +3098,7 @@
     function formNovaVar() {
       var menu = document.getElementById('vfMenu');
       menu.innerHTML =
-        '<div class="h">Nova variável</div>' +
+        '<div class="h">Adicionar variável</div>' +
         '<div style="padding:4px 9px 10px">' +
           '<label class="ap-fhint" for="nvNome">Nome</label>' +
           '<input class="ap-input" id="nvNome" type="text" placeholder="Ex.: CNPJ do órgão" />' +
