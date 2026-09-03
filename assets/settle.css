@@ -1206,9 +1206,10 @@ table.dt td.c-sel .ap-check{gap:0;}
 
 .wk-manif{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);
   padding:14px 16px;margin-bottom:10px;}
-.wk-manif-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.wk-manif-quando{font-size:12px;color:var(--muted-foreground);}
-.wk-manif p{margin:6px 0 0;font-size:13px;line-height:20px;color:var(--muted-foreground);}
+.wk-manif-top{margin-bottom:6px;}
+.wk-manif-quando{display:block;margin-top:6px;font-size:14px;color:var(--foreground);}
+.wk-manif-quando span{color:var(--muted-foreground);}
+.wk-manif p{margin:6px 0 0;font-size:14px;line-height:22px;color:var(--foreground);}
 
 /* Barra de formatação das Anotações. */
 .wk-tb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto;}
@@ -1222,4 +1223,11 @@ table.dt td.c-sel .ap-check{gap:0;}
 .wk-sub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
 .wk-sub .fp-tabs{flex:1;min-width:0;}
 .wk-manif-div{border-top:1px solid var(--border);margin:10px 0;}
-.wk-manif-data{font-size:12px;color:var(--muted-foreground);}
+.wk-manif-data{font-size:14px;color:var(--foreground);}
+
+/* A área de escrita das Anotações tem contorno próprio dentro do card. */
+.wk-nota{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--background);
+  padding:44px 16px;text-align:center;color:var(--muted-foreground);font-size:14px;}
+.wk-nota>svg{margin:0 auto 10px;}
+.wk-nota strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
+.wk-nota .q{color:var(--foreground);font-weight:600;}

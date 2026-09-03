@@ -242,7 +242,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 16:42</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 16:59</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -406,7 +406,7 @@
               <span class="wk-tb-g"><button type="button" aria-label="Recolher as anotações"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 12l4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>
             </div>
           </div>
-          <div class="empty-state">
+          <div class="wk-nota">
             <svg viewBox="0 0 64 64" width="56" height="56" fill="none" aria-hidden="true">
               <rect x="14" y="10" width="34" height="42" rx="3" fill="#fff" stroke="#d4d4d4" stroke-width="2"/>
               <path d="M14 18h34M14 26h34" stroke="#e5e5e5" stroke-width="2"/>
@@ -4126,7 +4126,7 @@
       };
 
       box.innerHTML =
-        '<div class="wk-sub">' +
+        '<div class="card"><div class="wk-sub">' +
           '<div class="fp-tabs">' +
             '<button class="fp-tab active" type="button">Todas <span class="fp-c">' + MANIF.length + '</span></button>' +
             '<button class="fp-tab" type="button">Avisos <span class="fp-c">' + conta('Aviso') + '</span></button>' +
@@ -4143,11 +4143,11 @@
         MANIF.map(function (x) {
           return '<div class="wk-manif"><div class="wk-manif-top">' +
             '<span class="tag-light">' + x.t + '</span>' +
-            '<span class="wk-manif-quando">Atualizado em ' + x.quando + '</span></div>' +
+            '<span class="wk-manif-quando">Atualizado <span>em ' + x.quando + '</span></span></div>' +
             '<div class="wk-manif-div"></div>' +
             '<div class="wk-manif-data">' + x.publicada + '</div>' +
             '<p><b>Mensagem:</b> ' + x.m + '</p></div>';
-        }).join('');
+        }).join('') + '</div>';
     }
 
     document.querySelectorAll('[data-wk]').forEach(function (b) {
