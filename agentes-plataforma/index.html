@@ -215,7 +215,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:25</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:32</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -2550,9 +2550,9 @@
         var alvo = analiseAberta;
         alvo.execs = alvo.execs || [];
         alvo.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Execução manual disparada por você', st:'ok' });
+          o:'Execução manual, disparada por você', st:'ok' });
         pintarDetalhe(alvo);
-        settleToast('Execução disparada nesta licitação');
+        settleToast('Executando o agente');
         return;
       }
       if (analiseAberta && rotulo === 'Salvar alterações') {
@@ -3052,9 +3052,9 @@
       if (r) r.addEventListener('click', function () {
         an.execs = an.execs || [];
         an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Execução manual disparada por você', st:'ok' });
+          o:'Execução manual, disparada por você', st:'ok' });
         abrirAnalise(an);
-        settleToast('Execução disparada nesta licitação');
+        settleToast('Executando o agente');
       });
       var pz = document.getElementById('execPausar');
       if (pz) pz.addEventListener('click', function () {
