@@ -1231,3 +1231,7 @@ table.dt td.c-sel .ap-check{gap:0;}
 .wk-nota>svg{margin:0 auto 10px;}
 .wk-nota strong{display:block;color:var(--foreground);font-size:15px;margin-bottom:4px;font-weight:600;}
 .wk-nota .q{color:var(--foreground);font-weight:600;}
+
+/* Os blocos do workspace respiram entre si. */
+#areaWorkspace>.card,#areaWorkspace>.fp-tabs{margin-bottom:16px;}
+#areaWorkspace #wkPainel .card{margin-bottom:0;}
