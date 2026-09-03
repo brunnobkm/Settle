@@ -902,13 +902,13 @@ body.sb-open .tut-fab{left:304px;}
    acontece depois de a pessoa ver o antes e o depois e aprovar.
    ========================================================================== */
 
-.cp-fab{position:fixed;right:24px;bottom:24px;z-index:38;display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid var(--border);border-radius:9999px;background:var(--background);color:var(--foreground);font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
+.cp-fab{position:fixed;right:24px;bottom:24px;z-index:59;display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid var(--border);border-radius:9999px;background:var(--background);color:var(--foreground);font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
 .cp-fab:hover{background:var(--muted);}
 .cp-fab svg{width:18px;height:18px;}
 /* Janela flutuante ancorada no botão, não uma gaveta: o painel acompanha a
    pessoa em qualquer tela sem empurrar o conteúdo dela. */
 .cp{position:fixed;right:24px;bottom:84px;width:384px;max-width:calc(100vw - 32px);
-  max-height:min(640px,calc(100vh - 124px));z-index:39;background:var(--background);
+  max-height:min(640px,calc(100vh - 124px));z-index:60;background:var(--background);
   border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;
   overflow:hidden;box-shadow:0 18px 48px rgba(23,23,23,.18),0 2px 8px rgba(23,23,23,.08);}
 @media (max-width:520px){ .cp{right:16px;left:16px;width:auto;bottom:80px;} }
@@ -1148,3 +1148,14 @@ table.dt td.c-sel .ap-check{gap:0;}
 .sw input:checked + i{background:var(--accent);}
 .sw input:checked + i::after{transform:translateX(16px);}
 .sw input:focus-visible + i{outline:2px solid var(--accent);outline-offset:2px;}
+
+/* Gatilho: uma cor por momento em que o agente roda. */
+.gat{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;
+  font-size:11.5px;line-height:17px;white-space:nowrap;}
+.gat-analise{background:#e2f1f0;color:#0f5f5c;}
+.gat-match{background:#e8eefb;color:#1e3a8a;}
+.gat-demanda{background:#f3ecdf;color:#6b4f14;}
+.gat-off{background:var(--muted);color:var(--muted-foreground);}
+
+/* Card do agente: a instrução ocupa duas linhas, não mais. */
+.ap-card-instr{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
