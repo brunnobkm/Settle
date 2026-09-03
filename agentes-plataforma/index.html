@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260903c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260903d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -217,7 +217,7 @@
     <main class="content">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:15</p>
+        <p class="ap-selo">Protótipo atualizado no dia 3 de setembro às 00:22</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -381,7 +381,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260903c" defer></script>
+  <script src="../assets/settle.js?v=20260903d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1198,7 +1198,7 @@
        títulos, mais duas que descrevem a variável em vez de defini-la: de quem
        ela é, e quantos agentes dependem dela. */
     var COLS = [
-      { k:'nome', t:'Nome', kind:'texto',
+      { k:'nome', t:'Nome da variável', kind:'texto',
         val:function (v) { return v.nome; },
         cel:function (v) { return '<b>' + v.nome + '</b>'; }, largo:true },
       { k:'tipo', t:'Tipo da resposta', kind:'opcoes',
@@ -3226,13 +3226,15 @@
                    (vs.length === 1 ? ' variável dentro' : ' variáveis dentro');
           custo = vs.reduce(function (t, k) { return t + VARS[k].custo; }, 0);
         }
+        /* A instrução pode ser longa: no card ela vale por duas linhas. */
+        var instr = textoLegivel(instrucaoDe(an)).split('\n').join(' ');
+        if (instr.length > 160) instr = instr.slice(0, 158) + '…';
+
         el.innerHTML =
           '<span class="ap-card-title">' + an.nome + '</span>' +
-          '<span class="ap-card-instr">' + an.desc + '</span>' +
+          '<span class="ap-card-instr">' + instr + '</span>' +
           '<span class="ap-card-foot">' +
-            '<span class="ap-tag ' + (rascunho ? 'pause' : 'run') + '">' +
-              (rascunho ? 'Rascunho' : an.gatilho) + '</span>' +
-            '<span class="ap-tag type">' + resumo + '</span>' +
+            (rascunho ? '<span class="gat gat-off">Rascunho</span>' : gatTag(an.gatilho)) +
             (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
           '</span>';
         el.addEventListener('click', function () { abrirAnalise(an); });
@@ -3251,6 +3253,15 @@
       return '<div class="ap-field"><label for="anNome">Nome do agente</label>' +
         '<input class="ap-input" id="anNome" type="text" value="' +
         an.nome.replace(/"/g, '&quot;') + '" /></div>';
+    }
+
+    var GAT_CLASSE = {
+      'Ao enviar para análise':'analise', 'Assim que entrar no match':'match',
+      'Assim que entra no match':'match', 'Sob demanda':'demanda'
+    };
+
+    function gatTag(g) {
+      return '<span class="gat gat-' + (GAT_CLASSE[g] || 'off') + '">' + g + '</span>';
     }
 
     function campoGatilho(an) {
@@ -3277,9 +3288,10 @@
     function instrucaoDe(an) {
       if (an.texto === undefined) {
         an.texto = an.formato === 'estruturado' ? textoDasRegras(an)
-          : an.formato === 'composicao' ? AGENTE_TEC.instr : '';
+          : an.formato === 'composicao' ? AGENTE_TEC.instr
+          : (textoDe(an).texto || '');
       }
-      return an.texto;
+      return an.id === 'juridica' ? JURIDICA.texto : an.texto;
     }
 
     function ligarCabecalhoConfig(an) {
@@ -3340,14 +3352,14 @@
           '<div><div class="ag-sec"><h3>Histórico</h3>' +
             ((an.execs || []).length
               ? an.execs.map(function (e, i) {
-                  return '<button class="ag-hist" type="button" data-exec="' + i + '">' + e.quando +
-                         '<span>' + e.lic + '</span></button>';
+                  return '<button class="ag-hist" type="button" data-exec="' + i + '">' +
+                         e.quando + '</button>';
                 }).join('')
               : '<p class="ap-dim" style="font-size:13px">Ainda não rodou em nenhuma licitação.</p>') +
           '</div></div>' +
           '<div>' +
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
-            '<div class="ag-sec"><h3>Quando roda</h3><p>' + an.gatilho + '</p></div>' +
+            '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) + '</p></div>' +
             '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
               (vs.length ? '<div class="ag-vars">' + vs.map(function (k) { return chipHTML(k); }).join('') + '</div>'
                          : '<p class="ap-dim" style="font-size:13px">Nenhuma.</p>') +
@@ -3361,22 +3373,20 @@
       });
 
       /* Cada execução abre a conversa daquele resultado, no painel de agentes. */
+      /* A conversa abre por cima, com a configuração ainda na tela: ler a
+         execução e ver a instrução ao lado é o ponto. */
       document.querySelectorAll('#fxBody [data-exec]').forEach(function (b) {
         b.addEventListener('click', function () {
           var e = an.execs[+b.dataset.exec];
-          fecharFx();
           cpAbrirPainel();
           cpAgente = an.id;
           document.getElementById('cpTitulo').textContent = an.nome;
           document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
           document.getElementById('cpConfig').hidden = false;
           document.getElementById('cpForm').hidden = false;
-          document.getElementById('cpBody').innerHTML = '<p class="cp-agente">' + e.lic + ' · ' + e.quando + '</p>';
-          cpBolha('bot', e.o + '.<br>' + (e.st === 'falhou'
-            ? 'Esta execução falhou. Posso explicar o que faltou.'
-            : e.st === 'aguardando'
-              ? 'Esta ação está esperando sua aprovação na aba Aprovações.'
-              : 'Pode me perguntar por que cheguei nesse resultado.'));
+          document.getElementById('cpBody').innerHTML =
+            '<p class="cp-agente">Execução de ' + e.quando + '</p>';
+          cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
         });
       });
     }
@@ -3392,6 +3402,7 @@
     function editarAnalise(an) {
       analiseAberta = an;
       modoModal = 'outro';
+      pintarVoltar();
       document.getElementById('agEditar').hidden = true;
       document.getElementById('agExcluir').hidden = true;
       document.getElementById('fxExcluir').hidden = true;
@@ -3428,7 +3439,9 @@
     });
 
     document.getElementById('agEditar').addEventListener('click', function () {
-      if (analiseAberta) editarAnalise(analiseAberta);
+      var an = analiseAberta;
+      if (!an) return;
+      abrirComVolta(function () { abrirAnalise(an); }, function () { editarAnalise(an); });
     });
 
     document.getElementById('agExcluir').addEventListener('click', function () {
