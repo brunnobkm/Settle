@@ -287,6 +287,27 @@
     balao.className = 'tip';
     balao.setAttribute('role', 'tooltip');
     balao.textContent = texto;
+
+    /* Tooltip com ação: o link fica no fim da frase e devolve o clique para
+       quem o declarou, por evento. */
+    var acao = alvo.getAttribute('data-tip-acao');
+    if (acao) {
+      balao.classList.add('com-acao');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tip-acao';
+      b.textContent = acao;
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        esconder();
+        alvo.dispatchEvent(new CustomEvent('tip-acao', { bubbles: true }));
+      });
+      balao.appendChild(b);
+      balao.addEventListener('mouseenter', function () { clearTimeout(timer); });
+      balao.addEventListener('mouseleave', esconder);
+    }
+
     document.body.appendChild(balao);
 
     var r = alvo.getBoundingClientRect();
@@ -306,7 +327,13 @@
     timer = setTimeout(function () { mostrar(alvo); }, 120);
   });
   document.addEventListener('mouseout', function (e) {
-    if (e.target.closest && e.target.closest('[data-tip]')) esconder();
+    if (!e.target.closest || !e.target.closest('[data-tip]')) return;
+    clearTimeout(timer);
+    /* Espera um instante: sem isso não dá tempo de levar o mouse até o link. */
+    timer = setTimeout(function () {
+      if (balao && balao.matches(':hover')) return;
+      esconder();
+    }, 220);
   });
   document.addEventListener('focusin', function (e) {
     var alvo = e.target.closest ? e.target.closest('[data-tip]') : null;
