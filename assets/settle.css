@@ -903,8 +903,8 @@ body.sb-open .tut-fab{left:304px;}
    acontece depois de a pessoa ver o antes e o depois e aprovar.
    ========================================================================== */
 
-.cp-fab{position:fixed;right:24px;bottom:24px;z-index:59;display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid var(--border);border-radius:9999px;background:var(--background);color:var(--foreground);font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
-.cp-fab:hover{background:var(--muted);}
+.cp-fab{position:fixed;right:24px;bottom:24px;z-index:59;display:inline-flex;align-items:center;gap:8px;padding:11px 17px;border:1px solid var(--accent);border-radius:9999px;background:var(--accent);color:#fff;font-family:inherit;font-size:14px;font-weight:600;box-shadow:var(--shadow-pop);cursor:pointer;}
+.cp-fab:hover{background:var(--accent-600);border-color:var(--accent-600);}
 .cp-fab svg{width:18px;height:18px;}
 /* Janela flutuante ancorada no botão, não uma gaveta: o painel acompanha a
    pessoa em qualquer tela sem empurrar o conteúdo dela. */
@@ -1322,3 +1322,33 @@ table.dt td.c-sel .ap-check{gap:0;}
 .cp-mais:hover{border-color:var(--accent);color:var(--accent-600);}
 .cp-foot{flex-direction:column;align-items:stretch;}
 .cp-linha{display:flex;gap:8px;}
+
+/* ===================== 36. SETTLE AI: MODOS E CONTEXTO =====================
+   A mesma conversa em três tamanhos. Flutuante para uma pergunta rápida sem
+   sair de onde se está; lateral para acompanhar a tela ao lado; tela cheia
+   para ler um resultado longo. O contexto é buscável porque a pergunta
+   costuma comparar esta licitação com outra.
+   ========================================================================= */
+.cp.cp-lateral{right:0;top:0;bottom:0;width:420px;max-width:min(92vw,420px);
+  max-height:none;border-radius:0;border-width:0 0 0 1px;box-shadow:-8px 0 32px rgba(23,23,23,.10);}
+.cp.cp-cheio{right:0;left:0;top:0;bottom:0;width:auto;max-width:none;max-height:none;
+  border-radius:0;border-width:0;box-shadow:none;}
+.cp.cp-cheio .cp-body,.cp.cp-cheio .cp-foot{width:100%;max-width:720px;margin:0 auto;}
+body.cp-lateral .cp-fab,body.cp-cheio .cp-fab{display:none;}
+/* No modo lateral a conversa fica ao lado do conteúdo, não por cima dele. */
+body.cp-lateral .content{margin-right:420px;transition:margin-right .18s;}
+@media (max-width:900px){ body.cp-lateral .content{margin-right:0;} }
+
+.cp-pop{width:304px;max-width:304px;}
+.cp-busca{width:100%;border:1px solid var(--border);border-radius:var(--radius-field);
+  padding:7px 9px;margin-bottom:6px;font-family:inherit;font-size:13px;
+  color:var(--foreground);background:var(--card);}
+.cp-busca::placeholder{color:var(--muted-foreground);}
+.cp-rol{max-height:252px;overflow-y:auto;}
+.cp-op{display:block;width:100%;text-align:left;border:0;background:transparent;
+  padding:7px 8px;border-radius:7px;font-family:inherit;font-size:13px;
+  color:var(--foreground);cursor:pointer;}
+.cp-op:hover{background:var(--muted);}
+.cp-op.on{color:var(--accent-600);font-weight:600;}
+.cp-op-sub{display:block;font-size:11.5px;line-height:16px;color:var(--muted-foreground);margin-top:1px;}
+.cp-op-vazio{padding:10px 8px;font-size:12.5px;color:var(--muted-foreground);}
