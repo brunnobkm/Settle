@@ -1326,15 +1326,16 @@ table.dt td.c-sel .ap-check{gap:0;}
    para ler um resultado longo. O contexto é buscável porque a pergunta
    costuma comparar esta licitação com outra.
    ========================================================================= */
-.cp.cp-lateral{right:0;top:0;bottom:0;width:420px;max-width:min(92vw,420px);
+.cp.cp-lateral{right:0;top:0;bottom:0;width:424px;max-width:min(92vw,424px);
   max-height:none;border-radius:0;border-width:0 0 0 1px;box-shadow:-8px 0 32px rgba(23,23,23,.10);}
 .cp.cp-cheio{right:0;left:0;top:0;bottom:0;width:auto;max-width:none;max-height:none;
   border-radius:0;border-width:0;box-shadow:none;}
 .cp.cp-cheio .cp-body,.cp.cp-cheio .cp-foot{width:100%;max-width:720px;margin:0 auto;}
 body.cp-lateral .cp-fab,body.cp-cheio .cp-fab{display:none;}
-/* No modo lateral a conversa fica ao lado do conteúdo, não por cima dele. */
-body.cp-lateral .content{margin-right:420px;transition:margin-right .18s;}
-@media (max-width:900px){ body.cp-lateral .content{margin-right:0;} }
+/* No modo lateral a conversa é uma coluna do layout, como a sidebar da
+   esquerda: empurra a tela inteira, cabeçalho junto, em vez de cobrir. */
+body.cp-lateral .shell{margin-right:424px;transition:margin-right .2s ease;}
+@media (max-width:900px){ body.cp-lateral .shell{margin-right:0;} }
 
 .cp-pop{width:304px;max-width:304px;}
 /* A barra de ferramentas mora ao lado do campo, não no cabeçalho: é ali que a
@@ -1354,20 +1355,18 @@ body.cp-lateral .content{margin-right:420px;transition:margin-right .18s;}
 .cp-sw:hover{background:var(--muted);}
 .cp-sw-txt{flex:1;min-width:0;font-size:13px;color:var(--foreground);}
 .cp-sw input{flex:none;width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
-.cp-sub{z-index:112;}
 .cp-cab{display:flex;align-items:center;gap:4px;padding:2px 4px 8px;}
 .cp-voltar{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
   margin-left:-2px;border:0;border-radius:6px;background:transparent;
   color:var(--muted-foreground);cursor:pointer;}
 .cp-voltar:hover{background:var(--muted);color:var(--foreground);}
 .cp-cab > span{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--muted-foreground);}
-.cp-cab-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;
-  border:0;border-radius:6px;background:transparent;color:var(--muted-foreground);cursor:pointer;}
-.cp-cab-btn:hover{background:var(--muted);color:var(--foreground);}
+.cp-cab-txt{flex:none;border:0;border-radius:6px;background:transparent;padding:3px 6px;
+  font-family:inherit;font-size:12px;color:var(--accent-600);cursor:pointer;}
+.cp-cab-txt:hover{background:var(--muted);}
 .cp-op.cp-linha-aj{align-items:center;}
 .cp-linha-aj > span:first-of-type{flex:1;min-width:0;}
 .cp-linha-aj > .cp-val{flex:none;font-size:12px;color:var(--muted-foreground);}
-.cp-seta{flex:none;color:var(--muted-foreground);}
 .cp-carrega{display:flex;align-items:center;gap:8px;margin:0;padding:10px 8px;
   font-size:11.5px;color:var(--muted-foreground);}
 .cp-spin{flex:none;width:13px;height:13px;border:2px solid var(--border);
