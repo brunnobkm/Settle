@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -246,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 14:21</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 14:39</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -510,6 +510,9 @@
       <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16.2 4.4 15 3.2a1.1 1.1 0 0 0-1.6 0L7 9.6l-.6 2.9 2.9-.6 6.4-6.4a1.1 1.1 0 0 0 0-1.6z" stroke-linejoin="round"/><path d="M15.6 12.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 15.6V5.8a1.4 1.4 0 0 1 1.4-1.4h3.2" stroke-linecap="round"/></svg>
       </button>
+      <button class="icon-btn" type="button" id="cpModoBtn" aria-label="Trocar o modo do chat" data-tip="Trocar o modo do chat">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.6" y="4.4" width="14.8" height="11.2" rx="2"/><path d="M12.4 4.4v11.2"/></svg>
+      </button>
       <button class="icon-btn" type="button" id="cpFechar" aria-label="Fechar o painel">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
@@ -545,6 +548,24 @@
     <div class="pn-body" id="pnBody"></div>
   </aside>
 
+  <div class="cfm-ovl" id="persOvl" hidden></div>
+  <div class="cfm pers" id="pers" role="dialog" aria-modal="true" aria-labelledby="persTitulo" hidden>
+    <h2 id="persTitulo">Personalize a Settle AI</h2>
+    <div class="pers-topo">
+      <div class="pers-face" id="persFace">S</div>
+      <label class="sr-only" for="persNome">Nome</label>
+      <input class="ap-input pers-nome" id="persNome" type="text" value="Settle AI" />
+    </div>
+    <div class="pers-cores" id="persCores"></div>
+    <h3 class="pers-lbl">Instruções</h3>
+    <label class="sr-only" for="persInstr">O que a Settle AI deve levar em conta em toda resposta</label>
+    <textarea class="cp-txt" id="persInstr" rows="4"></textarea>
+    <div class="cfm-acts">
+      <button class="btn btn-outline" type="button" id="persReset">Restaurar</button>
+      <button class="btn btn-primary" type="button" id="persOk">Pronto</button>
+    </div>
+  </div>
+
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
   <div class="cfm" id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitulo" hidden>
     <h2 id="cfmTitulo"></h2>
@@ -557,7 +578,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904c" defer></script>
+  <script src="../assets/settle.js?v=20260904d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1565,7 +1586,7 @@
       document.querySelectorAll('[aria-expanded="true"]')
         .forEach(function (b) {
           if (b.classList.contains('col-btn') || b.hasAttribute('data-vmais') ||
-              b.classList.contains('cp-ferr-btn')) {
+              b.classList.contains('cp-ferr-btn') || b.id === 'cpModoBtn') {
             b.setAttribute('aria-expanded', 'false');
           }
         });
@@ -1856,9 +1877,8 @@
     }
 
     /* O acervo tem centenas de licitações, então a lista não pode ser um menu:
-       sem busca ela mostra só as últimas em que a pessoa mexeu, e a busca
-       devolve no máximo seis, dizendo quantas ficaram de fora. */
-    var LIC_TOTAL = 347;
+       ela entra por rolagem, carregando o próximo lote quando a pessoa chega
+       no fim. */
     var LICITACOES = [
       { id:'l471', nome:'PE 00471/2026', sub:'Prefeitura de Contagem/MG · design de produto', quando:'ontem' },
       { id:'l23',  nome:'PE 00023/2026', sub:'Prefeitura de Itapevi/SP · identidade visual', quando:'há 2 dias' },
@@ -1887,8 +1907,6 @@
         { id:'agentes', nome:'Agentes e Variáveis', sub:'6 agentes, 14 variáveis' } ] }
     ];
 
-    var CTX_TETO = 6;
-
     function ctxJaEsta(o) {
       return cpContextos.some(function (c) { return c.id === o.id; });
     }
@@ -1898,35 +1916,43 @@
         (o.sub ? '<span class="cp-op-sub">' + o.sub + '</span>' : '') + '</button>';
     }
 
-    /* Um popover só, que troca de tela no lugar em vez de abrir menus em
-       cascata: num painel estreito, cascata não cabe. */
-    function cpPopover(botao) {
-      fecharMenuCol();
+    /* O Notion abre submenu em cascata ao lado, e não troca de tela: o menu
+       raiz continua à vista enquanto a pessoa mexe no detalhe. */
+    function cpPop(botao, classe) {
       var pop = document.createElement('div');
-      pop.className = 'fb-pop col-pop cp-pop';
+      pop.className = 'fb-pop col-pop cp-pop' + (classe ? ' ' + classe : '');
       document.body.appendChild(pop);
       pop.addEventListener('click', function (e) { e.stopPropagation(); });
-      var api = {
-        pop: pop,
-        ir: function (pinta) {
-          pop.innerHTML = '';
-          pinta(pop, api);
-          posicionarPop(pop, botao);
-        }
-      };
-      return api;
+      return pop;
     }
 
-    function cpVoltar(pop, api, tela) {
-      var b = pop.querySelector('[data-volta]');
-      if (b) b.addEventListener('click', function () { api.ir(tela); });
+    function posicionarSub(pop, item) {
+      var r = item.getBoundingClientRect();
+      var W = window.innerWidth || document.documentElement.clientWidth || 0;
+      var H = window.innerHeight || document.documentElement.clientHeight || 0;
+      var w = pop.offsetWidth || 260, h = pop.offsetHeight || 200;
+
+      var x = r.right + 6;
+      if (W && x + w > W - 12) x = r.left - w - 6;
+      if (x < 12) x = 12;
+
+      var y = r.top - 6;
+      if (H && y + h > H - 12) y = Math.max(12, H - h - 12);
+
+      pop.style.left = Math.round(x) + 'px';
+      pop.style.top = Math.round(y) + 'px';
     }
 
-    function cpTopo(titulo) {
-      return '<button class="cp-volta" type="button" data-volta="1">' +
-        '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" ' +
-        'stroke-width="2" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" stroke-linecap="round" ' +
-        'stroke-linejoin="round"/></svg>' + titulo + '</button>';
+    function fecharSub() {
+      document.querySelectorAll('.cp-sub').forEach(function (p) { p.remove(); });
+    }
+
+    function cpSubmenu(item, pinta) {
+      fecharSub();
+      var pop = cpPop(null, 'cp-sub');
+      pinta(pop);
+      posicionarSub(pop, item);
+      return pop;
     }
 
     function cpIcone(d) {
@@ -1937,38 +1963,49 @@
 
     /* ---------- O "+": o que dá para trazer para dentro da pergunta ---------- */
 
-    var IC_MENCAO  = 'M3 3.5h10v9H3zM5.5 6.5h5M5.5 9.5h3';
     var IC_ARQUIVO = 'M8 11.5V4M5 6.8 8 3.8l3 3M3.5 12.5h9';
+    var IC_MENCAO  = 'M8 2.6a5.4 5.4 0 1 0 3 9.9M10.6 8a2.6 2.6 0 1 1-5.2 0 2.6 2.6 0 0 1 5.2 0zM10.6 5.6v3.6c0 1.3 2.8 1.3 2.8-1.2A5.4 5.4 0 0 0 8 2.6';
     var IC_VAR     = 'M6 3.2 4.2 12.8M11.8 3.2 10 12.8M3 6.4h10M2.6 9.6h10';
 
     function cpMenuMais() {
-      var api = cpPopover(document.getElementById('cpMais'));
-      api.ir(telaMaisRaiz);
-    }
-
-    function telaMaisRaiz(pop, api) {
+      var pop = cpPop(document.getElementById('cpMais'));
       pop.innerHTML =
-        '<button class="cp-op cp-op-ic" type="button" data-mais="mencao">' + cpIcone(IC_MENCAO) +
-          '<span>Mencionar licitação ou documento<span class="cp-op-sub">traz o conteúdo para a resposta</span></span></button>' +
-        '<button class="cp-op cp-op-ic" type="button" data-mais="arquivo">' + cpIcone(IC_ARQUIVO) +
-          '<span>Anexar arquivo<span class="cp-op-sub">um PDF ou planilha do seu computador</span></span></button>' +
-        '<button class="cp-op cp-op-ic" type="button" data-mais="variavel">' + cpIcone(IC_VAR) +
-          '<span>Usar uma variável<span class="cp-op-sub">o que a Settle já extrai dos editais</span></span></button>';
+        '<button class="cp-op cp-op-ic" type="button" data-mais="arquivo">' + cpIcone(IC_ARQUIVO) + '<span>Anexar arquivo</span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-mais="mencao">' + cpIcone(IC_MENCAO) + '<span>Mencionar licitação ou documento</span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-mais="variavel">' + cpIcone(IC_VAR) + '<span>Variáveis</span></button>';
+      posicionarPop(pop, document.getElementById('cpForm'));
 
-      pop.querySelector('[data-mais="mencao"]').addEventListener('click', function () { api.ir(telaMencao); });
-      pop.querySelector('[data-mais="variavel"]').addEventListener('click', function () { api.ir(telaVariaveis); });
       pop.querySelector('[data-mais="arquivo"]').addEventListener('click', function () {
         fecharMenuCol();
         document.getElementById('cpArquivo').click();
       });
+      pop.querySelector('[data-mais="mencao"]').addEventListener('click', function () {
+        pop.remove(); telaMencao();
+      });
+      pop.querySelector('[data-mais="variavel"]').addEventListener('click', function () {
+        pop.remove(); telaVariaveis();
+      });
     }
 
-    function telaMencao(pop, api) {
-      pop.innerHTML = cpTopo('Mencionar') +
+    function ctxJaEsta(o) {
+      return cpContextos.some(function (c) { return c.id === o.id; });
+    }
+
+    function ctxItemHTML(o) {
+      return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
+        (o.sub ? '<span class="cp-op-sub">' + o.sub + '</span>' : '') + '</button>';
+    }
+
+    /* Mencionar: busca em cima, lista embaixo, e o acervo entra por rolagem em
+       vez de um recorte com aviso de quanto ficou de fora. */
+    function telaMencao() {
+      var pop = cpPop(document.getElementById('cpMais'));
+      pop.innerHTML =
         '<label class="sr-only" for="cpBusca">Buscar licitação ou documento</label>' +
-        '<input class="cp-busca" id="cpBusca" type="text" placeholder="Buscar licitação ou documento" />' +
+        '<input class="cp-busca" id="cpBusca" type="text" placeholder="Buscar..." />' +
         '<div class="cp-rol" id="cpRol"></div>';
-      cpVoltar(pop, api, telaMaisRaiz);
+
+      var mostra = 8;
 
       function bate(o, q) {
         return (o.nome + ' ' + (o.sub || '')).toLowerCase().indexOf(q) >= 0;
@@ -1987,34 +2024,21 @@
                itens.map(ctxItemHTML).join('');
         });
 
-        var livres = LICITACOES.filter(function (o) { return !ctxJaEsta(o); });
-        if (!q) {
-          /* Sem busca, o acervo inteiro não cabe: entram as últimas em que a
-             pessoa mexeu, e o resto fica atrás da busca. */
-          var recentes = livres.filter(function (o) { return o.quando; }).slice(0, 3);
-          if (recentes.length) {
-            h += '<div class="fb-list-head"><span>Licitações recentes</span></div>' +
-                 recentes.map(function (o) {
-                   return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
-                     '<span class="cp-op-sub">' + o.sub + ' · ' + o.quando + '</span></button>';
-                 }).join('');
-          }
-          h += '<p class="cp-nota">Busque acima para achar qualquer uma das ' +
-               LIC_TOTAL + ' licitações da B Design.</p>';
-        } else {
-          var achados = livres.filter(function (o) { return bate(o, q); });
-          if (achados.length) {
-            h += '<div class="fb-list-head"><span>Licitações</span></div>' +
-                 achados.slice(0, CTX_TETO).map(ctxItemHTML).join('');
-            if (achados.length > CTX_TETO) {
-              h += '<p class="cp-nota">Mostrando ' + CTX_TETO + ' de ' + achados.length +
-                   ' licitações. Refine a busca para chegar na que você quer.</p>';
-            }
-          }
+        var livres = LICITACOES.filter(function (o) {
+          return !ctxJaEsta(o) && (!q || bate(o, q));
+        });
+        if (livres.length) {
+          h += '<div class="fb-list-head"><span>Licitações</span></div>' +
+               livres.slice(0, mostra).map(function (o) {
+                 return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
+                   '<span class="cp-op-sub">' + o.sub + (o.quando ? ' · ' + o.quando : '') + '</span></button>';
+               }).join('');
+          if (livres.length > mostra) h += '<p class="cp-carrega">Carregando mais…</p>';
         }
 
         if (!h) h = '<p class="cp-op-vazio">Nada encontrado para esta busca.</p>';
-        document.getElementById('cpRol').innerHTML = h;
+        var rol = document.getElementById('cpRol');
+        rol.innerHTML = h;
         pop.querySelectorAll('[data-ctxadd]').forEach(function (b) {
           b.addEventListener('click', function () {
             var achado = null;
@@ -2029,59 +2053,118 @@
         posicionarPop(pop, document.getElementById('cpForm'));
       }
 
-      document.getElementById('cpBusca').addEventListener('input', pintar);
+      /* Chegar no fim da lista carrega o próximo lote, em vez de avisar quantas
+         licitações ficaram de fora. */
+      function aoRolar() {
+        var rol = document.getElementById('cpRol');
+        if (rol.scrollTop + rol.clientHeight < rol.scrollHeight - 24) return;
+        var q = (document.getElementById('cpBusca').value || '').trim().toLowerCase();
+        var total = LICITACOES.filter(function (o) {
+          return !ctxJaEsta(o) && (!q || bate(o, q));
+        }).length;
+        if (mostra >= total) return;
+        var y = rol.scrollTop;
+        mostra += 8; pintar();
+        document.getElementById('cpRol').scrollTop = y;
+      }
+
+      document.getElementById('cpBusca').addEventListener('input', function () { mostra = 8; pintar(); });
       pintar();
+      document.getElementById('cpRol').addEventListener('scroll', aoRolar);
       document.getElementById('cpBusca').focus();
     }
 
     /* As variáveis fazem aqui o papel das skills do Notion: são o que a Settle
        já sabe extrair, e entram na pergunta em vez de serem redigitadas. */
-    function telaVariaveis(pop, api) {
-      pop.innerHTML = cpTopo('Variáveis') +
+    function telaVariaveis() {
+      var pop = cpPop(document.getElementById('cpMais'));
+      pop.innerHTML =
+        '<div class="cp-cab"><span>Variáveis</span>' +
+          '<button class="cp-cab-btn" type="button" id="cpVerVars" aria-label="Ver todas as variáveis" data-tip="Ver todas">' +
+            cpIcone('M2.6 3.4h4.2v9.2H2.6zM9.2 3.4h4.2v9.2H9.2z') + '</button>' +
+          '<button class="cp-cab-btn" type="button" id="cpNovaVar" aria-label="Criar uma variável" data-tip="Criar variável">' +
+            cpIcone('M8 3.4v9.2M3.4 8h9.2') + '</button></div>' +
         '<label class="sr-only" for="cpBuscaVar">Buscar variável</label>' +
-        '<input class="cp-busca" id="cpBuscaVar" type="text" placeholder="Buscar variável" />' +
+        '<input class="cp-busca" id="cpBuscaVar" type="text" placeholder="Buscar variável..." />' +
         '<div class="cp-rol" id="cpRolVar"></div>';
-      cpVoltar(pop, api, telaMaisRaiz);
 
-      function pintar() {
+      var mostra = 6;
+
+      function lista() {
         var q = (document.getElementById('cpBuscaVar').value || '').trim().toLowerCase();
-        var chaves = Object.keys(VARS).filter(function (k) {
+        return Object.keys(VARS).filter(function (k) {
           return !q || (VARS[k].nome + ' ' + VARS[k].desc).toLowerCase().indexOf(q) >= 0;
         });
+      }
+
+      function pintar() {
+        var chaves = lista();
         var h = chaves.length
-          ? chaves.slice(0, 8).map(function (k) {
+          ? chaves.slice(0, mostra).map(function (k) {
               return '<button class="cp-op" type="button" data-varins="' + k + '">' + VARS[k].nome +
                 '<span class="cp-op-sub">' + VARS[k].tipo + ' · ' + VARS[k].desc + '</span></button>';
             }).join('')
           : '<p class="cp-op-vazio">Nenhuma variável com esse nome.</p>';
-        if (chaves.length > 8) {
-          h += '<p class="cp-nota">Mostrando 8 de ' + chaves.length + ' variáveis.</p>';
-        }
+        if (chaves.length > mostra) h += '<p class="cp-carrega">Carregando mais…</p>';
         document.getElementById('cpRolVar').innerHTML = h;
         pop.querySelectorAll('[data-varins]').forEach(function (b) {
           b.addEventListener('click', function () {
             var campo = document.getElementById('cpIn');
-            var nome = VARS[b.dataset.varins].nome;
-            campo.value = (campo.value ? campo.value.replace(/\s+$/, '') + ' ' : '') + nome;
+            campo.value = (campo.value ? campo.value.replace(/\s+$/, '') + ' ' : '') + VARS[b.dataset.varins].nome;
             fecharMenuCol(); campo.focus();
           });
         });
         posicionarPop(pop, document.getElementById('cpForm'));
       }
 
-      document.getElementById('cpBuscaVar').addEventListener('input', pintar);
+      function aoRolar() {
+        var rol = document.getElementById('cpRolVar');
+        if (rol.scrollTop + rol.clientHeight < rol.scrollHeight - 24) return;
+        if (mostra >= lista().length) return;
+        var y = rol.scrollTop;
+        mostra += 6; pintar();
+        document.getElementById('cpRolVar').scrollTop = y;
+      }
+
+      document.getElementById('cpBuscaVar').addEventListener('input', function () { mostra = 6; pintar(); });
       pintar();
+      document.getElementById('cpRolVar').addEventListener('scroll', aoRolar);
       document.getElementById('cpBuscaVar').focus();
+
+      document.getElementById('cpVerVars').addEventListener('click', function () {
+        fecharMenuCol(); cpFecharPainel(); abaAtiva('variaveis');
+      });
+      document.getElementById('cpNovaVar').addEventListener('click', function () {
+        fecharMenuCol(); cpFecharPainel(); abaAtiva('variaveis'); abrirVar(null);
+      });
     }
 
-    /* Três tamanhos para a mesma conversa, como no Notion: a escolha é de
-       quem está lendo, e ela persiste enquanto o painel fica aberto. */
+    /* Três tamanhos para a mesma conversa, como no Notion. O botão mora no
+       cabeçalho do painel, ao lado de nova conversa e fechar. */
     var cpModo = 'flutuante';
     var CP_MODOS = [
-      { id:'flutuante', nome:'Flutuante', sub:'janela sobre a tela' },
-      { id:'lateral',   nome:'Lateral',   sub:'coluna à direita, tela inteira de altura' },
-      { id:'cheio',     nome:'Tela cheia', sub:'a conversa ocupa tudo' }
+      { id:'lateral',   nome:'Lateral',
+        ic:'M2.6 3.4h10.8v9.2H2.6zM10 3.4v9.2' },
+      { id:'flutuante', nome:'Flutuante',
+        ic:'M5.4 5.4h8v7.2h-8zM2.6 3.4h8v1.2' },
+      { id:'cheio',     nome:'Tela cheia',
+        ic:'M2.6 3.4h10.8v9.2H2.6zM2.6 5.8h10.8' }
     ];
+
+    function cpMenuModo() {
+      var pop = cpPop(document.getElementById('cpModoBtn'));
+      pop.innerHTML = CP_MODOS.map(function (m) {
+        return '<button class="cp-op cp-op-ic cp-linha-aj" type="button" data-cpmodo="' + m.id + '">' +
+          cpIcone(m.ic) + '<span>' + m.nome + '</span>' +
+          (cpModo === m.id ? '<span class="cp-val">✓</span>' : '') + '</button>';
+      }).join('');
+      posicionarPop(pop, document.getElementById('cpModoBtn'), true);
+      pop.querySelectorAll('[data-cpmodo]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          cpModo = b.dataset.cpmodo; cpAplicarModo(); fecharMenuCol();
+        });
+      });
+    }
 
     function cpAplicarModo() {
       var el = document.getElementById('cp');
@@ -2091,53 +2174,90 @@
       document.body.classList.toggle('cp-cheio', cpModo === 'cheio');
     }
 
-    /* Ajustes espelha o Settings do Notion: as fontes que a IA pode ler, as
-       conexões com sistemas de fora, o modo de exibição e o que ela deve levar
-       em conta em toda resposta. */
-    var FONTES_LIGADAS = { 'Edital e anexos':true, 'Termo de referência':true,
-      'Minuta do contrato':true, 'Estudo técnico preliminar':false,
-      'Manifestações':false, 'Arquivos de resultado':true };
-
-    var CONEXOES = [
-      { nome:'Arquivos da B Design', sub:'catálogo, atestados e propostas anteriores', on:true },
-      { nome:'Google Drive', sub:'pastas compartilhadas da empresa', on:false },
-      { nome:'ERP', sub:'contratos assinados e faturamento', on:false }
+    /* Ajustes espelha o Settings do Notion: onde a Settle AI pode procurar, o
+       que ela pode fazer e como ela se apresenta. O modo de exibição não mora
+       aqui: é um botão do próprio cabeçalho. */
+    var FONTES_IA = [
+      { nome:'Todas as fontes que posso acessar', on:true, mestre:true },
+      { nome:'Licitações da B Design', on:true },
+      { nome:'Arquivos da empresa', on:true },
+      { nome:'Portais públicos', on:true },
+      { nome:'Acesso à web', on:false }
     ];
 
-    var PERSONALIZA = 'Somos a B Design, empresa de design de produto e pesquisa com ' +
-      'usuários. Responda em português, cite sempre o item do edital de onde tirou a ' +
-      'informação e diga quando não encontrou, em vez de supor.';
+    var CONEXOES = [
+      { nome:'Google Drive', sub:'pastas compartilhadas da empresa', on:false },
+      { nome:'ERP', sub:'contratos assinados e faturamento', on:false },
+      { nome:'E-mail', sub:'avisos e respostas dos órgãos', on:false }
+    ];
 
-    var IC_FONTE = 'M3.2 4.2h9.6v8H3.2zM3.2 6.6h9.6M6.2 6.6v5.6';
+    var MODOS_IA = [
+      { id:'agir', nome:'Padrão', sub:'Pode buscar, criar e alterar agentes' },
+      { id:'ask',  nome:'Perguntar', sub:'Só responde, não altera nada' }
+    ];
+    var modoIA = 'agir';
+
+    var PERSONA = { nome:'Settle AI', cor:'#3a9b9e',
+      instr:'Somos a B Design, empresa de design de produto e pesquisa com usuários. ' +
+        'Cite sempre o item do edital de onde tirou a informação e diga quando não ' +
+        'encontrou, em vez de supor.' };
+
+    var IC_FONTE = 'M4.2 3.6a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM11.8 9.2a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM5.6 6.4l4.8 3.4';
     var IC_CONEX = 'M6.4 9.6 4.8 11.2a2.3 2.3 0 0 1-3.2-3.2l1.6-1.6M9.6 6.4l1.6-1.6a2.3 2.3 0 0 1 3.2 3.2l-1.6 1.6M6 10l4-4';
-    var IC_MODO  = 'M2.4 3.6h11.2v8.8H2.4zM9.6 3.6v8.8';
+    var IC_MODOIA = 'M3 12.4 12.2 3.2l1.6 1.6L4.6 14z';
     var IC_PERS  = 'M8 9.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM3.2 13.2c.7-2 2.5-3 4.8-3s4.1 1 4.8 3';
 
-    function cpMenuOpcoes() {
-      var api = cpPopover(document.getElementById('cpConfig'));
-      api.ir(telaAjustes);
+    function contaFontes() {
+      return FONTES_IA.filter(function (f) { return f.on && !f.mestre; }).length;
+    }
+    function contaConexoes() {
+      return CONEXOES.filter(function (c) { return c.on; }).length;
+    }
+    function modoIAAtual() {
+      return MODOS_IA.filter(function (m) { return m.id === modoIA; })[0];
     }
 
-    function telaAjustes(pop, api) {
-      var h =
-        '<button class="cp-op cp-op-ic" type="button" data-aj="fontes">' + cpIcone(IC_FONTE) +
-          '<span>Fontes<span class="cp-op-sub">onde a Settle AI pode procurar</span></span></button>' +
-        '<button class="cp-op cp-op-ic" type="button" data-aj="conexoes">' + cpIcone(IC_CONEX) +
-          '<span>Conexões<span class="cp-op-sub">sistemas de fora da plataforma</span></span></button>' +
-        '<button class="cp-op cp-op-ic" type="button" data-aj="modo">' + cpIcone(IC_MODO) +
-          '<span>Modo de exibição<span class="cp-op-sub">' + modoAtual().nome.toLowerCase() + '</span></span></button>' +
-        '<button class="cp-op cp-op-ic" type="button" data-aj="pers">' + cpIcone(IC_PERS) +
-          '<span>Personalizar<span class="cp-op-sub">o que ela deve levar em conta sempre</span></span></button>';
+    function linhaAjuste(chave, icone, nome, valor) {
+      return '<button class="cp-op cp-op-ic cp-linha-aj" type="button" data-aj="' + chave + '">' +
+        cpIcone(icone) + '<span>' + nome + '</span>' +
+        '<span class="cp-val">' + valor + '</span>' +
+        '<svg class="cp-seta" viewBox="0 0 16 16" width="11" height="11" fill="none" ' +
+        'stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6.5 3.5 4.5 4.5-4.5 4.5" ' +
+        'stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+    }
+
+    function cpMenuOpcoes() {
+      var pop = cpPop(document.getElementById('cpConfig'));
+      var h = linhaAjuste('fontes', IC_FONTE, 'Minhas fontes', contaFontes()) +
+              linhaAjuste('conexoes', IC_CONEX, 'Conexões', contaConexoes()) +
+              linhaAjuste('modo', IC_MODOIA, 'Modo', modoIAAtual().nome) +
+              '<button class="cp-op cp-op-ic" type="button" data-aj="pers">' +
+                cpIcone(IC_PERS) + '<span>Personalizar</span></button>';
       if (cpAgente) {
         h += '<div class="col-sep"></div>' +
              '<button class="cp-op" type="button" data-cpcfg="1">Configurar ' + cpAgente.nome + '</button>';
       }
       pop.innerHTML = h;
+      posicionarPop(pop, document.getElementById('cpConfig'));
 
-      pop.querySelector('[data-aj="fontes"]').addEventListener('click', function () { api.ir(telaFontes); });
-      pop.querySelector('[data-aj="conexoes"]').addEventListener('click', function () { api.ir(telaConexoes); });
-      pop.querySelector('[data-aj="modo"]').addEventListener('click', function () { api.ir(telaModo); });
-      pop.querySelector('[data-aj="pers"]').addEventListener('click', function () { api.ir(telaPersonalizar); });
+      function repintar() {
+        var i = pop.querySelector('[data-aj="fontes"] .cp-val');
+        if (i) i.textContent = contaFontes();
+        var c = pop.querySelector('[data-aj="conexoes"] .cp-val');
+        if (c) c.textContent = contaConexoes();
+        var m = pop.querySelector('[data-aj="modo"] .cp-val');
+        if (m) m.textContent = modoIAAtual().nome;
+      }
+
+      var f = pop.querySelector('[data-aj="fontes"]');
+      f.addEventListener('click', function () { subFontes(f, repintar); });
+      var cx = pop.querySelector('[data-aj="conexoes"]');
+      cx.addEventListener('click', function () { subConexoes(cx, repintar); });
+      var md = pop.querySelector('[data-aj="modo"]');
+      md.addEventListener('click', function () { subModoIA(md, repintar); });
+      pop.querySelector('[data-aj="pers"]').addEventListener('click', function () {
+        fecharMenuCol(); abrirPersonalizar();
+      });
       var cfg = pop.querySelector('[data-cpcfg]');
       if (cfg) {
         cfg.addEventListener('click', function () {
@@ -2146,71 +2266,122 @@
       }
     }
 
-    function modoAtual() {
-      return CP_MODOS.filter(function (m) { return m.id === cpModo; })[0];
-    }
-
-    function linhaSwitch(nome, sub, ligado, marca) {
+    function linhaLiga(nome, sub, ligado, marca) {
       return '<label class="cp-sw"><span class="cp-sw-txt">' + nome +
-        '<span class="cp-op-sub">' + sub + '</span></span>' +
+        (sub ? '<span class="cp-op-sub">' + sub + '</span>' : '') + '</span>' +
         '<input type="checkbox" ' + marca + (ligado ? ' checked' : '') + ' /></label>';
     }
 
-    function telaFontes(pop, api) {
-      pop.innerHTML = cpTopo('Fontes') +
-        FONTES.map(function (f) {
-          return linhaSwitch(f, FONTES_LIGADAS[f] ? 'entra nas respostas' : 'fica de fora',
-            FONTES_LIGADAS[f], 'data-fonte="' + f + '"');
+    function subFontes(item, repintar) {
+      cpSubmenu(item, function (pop) {
+        pop.innerHTML = FONTES_IA.map(function (f, i) {
+          return linhaLiga(f.nome, '', f.on, 'data-fia="' + i + '"') +
+            (f.mestre ? '<div class="col-sep"></div>' : '');
         }).join('') +
-        '<p class="cp-nota">Vale para as perguntas soltas. Cada agente continua com a ordem de fontes das variáveis dele.</p>';
-      cpVoltar(pop, api, telaAjustes);
-      pop.querySelectorAll('[data-fonte]').forEach(function (c) {
-        c.addEventListener('change', function () {
-          FONTES_LIGADAS[c.dataset.fonte] = c.checked;
-          api.ir(telaFontes);
+        '<div class="col-sep"></div>' +
+        '<button class="cp-op cp-op-ic" type="button" data-addfonte="1">' +
+          cpIcone('M8 3.4v9.2M3.4 8h9.2') + '<span>Adicionar fontes</span></button>' +
+        '<p class="cp-nota">A Settle AI só procura nas fontes marcadas aqui.</p>';
+
+        pop.querySelectorAll('[data-fia]').forEach(function (c) {
+          c.addEventListener('change', function () {
+            var i = +c.dataset.fia;
+            if (FONTES_IA[i].mestre) {
+              FONTES_IA.forEach(function (f) { f.on = c.checked; });
+            } else {
+              FONTES_IA[i].on = c.checked;
+              FONTES_IA[0].on = FONTES_IA.every(function (f) { return f.mestre || f.on; });
+            }
+            repintar();
+            subFontes(item, repintar);
+          });
+        });
+        pop.querySelector('[data-addfonte]').addEventListener('click', function () {
+          subConexoes(item, repintar);
         });
       });
     }
 
-    function telaConexoes(pop, api) {
-      pop.innerHTML = cpTopo('Conexões') +
-        CONEXOES.map(function (c, i) {
-          return linhaSwitch(c.nome, c.sub, c.on, 'data-conex="' + i + '"');
-        }).join('') +
-        '<p class="cp-nota">Ainda precisamos definir com o time quais conexões existem e quem pode ligá-las.</p>';
-      cpVoltar(pop, api, telaAjustes);
-      pop.querySelectorAll('[data-conex]').forEach(function (c) {
-        c.addEventListener('change', function () {
-          CONEXOES[+c.dataset.conex].on = c.checked;
-          settleToast(CONEXOES[+c.dataset.conex].nome + (c.checked ? ' ligado' : ' desligado'));
+    function subConexoes(item, repintar) {
+      cpSubmenu(item, function (pop) {
+        pop.innerHTML = CONEXOES.map(function (c, i) {
+          return linhaLiga(c.nome, c.sub, c.on, 'data-conex="' + i + '"');
+        }).join('');
+        pop.querySelectorAll('[data-conex]').forEach(function (c) {
+          c.addEventListener('change', function () {
+            CONEXOES[+c.dataset.conex].on = c.checked;
+            repintar();
+          });
         });
       });
     }
 
-    function telaModo(pop, api) {
-      pop.innerHTML = cpTopo('Modo de exibição') +
-        CP_MODOS.map(function (m) {
-          return '<button class="cp-op' + (cpModo === m.id ? ' on' : '') + '" type="button" data-cpmodo="' +
-            m.id + '">' + (cpModo === m.id ? '✓ ' : '') + m.nome +
+    function subModoIA(item, repintar) {
+      cpSubmenu(item, function (pop) {
+        pop.innerHTML = MODOS_IA.map(function (m) {
+          return '<button class="cp-op' + (modoIA === m.id ? ' on' : '') + '" type="button" data-modoia="' +
+            m.id + '">' + (modoIA === m.id ? '✓ ' : '') + m.nome +
             '<span class="cp-op-sub">' + m.sub + '</span></button>';
         }).join('');
-      cpVoltar(pop, api, telaAjustes);
-      pop.querySelectorAll('[data-cpmodo]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          cpModo = b.dataset.cpmodo; cpAplicarModo(); fecharMenuCol();
+        pop.querySelectorAll('[data-modoia]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            modoIA = b.dataset.modoia; repintar(); fecharMenuCol();
+            settleToast('Modo ' + modoIAAtual().nome.toLowerCase());
+          });
         });
       });
     }
 
-    function telaPersonalizar(pop, api) {
-      pop.innerHTML = cpTopo('Personalizar') +
-        '<label class="sr-only" for="cpPers">O que a Settle AI deve levar em conta</label>' +
-        '<textarea class="cp-txt" id="cpPers" rows="5"></textarea>' +
-        '<p class="cp-nota">Vale para toda conversa nesta conta, não só para esta.</p>';
-      cpVoltar(pop, api, telaAjustes);
-      var t = document.getElementById('cpPers');
-      t.value = PERSONALIZA;
-      t.addEventListener('input', function () { PERSONALIZA = t.value; });
+    /* Personalizar é uma modal, não um item de menu: dar nome e feição à IA é
+       uma decisão da conta inteira, não desta conversa. */
+    var PERS_CORES = ['#3a9b9e', '#7c5cff', '#e07a3f', '#2f7d4f', '#c04a6e', '#3b6ee0'];
+
+    function abrirPersonalizar() {
+      document.getElementById('persOvl').hidden = false;
+      document.getElementById('pers').hidden = false;
+      document.getElementById('persNome').value = PERSONA.nome;
+      document.getElementById('persInstr').value = PERSONA.instr;
+      pintarPersona();
+    }
+
+    function pintarPersona() {
+      var face = document.getElementById('persFace');
+      face.textContent = (document.getElementById('persNome').value || 'S').trim().charAt(0).toUpperCase();
+      face.style.background = PERSONA.cor;
+      document.getElementById('persCores').innerHTML = PERS_CORES.map(function (c) {
+        return '<button class="pers-cor' + (c === PERSONA.cor ? ' on' : '') + '" type="button" ' +
+          'style="background:' + c + '" data-cor="' + c + '" aria-label="Cor ' + c + '"></button>';
+      }).join('');
+      document.querySelectorAll('[data-cor]').forEach(function (b) {
+        b.addEventListener('click', function () { PERSONA.cor = b.dataset.cor; pintarPersona(); });
+      });
+    }
+
+    function fecharPersonalizar() {
+      document.getElementById('persOvl').hidden = true;
+      document.getElementById('pers').hidden = true;
+    }
+
+    document.getElementById('persNome').addEventListener('input', pintarPersona);
+    document.getElementById('persOvl').addEventListener('click', fecharPersonalizar);
+    document.getElementById('persReset').addEventListener('click', function () {
+      PERSONA = { nome:'Settle AI', cor:'#3a9b9e', instr:'' };
+      abrirPersonalizar();
+    });
+    document.getElementById('persOk').addEventListener('click', function () {
+      PERSONA.nome = document.getElementById('persNome').value.trim() || 'Settle AI';
+      PERSONA.instr = document.getElementById('persInstr').value;
+      fecharPersonalizar();
+      cpNomear();
+      settleToast('Personalização salva');
+    });
+
+    /* O nome escolhido aparece onde a IA se apresenta. */
+    function cpNomear() {
+      document.getElementById('cpAbrir').lastChild.textContent = ' ' + PERSONA.nome;
+      if (!cpAgente) {
+        document.getElementById('cpTitulo').textContent = 'Converse com a ' + PERSONA.nome;
+      }
     }
 
     /* Conversa comum: sem agente escolhido, com o contexto da página. */
@@ -2485,6 +2656,13 @@
       this.value = '';
     });
     document.getElementById('cpNova').addEventListener('click', cpNovaConversa);
+    document.getElementById('cpModoBtn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var aberto = this.getAttribute('aria-expanded') === 'true';
+      fecharMenuCol();
+      this.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+      if (!aberto) cpMenuModo();
+    });
     document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
     document.getElementById('cpLista').addEventListener('click', cpPintarLista);
     document.getElementById('cpConfig').addEventListener('click', function (e) {
