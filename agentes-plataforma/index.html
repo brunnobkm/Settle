@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904e" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -246,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 14:39</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 14:54</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -548,24 +548,6 @@
     <div class="pn-body" id="pnBody"></div>
   </aside>
 
-  <div class="cfm-ovl" id="persOvl" hidden></div>
-  <div class="cfm pers" id="pers" role="dialog" aria-modal="true" aria-labelledby="persTitulo" hidden>
-    <h2 id="persTitulo">Personalize a Settle AI</h2>
-    <div class="pers-topo">
-      <div class="pers-face" id="persFace">S</div>
-      <label class="sr-only" for="persNome">Nome</label>
-      <input class="ap-input pers-nome" id="persNome" type="text" value="Settle AI" />
-    </div>
-    <div class="pers-cores" id="persCores"></div>
-    <h3 class="pers-lbl">Instruções</h3>
-    <label class="sr-only" for="persInstr">O que a Settle AI deve levar em conta em toda resposta</label>
-    <textarea class="cp-txt" id="persInstr" rows="4"></textarea>
-    <div class="cfm-acts">
-      <button class="btn btn-outline" type="button" id="persReset">Restaurar</button>
-      <button class="btn btn-primary" type="button" id="persOk">Pronto</button>
-    </div>
-  </div>
-
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
   <div class="cfm" id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitulo" hidden>
     <h2 id="cfmTitulo"></h2>
@@ -578,7 +560,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904d" defer></script>
+  <script src="../assets/settle.js?v=20260904e" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1926,6 +1908,22 @@
       return pop;
     }
 
+    /* O menu nasce colado ao botão que o abriu e nunca escapa do painel: era
+       o que fazia o menu do "+" flutuar solto no meio da conversa. */
+    function posicionarNoPainel(pop, ancora) {
+      var r = ancora.getBoundingClientRect();
+      var p = document.getElementById('cp').getBoundingClientRect();
+      var w = pop.offsetWidth || 304, h = pop.offsetHeight || 220;
+
+      var x = Math.max(p.left + 8, Math.min(r.left, p.right - w - 8));
+      var y = r.top - h - 6;
+      if (y < p.top + 8) y = Math.min(r.bottom + 6, p.bottom - h - 8);
+      if (y < 8) y = 8;
+
+      pop.style.left = Math.round(x) + 'px';
+      pop.style.top = Math.round(y) + 'px';
+    }
+
     function posicionarSub(pop, item) {
       var r = item.getBoundingClientRect();
       var W = window.innerWidth || document.documentElement.clientWidth || 0;
@@ -1955,6 +1953,20 @@
       return pop;
     }
 
+    function cpCab(titulo, comVoltar, extra) {
+      return '<div class="cp-cab">' +
+        (comVoltar ? '<button class="cp-voltar" type="button" data-voltar="1" aria-label="Voltar">' +
+          '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" ' +
+          'stroke-width="2" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" stroke-linecap="round" ' +
+          'stroke-linejoin="round"/></svg></button>' : '') +
+        '<span>' + titulo + '</span>' + (extra || '') + '</div>';
+    }
+
+    function ligarVoltar(pop, faz) {
+      var b = pop.querySelector('[data-voltar]');
+      if (b) b.addEventListener('click', function (e) { e.stopPropagation(); faz(); });
+    }
+
     function cpIcone(d) {
       return '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" ' +
         'stroke-width="1.6" aria-hidden="true"><path d="' + d + '" stroke-linecap="round" ' +
@@ -1973,7 +1985,7 @@
         '<button class="cp-op cp-op-ic" type="button" data-mais="arquivo">' + cpIcone(IC_ARQUIVO) + '<span>Anexar arquivo</span></button>' +
         '<button class="cp-op cp-op-ic" type="button" data-mais="mencao">' + cpIcone(IC_MENCAO) + '<span>Mencionar licitação ou documento</span></button>' +
         '<button class="cp-op cp-op-ic" type="button" data-mais="variavel">' + cpIcone(IC_VAR) + '<span>Variáveis</span></button>';
-      posicionarPop(pop, document.getElementById('cpForm'));
+      posicionarNoPainel(pop, document.getElementById('cpMais'));
 
       pop.querySelector('[data-mais="arquivo"]').addEventListener('click', function () {
         fecharMenuCol();
@@ -2000,12 +2012,13 @@
        vez de um recorte com aviso de quanto ficou de fora. */
     function telaMencao() {
       var pop = cpPop(document.getElementById('cpMais'));
-      pop.innerHTML =
+      pop.innerHTML = cpCab('Mencionar', true) +
         '<label class="sr-only" for="cpBusca">Buscar licitação ou documento</label>' +
         '<input class="cp-busca" id="cpBusca" type="text" placeholder="Buscar..." />' +
         '<div class="cp-rol" id="cpRol"></div>';
+      ligarVoltar(pop, function () { pop.remove(); cpMenuMais(); });
 
-      var mostra = 8;
+      var mostra = 8, carregando = false;
 
       function bate(o, q) {
         return (o.nome + ' ' + (o.sub || '')).toLowerCase().indexOf(q) >= 0;
@@ -2033,7 +2046,10 @@
                  return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
                    '<span class="cp-op-sub">' + o.sub + (o.quando ? ' · ' + o.quando : '') + '</span></button>';
                }).join('');
-          if (livres.length > mostra) h += '<p class="cp-carrega">Carregando mais…</p>';
+          if (livres.length > mostra) {
+            h += '<p class="cp-carrega">' + (carregando ? '<span class="cp-spin"></span>Carregando…' :
+              'Role para ver mais') + '</p>';
+          }
         }
 
         if (!h) h = '<p class="cp-op-vazio">Nada encontrado para esta busca.</p>';
@@ -2050,13 +2066,14 @@
             fecharMenuCol(); cpPintarCtx();
           });
         });
-        posicionarPop(pop, document.getElementById('cpForm'));
+        posicionarNoPainel(pop, document.getElementById('cpMais'));
       }
 
-      /* Chegar no fim da lista carrega o próximo lote, em vez de avisar quantas
-         licitações ficaram de fora. */
+      /* Chegar no fim carrega o próximo lote, com o giro à vista enquanto isso:
+         sem ele a lista parecia ter acabado. */
       function aoRolar() {
         var rol = document.getElementById('cpRol');
+        if (carregando) return;
         if (rol.scrollTop + rol.clientHeight < rol.scrollHeight - 24) return;
         var q = (document.getElementById('cpBusca').value || '').trim().toLowerCase();
         var total = LICITACOES.filter(function (o) {
@@ -2064,11 +2081,18 @@
         }).length;
         if (mostra >= total) return;
         var y = rol.scrollTop;
-        mostra += 8; pintar();
+        carregando = true; pintar();
         document.getElementById('cpRol').scrollTop = y;
+        setTimeout(function () {
+          carregando = false; mostra += 8; pintar();
+          var r2 = document.getElementById('cpRol');
+          if (r2) r2.scrollTop = y;
+        }, 450);
       }
 
-      document.getElementById('cpBusca').addEventListener('input', function () { mostra = 8; pintar(); });
+      document.getElementById('cpBusca').addEventListener('input', function () {
+        mostra = 8; carregando = false; pintar();
+      });
       pintar();
       document.getElementById('cpRol').addEventListener('scroll', aoRolar);
       document.getElementById('cpBusca').focus();
@@ -2078,17 +2102,17 @@
        já sabe extrair, e entram na pergunta em vez de serem redigitadas. */
     function telaVariaveis() {
       var pop = cpPop(document.getElementById('cpMais'));
-      pop.innerHTML =
-        '<div class="cp-cab"><span>Variáveis</span>' +
+      pop.innerHTML = cpCab('Variáveis', true,
           '<button class="cp-cab-btn" type="button" id="cpVerVars" aria-label="Ver todas as variáveis" data-tip="Ver todas">' +
             cpIcone('M2.6 3.4h4.2v9.2H2.6zM9.2 3.4h4.2v9.2H9.2z') + '</button>' +
           '<button class="cp-cab-btn" type="button" id="cpNovaVar" aria-label="Criar uma variável" data-tip="Criar variável">' +
-            cpIcone('M8 3.4v9.2M3.4 8h9.2') + '</button></div>' +
+            cpIcone('M8 3.4v9.2M3.4 8h9.2') + '</button>') +
         '<label class="sr-only" for="cpBuscaVar">Buscar variável</label>' +
         '<input class="cp-busca" id="cpBuscaVar" type="text" placeholder="Buscar variável..." />' +
         '<div class="cp-rol" id="cpRolVar"></div>';
+      ligarVoltar(pop, function () { pop.remove(); cpMenuMais(); });
 
-      var mostra = 6;
+      var mostra = 6, carregando = false;
 
       function lista() {
         var q = (document.getElementById('cpBuscaVar').value || '').trim().toLowerCase();
@@ -2105,7 +2129,10 @@
                 '<span class="cp-op-sub">' + VARS[k].tipo + ' · ' + VARS[k].desc + '</span></button>';
             }).join('')
           : '<p class="cp-op-vazio">Nenhuma variável com esse nome.</p>';
-        if (chaves.length > mostra) h += '<p class="cp-carrega">Carregando mais…</p>';
+        if (chaves.length > mostra) {
+          h += '<p class="cp-carrega">' + (carregando ? '<span class="cp-spin"></span>Carregando…' :
+            'Role para ver mais') + '</p>';
+        }
         document.getElementById('cpRolVar').innerHTML = h;
         pop.querySelectorAll('[data-varins]').forEach(function (b) {
           b.addEventListener('click', function () {
@@ -2114,28 +2141,38 @@
             fecharMenuCol(); campo.focus();
           });
         });
-        posicionarPop(pop, document.getElementById('cpForm'));
+        posicionarNoPainel(pop, document.getElementById('cpMais'));
       }
 
       function aoRolar() {
         var rol = document.getElementById('cpRolVar');
+        if (carregando) return;
         if (rol.scrollTop + rol.clientHeight < rol.scrollHeight - 24) return;
         if (mostra >= lista().length) return;
         var y = rol.scrollTop;
-        mostra += 6; pintar();
+        carregando = true; pintar();
         document.getElementById('cpRolVar').scrollTop = y;
+        setTimeout(function () {
+          carregando = false; mostra += 6; pintar();
+          var r2 = document.getElementById('cpRolVar');
+          if (r2) r2.scrollTop = y;
+        }, 450);
       }
 
-      document.getElementById('cpBuscaVar').addEventListener('input', function () { mostra = 6; pintar(); });
+      document.getElementById('cpBuscaVar').addEventListener('input', function () {
+        mostra = 6; carregando = false; pintar();
+      });
       pintar();
       document.getElementById('cpRolVar').addEventListener('scroll', aoRolar);
       document.getElementById('cpBuscaVar').focus();
 
-      document.getElementById('cpVerVars').addEventListener('click', function () {
-        fecharMenuCol(); cpFecharPainel(); abaAtiva('variaveis');
+      document.getElementById('cpVerVars').addEventListener('click', function (e) {
+        e.stopPropagation();
+        fecharMenuCol(); cpFecharPainel(); irPara('agentes'); abaAtiva('variaveis');
       });
-      document.getElementById('cpNovaVar').addEventListener('click', function () {
-        fecharMenuCol(); cpFecharPainel(); abaAtiva('variaveis'); abrirVar(null);
+      document.getElementById('cpNovaVar').addEventListener('click', function (e) {
+        e.stopPropagation();
+        fecharMenuCol(); cpFecharPainel(); irPara('agentes'); abaAtiva('variaveis'); abrirVar(null);
       });
     }
 
@@ -2179,7 +2216,7 @@
        aqui: é um botão do próprio cabeçalho. */
     var FONTES_IA = [
       { nome:'Todas as fontes que posso acessar', on:true, mestre:true },
-      { nome:'Licitações da B Design', on:true },
+      { nome:'Licitações que acompanho', on:true },
       { nome:'Arquivos da empresa', on:true },
       { nome:'Portais públicos', on:true },
       { nome:'Acesso à web', on:false }
@@ -2197,15 +2234,9 @@
     ];
     var modoIA = 'agir';
 
-    var PERSONA = { nome:'Settle AI', cor:'#3a9b9e',
-      instr:'Somos a B Design, empresa de design de produto e pesquisa com usuários. ' +
-        'Cite sempre o item do edital de onde tirou a informação e diga quando não ' +
-        'encontrou, em vez de supor.' };
-
     var IC_FONTE = 'M4.2 3.6a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM11.8 9.2a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM5.6 6.4l4.8 3.4';
     var IC_CONEX = 'M6.4 9.6 4.8 11.2a2.3 2.3 0 0 1-3.2-3.2l1.6-1.6M9.6 6.4l1.6-1.6a2.3 2.3 0 0 1 3.2 3.2l-1.6 1.6M6 10l4-4';
     var IC_MODOIA = 'M3 12.4 12.2 3.2l1.6 1.6L4.6 14z';
-    var IC_PERS  = 'M8 9.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM3.2 13.2c.7-2 2.5-3 4.8-3s4.1 1 4.8 3';
 
     function contaFontes() {
       return FONTES_IA.filter(function (f) { return f.on && !f.mestre; }).length;
@@ -2230,15 +2261,13 @@
       var pop = cpPop(document.getElementById('cpConfig'));
       var h = linhaAjuste('fontes', IC_FONTE, 'Minhas fontes', contaFontes()) +
               linhaAjuste('conexoes', IC_CONEX, 'Conexões', contaConexoes()) +
-              linhaAjuste('modo', IC_MODOIA, 'Modo', modoIAAtual().nome) +
-              '<button class="cp-op cp-op-ic" type="button" data-aj="pers">' +
-                cpIcone(IC_PERS) + '<span>Personalizar</span></button>';
+              linhaAjuste('modo', IC_MODOIA, 'Modo', modoIAAtual().nome);
       if (cpAgente) {
         h += '<div class="col-sep"></div>' +
              '<button class="cp-op" type="button" data-cpcfg="1">Configurar ' + cpAgente.nome + '</button>';
       }
       pop.innerHTML = h;
-      posicionarPop(pop, document.getElementById('cpConfig'));
+      posicionarNoPainel(pop, document.getElementById('cpConfig'));
 
       function repintar() {
         var i = pop.querySelector('[data-aj="fontes"] .cp-val');
@@ -2255,9 +2284,6 @@
       cx.addEventListener('click', function () { subConexoes(cx, repintar); });
       var md = pop.querySelector('[data-aj="modo"]');
       md.addEventListener('click', function () { subModoIA(md, repintar); });
-      pop.querySelector('[data-aj="pers"]').addEventListener('click', function () {
-        fecharMenuCol(); abrirPersonalizar();
-      });
       var cfg = pop.querySelector('[data-cpcfg]');
       if (cfg) {
         cfg.addEventListener('click', function () {
@@ -2274,7 +2300,7 @@
 
     function subFontes(item, repintar) {
       cpSubmenu(item, function (pop) {
-        pop.innerHTML = FONTES_IA.map(function (f, i) {
+        pop.innerHTML = cpCab('Minhas fontes', true) + FONTES_IA.map(function (f, i) {
           return linhaLiga(f.nome, '', f.on, 'data-fia="' + i + '"') +
             (f.mestre ? '<div class="col-sep"></div>' : '');
         }).join('') +
@@ -2283,6 +2309,7 @@
           cpIcone('M8 3.4v9.2M3.4 8h9.2') + '<span>Adicionar fontes</span></button>' +
         '<p class="cp-nota">A Settle AI só procura nas fontes marcadas aqui.</p>';
 
+        ligarVoltar(pop, fecharSub);
         pop.querySelectorAll('[data-fia]').forEach(function (c) {
           c.addEventListener('change', function () {
             var i = +c.dataset.fia;
@@ -2297,16 +2324,18 @@
           });
         });
         pop.querySelector('[data-addfonte]').addEventListener('click', function () {
-          subConexoes(item, repintar);
+          subConexoes(item, repintar, function () { subFontes(item, repintar); });
         });
       });
     }
 
-    function subConexoes(item, repintar) {
+    function subConexoes(item, repintar, volta) {
       cpSubmenu(item, function (pop) {
-        pop.innerHTML = CONEXOES.map(function (c, i) {
+        pop.innerHTML = cpCab('Conexões', true) + CONEXOES.map(function (c, i) {
           return linhaLiga(c.nome, c.sub, c.on, 'data-conex="' + i + '"');
-        }).join('');
+        }).join('') +
+        '<p class="cp-nota">Ligar uma conexão a torna disponível em Minhas fontes.</p>';
+        ligarVoltar(pop, volta || fecharSub);
         pop.querySelectorAll('[data-conex]').forEach(function (c) {
           c.addEventListener('change', function () {
             CONEXOES[+c.dataset.conex].on = c.checked;
@@ -2318,11 +2347,12 @@
 
     function subModoIA(item, repintar) {
       cpSubmenu(item, function (pop) {
-        pop.innerHTML = MODOS_IA.map(function (m) {
+        pop.innerHTML = cpCab('Modo', true) + MODOS_IA.map(function (m) {
           return '<button class="cp-op' + (modoIA === m.id ? ' on' : '') + '" type="button" data-modoia="' +
             m.id + '">' + (modoIA === m.id ? '✓ ' : '') + m.nome +
             '<span class="cp-op-sub">' + m.sub + '</span></button>';
         }).join('');
+        ligarVoltar(pop, fecharSub);
         pop.querySelectorAll('[data-modoia]').forEach(function (b) {
           b.addEventListener('click', function () {
             modoIA = b.dataset.modoia; repintar(); fecharMenuCol();
@@ -2330,58 +2360,6 @@
           });
         });
       });
-    }
-
-    /* Personalizar é uma modal, não um item de menu: dar nome e feição à IA é
-       uma decisão da conta inteira, não desta conversa. */
-    var PERS_CORES = ['#3a9b9e', '#7c5cff', '#e07a3f', '#2f7d4f', '#c04a6e', '#3b6ee0'];
-
-    function abrirPersonalizar() {
-      document.getElementById('persOvl').hidden = false;
-      document.getElementById('pers').hidden = false;
-      document.getElementById('persNome').value = PERSONA.nome;
-      document.getElementById('persInstr').value = PERSONA.instr;
-      pintarPersona();
-    }
-
-    function pintarPersona() {
-      var face = document.getElementById('persFace');
-      face.textContent = (document.getElementById('persNome').value || 'S').trim().charAt(0).toUpperCase();
-      face.style.background = PERSONA.cor;
-      document.getElementById('persCores').innerHTML = PERS_CORES.map(function (c) {
-        return '<button class="pers-cor' + (c === PERSONA.cor ? ' on' : '') + '" type="button" ' +
-          'style="background:' + c + '" data-cor="' + c + '" aria-label="Cor ' + c + '"></button>';
-      }).join('');
-      document.querySelectorAll('[data-cor]').forEach(function (b) {
-        b.addEventListener('click', function () { PERSONA.cor = b.dataset.cor; pintarPersona(); });
-      });
-    }
-
-    function fecharPersonalizar() {
-      document.getElementById('persOvl').hidden = true;
-      document.getElementById('pers').hidden = true;
-    }
-
-    document.getElementById('persNome').addEventListener('input', pintarPersona);
-    document.getElementById('persOvl').addEventListener('click', fecharPersonalizar);
-    document.getElementById('persReset').addEventListener('click', function () {
-      PERSONA = { nome:'Settle AI', cor:'#3a9b9e', instr:'' };
-      abrirPersonalizar();
-    });
-    document.getElementById('persOk').addEventListener('click', function () {
-      PERSONA.nome = document.getElementById('persNome').value.trim() || 'Settle AI';
-      PERSONA.instr = document.getElementById('persInstr').value;
-      fecharPersonalizar();
-      cpNomear();
-      settleToast('Personalização salva');
-    });
-
-    /* O nome escolhido aparece onde a IA se apresenta. */
-    function cpNomear() {
-      document.getElementById('cpAbrir').lastChild.textContent = ' ' + PERSONA.nome;
-      if (!cpAgente) {
-        document.getElementById('cpTitulo').textContent = 'Converse com a ' + PERSONA.nome;
-      }
     }
 
     /* Conversa comum: sem agente escolhido, com o contexto da página. */
