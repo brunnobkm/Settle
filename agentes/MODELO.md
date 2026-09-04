@@ -224,6 +224,14 @@ por ser humano" (Bruno Ortiz, 46:33).
 **Três estados por ação, não dois**: não pode, pede aprovação, executa sozinho. O estado do meio é o
 que faz a fila de aprovações existir.
 
+**O protótipo simplificou isso para três estados por agente**, não por ação: um seletor de Permissões
+na configuração, com aprovar manualmente, aprovar automaticamente e ignorar todas as aprovações. A
+razão é que a lista de ações que um agente pode executar na plataforma ainda não existe: ela vem do
+backend, e sem ela um controle por ação seria inventado. A escolha vale enquanto cada agente faz uma
+coisa só. Quando a lista chegar, o campo vira uma matriz de ação por estado, e a fila de aprovações
+não muda, porque já é alimentada pelo estado do meio. **Pendente com o Bruno Ortiz e o José Victor:
+a lista de ações.**
+
 **A fila de aprovações em lote** responde ao corner case que ficou sem resposta na reunião (48:14):
 se o agente roda em 50 licitações e cada ação pede aprovação, ninguém vai abrir 50 licitações para
 clicar em aprovar. Todas as ações pendentes, de todos os agentes, caem numa fila só, com seleção

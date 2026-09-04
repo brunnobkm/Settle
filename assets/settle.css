@@ -930,6 +930,14 @@ body.sb-open .tut-fab{left:304px;}
 .cp-msg{max-width:94%;font-size:13.5px;line-height:20px;border-radius:12px;padding:9px 12px;margin-bottom:10px;}
 .cp-msg.bot{background:var(--muted);}
 .cp-msg.me{margin-left:auto;background:var(--primary);color:var(--primary-foreground);}
+.cp-valid{margin-bottom:10px;}
+.cp-caso{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);
+  padding:10px 12px;margin-bottom:8px;}
+.cp-caso.ok{border-color:color-mix(in srgb, var(--success) 40%, var(--border));}
+.cp-caso.no{border-color:color-mix(in srgb, var(--warning) 45%, var(--border));}
+.cp-caso-lic{font-size:12px;color:var(--muted-foreground);}
+.cp-caso-o{font-size:13px;line-height:19px;color:var(--foreground);margin-top:2px;}
+.cp-caso-acts{display:flex;gap:6px;margin-top:8px;}
 .cp-prop{border:1px solid var(--accent);border-radius:var(--radius-box);background:var(--card);padding:12px 14px;margin-bottom:10px;}
 .cp-prop h4{margin:0 0 4px;font-size:13px;font-weight:700;}
 .cp-prop .por{font-size:12px;line-height:17px;color:var(--muted-foreground);margin-bottom:10px;}
@@ -1128,7 +1136,7 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ag-top{display:flex;align-items:center;gap:10px;padding-bottom:16px;margin-bottom:18px;
   border-bottom:1px solid var(--border);font-size:13px;color:var(--muted-foreground);}
 .ag-cols{display:grid;gap:26px;grid-template-columns:minmax(0,1fr);}
-@media (min-width:720px){ .ag-cols{grid-template-columns:220px minmax(0,1fr);} }
+@media (min-width:720px){ .ag-cols{grid-template-columns:280px minmax(0,1fr);} }
 .ag-sec{margin-bottom:22px;}
 .ag-sec:last-child{margin-bottom:0;}
 .ag-sec h3{margin:0 0 8px;font-size:13px;font-weight:400;color:var(--muted-foreground);}
@@ -1139,6 +1147,26 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ag-hist:hover{color:var(--accent-600);}
 .ag-hist:last-child{border-bottom:0;}
 .ag-hist span{display:block;font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+.ag-hist .ag-hist-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;
+  font-size:13.5px;line-height:19px;color:var(--foreground);margin-top:0;}
+.ag-hist .ag-hist-top .ap-tag{flex:none;font-size:11px;}
+/* O card da licitação carrega o que os agentes decidiram: quem tem dezenas
+   de licitações abertas compara sem entrar em cada uma. */
+.lic-card{margin-bottom:12px;}
+.lic-top{display:flex;align-items:flex-start;gap:12px;}
+.lic-top > div{flex:1;min-width:0;}
+.lic-n{margin:0;font-size:15px;font-weight:600;color:var(--foreground);}
+.lic-org{margin:2px 0 0;font-size:13px;color:var(--muted-foreground);}
+.lic-meta{margin:8px 0 0;font-size:12.5px;color:var(--muted-foreground);}
+.lic-res{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+.lic-res-l{display:flex;align-items:baseline;gap:10px;font-size:13px;line-height:20px;}
+.lic-res-ag{flex:none;width:min(46%,260px);color:var(--muted-foreground);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lic-acts{display:flex;gap:8px;margin-top:12px;}
+@media (max-width:640px){ .lic-res-l{flex-direction:column;gap:0;} .lic-res-ag{width:auto;} }
+.ag-valid{display:flex;align-items:baseline;gap:8px;}
+.ag-valid-n{font-size:20px;font-weight:700;color:var(--foreground);}
+.ag-valid-sub{font-size:12px;color:var(--muted-foreground);}
 .ag-vars{display:flex;flex-wrap:wrap;gap:6px;}
 
 /* Interruptor de ativo. */
