@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904b" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904c" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -246,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 13:53</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 14:21</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -529,6 +529,7 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2.4 4.6h6.2M11.6 4.6h2M2.4 11.4h2.2M7.6 11.4h6" stroke-linecap="round"/><circle cx="10.1" cy="4.6" r="1.5"/><circle cx="6.1" cy="11.4" r="1.5"/></svg>
         </button>
         <button class="btn btn-primary cp-enviar" type="submit">Enviar</button>
+        <input class="sr-only" type="file" id="cpArquivo" aria-label="Escolher arquivo para anexar" />
       </div>
     </form>
   </aside>
@@ -556,7 +557,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904b" defer></script>
+  <script src="../assets/settle.js?v=20260904c" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1897,16 +1898,77 @@
         (o.sub ? '<span class="cp-op-sub">' + o.sub + '</span>' : '') + '</button>';
     }
 
-    function cpMenuContexto() {
+    /* Um popover só, que troca de tela no lugar em vez de abrir menus em
+       cascata: num painel estreito, cascata não cabe. */
+    function cpPopover(botao) {
       fecharMenuCol();
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cp-pop';
-      pop.innerHTML =
-        '<label class="sr-only" for="cpBusca">Buscar contexto</label>' +
-        '<input class="cp-busca" id="cpBusca" type="text" placeholder="Buscar licitação ou documento" />' +
-        '<div class="cp-rol" id="cpRol"></div>';
       document.body.appendChild(pop);
       pop.addEventListener('click', function (e) { e.stopPropagation(); });
+      var api = {
+        pop: pop,
+        ir: function (pinta) {
+          pop.innerHTML = '';
+          pinta(pop, api);
+          posicionarPop(pop, botao);
+        }
+      };
+      return api;
+    }
+
+    function cpVoltar(pop, api, tela) {
+      var b = pop.querySelector('[data-volta]');
+      if (b) b.addEventListener('click', function () { api.ir(tela); });
+    }
+
+    function cpTopo(titulo) {
+      return '<button class="cp-volta" type="button" data-volta="1">' +
+        '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" stroke-linecap="round" ' +
+        'stroke-linejoin="round"/></svg>' + titulo + '</button>';
+    }
+
+    function cpIcone(d) {
+      return '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.6" aria-hidden="true"><path d="' + d + '" stroke-linecap="round" ' +
+        'stroke-linejoin="round"/></svg>';
+    }
+
+    /* ---------- O "+": o que dá para trazer para dentro da pergunta ---------- */
+
+    var IC_MENCAO  = 'M3 3.5h10v9H3zM5.5 6.5h5M5.5 9.5h3';
+    var IC_ARQUIVO = 'M8 11.5V4M5 6.8 8 3.8l3 3M3.5 12.5h9';
+    var IC_VAR     = 'M6 3.2 4.2 12.8M11.8 3.2 10 12.8M3 6.4h10M2.6 9.6h10';
+
+    function cpMenuMais() {
+      var api = cpPopover(document.getElementById('cpMais'));
+      api.ir(telaMaisRaiz);
+    }
+
+    function telaMaisRaiz(pop, api) {
+      pop.innerHTML =
+        '<button class="cp-op cp-op-ic" type="button" data-mais="mencao">' + cpIcone(IC_MENCAO) +
+          '<span>Mencionar licitação ou documento<span class="cp-op-sub">traz o conteúdo para a resposta</span></span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-mais="arquivo">' + cpIcone(IC_ARQUIVO) +
+          '<span>Anexar arquivo<span class="cp-op-sub">um PDF ou planilha do seu computador</span></span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-mais="variavel">' + cpIcone(IC_VAR) +
+          '<span>Usar uma variável<span class="cp-op-sub">o que a Settle já extrai dos editais</span></span></button>';
+
+      pop.querySelector('[data-mais="mencao"]').addEventListener('click', function () { api.ir(telaMencao); });
+      pop.querySelector('[data-mais="variavel"]').addEventListener('click', function () { api.ir(telaVariaveis); });
+      pop.querySelector('[data-mais="arquivo"]').addEventListener('click', function () {
+        fecharMenuCol();
+        document.getElementById('cpArquivo').click();
+      });
+    }
+
+    function telaMencao(pop, api) {
+      pop.innerHTML = cpTopo('Mencionar') +
+        '<label class="sr-only" for="cpBusca">Buscar licitação ou documento</label>' +
+        '<input class="cp-busca" id="cpBusca" type="text" placeholder="Buscar licitação ou documento" />' +
+        '<div class="cp-rol" id="cpRol"></div>';
+      cpVoltar(pop, api, telaMaisRaiz);
 
       function bate(o, q) {
         return (o.nome + ' ' + (o.sub || '')).toLowerCase().indexOf(q) >= 0;
@@ -1972,6 +2034,46 @@
       document.getElementById('cpBusca').focus();
     }
 
+    /* As variáveis fazem aqui o papel das skills do Notion: são o que a Settle
+       já sabe extrair, e entram na pergunta em vez de serem redigitadas. */
+    function telaVariaveis(pop, api) {
+      pop.innerHTML = cpTopo('Variáveis') +
+        '<label class="sr-only" for="cpBuscaVar">Buscar variável</label>' +
+        '<input class="cp-busca" id="cpBuscaVar" type="text" placeholder="Buscar variável" />' +
+        '<div class="cp-rol" id="cpRolVar"></div>';
+      cpVoltar(pop, api, telaMaisRaiz);
+
+      function pintar() {
+        var q = (document.getElementById('cpBuscaVar').value || '').trim().toLowerCase();
+        var chaves = Object.keys(VARS).filter(function (k) {
+          return !q || (VARS[k].nome + ' ' + VARS[k].desc).toLowerCase().indexOf(q) >= 0;
+        });
+        var h = chaves.length
+          ? chaves.slice(0, 8).map(function (k) {
+              return '<button class="cp-op" type="button" data-varins="' + k + '">' + VARS[k].nome +
+                '<span class="cp-op-sub">' + VARS[k].tipo + ' · ' + VARS[k].desc + '</span></button>';
+            }).join('')
+          : '<p class="cp-op-vazio">Nenhuma variável com esse nome.</p>';
+        if (chaves.length > 8) {
+          h += '<p class="cp-nota">Mostrando 8 de ' + chaves.length + ' variáveis.</p>';
+        }
+        document.getElementById('cpRolVar').innerHTML = h;
+        pop.querySelectorAll('[data-varins]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var campo = document.getElementById('cpIn');
+            var nome = VARS[b.dataset.varins].nome;
+            campo.value = (campo.value ? campo.value.replace(/\s+$/, '') + ' ' : '') + nome;
+            fecharMenuCol(); campo.focus();
+          });
+        });
+        posicionarPop(pop, document.getElementById('cpForm'));
+      }
+
+      document.getElementById('cpBuscaVar').addEventListener('input', pintar);
+      pintar();
+      document.getElementById('cpBuscaVar').focus();
+    }
+
     /* Três tamanhos para a mesma conversa, como no Notion: a escolha é de
        quem está lendo, e ela persiste enquanto o painel fica aberto. */
     var cpModo = 'flutuante';
@@ -1989,37 +2091,126 @@
       document.body.classList.toggle('cp-cheio', cpModo === 'cheio');
     }
 
+    /* Ajustes espelha o Settings do Notion: as fontes que a IA pode ler, as
+       conexões com sistemas de fora, o modo de exibição e o que ela deve levar
+       em conta em toda resposta. */
+    var FONTES_LIGADAS = { 'Edital e anexos':true, 'Termo de referência':true,
+      'Minuta do contrato':true, 'Estudo técnico preliminar':false,
+      'Manifestações':false, 'Arquivos de resultado':true };
+
+    var CONEXOES = [
+      { nome:'Arquivos da B Design', sub:'catálogo, atestados e propostas anteriores', on:true },
+      { nome:'Google Drive', sub:'pastas compartilhadas da empresa', on:false },
+      { nome:'ERP', sub:'contratos assinados e faturamento', on:false }
+    ];
+
+    var PERSONALIZA = 'Somos a B Design, empresa de design de produto e pesquisa com ' +
+      'usuários. Responda em português, cite sempre o item do edital de onde tirou a ' +
+      'informação e diga quando não encontrou, em vez de supor.';
+
+    var IC_FONTE = 'M3.2 4.2h9.6v8H3.2zM3.2 6.6h9.6M6.2 6.6v5.6';
+    var IC_CONEX = 'M6.4 9.6 4.8 11.2a2.3 2.3 0 0 1-3.2-3.2l1.6-1.6M9.6 6.4l1.6-1.6a2.3 2.3 0 0 1 3.2 3.2l-1.6 1.6M6 10l4-4';
+    var IC_MODO  = 'M2.4 3.6h11.2v8.8H2.4zM9.6 3.6v8.8';
+    var IC_PERS  = 'M8 9.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM3.2 13.2c.7-2 2.5-3 4.8-3s4.1 1 4.8 3';
+
     function cpMenuOpcoes() {
-      fecharMenuCol();
-      var pop = document.createElement('div');
-      pop.className = 'fb-pop col-pop';
-      var h = '<div class="fb-list-head"><span>Modo de exibição</span></div>' +
-        CP_MODOS.map(function (m) {
-          return '<button class="cp-op' + (cpModo === m.id ? ' on' : '') + '" type="button" data-cpmodo="' +
-            m.id + '">' + (cpModo === m.id ? '✓ ' : '') + m.nome +
-            '<span class="cp-op-sub">' + m.sub + '</span></button>';
-        }).join('') +
-        '';
+      var api = cpPopover(document.getElementById('cpConfig'));
+      api.ir(telaAjustes);
+    }
+
+    function telaAjustes(pop, api) {
+      var h =
+        '<button class="cp-op cp-op-ic" type="button" data-aj="fontes">' + cpIcone(IC_FONTE) +
+          '<span>Fontes<span class="cp-op-sub">onde a Settle AI pode procurar</span></span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-aj="conexoes">' + cpIcone(IC_CONEX) +
+          '<span>Conexões<span class="cp-op-sub">sistemas de fora da plataforma</span></span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-aj="modo">' + cpIcone(IC_MODO) +
+          '<span>Modo de exibição<span class="cp-op-sub">' + modoAtual().nome.toLowerCase() + '</span></span></button>' +
+        '<button class="cp-op cp-op-ic" type="button" data-aj="pers">' + cpIcone(IC_PERS) +
+          '<span>Personalizar<span class="cp-op-sub">o que ela deve levar em conta sempre</span></span></button>';
       if (cpAgente) {
         h += '<div class="col-sep"></div>' +
              '<button class="cp-op" type="button" data-cpcfg="1">Configurar ' + cpAgente.nome + '</button>';
       }
       pop.innerHTML = h;
-      pop.classList.add('cp-pop');
-      posicionarPop(pop, document.getElementById('cpConfig'));
-      pop.addEventListener('click', function (e) { e.stopPropagation(); });
 
-      pop.querySelectorAll('[data-cpmodo]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          cpModo = b.dataset.cpmodo; cpAplicarModo(); fecharMenuCol();
-        });
-      });
+      pop.querySelector('[data-aj="fontes"]').addEventListener('click', function () { api.ir(telaFontes); });
+      pop.querySelector('[data-aj="conexoes"]').addEventListener('click', function () { api.ir(telaConexoes); });
+      pop.querySelector('[data-aj="modo"]').addEventListener('click', function () { api.ir(telaModo); });
+      pop.querySelector('[data-aj="pers"]').addEventListener('click', function () { api.ir(telaPersonalizar); });
       var cfg = pop.querySelector('[data-cpcfg]');
       if (cfg) {
         cfg.addEventListener('click', function () {
           fecharMenuCol(); setVia('cons'); abaAtiva('agentes'); abrirAnalise(cpAgente);
         });
       }
+    }
+
+    function modoAtual() {
+      return CP_MODOS.filter(function (m) { return m.id === cpModo; })[0];
+    }
+
+    function linhaSwitch(nome, sub, ligado, marca) {
+      return '<label class="cp-sw"><span class="cp-sw-txt">' + nome +
+        '<span class="cp-op-sub">' + sub + '</span></span>' +
+        '<input type="checkbox" ' + marca + (ligado ? ' checked' : '') + ' /></label>';
+    }
+
+    function telaFontes(pop, api) {
+      pop.innerHTML = cpTopo('Fontes') +
+        FONTES.map(function (f) {
+          return linhaSwitch(f, FONTES_LIGADAS[f] ? 'entra nas respostas' : 'fica de fora',
+            FONTES_LIGADAS[f], 'data-fonte="' + f + '"');
+        }).join('') +
+        '<p class="cp-nota">Vale para as perguntas soltas. Cada agente continua com a ordem de fontes das variáveis dele.</p>';
+      cpVoltar(pop, api, telaAjustes);
+      pop.querySelectorAll('[data-fonte]').forEach(function (c) {
+        c.addEventListener('change', function () {
+          FONTES_LIGADAS[c.dataset.fonte] = c.checked;
+          api.ir(telaFontes);
+        });
+      });
+    }
+
+    function telaConexoes(pop, api) {
+      pop.innerHTML = cpTopo('Conexões') +
+        CONEXOES.map(function (c, i) {
+          return linhaSwitch(c.nome, c.sub, c.on, 'data-conex="' + i + '"');
+        }).join('') +
+        '<p class="cp-nota">Ainda precisamos definir com o time quais conexões existem e quem pode ligá-las.</p>';
+      cpVoltar(pop, api, telaAjustes);
+      pop.querySelectorAll('[data-conex]').forEach(function (c) {
+        c.addEventListener('change', function () {
+          CONEXOES[+c.dataset.conex].on = c.checked;
+          settleToast(CONEXOES[+c.dataset.conex].nome + (c.checked ? ' ligado' : ' desligado'));
+        });
+      });
+    }
+
+    function telaModo(pop, api) {
+      pop.innerHTML = cpTopo('Modo de exibição') +
+        CP_MODOS.map(function (m) {
+          return '<button class="cp-op' + (cpModo === m.id ? ' on' : '') + '" type="button" data-cpmodo="' +
+            m.id + '">' + (cpModo === m.id ? '✓ ' : '') + m.nome +
+            '<span class="cp-op-sub">' + m.sub + '</span></button>';
+        }).join('');
+      cpVoltar(pop, api, telaAjustes);
+      pop.querySelectorAll('[data-cpmodo]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          cpModo = b.dataset.cpmodo; cpAplicarModo(); fecharMenuCol();
+        });
+      });
+    }
+
+    function telaPersonalizar(pop, api) {
+      pop.innerHTML = cpTopo('Personalizar') +
+        '<label class="sr-only" for="cpPers">O que a Settle AI deve levar em conta</label>' +
+        '<textarea class="cp-txt" id="cpPers" rows="5"></textarea>' +
+        '<p class="cp-nota">Vale para toda conversa nesta conta, não só para esta.</p>';
+      cpVoltar(pop, api, telaAjustes);
+      var t = document.getElementById('cpPers');
+      t.value = PERSONALIZA;
+      t.addEventListener('input', function () { PERSONALIZA = t.value; });
     }
 
     /* Conversa comum: sem agente escolhido, com o contexto da página. */
@@ -2276,7 +2467,22 @@
 
     document.getElementById('cpAgentes').addEventListener('click', cpPintarLista);
     document.getElementById('cpMais').addEventListener('click', function (e) {
-      e.stopPropagation(); cpMenuContexto();
+      e.stopPropagation();
+      var aberto = this.getAttribute('aria-expanded') === 'true';
+      fecharMenuCol();
+      this.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+      if (!aberto) cpMenuMais();
+    });
+
+    /* Anexar é o seletor do sistema mesmo: o arquivo escolhido vira um chip de
+       contexto como qualquer outro. */
+    document.getElementById('cpArquivo').addEventListener('change', function () {
+      var f = this.files && this.files[0];
+      if (!f) return;
+      cpContextos.push({ id:'arq-' + Date.now(), nome:f.name });
+      cpPintarCtx();
+      settleToast(f.name + ' entrou no contexto');
+      this.value = '';
     });
     document.getElementById('cpNova').addEventListener('click', cpNovaConversa);
     document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
