@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904f" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904g" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -246,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 15:10</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 15:22</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -560,7 +560,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904f" defer></script>
+  <script src="../assets/settle.js?v=20260904g" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1835,10 +1835,32 @@
        entra sozinha; o "+" acrescenta outras. */
     var cpContextos = [];
 
+    /* O id agrupa os agentes da página e não muda de aba para aba; o nome é o
+       que a pessoa lê no chip, e esse acompanha a tela em que ela está. */
+    var NOME_ABA = { agentes:'Agentes', variaveis:'Variáveis', aprovacoes:'Aprovações' };
+
     function paginaAtual() {
-      return document.getElementById('areaWorkspace').hidden
-        ? { id:'agentes', nome:'Agentes e Variáveis' }
-        : { id:'lic', nome:'PE 90014/2026' };
+      if (!document.getElementById('areaWorkspace').hidden) {
+        return { id:'lic', nome:'PE 90014/2026', auto:true };
+      }
+      var aba = document.querySelector('.fp-tab.active');
+      var nome = aba ? NOME_ABA[aba.dataset.tab] : null;
+      return { id:'agentes', nome:nome || 'Agentes e Variáveis', auto:true };
+    }
+
+    /* Mudar de tela com o chat aberto tem de mudar o contexto: senão a pergunta
+       vai para a página anterior sem a pessoa perceber. */
+    function cpTrocouDePagina() {
+      if (document.getElementById('cp').hidden) return;
+      var nova = paginaAtual();
+      var i = cpContextos.map(function (c) { return !!c.auto; }).indexOf(true);
+      if (i >= 0) {
+        if (cpContextos[i].id === nova.id && cpContextos[i].nome === nova.nome) return;
+        cpContextos.splice(i, 1, nova);
+      } else {
+        cpContextos.unshift(nova);
+      }
+      cpPintarCtx();
     }
 
     function cpPintarCtx() {
@@ -3014,6 +3036,7 @@
       ['agentes', 'variaveis', 'aprovacoes'].forEach(function (pn) {
         document.getElementById('panel-' + pn).hidden = (pn !== tab);
       });
+      cpTrocouDePagina();
       /* cada aba tem a própria ação de criar, alinhada com ela */
       document.querySelectorAll('[data-daaba]').forEach(function (b) {
         b.hidden = b.dataset.daaba !== tab;
@@ -4904,6 +4927,7 @@
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
       if (area === 'workspace') pintarWorkspace();
+      cpTrocouDePagina();
     }
 
     document.getElementById('viaCons').addEventListener('click', function (e) {
