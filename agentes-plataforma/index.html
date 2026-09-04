@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904g" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904h" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -94,6 +94,7 @@
     .ap-tag.pause{background:var(--muted);color:var(--muted-foreground);}
     .ap-tag.warn{background:var(--warning-bg);color:var(--warning);}
     .ap-tag.type{background:var(--accent-100);color:var(--accent-600);}
+    .ap-tag.fail{background:color-mix(in srgb, var(--destructive) 10%, transparent);color:var(--destructive);}
     .ap-money{margin-left:auto;color:var(--muted-foreground);font-variant-numeric:tabular-nums;}
     .ap-modal{position:fixed;inset:20px;max-width:880px;margin:0 auto;background:var(--background);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-pop);z-index:41;display:flex;flex-direction:column;overflow:hidden;}
     .ap-modal[hidden]{display:none;}
@@ -189,6 +190,10 @@
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Agentes e Variáveis</span>
         </a>
+        <a class="sb-item" href="#" id="viaLics" title="Licitações">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="1.6"/><path d="M5 6h6M5 8.6h6M5 11.2h3.5" stroke-linecap="round"/></svg></span>
+          <span class="sb-label">Licitações</span>
+        </a>
         <a class="sb-item" href="#" id="viaWork" title="Workspace da licitação">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="11" height="10" rx="1.6"/><path d="M2.5 6.2h11M6.2 6.2V13" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Workspace da licitação</span>
@@ -222,7 +227,7 @@
       </nav>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
-        <button class="btn btn-primary" type="button">Enviar para análise</button>
+        <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
         <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
         <button class="btn-score" type="button" id="btnScore">
           <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
@@ -246,7 +251,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 15:22</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 19:55</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -322,6 +327,19 @@
       </section>
 
       </div><!-- /areaAgentes -->
+
+      <!-- ============ LICITAÇÕES ============
+           O outro lugar onde o resultado do agente aparece: a Alice pediu o
+           resultado no próprio card da licitação (03/09, 11:09). Aqui o card
+           carrega, além dos dados da licitação, o que cada agente decidiu.
+           ==================================== -->
+      <div id="areaLics" hidden>
+        <div class="page-head">
+          <h1 class="title">Licitações</h1>
+          <p class="ap-lead">O que os seus agentes já decidiram em cada uma, sem precisar abrir.</p>
+        </div>
+        <div id="licsLista"></div>
+      </div>
 
       <!-- ============ WORKSPACE DA LICITAÇÃO ============
            A tela onde o resultado de um agente vira widget: em vez de uma tela
@@ -560,7 +578,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904g" defer></script>
+  <script src="../assets/settle.js?v=20260904h" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1142,8 +1160,7 @@
           (MOSTRAR_CUSTO ? '<p class="ap-fhint" style="margin-top:10px">Custo estimado: ' + moeda(0.59) +
             ' nesta licitação, somando as quatro análises.</p>' : '');
         el.querySelector('#btnEnviar').addEventListener('click', function () {
-          setEstado('calculando');
-          settleToast('Enviada para análise. Os agentes começaram a rodar.');
+          confirmarEnvio(function () { setEstado('calculando'); });
         });
         return;
       }
@@ -1839,6 +1856,10 @@
        que a pessoa lê no chip, e esse acompanha a tela em que ela está. */
     var NOME_ABA = { agentes:'Agentes', variaveis:'Variáveis', aprovacoes:'Aprovações' };
 
+    function naLicitacao() {
+      return !document.getElementById('areaWorkspace').hidden;
+    }
+
     function paginaAtual() {
       if (!document.getElementById('areaWorkspace').hidden) {
         return { id:'lic', nome:'PE 90014/2026', auto:true };
@@ -2426,12 +2447,18 @@
       var ops = regra
         ? [{ t:'O dado extraído está errado', faz:function () { cpDadoErrado(regra); } },
            { t:'A regra está errada', faz:function () { cpRegraErrada(regra); } }]
-        : [{ t:'Onde este agente já rodou?', faz:function () {
-              cpBolha('bot', 'Rodei em 148 licitações neste mês. Na que você está agora, a PE 90014/2026, produzi ' +
-                (cpAgente.destino ? regrasDa(cpAgente).length + ' resultados' : '15 resultados') +
-                '. Pode citar um deles que eu te mostro de onde saiu.'); } },
-           { t:'Quero mudar uma regra', faz:function () {
-              cpBolha('bot', 'Me diga qual, ou abra a configuração na engrenagem aqui em cima para ver todas.'); } }];
+        : naLicitacao()
+          ? [{ t:'O que você produziu nesta licitação?', faz:function () {
+                cpBolha('bot', 'Nesta licitação, a PE 90014/2026, produzi ' +
+                  (cpAgente.destino ? regrasDa(cpAgente).length + ' resultados' : '15 resultados') +
+                  '. Pode citar um deles que eu te mostro de onde saiu.'); } },
+             { t:'Quero mudar uma regra', faz:function () {
+                cpBolha('bot', 'Me diga qual, ou abra a configuração deste agente para ver todas.'); } }]
+          : [{ t:'Onde este agente já rodou?', faz:function () {
+                cpBolha('bot', 'Rodei em 148 licitações neste mês. ' +
+                  'Pode citar uma delas que eu te mostro o que produzi lá e de onde saiu.'); } },
+             { t:'Quero mudar uma regra', faz:function () {
+                cpBolha('bot', 'Me diga qual, ou abra a configuração deste agente para ver todas.'); } }];
       ops.forEach(function (o) {
         var b = document.createElement('button');
         b.type = 'button'; b.className = 'ap-chip'; b.textContent = o.t;
@@ -3902,7 +3929,8 @@
           { quando:'hoje, 14:22', lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'Calculou 34 de 100 · pediu para mover para Descartadas', st:'aguardando' },
           { quando:'ontem, 17:40', lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'Calculou 81 de 100', st:'ok' },
           { quando:'ontem, 09:14', lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'Não encontrou CAPAG: órgão federal não tem', st:'falhou' }
-        ] },
+        ],
+        validacao:{ acertos:8, total:10, quando:'28 de agosto', por:'Brunno', correcoes:2 } },
       { id:'resumo', nome:'Resumo', formato:'estruturado',
         desc:'Os campos que aparecem no resumo de cada licitação.',
         gatilho:'Assim que entra no match', destino:'resumo',
@@ -4098,6 +4126,10 @@
     /* A matriz de cinco permissões saiu, mas a fila de aprovações não pode
        existir sem alguém ter dito que quer aprovar. Fica um controle só: o
        agente age sozinho, ou pede antes. */
+    /* Como a execução terminou: sem isso, confiar uma ação ao agente é confiar
+       sem auditoria (José Victor, 02/09). */
+    var ESTADO_EXEC = { ok:'Concluída', aguardando:'Aguardando aprovação', falhou:'Falhou' };
+
     var APROVACAO = {
       manual:{ t:'Aprovar manualmente',
         d:'O agente pausa para você aprovar cada ação na plataforma.' },
@@ -4215,8 +4247,12 @@
           '<div><div class="ag-sec"><h3>Histórico</h3>' +
             ((an.execs || []).length
               ? an.execs.map(function (e, i) {
+                  var marca = { ok:'run', aguardando:'warn', falhou:'fail' };
                   return '<button class="ag-hist" type="button" data-exec="' + i + '">' +
-                         e.quando + '</button>';
+                         '<span class="ag-hist-top">' + e.lic +
+                           '<span class="ap-tag ' + (marca[e.st] || 'run') + '">' + ESTADO_EXEC[e.st] + '</span>' +
+                         '</span>' +
+                         '<span>' + e.o + ' · ' + e.quando + '</span></button>';
                 }).join('')
               : '<p class="ap-dim" style="font-size:13px">Ainda não rodou em nenhuma licitação.</p>') +
           '</div></div>' +
@@ -4225,6 +4261,7 @@
             '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) + '</p></div>' +
             '<div class="ag-sec"><h3>Permissões</h3><p>' +
               APROVACAO[an.aprovacao || 'manual'].t + '</p></div>' +
+            '<div class="ag-sec"><h3>Validação</h3>' + validacaoHTML(an) + '</div>' +
             '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
               (vs.length ? '<div class="ag-vars">' + vs.map(function (k) { return chipHTML(k); }).join('') + '</div>'
                          : '<p class="ap-dim" style="font-size:13px">Nenhuma.</p>') +
@@ -4237,6 +4274,9 @@
         pintarDetalhe(an); pintarAnalises();
       });
 
+      var bv = document.getElementById('agValidar');
+      if (bv) bv.addEventListener('click', function () { validarPeloChat(an); });
+
       /* Cada execução abre a conversa daquele resultado, no painel de agentes. */
       /* A conversa abre por cima, com a configuração ainda na tela: ler a
          execução e ver a instrução ao lado é o ponto. */
@@ -4244,7 +4284,7 @@
         b.addEventListener('click', function () {
           var e = an.execs[+b.dataset.exec];
           cpAbrirPainel();
-          cpAgente = an.id;
+          cpAgente = an;
           document.getElementById('cpTitulo').textContent = an.nome;
           document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
           document.getElementById('cpForm').hidden = false;
@@ -4253,6 +4293,151 @@
           cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
         });
       });
+    }
+
+    /* =====================================================================
+       VALIDAÇÃO
+       Decisão de 03/09: a validação acontece pelo chat, como no Claude, e não
+       numa tela de formulário. O requisito da Alice desde 21/08 é que o
+       resultado não morra na conversa: ele fica registrado no agente, com
+       data, precisão e o que foi corrigido a partir dele.
+       ===================================================================== */
+
+    function validacaoHTML(an) {
+      var v = an.validacao;
+      if (!v) {
+        return '<p class="ap-dim" style="font-size:13px;margin:0 0 8px">Este agente ainda não foi ' +
+          'validado: você não sabe em quantos casos ele acerta.</p>' +
+          '<button class="ap-mini" type="button" id="agValidar">Validar pelo chat</button>';
+      }
+      var pct = Math.round(v.acertos / v.total * 100);
+      return '<div class="ag-valid">' +
+          '<span class="ag-valid-n">' + v.acertos + ' de ' + v.total + '</span>' +
+          '<span class="ag-valid-sub">casos certos · ' + pct + '%</span>' +
+        '</div>' +
+        '<p class="ap-dim" style="font-size:12px;margin:6px 0 0">Validado ' + v.quando +
+          ' por ' + v.por + (v.correcoes ? ' · ' + v.correcoes + ' correção(ões) aplicadas' : '') + '.</p>' +
+        '<button class="ap-mini" type="button" id="agValidar" style="margin-top:8px">Validar de novo</button>';
+    }
+
+    /* Os casos são execuções passadas do próprio agente: validar é dizer se o
+       que ele decidiu naquelas licitações estava certo. */
+    var VALID_CASOS = {
+      score:[
+        { lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'86 de 100 · segmento compatível, CAPAG B' },
+        { lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'34 de 100 · valor abaixo do nosso mínimo' },
+        { lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'81 de 100 · pesquisa com usuários no escopo' },
+        { lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'72 de 100 · somou 15 pontos de atestado sem achar a exigência' },
+        { lic:'PE 00205/2026 · Prefeitura de Joinville/SC', o:'64 de 100 · CAPAG não encontrada, somou mesmo assim' }
+      ],
+      habil:[
+        { lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'5 de 5 exigências atendidas' },
+        { lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'4 de 5 · falta certidão municipal' },
+        { lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'3 de 4 · atestado remoto contado como presencial' },
+        { lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'5 de 5 · somou carga horária de dois atestados' },
+        { lic:'PE 00205/2026 · Prefeitura de Joinville/SC', o:'2 de 5 · registro em conselho dado como não atendido' }
+      ]
+    };
+
+    function casosDe(an) {
+      return VALID_CASOS[an.id] || LICITACOES.slice(0, 5).map(function (l) {
+        return { lic:l.nome + ' · ' + l.sub, o:'resultado produzido nesta licitação' };
+      });
+    }
+
+    function validarPeloChat(an) {
+      cpAbrirPainel();
+      cpAgente = an;
+      cpProposta = null;
+      document.getElementById('cpTitulo').textContent = an.nome;
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+      document.getElementById('cpForm').hidden = false;
+      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">Validação</p>';
+
+      cpBolha('bot', 'Vou rodar <b>' + an.nome + '</b> em cinco licitações que você já analisou e ' +
+        'te mostrar o que ele decidiu em cada uma. Você diz onde ele errou.');
+      cpChips([{ t:'Rodar nas cinco', faz:function () { validarCasos(an); } }]);
+    }
+
+    function validarCasos(an) {
+      var casos = casosDe(an), julgado = {};
+      var el = document.createElement('div');
+      el.className = 'cp-valid';
+      el.innerHTML = casos.map(function (c, i) {
+        return '<div class="cp-caso" data-caso="' + i + '">' +
+          '<div class="cp-caso-lic">' + c.lic + '</div>' +
+          '<div class="cp-caso-o">' + c.o + '</div>' +
+          '<div class="cp-caso-acts">' +
+            '<button class="ap-mini" type="button" data-ok="' + i + '">Certo</button>' +
+            '<button class="ap-mini" type="button" data-no="' + i + '">Errado</button>' +
+          '</div></div>';
+      }).join('');
+      var body = document.getElementById('cpBody');
+      body.appendChild(el); body.scrollTop = body.scrollHeight;
+
+      function marcar(i, certo) {
+        if (julgado[i] !== undefined) return;
+        julgado[i] = certo;
+        var card = el.querySelector('[data-caso="' + i + '"]');
+        card.classList.add(certo ? 'ok' : 'no');
+        card.querySelector('.cp-caso-acts').innerHTML =
+          '<span class="' + (certo ? 'ap-ok' : 'ap-warn') + '" style="font-size:12px;font-weight:600">' +
+          (certo ? 'Certo' : 'Errado') + '</span>';
+        if (Object.keys(julgado).length === casos.length) fechar();
+      }
+
+      function fechar() {
+        var acertos = 0;
+        Object.keys(julgado).forEach(function (k) { if (julgado[k]) acertos++; });
+        var erros = casos.length - acertos;
+        cpBolha('bot', 'Ficou em <b>' + acertos + ' de ' + casos.length + '</b>. ' +
+          (erros
+            ? 'Os ' + erros + ' casos que você marcou como errados viram correções na instrução do agente.'
+            : 'Nada a corrigir.'));
+        cpPropostaValidacao(an, acertos, casos.length, erros);
+      }
+
+      el.querySelectorAll('[data-ok]').forEach(function (b) {
+        b.addEventListener('click', function () { marcar(+b.dataset.ok, true); });
+      });
+      el.querySelectorAll('[data-no]').forEach(function (b) {
+        b.addEventListener('click', function () { marcar(+b.dataset.no, false); });
+      });
+    }
+
+    /* O ponto da Alice: a conversa propõe, e o resultado fica fora dela. */
+    function cpPropostaValidacao(an, acertos, total, erros) {
+      var el = document.createElement('div');
+      el.className = 'cp-prop';
+      el.innerHTML = '<h4>Registrar a validação no agente</h4>' +
+        '<div class="por">Fica na configuração de ' + an.nome + ', com a data e quem validou. ' +
+        'Quem abrir depois vê em quantos casos ele acerta sem precisar ler esta conversa.</div>' +
+        '<div class="cp-diff"><span class="de">' +
+          (an.validacao ? an.validacao.acertos + ' de ' + an.validacao.total + ' · ' + an.validacao.quando
+                        : 'nunca validado') + '</span>' +
+          '<span class="para">' + acertos + ' de ' + total + ' · hoje' +
+          (erros ? ' · ' + erros + ' correção(ões)' : '') + '</span></div>' +
+        '<div class="cp-prop-acts">' +
+          '<button class="btn btn-primary" type="button" data-vok="1">Registrar</button>' +
+        '</div>';
+      var body = document.getElementById('cpBody');
+      body.appendChild(el); body.scrollTop = body.scrollHeight;
+
+      el.querySelector('[data-vok]').addEventListener('click', function () {
+        an.validacao = { acertos:acertos, total:total, quando:'hoje, ' + agora(),
+                         por:'Brunno', correcoes:erros };
+        el.querySelector('.cp-prop-acts').innerHTML =
+          '<span class="ap-ok" style="font-size:13px;font-weight:600">Registrado no agente</span>';
+        cpBolha('bot', 'Registrado. Está na configuração do agente, em Validação.');
+        if (analiseAberta && analiseAberta.id === an.id) pintarDetalhe(an);
+        pintarAnalises();
+        settleToast('Validação registrada em ' + an.nome);
+      });
+    }
+
+    function agora() {
+      var d = new Date();
+      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
     }
 
     /* As variáveis citadas num texto, sem depender do campo estar montado. */
@@ -4736,7 +4921,7 @@
           var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgfalar; })[0];
           if (!an) return;
           cpAbrirPainel();
-          cpAgente = an.id;
+          cpAgente = an;
           document.getElementById('cpTitulo').textContent = an.nome;
           document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
           document.getElementById('cpForm').hidden = false;
@@ -4793,7 +4978,7 @@
         var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
         if (!an) return;
         cpAbrirPainel();
-        cpAgente = an.id;
+        cpAgente = an;
         document.getElementById('cpTitulo').textContent = an.nome;
         document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
         document.getElementById('cpForm').hidden = false;
@@ -4823,6 +5008,105 @@
       { st:'na', doc:'Registro em conselho profissional',
         nosso:'o edital não diz qual conselho, e design não tem registro obrigatório' }
     ];
+
+    /* O resultado no card (Alice, 03/09, 11:09): o que cada agente decidiu
+       aparece na lista, e não só dentro da licitação. Quem tem 40 licitações
+       abertas precisa comparar sem entrar em cada uma. */
+    var LICS_CARDS = [
+      { n:'PE 90014/2026', org:'Secretaria de Estado de Saúde de MG', segs:['Design de produto', 'Pesquisa com usuários'],
+        valor:'R$ 460.000,00', prazo:'sessão em 18/09', score:78, aqui:true,
+        res:[{ ag:'Score', o:'78 de 100', st:'ok' },
+             { ag:'Tenho todos os documentos de habilitação?', o:'3 de 5 exigências atendidas', st:'warn' },
+             { ago:'Análise técnica', ag:'Análise técnica', o:'15 componentes · aguardando aprovação', st:'warn' }] },
+      { n:'PE 00471/2026', org:'Prefeitura de Contagem/MG', segs:['Design de produto'],
+        valor:'R$ 312.000,00', prazo:'sessão em 22/09', score:86,
+        res:[{ ag:'Score', o:'86 de 100', st:'ok' },
+             { ag:'Tenho todos os documentos de habilitação?', o:'5 de 5 exigências atendidas', st:'ok' }] },
+      { n:'PE 00088/2026', org:'Secretaria de Educação do RS', segs:['Pesquisa com usuários'],
+        valor:'R$ 198.400,00', prazo:'sessão em 25/09', score:81,
+        res:[{ ag:'Score', o:'81 de 100', st:'ok' },
+             { ag:'Tenho todos os documentos de habilitação?', o:'3 de 4 · atestado remoto em revisão', st:'warn' }] },
+      { n:'PE 90112/2026', org:'Tribunal Regional Federal da 4ª Região', segs:['Design system'],
+        valor:'R$ 540.000,00', prazo:'sessão em 30/09', score:72,
+        res:[{ ag:'Score', o:'72 de 100 · CAPAG não se aplica a órgão federal', st:'fail' }] },
+      { n:'PE 00023/2026', org:'Prefeitura de Itapevi/SP', segs:['Identidade visual'],
+        valor:'R$ 86.000,00', prazo:'sessão em 12/09', score:34,
+        res:[{ ag:'Score', o:'34 de 100 · pediu para mover para Descartadas', st:'warn' }] }
+    ];
+
+    /* O que a tela mostra antes de enviar para análise (Alice, 03/09, 22:48) e
+       o custo à vista antes de rodar (quarta decisão pendente): a pessoa vê
+       quais agentes vão rodar, o que cada um produz e o que isso custa. */
+    var CUSTO_AG = { score:0.19, resumo:0.04, tecnica:0.45, habil:0.08, juridica:0.11 };
+
+    function confirmarEnvio(depois) {
+      var vao = ANALISES.filter(function (a) {
+        return a.ativo !== false && (a.gatilho || '').indexOf('enviar') >= 0;
+      });
+      var total = vao.reduce(function (t, a) { return t + (CUSTO_AG[a.id] || 0.05); }, 0);
+      var jaRodaram = ANALISES.filter(function (a) {
+        return a.ativo !== false && (a.gatilho || '').indexOf('match') >= 0;
+      }).map(function (a) { return a.nome; });
+
+      var corpo = '<p class="ap-fhint" style="margin:0 0 10px">Estes agentes vão rodar nesta licitação:</p>' +
+        '<ul class="cfm-lista">' + vao.map(function (a) {
+          return '<li><b>' + a.nome + '</b> · ' + a.desc +
+            (MOSTRAR_CUSTO ? ' <span class="ap-dim">' + moeda(CUSTO_AG[a.id] || 0.05) + '</span>' : '') + '</li>';
+        }).join('') + '</ul>' +
+        (MOSTRAR_CUSTO
+          ? '<p class="ap-fhint" style="margin:10px 0 0">Custo estimado: <b>' + moeda(total) + '</b> nesta licitação.</p>'
+          : '') +
+        '<p class="ap-fhint" style="margin:10px 0 0">Os agentes que pedem aprovação vão parar e esperar por ' +
+        'você na fila de aprovações.</p>' +
+        (jaRodaram.length
+          ? '<p class="ap-fhint" style="margin:8px 0 0">' + jaRodaram.join(' e ') +
+            ' já rodaram quando a licitação entrou no match.</p>'
+          : '');
+
+      confirmar('Enviar para análise', corpo, 'Enviar', function () {
+        settleToast('Enviada para análise. ' + vao.length + ' agentes começaram a rodar.');
+        if (depois) depois();
+      });
+    }
+
+    function pintarLics() {
+      var box = document.getElementById('licsLista');
+      if (!box) return;
+      var cor = { ok:'ap-ok', warn:'ap-warn', fail:'ap-dim' };
+      box.innerHTML = LICS_CARDS.map(function (l, i) {
+        return '<div class="card lic-card">' +
+          '<div class="lic-top">' +
+            '<div><h3 class="lic-n">' + l.n + '</h3>' +
+              '<p class="lic-org">' + l.org + '</p></div>' +
+            '<button class="btn-score" type="button" data-licscore="' + i + '">' +
+              '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>' +
+              l.score + '/100</button>' +
+          '</div>' +
+          '<div class="segments">' + l.segs.map(function (sg) {
+            return '<span class="seg">' + sg + '</span>';
+          }).join('') + '</div>' +
+          '<p class="lic-meta">' + l.valor + ' · ' + l.prazo + '</p>' +
+          '<div class="lic-res">' +
+            l.res.map(function (r) {
+              return '<div class="lic-res-l"><span class="lic-res-ag">' + r.ag + '</span>' +
+                '<span class="' + cor[r.st] + '">' + r.o + '</span></div>';
+            }).join('') +
+          '</div>' +
+          '<div class="lic-acts">' +
+            '<button class="ap-mini" type="button" data-licabrir="' + i + '">Abrir a licitação</button>' +
+          '</div></div>';
+      }).join('');
+
+      box.querySelectorAll('[data-licscore]').forEach(function (b) {
+        b.addEventListener('click', function () { abrirPainelScore(); });
+      });
+      box.querySelectorAll('[data-licabrir]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (LICS_CARDS[+b.dataset.licabrir].aqui) { irPara('workspace'); return; }
+          settleToast('No protótipo, só a PE 90014/2026 está montada por dentro');
+        });
+      });
+    }
 
     function pintarWorkspace() {
       var box = document.getElementById('wkPainel');
@@ -4914,21 +5198,31 @@
        o resultado do agente precisa aparecer. */
     function irPara(area) {
       var naLic = area === 'workspace';
-      document.getElementById('areaAgentes').hidden = naLic;
+      document.getElementById('areaAgentes').hidden = area !== 'agentes';
+      document.getElementById('areaLics').hidden = area !== 'lics';
       document.getElementById('areaWorkspace').hidden = !naLic;
       /* Na licitação, a barra do topo é da licitação: trilha e ações no lugar
          da saudação. */
       document.getElementById('navHello').hidden = naLic;
       document.getElementById('navBread').hidden = !naLic;
       document.getElementById('navActs').hidden = !naLic;
-      [['viaCons', 'agentes'], ['viaWork', 'workspace']].forEach(function (par) {
+      [['viaCons', 'agentes'], ['viaLics', 'lics'], ['viaWork', 'workspace']].forEach(function (par) {
         var el = document.getElementById(par[0]), on = par[1] === area;
         el.classList.toggle('active', on);
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
       if (area === 'workspace') pintarWorkspace();
+      if (area === 'lics') pintarLics();
       cpTrocouDePagina();
     }
+
+    document.getElementById('navEnviar').addEventListener('click', function () {
+      confirmarEnvio();
+    });
+
+    document.getElementById('viaLics').addEventListener('click', function (e) {
+      e.preventDefault(); irPara('lics');
+    });
 
     document.getElementById('viaCons').addEventListener('click', function (e) {
       e.preventDefault(); irPara('agentes');
