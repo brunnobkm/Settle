@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904a" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260904b" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -246,7 +246,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 12:54</p>
+        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 13:53</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -507,8 +507,8 @@
       <button class="icon-btn" type="button" id="cpAgentes" aria-label="Ver os agentes">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
-      <button class="icon-btn" type="button" id="cpConfig" aria-label="Opções da conversa">
-        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+      <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16.2 4.4 15 3.2a1.1 1.1 0 0 0-1.6 0L7 9.6l-.6 2.9 2.9-.6 6.4-6.4a1.1 1.1 0 0 0 0-1.6z" stroke-linejoin="round"/><path d="M15.6 12.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 15.6V5.8a1.4 1.4 0 0 1 1.4-1.4h3.2" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpFechar" aria-label="Fechar o painel">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
@@ -516,11 +516,19 @@
     </div>
     <div class="cp-body" id="cpBody"></div>
     <form class="cp-foot" id="cpForm">
-      <div class="cp-ctx" id="cpCtx"></div>
+      <div class="cp-ctx" id="cpCtx" hidden></div>
       <div class="cp-linha">
         <label class="sr-only" for="cpIn">Mensagem para a Settle AI</label>
         <input class="ap-input" id="cpIn" type="text" placeholder="Pergunte qualquer coisa" />
-        <button class="btn btn-primary" type="submit">Enviar</button>
+      </div>
+      <div class="cp-ferr">
+        <button class="cp-ferr-btn" type="button" id="cpMais" aria-label="Adicionar contexto" data-tip="Adicionar contexto">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3.2v9.6M3.2 8h9.6" stroke-linecap="round"/></svg>
+        </button>
+        <button class="cp-ferr-btn" type="button" id="cpConfig" aria-label="Ajustes da conversa" data-tip="Ajustes da conversa">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2.4 4.6h6.2M11.6 4.6h2M2.4 11.4h2.2M7.6 11.4h6" stroke-linecap="round"/><circle cx="10.1" cy="4.6" r="1.5"/><circle cx="6.1" cy="11.4" r="1.5"/></svg>
+        </button>
+        <button class="btn btn-primary cp-enviar" type="submit">Enviar</button>
       </div>
     </form>
   </aside>
@@ -548,7 +556,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904a" defer></script>
+  <script src="../assets/settle.js?v=20260904b" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1555,7 +1563,8 @@
       document.querySelectorAll('.col-pop').forEach(function (p) { p.remove(); });
       document.querySelectorAll('[aria-expanded="true"]')
         .forEach(function (b) {
-          if (b.classList.contains('col-btn') || b.hasAttribute('data-vmais')) {
+          if (b.classList.contains('col-btn') || b.hasAttribute('data-vmais') ||
+              b.classList.contains('cp-ferr-btn')) {
             b.setAttribute('aria-expanded', 'false');
           }
         });
@@ -1830,37 +1839,38 @@
 
     function cpPintarCtx() {
       var box = document.getElementById('cpCtx');
+      box.hidden = !cpContextos.length;
       box.innerHTML = cpContextos.map(function (c, i) {
         return '<span class="cp-ctx-item">' + c.nome +
           '<button type="button" data-ctxdel="' + i + '" aria-label="Tirar ' + c.nome +
           ' do contexto"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" ' +
           'stroke-width="2"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg></button></span>';
-      }).join('') +
-      '<button class="cp-mais" type="button" id="cpMais" aria-label="Adicionar contexto">' +
-      '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">' +
-      '<path d="M8 3.5v9M3.5 8h9" stroke-linecap="round"/></svg></button>';
+      }).join('');
 
       box.querySelectorAll('[data-ctxdel]').forEach(function (b) {
         b.addEventListener('click', function () {
           cpContextos.splice(+b.dataset.ctxdel, 1); cpPintarCtx();
         });
       });
-      document.getElementById('cpMais').addEventListener('click', function (e) {
-        e.stopPropagation();
-        cpMenuContexto();
-      });
     }
 
-    /* Outras licitações entram no contexto como qualquer outro documento: a
-       pergunta que a pessoa quer fazer quase sempre compara esta com outra
-       parecida, e por isso a lista precisa de busca, não de um menu fixo. */
+    /* O acervo tem centenas de licitações, então a lista não pode ser um menu:
+       sem busca ela mostra só as últimas em que a pessoa mexeu, e a busca
+       devolve no máximo seis, dizendo quantas ficaram de fora. */
+    var LIC_TOTAL = 347;
     var LICITACOES = [
-      { id:'l471', nome:'PE 00471/2026', sub:'Prefeitura de Contagem/MG · design de produto' },
-      { id:'l23',  nome:'PE 00023/2026', sub:'Prefeitura de Itapevi/SP · identidade visual' },
-      { id:'l88',  nome:'PE 00088/2026', sub:'Secretaria de Educação do RS · pesquisa com usuários' },
+      { id:'l471', nome:'PE 00471/2026', sub:'Prefeitura de Contagem/MG · design de produto', quando:'ontem' },
+      { id:'l23',  nome:'PE 00023/2026', sub:'Prefeitura de Itapevi/SP · identidade visual', quando:'há 2 dias' },
+      { id:'l88',  nome:'PE 00088/2026', sub:'Secretaria de Educação do RS · pesquisa com usuários', quando:'há 3 dias' },
       { id:'l112', nome:'PE 90112/2026', sub:'Tribunal Regional Federal da 4ª Região · design system' },
       { id:'l205', nome:'PE 00205/2026', sub:'Prefeitura de Joinville/SC · redesenho de portal' },
-      { id:'l331', nome:'CC 00331/2026', sub:'Universidade Federal do Paraná · acessibilidade digital' }
+      { id:'l331', nome:'CC 00331/2026', sub:'Universidade Federal do Paraná · acessibilidade digital' },
+      { id:'l402', nome:'PE 00402/2026', sub:'Companhia de Saneamento do PR · design de serviço' },
+      { id:'l517', nome:'PE 00517/2026', sub:'Secretaria de Fazenda de SC · pesquisa com usuários' },
+      { id:'l660', nome:'PE 00660/2026', sub:'Prefeitura de Niterói/RJ · design system e componentes' },
+      { id:'l781', nome:'CC 00781/2026', sub:'Ministério da Gestão · consultoria em design de produto' },
+      { id:'l844', nome:'PE 00844/2026', sub:'Banco de Desenvolvimento de MG · identidade visual' },
+      { id:'l905', nome:'PE 00905/2026', sub:'Tribunal de Contas do RS · redesenho de portal' }
     ];
 
     var CTX_GRUPOS = [
@@ -1872,10 +1882,20 @@
       { grupo:'Da B Design', itens:[
         { id:'catalogo',  nome:'Catálogo de serviços', sub:'design de produto, pesquisa, design system' },
         { id:'atestados', nome:'Atestados de capacidade técnica', sub:'9 documentos' } ] },
-      { grupo:'Outras licitações', itens:LICITACOES },
       { grupo:'Na plataforma', itens:[
         { id:'agentes', nome:'Agentes e Variáveis', sub:'6 agentes, 14 variáveis' } ] }
     ];
+
+    var CTX_TETO = 6;
+
+    function ctxJaEsta(o) {
+      return cpContextos.some(function (c) { return c.id === o.id; });
+    }
+
+    function ctxItemHTML(o) {
+      return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
+        (o.sub ? '<span class="cp-op-sub">' + o.sub + '</span>' : '') + '</button>';
+    }
 
     function cpMenuContexto() {
       fecharMenuCol();
@@ -1888,22 +1908,49 @@
       document.body.appendChild(pop);
       pop.addEventListener('click', function (e) { e.stopPropagation(); });
 
+      function bate(o, q) {
+        return (o.nome + ' ' + (o.sub || '')).toLowerCase().indexOf(q) >= 0;
+      }
+
       function pintar() {
         var q = (document.getElementById('cpBusca').value || '').trim().toLowerCase();
         var h = '';
+
         CTX_GRUPOS.forEach(function (g) {
           var itens = g.itens.filter(function (o) {
-            if (cpContextos.some(function (c) { return c.id === o.id; })) return false;
-            if (!q) return true;
-            return (o.nome + ' ' + (o.sub || '')).toLowerCase().indexOf(q) >= 0;
+            return !ctxJaEsta(o) && (!q || bate(o, q));
           });
           if (!itens.length) return;
           h += '<div class="fb-list-head"><span>' + g.grupo + '</span></div>' +
-            itens.map(function (o) {
-              return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
-                (o.sub ? '<span class="cp-op-sub">' + o.sub + '</span>' : '') + '</button>';
-            }).join('');
+               itens.map(ctxItemHTML).join('');
         });
+
+        var livres = LICITACOES.filter(function (o) { return !ctxJaEsta(o); });
+        if (!q) {
+          /* Sem busca, o acervo inteiro não cabe: entram as últimas em que a
+             pessoa mexeu, e o resto fica atrás da busca. */
+          var recentes = livres.filter(function (o) { return o.quando; }).slice(0, 3);
+          if (recentes.length) {
+            h += '<div class="fb-list-head"><span>Licitações recentes</span></div>' +
+                 recentes.map(function (o) {
+                   return '<button class="cp-op" type="button" data-ctxadd="' + o.id + '">' + o.nome +
+                     '<span class="cp-op-sub">' + o.sub + ' · ' + o.quando + '</span></button>';
+                 }).join('');
+          }
+          h += '<p class="cp-nota">Busque acima para achar qualquer uma das ' +
+               LIC_TOTAL + ' licitações da B Design.</p>';
+        } else {
+          var achados = livres.filter(function (o) { return bate(o, q); });
+          if (achados.length) {
+            h += '<div class="fb-list-head"><span>Licitações</span></div>' +
+                 achados.slice(0, CTX_TETO).map(ctxItemHTML).join('');
+            if (achados.length > CTX_TETO) {
+              h += '<p class="cp-nota">Mostrando ' + CTX_TETO + ' de ' + achados.length +
+                   ' licitações. Refine a busca para chegar na que você quer.</p>';
+            }
+          }
+        }
+
         if (!h) h = '<p class="cp-op-vazio">Nada encontrado para esta busca.</p>';
         document.getElementById('cpRol').innerHTML = h;
         pop.querySelectorAll('[data-ctxadd]').forEach(function (b) {
@@ -1912,6 +1959,7 @@
             CTX_GRUPOS.forEach(function (g) {
               g.itens.forEach(function (o) { if (o.id === b.dataset.ctxadd) achado = o; });
             });
+            LICITACOES.forEach(function (o) { if (o.id === b.dataset.ctxadd) achado = o; });
             cpContextos.push({ id:achado.id, nome:achado.nome });
             fecharMenuCol(); cpPintarCtx();
           });
@@ -1951,23 +1999,20 @@
             m.id + '">' + (cpModo === m.id ? '✓ ' : '') + m.nome +
             '<span class="cp-op-sub">' + m.sub + '</span></button>';
         }).join('') +
-        '<div class="col-sep"></div>' +
-        '<button class="cp-op" type="button" data-cpnova="1">Nova conversa</button>';
+        '';
       if (cpAgente) {
-        h += '<button class="cp-op" type="button" data-cpcfg="1">Configurar ' + cpAgente.nome + '</button>';
+        h += '<div class="col-sep"></div>' +
+             '<button class="cp-op" type="button" data-cpcfg="1">Configurar ' + cpAgente.nome + '</button>';
       }
       pop.innerHTML = h;
       pop.classList.add('cp-pop');
-      posicionarPop(pop, document.getElementById('cpConfig'), true);
+      posicionarPop(pop, document.getElementById('cpConfig'));
       pop.addEventListener('click', function (e) { e.stopPropagation(); });
 
       pop.querySelectorAll('[data-cpmodo]').forEach(function (b) {
         b.addEventListener('click', function () {
           cpModo = b.dataset.cpmodo; cpAplicarModo(); fecharMenuCol();
         });
-      });
-      pop.querySelector('[data-cpnova]').addEventListener('click', function () {
-        fecharMenuCol(); cpNovaConversa();
       });
       var cfg = pop.querySelector('[data-cpcfg]');
       if (cfg) {
@@ -2230,10 +2275,18 @@
     });
 
     document.getElementById('cpAgentes').addEventListener('click', cpPintarLista);
+    document.getElementById('cpMais').addEventListener('click', function (e) {
+      e.stopPropagation(); cpMenuContexto();
+    });
+    document.getElementById('cpNova').addEventListener('click', cpNovaConversa);
     document.getElementById('cpFechar').addEventListener('click', cpFecharPainel);
     document.getElementById('cpLista').addEventListener('click', cpPintarLista);
     document.getElementById('cpConfig').addEventListener('click', function (e) {
-      e.stopPropagation(); cpMenuOpcoes();
+      e.stopPropagation();
+      var aberto = this.getAttribute('aria-expanded') === 'true';
+      fecharMenuCol();
+      this.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+      if (!aberto) cpMenuOpcoes();
     });
     document.getElementById('cpForm').addEventListener('submit', function (e) {
       e.preventDefault();
