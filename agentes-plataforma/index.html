@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -251,7 +251,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:16</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:25</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -594,7 +594,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909c" defer></script>
+  <script src="../assets/settle.js?v=20260909d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3343,9 +3343,7 @@
         '<div class="tpl-sep"><span>Ou comece por um modelo</span></div>' +
         '<div class="tpl-grade">' +
           Object.keys(TEMPLATES).map(function (k) { return card(k, TEMPLATES[k]); }).join('') +
-        '</div>' +
-        '<p class="ap-fhint" style="margin:14px 0 0">Os modelos estão com texto de exemplo: o ' +
-        'catálogo ainda vai ser definido. O que já vale é o formato de preenchimento de cada um.</p>';
+        '</div>';
 
       document.querySelectorAll('[data-tpl]').forEach(function (b) {
         b.addEventListener('click', function () {
