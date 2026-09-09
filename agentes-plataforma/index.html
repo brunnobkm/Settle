@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909l" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909m" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +227,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:01</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:04</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -490,6 +490,9 @@
       <button class="icon-btn" type="button" id="cpAgentes" aria-label="Ver os agentes">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
+      <button class="icon-btn" type="button" id="cpCfgAg" aria-label="Configurar este agente" data-tip="Configurar este agente" hidden>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+      </button>
       <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16.2 4.4 15 3.2a1.1 1.1 0 0 0-1.6 0L7 9.6l-.6 2.9 2.9-.6 6.4-6.4a1.1 1.1 0 0 0 0-1.6z" stroke-linejoin="round"/><path d="M15.6 12.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 15.6V5.8a1.4 1.4 0 0 1 1.4-1.4h3.2" stroke-linecap="round"/></svg>
       </button>
@@ -524,6 +527,12 @@
   <aside class="pn" id="pn" hidden aria-label="Score da licitação">
     <div class="pn-head">
       <h2 id="pnTitulo">Score</h2>
+      <button class="icon-btn" type="button" id="pnFalar" aria-label="Falar com o agente do Score" data-tip="Falar com o agente">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" type="button" id="pnCfg" aria-label="Configurar o agente do Score" data-tip="Configurar o agente">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+      </button>
       <button class="icon-btn" type="button" id="pnFechar" aria-label="Fechar o painel">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
@@ -559,7 +568,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909l" defer></script>
+  <script src="../assets/settle.js?v=20260909m" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2410,6 +2419,7 @@
     function cpNovaConversa() {
       cpAgente = null;
       cpProposta = null;
+      document.getElementById('cpCfgAg').hidden = true;
       cpContextos = [paginaAtual()];
       document.getElementById('cpTitulo').textContent = 'Converse com a Settle AI';
       document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
@@ -2438,6 +2448,7 @@
 
     function cpPintarLista() {
       cpAgente = null;
+      document.getElementById('cpCfgAg').hidden = true;
       document.getElementById('cpTitulo').textContent = 'Agentes';
       document.getElementById('cpLista').setAttribute('aria-expanded', 'true');
       document.getElementById('cpForm').hidden = true;
@@ -2479,13 +2490,9 @@
     }
 
     function cpSelecionar(id, regra) {
-      cpAgente = ANALISES.filter(function (a) { return a.id === id; })[0];
-      cpProposta = null;
-      document.getElementById('cpTitulo').textContent = cpAgente.nome;
-      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-      document.getElementById('cpForm').hidden = false;
-      document.getElementById('cpBody').innerHTML =
-        '<p class="cp-agente">' + cpAgente.desc + '</p>';
+      var an = ANALISES.filter(function (a) { return a.id === id; })[0];
+      if (!an) return;
+      cpSelecionarAgente(an, null, an.desc);
 
       if (regra) {
         cpBolha('bot', 'Nesta licitação, a regra <b>' + regra.nome + '</b> resultou em <b>' +
@@ -2497,6 +2504,20 @@
           'Eu consigo ver o que produzi em cada licitação que analisei.');
         cpSugestoes(null);
       }
+    }
+
+    /* Entrar numa conversa de agente: o cabeçalho passa a ser dele, e a
+       engrenagem de configurar aparece ao lado do ícone de agentes. */
+    function cpSelecionarAgente(an, saudacao, sub) {
+      cpAgente = an;
+      cpProposta = null;
+      document.getElementById('cpTitulo').textContent = an.nome;
+      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
+      document.getElementById('cpForm').hidden = false;
+      document.getElementById('cpCfgAg').hidden = false;
+      document.getElementById('cpBody').innerHTML =
+        sub ? '<p class="cp-agente">' + sub + '</p>' : '';
+      if (saudacao) cpBolha('bot', saudacao);
     }
 
     function cpBolha(quem, html) {
@@ -2661,6 +2682,10 @@
       this.value = '';
     });
     document.getElementById('cpNova').addEventListener('click', cpNovaConversa);
+    document.getElementById('cpCfgAg').addEventListener('click', function () {
+      if (!cpAgente) return;
+      setVia('cons'); irPara('agentes'); abaAtiva('agentes'); abrirAnalise(cpAgente);
+    });
     document.getElementById('cpModoBtn').addEventListener('click', function (e) {
       e.stopPropagation();
       var aberto = this.getAttribute('aria-expanded') === 'true';
@@ -4634,13 +4659,8 @@
         b.addEventListener('click', function () {
           var e = an.execs[+b.dataset.exec];
           cpAbrirPainel();
-          cpAgente = an;
-          document.getElementById('cpTitulo').textContent = an.nome;
-          document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-          document.getElementById('cpForm').hidden = false;
-          document.getElementById('cpBody').innerHTML =
-            '<p class="cp-agente">Resultado de ' + e.quando + '</p>';
-          cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
+          cpSelecionarAgente(an, 'Ainda precisamos pensar no que aparece por aqui.',
+            'Resultado de ' + e.quando);
         });
       });
     }
@@ -4697,15 +4717,9 @@
 
     function validarPeloChat(an) {
       cpAbrirPainel();
-      cpAgente = an;
-      cpProposta = null;
-      document.getElementById('cpTitulo').textContent = an.nome;
-      document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-      document.getElementById('cpForm').hidden = false;
-      document.getElementById('cpBody').innerHTML = '<p class="cp-agente">Validação</p>';
-
-      cpBolha('bot', 'Vou rodar <b>' + an.nome + '</b> em cinco licitações que você já analisou e ' +
-        'te mostrar o que ele decidiu em cada uma. Você diz onde ele errou.');
+      cpSelecionarAgente(an,
+        'Vou rodar <b>' + an.nome + '</b> em cinco licitações que você já analisou e ' +
+        'te mostrar o que ele decidiu em cada uma. Você diz onde ele errou.', 'Validação');
       cpChips([{ t:'Rodar nas cinco', faz:function () { validarCasos(an); } }]);
     }
 
@@ -5376,14 +5390,10 @@
           var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgfalar; })[0];
           if (!an) return;
           cpAbrirPainel();
-          cpAgente = an;
-          document.getElementById('cpTitulo').textContent = an.nome;
-          document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-          document.getElementById('cpForm').hidden = false;
-          document.getElementById('cpBody').innerHTML =
-            '<p class="cp-agente">PE 90014/2026 · Secretaria de Estado de Saúde de MG</p>';
-          cpBolha('bot', 'Este é o resultado que produzi nesta licitação. Pode me dizer o que ficou ' +
-            'errado, ou pedir para eu explicar como cheguei nele.');
+          cpSelecionarAgente(an,
+            'Este é o resultado que produzi nesta licitação. Pode me dizer o que ficou ' +
+            'errado, ou pedir para eu explicar como cheguei nele.',
+            'PE ' + (licAberta ? licAberta.n + ' · ' + licAberta.org : '90014/2026'));
         });
       });
     }
@@ -5416,32 +5426,15 @@
             '<span class="pn-var-q">' + x.q + '</span>' +
             '<span class="pn-var-v">' + x.v + '</span></span>' +
             '<span class="pn-var-pt">' + x.pt + '</span>' + badge[x.st] + '</div>';
-        }).join('') + '</div>' +
-        '<div class="wg-foot"><button class="ap-mini" type="button" id="pnFalar">Falar com o agente</button>' +
-        '<button class="ap-mini" type="button" id="pnCfg">Abrir a configuração</button></div>';
+        }).join('') + '</div>';
 
       document.getElementById('pnOvl').hidden = false;
       document.getElementById('pn').hidden = false;
 
-      document.getElementById('pnCfg').addEventListener('click', function () {
-        fecharPainelScore();
-        var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
-        if (an) abrirAnalise(an);
-      });
-      document.getElementById('pnFalar').addEventListener('click', function () {
-        fecharPainelScore();
-        var an = ANALISES.filter(function (x) { return x.id === 'score'; })[0];
-        if (!an) return;
-        cpAbrirPainel();
-        cpAgente = an;
-        document.getElementById('cpTitulo').textContent = an.nome;
-        document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
-        document.getElementById('cpForm').hidden = false;
-        document.getElementById('cpBody').innerHTML =
-          '<p class="cp-agente">PE 90014/2026 · Secretaria de Estado de Saúde de MG</p>';
-        cpBolha('bot', 'Cheguei em 78 de 100 nesta licitação. Pode me perguntar por que uma regra ' +
-          'pontuou assim, ou dizer o que ficou errado.');
-      });
+    }
+
+    function agenteDoScore() {
+      return ANALISES.filter(function (x) { return x.id === 'score'; })[0];
     }
 
     function fecharPainelScore() {
@@ -5452,6 +5445,26 @@
     document.getElementById('btnScore').addEventListener('click', abrirPainelScore);
     document.getElementById('pnFechar').addEventListener('click', fecharPainelScore);
     document.getElementById('pnOvl').addEventListener('click', fecharPainelScore);
+
+    /* Os dois caminhos do agente ficam no cabeçalho do painel, como ícones: um
+       abre a conversa, o outro a configuração. */
+    document.getElementById('pnCfg').addEventListener('click', function () {
+      var an = agenteDoScore();
+      if (!an) return;
+      fecharPainelScore();
+      abrirAnalise(an);
+    });
+
+    document.getElementById('pnFalar').addEventListener('click', function () {
+      var an = agenteDoScore();
+      if (!an) return;
+      fecharPainelScore();
+      cpAbrirPainel();
+      cpSelecionarAgente(an,
+        'Cheguei em 78 de 100 nesta licitação. Pode me perguntar por que uma regra ' +
+        'pontuou assim, ou dizer o que ficou errado.',
+        'PE 90014/2026 · ' + (licAberta ? licAberta.org : 'Secretaria de Estado de Saúde de MG'));
+    });
 
     /* Caso 2 do teste: habilitação por atestados, na aba que o agente escolheu. */
     var HABIL = [
