@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909o" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909p" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +227,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:21</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:41</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -487,19 +487,19 @@
         <span id="cpTitulo">Converse com a Settle AI</span>
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <button class="icon-btn" type="button" id="cpAgentes" aria-label="Ver os agentes">
+      <button class="icon-btn" type="button" id="cpAgentes" aria-label="Ver os agentes" data-tip="Ver os agentes">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpCfgAg" aria-label="Configurar este agente" data-tip="Configurar este agente" hidden>
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M13.4 3.4a3.7 3.7 0 0 0-4.6 4.6l-5.1 5.1a1.7 1.7 0 0 0 2.4 2.4l5.1-5.1a3.7 3.7 0 0 0 4.6-4.6l-2.2 2.2-2-.4-.4-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova">
+      <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova" data-tip="Nova conversa">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16.2 4.4 15 3.2a1.1 1.1 0 0 0-1.6 0L7 9.6l-.6 2.9 2.9-.6 6.4-6.4a1.1 1.1 0 0 0 0-1.6z" stroke-linejoin="round"/><path d="M15.6 12.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 15.6V5.8a1.4 1.4 0 0 1 1.4-1.4h3.2" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpModoBtn" aria-label="Trocar o modo do chat" data-tip="Trocar o modo do chat">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.6" y="4.4" width="14.8" height="11.2" rx="2"/><path d="M12.4 4.4v11.2"/></svg>
       </button>
-      <button class="icon-btn" type="button" id="cpFechar" aria-label="Fechar o painel">
+      <button class="icon-btn" type="button" id="cpFechar" aria-label="Fechar o painel" data-tip="Fechar">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
       </button>
     </div>
@@ -568,7 +568,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909o" defer></script>
+  <script src="../assets/settle.js?v=20260909p" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1853,7 +1853,10 @@
 
     function paginaAtual() {
       if (!document.getElementById('areaWorkspace').hidden) {
-        return { id:'lic', nome:'PE 90014/2026', tipo:'licitacao', auto:true };
+        /* O número vem da licitação aberta: fixo, o chip dizia sempre a mesma
+           licitação, mesmo com a trilha mostrando outra. */
+        return { id:'lic', nome:'PE ' + (licAberta ? licAberta.n : '90014/2026'),
+                 tipo:'licitacao', auto:true };
       }
       if (!document.getElementById('areaLics').hidden) {
         return { id:'lics', nome:'Licitações', tipo:'pagina', auto:true };
@@ -3557,6 +3560,9 @@
       analiseAberta = null;
       document.getElementById('fxExcluir').hidden = true;
       document.getElementById('fxValidar').hidden = false;
+      /* Num agente que ainda não existe não há o que editar nem o que excluir. */
+      document.getElementById('agEditar').hidden = true;
+      document.getElementById('agExcluir').hidden = true;
       document.getElementById('fxAtivar').textContent = 'Ativar agente';
       document.getElementById('fxTitle').textContent = fx.nome || 'Adicionar agente';
       pintarVoltar();
@@ -5614,6 +5620,121 @@
       document.getElementById('prep').hidden = true;
       prepItens = [];
     });
+
+    /* O corpo de cada widget depende do agente: o resultado é montado conforme
+       o que ele produz (Alice, 09/09, 14:08), e não num formato único. */
+    function corpoDoWidget(id) {
+      var marca = { ok:'ap-ok', no:'ap-warn', na:'ap-dim' };
+      var icone = {
+        ok:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        no:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke-linecap="round"/></svg>',
+        na:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h8" stroke-linecap="round"/></svg>'
+      };
+      var lista = function (itens) {
+        return '<ul class="wg-lista">' + itens.map(function (x) {
+          return '<li><span class="st ' + marca[x.st] + '">' + icone[x.st] + '</span>' +
+            '<span><b>' + x.doc + '</b><br><span class="ap-dim">' + x.nosso + '</span></span></li>';
+        }).join('') + '</ul>';
+      };
+
+      if (id === 'habil') {
+        return { corpo:lista(HABIL),
+          por:'3 de 5 exigências atendidas. 1 não atende e 1 não foi avaliada, porque o edital ' +
+              'não diz qual conselho profissional.' };
+      }
+      if (id === 'certidoes') {
+        return { corpo:lista(CERTIDOES),
+          por:'A sessão é em 18/09. A certidão de regularidade do FGTS vence em 12/09, seis dias antes.' };
+      }
+      if (id === 'tecnica') {
+        return { corpo:lista(TECNICA),
+          por:'15 componentes avaliados em 3 itens. O item 2 depende de um componente que o ' +
+              'catálogo não cobre, e por isso ficou pendente de decisão sua.' };
+      }
+      return { corpo:'<p class="wg-espera">Sem resultado nesta licitação.</p>', por:null };
+    }
+
+    var CONVITE_TXT = {
+      juridica:'A análise jurídica lê o edital e aponta o que restringe a nossa participação.'
+    };
+
+    /* Os estados de uma funcionalidade, do mais distante do resultado ao
+       resultado em si. Cada um tem uma frase e, quando cabe, uma ação. A frase
+       da espera muda com o momento configurado no agente: dizer "após o envio
+       para análise" num agente que roda em Recomendadas seria mentira. */
+    function estadoDaFuncionalidade(an) {
+      if (an.disponivel === false) return 'indisponivel';
+      if (an.criado === false) return 'sem-agente';
+      if (an.habilitado === false) return 'desativado';
+      if (an.ativo === false) return 'desativado';
+      if (an.rodando) return 'preparando';
+      if (an.falhou) return 'falhou';
+      if (an.temResultado) return 'pronto';
+      return 'espera';
+    }
+
+    function textoDeEspera(an) {
+      return 'Este resultado fica pronto ' +
+        (ESPERA_TXT[an.gatilho] || 'quando o agente rodar') + '.';
+    }
+
+    function widgetsDaSecao(secao) {
+      var ids = WIDGETS[secao] || [];
+      var h = ids.map(function (id) {
+        var an = ANALISES.filter(function (x) { return x.id === id; })[0];
+        if (!an) return '';
+        var st = estadoDaFuncionalidade(an);
+
+        /* Indisponível na conta e agente personalizado que nunca existiu não
+           reservam espaço: não há o que ativar ali. */
+        if (st === 'indisponivel') return '';
+        if (st === 'sem-agente' && !an.padrao) return '';
+        if ((st === 'sem-agente' || st === 'desativado') && CTA_DISPENSADOS[id]) return '';
+
+        if (st === 'sem-agente') {
+          return wgConviteHTML(an,
+            (CONVITE_TXT[id] ? CONVITE_TXT[id] + ' ' : '') +
+            'Configure um agente para gerar este resultado.', 'Criar agente');
+        }
+        if (st === 'desativado') {
+          return wgConviteHTML(an,
+            (CONVITE_TXT[id] ? CONVITE_TXT[id] + ' ' : '') +
+            'Este agente está desativado. Ative para gerar resultados aqui.', 'Ativar agente');
+        }
+        if (st === 'espera') {
+          return wgHTML(an, '<p class="wg-espera">' + textoDeEspera(an) + '</p>', null);
+        }
+        if (st === 'preparando') {
+          return wgHTML(an, '<p class="wg-espera"><span class="cp-spin"></span>' +
+            'Estamos preparando este resultado. Ele fica disponível assim que estiver pronto.</p>', null);
+        }
+        if (st === 'falhou') {
+          return wgHTML(an, '<p class="wg-falhou">Não foi possível preparar este resultado.</p>' +
+            '<button class="ap-mini" type="button" data-wgretry="' + an.id + '">Tentar de novo</button>', null);
+        }
+        var c = corpoDoWidget(id);
+        return wgHTML(an, c.corpo, c.por);
+      }).join('');
+
+      if (!h) {
+        return '<div class="empty-state"><strong>Nenhum agente aqui</strong>' +
+          'Você dispensou os agentes desta seção. Eles continuam na tela de Agentes.</div>';
+      }
+      return '<div class="card wg-secao">' + h + '</div>';
+    }
+
+    var TECNICA = [
+      { st:'ok', doc:'Item 1 · Design de interface', nosso:'8 de 8 componentes atendidos' },
+      { st:'no', doc:'Item 2 · Pesquisa com usuários', nosso:'4 de 5: falta laboratório de testes presencial' },
+      { st:'ok', doc:'Item 3 · Design system', nosso:'2 de 2 componentes atendidos' }
+    ];
+
+    var CERTIDOES = [
+      { st:'no', doc:'Regularidade do FGTS', nosso:'vence em 12/09, seis dias antes da sessão' },
+      { st:'ok', doc:'Débitos federais e dívida ativa', nosso:'válida até 14/10/2026' },
+      { st:'ok', doc:'Débitos trabalhistas (CNDT)', nosso:'válida até 03/11/2026' },
+      { st:'ok', doc:'Regularidade municipal', nosso:'válida até 28/09/2026' }
+    ];
 
     function pintarWorkspace() {
       var box = document.getElementById('wkPainel');
