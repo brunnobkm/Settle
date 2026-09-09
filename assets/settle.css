@@ -210,7 +210,7 @@ body.nav-hidden .navbar{transform:translateY(-100%);}
 .navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);line-height:20px;}
 /* Título e subtítulo no header: a saudação (ou a trilha, dentro da licitação)
    em cima, e a linha de apoio embaixo. */
-.nav-titulo{flex:none;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.nav-titulo{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 
 
 /* ==========================================================================
@@ -390,7 +390,6 @@ body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:h
    tela (ex.: card-score fixa 1356px; propostas usa largura total).
    ========================================================================== */
 
-.lic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-card);}
 
 /* barra de ações (topo) */
 .lc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;}
@@ -1153,19 +1152,11 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ag-hist .ag-hist-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;
   font-size:13.5px;line-height:19px;color:var(--foreground);margin-top:0;}
 .ag-hist .ag-hist-top .ap-tag{flex:none;font-size:11px;}
-/* O card da licitação carrega o que os agentes decidiram: quem tem dezenas
    de licitações abertas compara sem entrar em cada uma. */
-.lic-card{margin-bottom:12px;}
-.lic-top{display:flex;align-items:flex-start;gap:12px;}
-.lic-top > div{flex:1;min-width:0;}
-.lic-n{margin:0;font-size:15px;font-weight:600;color:var(--foreground);}
-.lic-org{margin:2px 0 0;font-size:13px;color:var(--muted-foreground);}
-.lic-meta{margin:8px 0 0;font-size:12.5px;color:var(--muted-foreground);}
-.lic-res{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+.lic-res{margin-top:2px;}
 .lic-res-l{display:flex;align-items:baseline;gap:10px;font-size:13px;line-height:20px;}
 .lic-res-ag{flex:none;width:min(46%,260px);color:var(--muted-foreground);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lic-acts{display:flex;gap:8px;margin-top:12px;}
 @media (max-width:640px){ .lic-res-l{flex-direction:column;gap:0;} .lic-res-ag{width:auto;} }
 .ag-valid{display:flex;align-items:baseline;gap:8px;}
 .ag-valid-n{font-size:20px;font-weight:700;color:var(--foreground);}
