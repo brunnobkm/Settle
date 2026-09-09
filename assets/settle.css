@@ -1288,6 +1288,25 @@ table.dt td.c-sel .ap-check{gap:0;}
 .wg-convite-txt{margin:0;font-size:13px;line-height:20px;color:var(--muted-foreground);}
 .wg-dispensa{flex:none;}
 .btn-sm{padding:5px 12px;font-size:12.5px;}
+.ap-radios{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;}
+/* Card de acompanhamento, no canto inferior esquerdo: fica fora do caminho do
+   botão da Settle AI, que mora no canto direito. */
+.prep{position:fixed;left:24px;bottom:24px;z-index:58;width:min(340px,calc(100vw - 32px));
+  border:1px solid var(--border);border-radius:12px;background:var(--background);
+  box-shadow:var(--shadow-pop);padding:14px 16px;}
+.prep-head{display:flex;align-items:center;gap:8px;}
+.prep-head h2{flex:1;min-width:0;margin:0;font-size:14px;font-weight:600;color:var(--foreground);}
+.prep-txt{margin:6px 0 0;font-size:12px;line-height:18px;color:var(--muted-foreground);}
+.prep-lista{margin:12px 0 0;padding:0;list-style:none;}
+.prep-lista li{display:flex;align-items:center;gap:9px;font-size:13px;line-height:20px;
+  color:var(--foreground);padding:4px 0;}
+.prep-lista li > span:last-child{flex:1;min-width:0;}
+.prep-ok,.prep-no{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;color:#fff;}
+.prep-ok{background:var(--success);}
+.prep-no{background:var(--destructive);}
+.wg-falhou{margin:0 0 10px;font-size:13px;line-height:20px;color:var(--destructive);}
+@media (max-width:520px){ .prep{left:16px;right:16px;width:auto;} }
 .cp-ctx-item svg{flex:none;color:var(--muted-foreground);}
 .cp-ctx-aqui{background:var(--accent-100);color:var(--accent-600);}
 .cp-ctx-aqui svg{color:currentColor;}

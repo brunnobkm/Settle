@@ -182,6 +182,13 @@ Descartadas não deveriam ter o mesmo tratamento por padrão, e hoje têm.
 
 ---
 
+## Onde ficam os estados da funcionalidade
+
+As regras de quando cada funcionalidade aparece, o que ela diz em cada estado, o
+card de acompanhamento e o vocabulário estão em `ESTADOS.md`, que é a outra
+metade deste documento: aqui está o que o agente é, lá está o que a pessoa vê
+antes, durante e depois de ele rodar.
+
 ## Atualização de 09/09
 
 Três coisas mudaram depois da reunião daquele dia e já estão refletidas acima:
