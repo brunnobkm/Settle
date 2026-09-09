@@ -1182,6 +1182,7 @@ table.dt td.c-sel .ap-check{gap:0;}
 /* Gatilho: uma cor por momento em que o agente roda. */
 .gat{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;
   font-size:11.5px;line-height:17px;white-space:nowrap;}
+.gat-captura{background:#efe7f7;color:#5b3a80;}
 .gat-analise{background:#e2f1f0;color:#0f5f5c;}
 .gat-match{background:#e8eefb;color:#1e3a8a;}
 .gat-demanda{background:#f3ecdf;color:#6b4f14;}
@@ -1274,10 +1275,52 @@ table.dt td.c-sel .ap-check{gap:0;}
 .wg{border:1px solid color-mix(in srgb, var(--accent) 30%, var(--card));
   border-radius:var(--radius-box);background:color-mix(in srgb, var(--accent) 4%, var(--card));
   padding:14px 16px;}
+/* Vários agentes na mesma seção, empilhados e reordenáveis pela pessoa. */
+.wg-secao{display:flex;flex-direction:column;gap:12px;}
+.wg-pega{flex:none;display:inline-flex;color:var(--muted-foreground);cursor:grab;
+  opacity:0;transition:opacity .12s;}
+.wg:hover .wg-pega{opacity:1;}
+.wg-pega:active{cursor:grabbing;}
+.wg-arrastando{opacity:.45;}
+.wg-alvo{outline:2px dashed var(--accent);outline-offset:3px;}
+/* O agente que a conta não tem: o lugar do resultado vira convite. */
+.wg-convite{border-style:dashed;border-color:var(--border-strong);background:var(--card);}
+.wg-convite-txt{margin:0;font-size:13px;line-height:20px;color:var(--muted-foreground);}
+.wg-dispensa{flex:none;}
+.btn-sm{padding:5px 12px;font-size:12.5px;}
+.cp-ctx-item svg{flex:none;color:var(--muted-foreground);}
+.cp-ctx-aqui{background:var(--accent-100);color:var(--accent-600);}
+.cp-ctx-aqui svg{color:currentColor;}
+/* Galeria de templates: o formato de preenchimento muda com a escolha. */
+.tpl{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);
+  padding:14px 16px;margin-bottom:10px;font-family:inherit;cursor:pointer;}
+.tpl:hover{border-color:var(--accent);background:var(--muted);}
+.tpl-ic{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:9px;background:var(--accent-100);color:var(--accent-600);}
+.tpl-txt{flex:1;min-width:0;}
+.tpl-txt b{display:block;font-size:14px;font-weight:600;color:var(--foreground);}
+.tpl-txt span{display:block;font-size:12.5px;line-height:18px;color:var(--muted-foreground);margin-top:2px;}
+/* A tabela do template de Score: variável, condição e pontos. */
+.sc-tab{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;}
+.sc-cab,.sc-linha{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px 32px;
+  gap:8px;align-items:center;padding:8px 10px;}
+.sc-cab{background:var(--muted);font-size:11px;font-weight:600;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--muted-foreground);}
+.sc-linha{border-top:1px solid var(--border);}
+.sc-linha .ap-input{padding:6px 8px;font-size:13px;}
+.sc-pt{text-align:right;}
+.sc-rod{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;}
+@media (max-width:640px){
+  .sc-cab{display:none;}
+  .sc-linha{grid-template-columns:minmax(0,1fr) 32px;}
+}
+.wg-espera{margin:0;font-size:13px;line-height:20px;color:var(--muted-foreground);}
 .wg-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .wg-marca{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
   color:var(--accent-600);background:var(--card);border:1px solid color-mix(in srgb, var(--accent) 30%, var(--card));
   border-radius:999px;padding:2px 8px;}
+.wg-marca.wg-marca-off{color:var(--muted-foreground);background:var(--muted);border-color:var(--border);}
 .wg-nome{flex:1;min-width:0;font-size:14px;font-weight:600;}
 .wg-acts{display:flex;gap:6px;flex:none;}
 .wg-corpo{font-size:14px;line-height:21px;}
