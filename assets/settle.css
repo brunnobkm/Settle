@@ -1378,6 +1378,17 @@ table.dt td.c-sel .ap-check{gap:0;}
 .pn{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;z-index:71;
   background:var(--background);border-left:1px solid var(--border);display:flex;flex-direction:column;
   box-shadow:var(--shadow-pop);}
+/* Com o painel aberto, o que vier de dentro dele fica por cima: a conversa
+   desliza para a esquerda e continua à vista, e a configuração abre na frente,
+   com o painel esperando atrás. */
+body.pn-open .cp:not(.cp-lateral):not(.cp-cheio),
+body.pn-open .cp-fab{z-index:72;}
+@media (min-width:1000px){
+  body.pn-open .cp:not(.cp-lateral):not(.cp-cheio){right:484px;}
+  body.pn-open .cp-fab{right:484px;}
+}
+body.pn-open .fp-overlay{z-index:73;}
+body.pn-open .ap-modal{z-index:74;}
 .pn-head{flex:none;display:flex;align-items:center;gap:10px;padding:18px 20px;}
 .pn-head h2{flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;}
 .pn-body{flex:1;min-height:0;overflow-y:auto;padding:0 20px 20px;}
