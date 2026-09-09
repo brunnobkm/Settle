@@ -194,7 +194,7 @@ body:not(.sb-open) .sb-user{display:none;}
 body.sb-open .shell{margin-left:var(--sb-width-open);}
 
 .navbar{
-  height:var(--navbar-height);display:flex;align-items:center;gap:12px;
+  min-height:var(--navbar-height);display:flex;align-items:center;gap:12px;
   padding:0 24px;border-bottom:1px solid var(--border);
   position:sticky;top:0;background:var(--background);z-index:20;
   transition:transform .25s ease;
@@ -207,7 +207,10 @@ body.nav-hidden .navbar{transform:translateY(-100%);}
 }
 .navbar .icon-btn:hover{background:var(--muted);color:var(--foreground);}
 .navbar .sep{width:1px;height:22px;background:var(--border);}
-.navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);}
+.navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);line-height:20px;}
+/* Título e subtítulo no header: a saudação (ou a trilha, dentro da licitação)
+   em cima, e a linha de apoio embaixo. */
+.nav-titulo{flex:none;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 
 
 /* ==========================================================================
