@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909e" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909f" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -251,7 +251,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:28</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:31</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -594,7 +594,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909e" defer></script>
+  <script src="../assets/settle.js?v=20260909f" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1902,6 +1902,9 @@
         cpContextos.unshift(nova);
       }
       cpPintarCtx();
+      /* A conversa em branco também acompanha: as sugestões da tela anterior
+         não servem para a nova. */
+      if (!cpAgente && document.querySelector('#cpBody .cp-vazio')) cpPintarVazio();
     }
 
     /* O chip precisa dizer que tipo de coisa está no contexto, não só o nome
@@ -2356,6 +2359,89 @@
     }
 
     /* Conversa comum: sem agente escolhido, com o contexto da página. */
+    /* As sugestões dependem da tela. "Perguntar sobre este edital" na lista de
+       agentes não faz sentido: ali não existe edital nenhum. */
+    var IC_SUG = {
+      doc:'M5 3.5h7l3 3v10H5z',
+      comparar:'M3 7h5M3 13h5M12 7h5M12 13h5',
+      mais:'M10 4v12M4 10h12',
+      lista:'M4 6h12M4 10h12M4 14h7',
+      check:'M4 10.5l3.5 3.5L16 6',
+      var:'M7.5 4 5.5 16M14.5 4l-2 12M4 8h12M3.5 12h12',
+      nota:'M4 13a6.5 6.5 0 1 1 12 0M10 12.5 13 8'
+    };
+
+    function sugestoesDaPagina() {
+      var p = paginaAtual();
+
+      if (p.id === 'lic') {
+        return [
+          { t:'Perguntar sobre este edital', ic:'doc' },
+          { t:'Comparar com uma licitação parecida', ic:'comparar' },
+          { t:'Criar um agente novo', ic:'mais', faz:'novoAgente' }
+        ];
+      }
+      if (p.id === 'lics') {
+        return [
+          { t:'Por que esta licitação tirou essa nota?', ic:'nota' },
+          { t:'Comparar duas licitações da lista', ic:'comparar' },
+          { t:'Criar um agente novo', ic:'mais', faz:'novoAgente' }
+        ];
+      }
+
+      var aba = document.querySelector('.fp-tab.active');
+      var t = aba ? aba.dataset.tab : 'agentes';
+
+      if (t === 'variaveis') {
+        return [
+          { t:'Criar uma variável', ic:'mais', faz:'novaVar' },
+          { t:'Onde esta variável é usada?', ic:'var' },
+          { t:'O que muda se eu editar uma variável?', ic:'lista' }
+        ];
+      }
+      if (t === 'aprovacoes') {
+        return [
+          { t:'O que está esperando a minha aprovação?', ic:'check' },
+          { t:'Por que este agente pediu aprovação?', ic:'lista' },
+          { t:'Aprovar tudo de um agente só', ic:'mais' }
+        ];
+      }
+      return [
+        { t:'Criar um agente novo', ic:'mais', faz:'novoAgente' },
+        { t:'O que cada agente faz hoje?', ic:'lista' },
+        { t:'Qual agente errou mais nesta semana?', ic:'check' }
+      ];
+    }
+
+    function cpPintarVazio() {
+      var sugs = sugestoesDaPagina();
+      document.getElementById('cpBody').innerHTML =
+        '<div class="cp-vazio"><h3>Como posso ajudar?</h3>' +
+        sugs.map(function (o, i) {
+          return '<button class="cp-sug" type="button" data-sug="' + i + '">' +
+            '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" ' +
+            'stroke-width="1.6" aria-hidden="true"><path d="' + IC_SUG[o.ic] + '" stroke-linecap="round" ' +
+            'stroke-linejoin="round"/></svg>' + o.t + '</button>';
+        }).join('') + '</div>';
+
+      document.querySelectorAll('#cpBody [data-sug]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var o = sugs[+b.dataset.sug];
+          if (o.faz === 'novoAgente') {
+            cpFecharPainel(); irPara('agentes'); abaAtiva('agentes'); abrirFx(null);
+            return;
+          }
+          if (o.faz === 'novaVar') {
+            cpFecharPainel(); irPara('agentes'); abaAtiva('variaveis'); abrirVar(null);
+            return;
+          }
+          document.getElementById('cpBody').innerHTML = '';
+          cpBolha('me', o.t);
+          cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
+        });
+      });
+    }
+
     function cpNovaConversa() {
       cpAgente = null;
       cpProposta = null;
@@ -2363,31 +2449,8 @@
       document.getElementById('cpTitulo').textContent = 'Converse com a Settle AI';
       document.getElementById('cpLista').setAttribute('aria-expanded', 'false');
       document.getElementById('cpForm').hidden = false;
-
-      document.getElementById('cpBody').innerHTML =
-        '<div class="cp-vazio"><h3>Como posso ajudar?</h3>' +
-        [['Perguntar sobre este edital', 'M4 5h12v10H4z'],
-         ['Comparar com uma licitação parecida', 'M3 10h6M11 10h6'],
-         ['Criar um agente novo', 'M10 4v12M4 10h12']].map(function (o, i) {
-          return '<button class="cp-sug" type="button" data-sug="' + i + '">' +
-            '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" ' +
-            'stroke-width="1.6" aria-hidden="true"><path d="' + o[1] + '" stroke-linecap="round" ' +
-            'stroke-linejoin="round"/></svg>' + o[0] + '</button>';
-        }).join('') + '</div>';
-
+      cpPintarVazio();
       cpPintarCtx();
-
-      document.querySelectorAll('#cpBody [data-sug]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          if (b.dataset.sug === '2') {
-            cpFecharPainel(); abaAtiva('agentes'); abrirFx(null);
-            return;
-          }
-          document.getElementById('cpBody').innerHTML = '';
-          cpBolha('me', b.textContent.trim());
-          cpBolha('bot', 'Ainda precisamos pensar no que aparece por aqui.');
-        });
-      });
     }
 
     function cpFecharPainel() {
