@@ -1,5 +1,11 @@
 # Anatomia de um agente
 
+> **Task:** Agentes e Variáveis
+> As duas tasks vizinhas têm documentos próprios: `MODELO.md`, `VALIDACAO.md` e
+> `HANDOFF.md` são de **Agentes e Variáveis**; `ESTADOS.md` é de **execução e
+> apresentação de resultados**. Decisão de uma não vale para a outra sem passar
+> por aqui.
+
 Modelo de dados dos agentes, anterior às telas. A partir das reuniões de 21 e 24/08/2026.
 Versão apresentável: artefato "Anatomia de um agente".
 

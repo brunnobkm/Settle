@@ -1,5 +1,11 @@
 # Agentes: validação
 
+> **Task:** Agentes e Variáveis
+> As duas tasks vizinhas têm documentos próprios: `MODELO.md`, `VALIDACAO.md` e
+> `HANDOFF.md` são de **Agentes e Variáveis**; `ESTADOS.md` é de **execução e
+> apresentação de resultados**. Decisão de uma não vale para a outra sem passar
+> por aqui.
+
 O que falta para a solução deixar de ser hipótese. Três partes: o que o mercado
 já fez (feito), o roteiro de teste com clientes (pronto para rodar) e as decisões
 que dependem da Alice (pendentes).
@@ -97,8 +103,9 @@ interface.
    template ela escolhe, e se o formato de tabela ajuda ou atrapalha. **É a
    pergunta que a Alice levantou em 21:24:** preencher isso conversando é pior
    que preencher uma lista de variáveis e pontos?
-6. "Antes de confiar nele para 40 licitações, o que você faria?" Observe se
-   valida, se roda numa licitação de teste, ou se simplesmente ativa.
+6. "Antes de confiar nele para 40 licitações, o que você faria?" **A tela não
+   oferece caminho para isso de propósito:** interessa saber o que a pessoa
+   procura, porque é o que vai desenhar a validação.
 
 ### Bloco C: as ações e o que o agente pode fazer sozinho
 
@@ -132,7 +139,7 @@ interface.
 | H3 | "Inconclusivo" é um resultado aceitável | Se exigirem decisão binária, o modelo de ausência muda |
 | H4 | Proveniência resolve a desconfiança no número | Se continuarem desconfiando, falta mais do que citar a fonte |
 | H5 | O resultado no contexto é onde a pessoa procura | Se ela procurar uma tela de agentes, a decisão de 03/09 cai |
-| H6 | Validar cinco casos basta para a pessoa confiar no agente | Se ela pedir mais, ou ignorar a validação, o formato muda |
+| H6 | Antes de confiar num agente para 40 licitações, a pessoa quer testá-lo em alguns casos | Se ela simplesmente ativar, a validação deixa de ser prioridade |
 | H7 | Para o Score, a tabela de variáveis e pontos é melhor que conversar | Se ela preferir conversar, o template de Score não se justifica |
 
 Anotar, para cada participante: **quantas das regras que ele descreve ramificam**
@@ -230,12 +237,12 @@ e a **habilitação por atestados técnicos**. O roteiro dos dois está na seç�
 Os pontos abaixo saíram da lista de pendências e estão no protótipo. Ficam
 registrados aqui porque a decisão importa mais que a tela.
 
-1. **Validação pelo chat, resultado fora dele.** A conversa roda o agente em cinco
-   licitações já analisadas, a pessoa marca certo ou errado em cada uma, e o
-   resultado (precisão, data, quem validou, quantas correções saíram dali) é
-   gravado na configuração do agente, numa seção Validação. Quem abrir o agente
-   depois vê em quantos casos ele acerta sem ter que ler a conversa. Fecha o
-   item 1 dos abertos e o requisito da Alice de 21/08.
+1. **Tirado em 09/09: a seção Validação na configuração do agente.** Eu tinha
+   implementado a validação pelo chat com o resultado gravado numa seção da
+   modal. Saiu por decisão do Brunno: a materialização do resultado do agente
+   fora da conversa já é o **widget**, e a seção repetia esse papel num lugar
+   onde ela não foi pedida. **O item 1 dos abertos volta a ser um item aberto:**
+   como a validação funciona ainda não tem resposta desenhada.
 2. **Tela de Licitações.** A lista existe no protótipo com o card da plataforma.
    O resultado do agente **não** aparece nela: a menção da Alice ao card em 11:09
    era exemplo, e ficou desfeita em 09/09. A tela serve ao teste como distrator

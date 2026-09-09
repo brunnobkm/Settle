@@ -1,5 +1,11 @@
 # Funcionalidade, agente e resultado: os estados
 
+> **Task:** execução e apresentação de resultados
+> As duas tasks vizinhas têm documentos próprios: `MODELO.md`, `VALIDACAO.md` e
+> `HANDOFF.md` são de **Agentes e Variáveis**; `ESTADOS.md` é de **execução e
+> apresentação de resultados**. Decisão de uma não vale para a outra sem passar
+> por aqui.
+
 Decisões de UX para a task de execução e apresentação de resultados, cruzada com
 a de agentes. Responde aos pontos que o handoff deixou em aberto do lado de
 produto. O que é de engenharia (fonte da verdade das flags, contrato do front,
@@ -141,12 +147,17 @@ explícito da Alice, porque tudo acima depende dela.
 
 ---
 
-## O que mudou de vocabulário na interface
+## O vocabulário, e até onde ele vale
 
-Saiu **processamento, processado, execução, fila, job e trigger** de tudo o que a
-pessoa lê. O histórico do agente agora diz "Pronto", "Aguardando aprovação" e
-"Não foi possível preparar"; o botão virou "Preparar agora"; a última linha do
-card do agente diz "Última vez", não "Última execução".
+Saiu **processamento, processado, execução, fila, job e trigger** dos textos
+desta task: os estados da funcionalidade, o card de acompanhamento e as frases de
+espera falam em preparando, pronto, disponível e "não foi possível preparar".
+
+**Não vale para a configuração do agente.** Eu tinha estendido a proibição para a
+modal, e ficou desfeito em 09/09: lá "Executar agora", "Última execução" e os
+estados Concluída, Aguardando aprovação e Falhou continuam como estavam. A
+diferença é de público: quem configura um agente fala em execução, e quem lê um
+resultado na licitação não precisa saber que existe uma.
 
 "Análise" continua reservada para a etapa da jornada. Por isso o card se chama
 "Preparando resultados", e não "Preparando sua análise", que faria a pessoa
