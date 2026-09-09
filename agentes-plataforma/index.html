@@ -34,6 +34,7 @@
 <html lang="pt-BR" data-preview="AGENTES-PLATAFORMA">
 <head>
   <meta charset="utf-8" />
+  <meta http-equiv="cache-control" content="no-cache" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Settle — Agentes na plataforma</title>
 
@@ -41,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909q" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909r" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:49</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:57</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -508,7 +509,8 @@
       <div class="cp-ctx" id="cpCtx" hidden></div>
       <div class="cp-linha">
         <label class="sr-only" for="cpIn">Mensagem para a Settle AI</label>
-        <input class="ap-input" id="cpIn" type="text" placeholder="Pergunte qualquer coisa" />
+        <div class="ap-input cp-in" id="cpIn" contenteditable="true" role="textbox"
+             aria-multiline="false" data-ph="Pergunte qualquer coisa"></div>
       </div>
       <div class="cp-ferr">
         <button class="cp-ferr-btn" type="button" id="cpMais" aria-label="Adicionar contexto" data-tip="Adicionar contexto">
@@ -568,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909q" defer></script>
+  <script src="../assets/settle.js?v=20260909r" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2167,8 +2169,17 @@
         pop.querySelectorAll('[data-varins]').forEach(function (b) {
           b.addEventListener('click', function () {
             var campo = document.getElementById('cpIn');
-            campo.value = (campo.value ? campo.value.replace(/\s+$/, '') + ' ' : '') + VARS[b.dataset.varins].nome;
-            fecharMenuCol(); campo.focus();
+            var k = b.dataset.varins;
+            campo.innerHTML += (campo.innerHTML ? ' ' : '') +
+              '<span class="varchip" contenteditable="false" data-v="' + k + '">' +
+              VARS[k].nome + '</span>&nbsp;';
+            fecharMenuCol();
+            campo.focus();
+            /* O cursor vai para o fim, senão a próxima letra entra antes do chip. */
+            var r = document.createRange();
+            r.selectNodeContents(campo); r.collapse(false);
+            var sel = window.getSelection();
+            sel.removeAllRanges(); sel.addRange(r);
           });
         });
         posicionarNoPainel(pop, document.getElementById('cpMais'));
@@ -2685,6 +2696,12 @@
       this.value = '';
     });
     document.getElementById('cpNova').addEventListener('click', cpNovaConversa);
+
+    document.getElementById('cpIn').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || e.shiftKey) return;
+      e.preventDefault();
+      document.getElementById('cpForm').requestSubmit();
+    });
     document.getElementById('cpCfgAg').addEventListener('click', function () {
       if (!cpAgente) return;
       setVia('cons'); irPara('agentes'); abaAtiva('agentes'); abrirAnalise(cpAgente);
@@ -2708,8 +2725,11 @@
     document.getElementById('cpForm').addEventListener('submit', function (e) {
       e.preventDefault();
       var c = document.getElementById('cpIn');
-      if (!c.value.trim()) return;
-      cpBolha('me', c.value.trim()); c.value = '';
+      var txt = (c.textContent || '').trim();
+      if (!txt) return;
+      /* A mensagem enviada mantém os chips: quem lê depois vê de qual variável
+         a pergunta falava. */
+      cpBolha('me', c.innerHTML); c.innerHTML = '';
       cpBolha('bot', 'Consigo agir sobre as regras deste agente e sobre o que ele produziu nas licitações. ' +
         'Se for uma correção, eu proponho a mudança com o antes e o depois antes de aplicar.');
     });
@@ -5271,8 +5291,7 @@
       { q:'Quantos dias até a sessão pública?', v:'9 dias', pt:'+8', st:'ok' },
       { q:'Permite subcontratação?', v:'Não permite', pt:'0', st:'no' },
       { q:'É exclusiva para ME/EPP?', v:'Ampla concorrência', pt:'0', st:'no' },
-      { q:'Qual o porte do projeto?', v:'2.840 horas', pt:'+10', st:'ok' },
-      { q:'Exige ISO 27001 de segurança da informação?', v:'Não se aplica a este segmento', pt:'fora do total', st:'na' }
+      { q:'Qual o porte do projeto?', v:'2.840 horas', pt:'+10', st:'ok' }
     ];
 
     function abrirPainelScore() {
