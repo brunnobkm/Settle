@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909j" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909k" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -231,7 +231,7 @@
           <b>PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:51</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:57</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -336,14 +336,15 @@
       </div><!-- /areaAgentes -->
 
       <!-- ============ LICITAÇÕES ============
-           O outro lugar onde o resultado do agente aparece: a Alice pediu o
-           resultado no próprio card da licitação (03/09, 11:09). Aqui o card
-           carrega, além dos dados da licitação, o que cada agente decidiu.
+           A lista como ela é na plataforma. O resultado do agente não entra no
+           card: a menção da Alice em 03/09 (11:09) foi um exemplo de contexto
+           possível, não uma decisão, e o lugar do resultado é o widget dentro
+           da licitação.
            ==================================== -->
       <div id="areaLics" hidden>
         <div class="page-head">
           <h1 class="title">Licitações</h1>
-          <p class="ap-lead">O que os seus agentes já decidiram em cada uma, sem precisar abrir.</p>
+          <p class="ap-lead">As licitações em andamento da B Design.</p>
         </div>
         <div id="licsLista"></div>
       </div>
@@ -601,7 +602,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909j" defer></script>
+  <script src="../assets/settle.js?v=20260909k" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5518,10 +5519,7 @@
         adicionada:'04/08/2026', atualizada:'26/08/2026', envio:'11/09/2026',
         id:'1078513', uasg:'986531', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'MG', cidade:'Belo Horizonte', habitantes:'2.315.560', capagE:'B', capagM:'C',
-        portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true,
-        res:[{ ag:'Score', o:'78 de 100', st:'ok' },
-             { ag:'Tenho todos os documentos de habilitação?', o:'3 de 5 exigências atendidas', st:'warn' },
-             { ag:'Análise técnica', o:'15 componentes · aguardando aprovação', st:'warn' }] },
+        portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true },
 
       { n:'00471/2026', org:'PREFEITURA MUNICIPAL DE CONTAGEM - SECRETARIA DE PLANEJAMENTO',
         objeto:'Prestação de serviços de design de produto digital para o redesenho do portal do cidadão, ' +
@@ -5530,9 +5528,7 @@
         adicionada:'12/08/2026', atualizada:'02/09/2026', envio:'22/09/2026',
         id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
-        portal:'compras.gov.br', score:86,
-        res:[{ ag:'Score', o:'86 de 100', st:'ok' },
-             { ag:'Tenho todos os documentos de habilitação?', o:'5 de 5 exigências atendidas', st:'ok' }] },
+        portal:'compras.gov.br', score:86 },
 
       { n:'00088/2026', org:'SECRETARIA DE ESTADO DA EDUCAÇÃO DO RIO GRANDE DO SUL',
         objeto:'Serviços de pesquisa com usuários e testes de usabilidade em plataformas educacionais, ' +
@@ -5541,9 +5537,7 @@
         adicionada:'19/08/2026', atualizada:'05/09/2026', envio:'25/09/2026',
         id:'1083990', uasg:'925017', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'B', capagM:'A',
-        portal:'compras.rs.gov.br', score:81, atualizado:true,
-        res:[{ ag:'Score', o:'81 de 100', st:'ok' },
-             { ag:'Tenho todos os documentos de habilitação?', o:'3 de 4 · atestado remoto em revisão', st:'warn' }] },
+        portal:'compras.rs.gov.br', score:81, atualizado:true },
 
       { n:'90112/2026', org:'TRIBUNAL REGIONAL FEDERAL DA 4ª REGIÃO',
         objeto:'Contratação de serviços de criação e manutenção de design system corporativo, com ' +
@@ -5552,8 +5546,7 @@
         adicionada:'21/08/2026', atualizada:'08/09/2026', envio:'30/09/2026',
         id:'1085330', uasg:'090029', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'—', capagM:'—',
-        portal:'compras.gov.br', score:72,
-        res:[{ ag:'Score', o:'72 de 100 · CAPAG não se aplica a órgão federal', st:'fail' }] },
+        portal:'compras.gov.br', score:72 },
 
       { n:'00023/2026', org:'PREFEITURA MUNICIPAL DE ITAPEVI - SECRETARIA DE COMUNICAÇÃO',
         objeto:'Serviços de criação de identidade visual e peças gráficas para campanhas institucionais ' +
@@ -5562,8 +5555,7 @@
         adicionada:'27/08/2026', atualizada:'01/09/2026', envio:'12/09/2026',
         id:'1086771', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'SP', cidade:'Itapevi', habitantes:'241.256', capagE:'C', capagM:'C',
-        portal:'compras.itapevi.sp.gov.br', score:34,
-        res:[{ ag:'Score', o:'34 de 100 · pediu para mover para Descartadas', st:'warn' }] }
+        portal:'compras.itapevi.sp.gov.br', score:34 }
     ];
 
     var IC_CARD = {
@@ -5597,8 +5589,6 @@
     function pintarLics() {
       var box = document.getElementById('licsLista');
       if (!box) return;
-      var cor = { ok:'ap-ok', warn:'ap-warn', fail:'ap-dim' };
-
       box.innerHTML = LICS_CARDS.map(function (l, i) {
         return '<article class="card lic-card">' +
           '<div class="card-top">' +
@@ -5664,16 +5654,10 @@
             '</div>' +
           '</div>' +
 
-          '<div class="items-head"><span class="items-title">O que os agentes decidiram</span>' +
-            '<span class="count-chip">' + l.res.length + '</span>' +
-            '<span class="items-total"><button class="ap-mini" type="button" data-licabrir="' + i +
+          '<div class="items-head"><span class="items-total">' +
+            '<button class="ap-mini" type="button" data-licabrir="' + i +
             '">Abrir a licitação</button></span></div>' +
-          '<div class="lic-res">' +
-            l.res.map(function (r) {
-              return '<div class="lic-res-l"><span class="lic-res-ag">' + r.ag + '</span>' +
-                '<span class="' + cor[r.st] + '">' + r.o + '</span></div>';
-            }).join('') +
-          '</div></article>';
+          '</article>';
       }).join('');
 
       box.querySelectorAll('[data-licscore]').forEach(function (b) {
