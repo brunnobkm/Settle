@@ -1257,9 +1257,11 @@ table.dt td.c-sel .ap-check{gap:0;}
    onde a pessoa configurou. O contorno e a marca dizem que aquilo foi produzido
    por um agente, e não é campo fixo da tela.
    ========================================================================== */
-.wg{border:1px solid color-mix(in srgb, var(--accent) 30%, var(--card));
-  border-radius:var(--radius-box);background:color-mix(in srgb, var(--accent) 4%, var(--card));
-  padding:16px 18px;box-shadow:var(--shadow-card);}
+/* Cada widget é um card: mesma superfície dos outros cards da tela, para que
+   dois resultados na mesma seção se leiam como duas coisas. A marca de agente
+   é que dá a cor, não o fundo. */
+.wg{border:1px solid var(--border);border-radius:var(--radius-box);
+  background:var(--card);padding:16px 18px;box-shadow:var(--shadow-card);}
 /* Vários agentes na mesma seção, empilhados e reordenáveis pela pessoa. */
 .wg-secao{display:flex;flex-direction:column;gap:16px;}
 .wg-pega{flex:none;display:inline-flex;color:var(--muted-foreground);cursor:grab;
@@ -1417,6 +1419,12 @@ body.pn-open .ap-modal{z-index:74;}
   display:inline-flex;}
 .cp-foot{flex-direction:column;align-items:stretch;}
 .cp-linha{display:flex;gap:8px;}
+/* O campo do chat aceita chip de variável, então é contenteditable e não input:
+   precisa do placeholder próprio e de altura de uma linha. */
+.cp-in{min-height:36px;max-height:120px;overflow-y:auto;line-height:20px;
+  white-space:pre-wrap;word-break:break-word;}
+.cp-in:empty::before{content:attr(data-ph);color:var(--muted-foreground);}
+.cp-in .varchip{margin:0 1px;}
 
 /* ===================== 36. SETTLE AI: MODOS E CONTEXTO =====================
    A mesma conversa em três tamanhos. Flutuante para uma pergunta rápida sem
