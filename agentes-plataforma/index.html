@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909p" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909q" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +227,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:41</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:49</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -568,7 +568,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909p" defer></script>
+  <script src="../assets/settle.js?v=20260909q" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5720,7 +5720,9 @@
         return '<div class="empty-state"><strong>Nenhum agente aqui</strong>' +
           'Você dispensou os agentes desta seção. Eles continuam na tela de Agentes.</div>';
       }
-      return '<div class="card wg-secao">' + h + '</div>';
+      /* Um card por agente: dois resultados diferentes na mesma seção são duas
+         coisas, e empilhá-los dentro de um card só os faz parecer um. */
+      return '<div class="wg-secao">' + h + '</div>';
     }
 
     var TECNICA = [
