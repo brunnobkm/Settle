@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909n" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909o" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +227,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:09</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:21</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -568,7 +568,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909n" defer></script>
+  <script src="../assets/settle.js?v=20260909o" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2866,7 +2866,7 @@
         h += '<div class="ap-locked"><span class="k">Roda</span>' +
              '<span class="v">Uma vez por licitação. Escopo por item ou por componente existe no modelo e é o que a Análise técnica usa.</span></div>' +
              '<div class="ap-locked" style="margin-top:8px"><span class="k">Agregação</span>' +
-             '<span class="v">Não se aplica: com um resultado por licitação, não há N resultados para juntar.</span></div>';
+             '<span class="v">Não se aplica: com uma execução por licitação, não há N resultados para juntar.</span></div>';
       }
       h += '</div>';
 
@@ -3629,13 +3629,13 @@
       if (modoModal === 'variavel') return salvarVar();
 
       var rotulo = document.getElementById('fxAtivar').textContent;
-      if (analiseAberta && rotulo === 'Preparar agora') {
+      if (analiseAberta && rotulo === 'Executar agora') {
         var alvo = analiseAberta;
         alvo.execs = alvo.execs || [];
         alvo.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Preparado a seu pedido', st:'ok' });
+          o:'Execução manual, disparada por você', st:'ok' });
         pintarDetalhe(alvo);
-        settleToast('Preparando o resultado');
+        settleToast('Executando o agente');
         return;
       }
       if (analiseAberta && rotulo === 'Salvar alterações') {
@@ -4150,7 +4150,7 @@
       var es = an.execs || [];
       return '<div class="ap-box" style="margin-bottom:14px">' +
         '<div class="ap-box-head"><h2>Últimas execuções</h2>' +
-        '<button class="ap-mini" type="button" id="execRodar">Preparar agora</button>' +
+        '<button class="ap-mini" type="button" id="execRodar">Executar agora</button>' +
         '<button class="ap-mini" type="button" id="execPausar">' +
           (an.pausado ? 'Retomar' : 'Pausar') + '</button></div>' +
         '<div class="ap-box-body">' +
@@ -4171,9 +4171,9 @@
       if (r) r.addEventListener('click', function () {
         an.execs = an.execs || [];
         an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Preparado a seu pedido', st:'ok' });
+          o:'Execução manual, disparada por você', st:'ok' });
         abrirAnalise(an);
-        settleToast('Preparando o resultado');
+        settleToast('Executando o agente');
       });
       var pz = document.getElementById('execPausar');
       if (pz) pz.addEventListener('click', function () {
@@ -4284,8 +4284,7 @@
           { quando:'hoje, 14:22', lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'Calculou 34 de 100 · pediu para mover para Descartadas', st:'aguardando' },
           { quando:'ontem, 17:40', lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'Calculou 81 de 100', st:'ok' },
           { quando:'ontem, 09:14', lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'Não encontrou CAPAG: órgão federal não tem', st:'falhou' }
-        ],
-        validacao:{ acertos:8, total:10, quando:'28 de agosto', por:'Brunno', correcoes:2 } },
+        ] },
       { id:'resumo', nome:'Resumo', formato:'estruturado',
         desc:'Os campos que aparecem no resumo de cada licitação.',
         gatilho:'Quando chega em Recomendadas', destino:'resumo',
@@ -4503,7 +4502,7 @@
        agente age sozinho, ou pede antes. */
     /* Como a execução terminou: sem isso, confiar uma ação ao agente é confiar
        sem auditoria (José Victor, 02/09). */
-    var ESTADO_EXEC = { ok:'Pronto', aguardando:'Aguardando aprovação', falhou:'Não foi possível preparar' };
+    var ESTADO_EXEC = { ok:'Concluída', aguardando:'Aguardando aprovação', falhou:'Falhou' };
 
     var APROVACAO = {
       manual:{ t:'Aprovar manualmente',
@@ -4594,7 +4593,7 @@
     function proximaExecucao(an) {
       if (an.ativo === false) return 'Não roda em licitação nova até ser retomado';
       var e = (an.execs || [])[0];
-      return e ? 'Última vez ' + e.quando : 'Ainda não rodou';
+      return e ? 'Última execução ' + e.quando : 'Ainda não rodou';
     }
 
     function pintarDetalhe(an) {
@@ -4604,7 +4603,7 @@
       document.getElementById('fxValidar').hidden = true;
       document.getElementById('fxAtivar').hidden = false;
       document.getElementById('fxAtivar').disabled = false;
-      document.getElementById('fxAtivar').textContent = 'Preparar agora';
+      document.getElementById('fxAtivar').textContent = 'Executar agora';
       document.getElementById('fxCusto').textContent = '';
 
       var ativo = an.ativo !== false;
@@ -4629,14 +4628,13 @@
                          '</span>' +
                          '<span>' + e.o + ' · ' + e.quando + '</span></button>';
                 }).join('')
-              : '<p class="ap-dim" style="font-size:13px">Ainda não produziu resultado em nenhuma licitação.</p>') +
+              : '<p class="ap-dim" style="font-size:13px">Ainda não rodou em nenhuma licitação.</p>') +
           '</div></div>' +
           '<div>' +
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
             '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) + '</p></div>' +
             '<div class="ag-sec"><h3>Permissões</h3><p>' +
               APROVACAO[an.aprovacao || 'manual'].t + '</p></div>' +
-            '<div class="ag-sec"><h3>Validação</h3>' + validacaoHTML(an) + '</div>' +
             '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
               (vs.length ? '<div class="ag-vars">' + vs.map(function (k) { return chipHTML(k); }).join('') + '</div>'
                          : '<p class="ap-dim" style="font-size:13px">Nenhuma.</p>') +
@@ -4649,9 +4647,6 @@
         pintarDetalhe(an); pintarAnalises();
       });
 
-      var bv = document.getElementById('agValidar');
-      if (bv) bv.addEventListener('click', function () { validarPeloChat(an); });
-
       /* Cada execução abre a conversa daquele resultado, no painel de agentes. */
       /* A conversa abre por cima, com a configuração ainda na tela: ler a
          execução e ver a instrução ao lado é o ponto. */
@@ -4660,148 +4655,9 @@
           var e = an.execs[+b.dataset.exec];
           cpAbrirPainel();
           cpSelecionarAgente(an, 'Ainda precisamos pensar no que aparece por aqui.',
-            'Resultado de ' + e.quando);
+            'Execução de ' + e.quando);
         });
       });
-    }
-
-    /* =====================================================================
-       VALIDAÇÃO
-       Decisão de 03/09: a validação acontece pelo chat, como no Claude, e não
-       numa tela de formulário. O requisito da Alice desde 21/08 é que o
-       resultado não morra na conversa: ele fica registrado no agente, com
-       data, precisão e o que foi corrigido a partir dele.
-       ===================================================================== */
-
-    function validacaoHTML(an) {
-      var v = an.validacao;
-      if (!v) {
-        return '<p class="ap-dim" style="font-size:13px;margin:0 0 8px">Este agente ainda não foi ' +
-          'validado: você não sabe em quantos casos ele acerta.</p>' +
-          '<button class="ap-mini" type="button" id="agValidar">Validar pelo chat</button>';
-      }
-      var pct = Math.round(v.acertos / v.total * 100);
-      return '<div class="ag-valid">' +
-          '<span class="ag-valid-n">' + v.acertos + ' de ' + v.total + '</span>' +
-          '<span class="ag-valid-sub">casos certos · ' + pct + '%</span>' +
-        '</div>' +
-        '<p class="ap-dim" style="font-size:12px;margin:6px 0 0">Validado ' + v.quando +
-          ' por ' + v.por + (v.correcoes ? ' · ' + v.correcoes + ' correção(ões) aplicadas' : '') + '.</p>' +
-        '<button class="ap-mini" type="button" id="agValidar" style="margin-top:8px">Validar de novo</button>';
-    }
-
-    /* Os casos são execuções passadas do próprio agente: validar é dizer se o
-       que ele decidiu naquelas licitações estava certo. */
-    var VALID_CASOS = {
-      score:[
-        { lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'86 de 100 · segmento compatível, CAPAG B' },
-        { lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'34 de 100 · valor abaixo do nosso mínimo' },
-        { lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'81 de 100 · pesquisa com usuários no escopo' },
-        { lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'72 de 100 · somou 15 pontos de atestado sem achar a exigência' },
-        { lic:'PE 00205/2026 · Prefeitura de Joinville/SC', o:'64 de 100 · CAPAG não encontrada, somou mesmo assim' }
-      ],
-      habil:[
-        { lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'5 de 5 exigências atendidas' },
-        { lic:'PE 00023/2026 · Prefeitura de Itapevi/SP', o:'4 de 5 · falta certidão municipal' },
-        { lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'3 de 4 · atestado remoto contado como presencial' },
-        { lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'5 de 5 · somou carga horária de dois atestados' },
-        { lic:'PE 00205/2026 · Prefeitura de Joinville/SC', o:'2 de 5 · registro em conselho dado como não atendido' }
-      ]
-    };
-
-    function casosDe(an) {
-      return VALID_CASOS[an.id] || LICITACOES.slice(0, 5).map(function (l) {
-        return { lic:l.nome + ' · ' + l.sub, o:'resultado produzido nesta licitação' };
-      });
-    }
-
-    function validarPeloChat(an) {
-      cpAbrirPainel();
-      cpSelecionarAgente(an,
-        'Vou rodar <b>' + an.nome + '</b> em cinco licitações que você já analisou e ' +
-        'te mostrar o que ele decidiu em cada uma. Você diz onde ele errou.', 'Validação');
-      cpChips([{ t:'Rodar nas cinco', faz:function () { validarCasos(an); } }]);
-    }
-
-    function validarCasos(an) {
-      var casos = casosDe(an), julgado = {};
-      var el = document.createElement('div');
-      el.className = 'cp-valid';
-      el.innerHTML = casos.map(function (c, i) {
-        return '<div class="cp-caso" data-caso="' + i + '">' +
-          '<div class="cp-caso-lic">' + c.lic + '</div>' +
-          '<div class="cp-caso-o">' + c.o + '</div>' +
-          '<div class="cp-caso-acts">' +
-            '<button class="ap-mini" type="button" data-ok="' + i + '">Certo</button>' +
-            '<button class="ap-mini" type="button" data-no="' + i + '">Errado</button>' +
-          '</div></div>';
-      }).join('');
-      var body = document.getElementById('cpBody');
-      body.appendChild(el); body.scrollTop = body.scrollHeight;
-
-      function marcar(i, certo) {
-        if (julgado[i] !== undefined) return;
-        julgado[i] = certo;
-        var card = el.querySelector('[data-caso="' + i + '"]');
-        card.classList.add(certo ? 'ok' : 'no');
-        card.querySelector('.cp-caso-acts').innerHTML =
-          '<span class="' + (certo ? 'ap-ok' : 'ap-warn') + '" style="font-size:12px;font-weight:600">' +
-          (certo ? 'Certo' : 'Errado') + '</span>';
-        if (Object.keys(julgado).length === casos.length) fechar();
-      }
-
-      function fechar() {
-        var acertos = 0;
-        Object.keys(julgado).forEach(function (k) { if (julgado[k]) acertos++; });
-        var erros = casos.length - acertos;
-        cpBolha('bot', 'Ficou em <b>' + acertos + ' de ' + casos.length + '</b>. ' +
-          (erros
-            ? 'Os ' + erros + ' casos que você marcou como errados viram correções na instrução do agente.'
-            : 'Nada a corrigir.'));
-        cpPropostaValidacao(an, acertos, casos.length, erros);
-      }
-
-      el.querySelectorAll('[data-ok]').forEach(function (b) {
-        b.addEventListener('click', function () { marcar(+b.dataset.ok, true); });
-      });
-      el.querySelectorAll('[data-no]').forEach(function (b) {
-        b.addEventListener('click', function () { marcar(+b.dataset.no, false); });
-      });
-    }
-
-    /* O ponto da Alice: a conversa propõe, e o resultado fica fora dela. */
-    function cpPropostaValidacao(an, acertos, total, erros) {
-      var el = document.createElement('div');
-      el.className = 'cp-prop';
-      el.innerHTML = '<h4>Registrar a validação no agente</h4>' +
-        '<div class="por">Fica na configuração de ' + an.nome + ', com a data e quem validou. ' +
-        'Quem abrir depois vê em quantos casos ele acerta sem precisar ler esta conversa.</div>' +
-        '<div class="cp-diff"><span class="de">' +
-          (an.validacao ? an.validacao.acertos + ' de ' + an.validacao.total + ' · ' + an.validacao.quando
-                        : 'nunca validado') + '</span>' +
-          '<span class="para">' + acertos + ' de ' + total + ' · hoje' +
-          (erros ? ' · ' + erros + ' correção(ões)' : '') + '</span></div>' +
-        '<div class="cp-prop-acts">' +
-          '<button class="btn btn-primary" type="button" data-vok="1">Registrar</button>' +
-        '</div>';
-      var body = document.getElementById('cpBody');
-      body.appendChild(el); body.scrollTop = body.scrollHeight;
-
-      el.querySelector('[data-vok]').addEventListener('click', function () {
-        an.validacao = { acertos:acertos, total:total, quando:'hoje, ' + agora(),
-                         por:'Brunno', correcoes:erros };
-        el.querySelector('.cp-prop-acts').innerHTML =
-          '<span class="ap-ok" style="font-size:13px;font-weight:600">Registrado no agente</span>';
-        cpBolha('bot', 'Registrado. Está na configuração do agente, em Validação.');
-        if (analiseAberta && analiseAberta.id === an.id) pintarDetalhe(an);
-        pintarAnalises();
-        settleToast('Validação registrada em ' + an.nome);
-      });
-    }
-
-    function agora() {
-      var d = new Date();
-      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
     }
 
     /* As variáveis citadas num texto, sem depender do campo estar montado. */

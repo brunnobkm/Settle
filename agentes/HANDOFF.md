@@ -1,5 +1,11 @@
 # Agentes: regras de negócio e governança
 
+> **Task:** Agentes e Variáveis
+> As duas tasks vizinhas têm documentos próprios: `MODELO.md`, `VALIDACAO.md` e
+> `HANDOFF.md` são de **Agentes e Variáveis**; `ESTADOS.md` é de **execução e
+> apresentação de resultados**. Decisão de uma não vale para a outra sem passar
+> por aqui.
+
 Documento de passagem para o time. Duas partes: as regras que o protótipo assume
 e que o backend precisa implementar (rascunho para a sessão que a Alice pediu em
 03/09), e o benchmark de governança de agentes para enterprise, que ela pediu
