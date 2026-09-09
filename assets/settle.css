@@ -1307,19 +1307,33 @@ table.dt td.c-sel .ap-check{gap:0;}
 .prep-no{background:var(--destructive);}
 .wg-falhou{margin:0 0 10px;font-size:13px;line-height:20px;color:var(--destructive);}
 @media (max-width:520px){ .prep{left:16px;right:16px;width:auto;} }
+.cp-ctx-lbl{flex:none;width:100%;font-size:11px;font-weight:600;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--muted-foreground);margin-bottom:2px;}
 .cp-ctx-item svg{flex:none;color:var(--muted-foreground);}
 .cp-ctx-aqui{background:var(--accent-100);color:var(--accent-600);}
 .cp-ctx-aqui svg{color:currentColor;}
-/* Galeria de templates: o formato de preenchimento muda com a escolha. */
-.tpl{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
-  border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);
-  padding:14px 16px;margin-bottom:10px;font-family:inherit;cursor:pointer;}
-.tpl:hover{border-color:var(--accent);background:var(--muted);}
-.tpl-ic{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;
-  border-radius:9px;background:var(--accent-100);color:var(--accent-600);}
+/* Galeria de modelos, no formato das Tarefas agendadas: uma opção de começar do
+   zero em cima, e a grade de modelos abaixo. */
+.tpl{display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+  border:1px solid transparent;border-radius:var(--radius-box);background:transparent;
+  padding:11px 12px;font-family:inherit;cursor:pointer;}
+.tpl:hover{background:var(--muted);}
+.tpl-zero{border-color:var(--border);background:var(--card);margin-bottom:4px;}
+.tpl-zero:hover{border-color:var(--accent);}
+.tpl-ic{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:8px;background:var(--muted);color:var(--muted-foreground);}
+.tpl:hover .tpl-ic{background:var(--accent-100);color:var(--accent-600);}
 .tpl-txt{flex:1;min-width:0;}
-.tpl-txt b{display:block;font-size:14px;font-weight:600;color:var(--foreground);}
-.tpl-txt span{display:block;font-size:12.5px;line-height:18px;color:var(--muted-foreground);margin-top:2px;}
+.tpl-txt b{display:block;font-size:13.5px;font-weight:600;color:var(--foreground);}
+.tpl-txt > span{display:block;font-size:12.5px;line-height:18px;color:var(--muted-foreground);margin-top:2px;}
+.tpl-fmt{display:flex!important;align-items:center;gap:5px;margin-top:6px!important;font-size:11.5px;}
+.tpl-fmt svg{flex:none;}
+.tpl-sep{display:flex;align-items:center;gap:10px;margin:16px 0 6px;
+  font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted-foreground);}
+.tpl-sep::after{content:"";flex:1;height:1px;background:var(--border);}
+.tpl-grade{display:grid;gap:2px;grid-template-columns:minmax(0,1fr);}
+@media (min-width:620px){ .tpl-grade{grid-template-columns:repeat(2,minmax(0,1fr));} }
 /* A tabela do template de Score: variável, condição e pontos. */
 .sc-tab{border:1px solid var(--border);border-radius:var(--radius-box);overflow:hidden;}
 .sc-cab,.sc-linha{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px 32px;
