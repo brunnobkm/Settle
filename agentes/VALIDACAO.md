@@ -117,8 +117,9 @@ interface.
 - Se ela lê o "Por que este número" ou ignora
 - Se ela distingue "não encontrado" de "não atende" sem ajuda
 - Se ela procura um fluxograma em algum momento
-- **Onde ela procura o resultado primeiro:** no card da licitação, dentro da
-  licitação, ou na tela do agente
+- **Onde ela procura o resultado primeiro:** na lista de licitações, dentro da
+  licitação, ou na tela do agente. Como a lista não mostra resultado, procurar
+  ali é um sinal de que o widget está no lugar errado
 - **Se ela percebe que pode mover os widgets**, e se tenta movê-los entre seções
 - Se ela entende que o agente lê variáveis e não os documentos
 
@@ -188,7 +189,9 @@ E uma sexta, que apareceu construindo a análise técnica:
 7. **Onde o resultado aparece** (a sétima decisão, aberta desde 02/09): o agente
    escolhe onde exibir, e o resultado vira **widget alocado no contexto**, não uma
    tela por análise. *"O resultado do cara fica no contexto dele"* (Alice, 11:25).
-   Ela quer inclusive o resultado no card da licitação (11:09).
+   Ela citou o card da licitação como um exemplo de contexto possível (11:09).
+   **Decisão de 09/09 (Brunno): era exemplo, não requisito.** O resultado não
+   entra no card da lista; o lugar dele é o widget dentro da licitação.
 8. **Um botão de agentes por contexto**, não um por aba (objeção dela em 04:52).
 9. **Dois tipos de agente convivem**, análise e ação (06:51). A divisão é
    conceitual: o que separa os dois na prática é o campo Permissões, não um tipo
@@ -233,10 +236,10 @@ registrados aqui porque a decisão importa mais que a tela.
    gravado na configuração do agente, numa seção Validação. Quem abrir o agente
    depois vê em quantos casos ele acerta sem ter que ler a conversa. Fecha o
    item 1 dos abertos e o requisito da Alice de 21/08.
-2. **Resultado no card da licitação.** A tela Licitações mostra, em cada card, o
-   que cada agente decidiu naquela licitação. Fecha o pedido da Alice de 11:09 e
-   completa a decisão do widget: o resultado aparece nos dois contextos, dentro
-   da licitação e na lista.
+2. **Tela de Licitações.** A lista existe no protótipo com o card da plataforma.
+   O resultado do agente **não** aparece nela: a menção da Alice ao card em 11:09
+   era exemplo, e ficou desfeita em 09/09. A tela serve ao teste como distrator
+   legítimo na tarefa que pergunta onde a pessoa procura o resultado.
 3. **Escopo do painel por tela.** Dentro de uma licitação a conversa fala daquela
    licitação; fora dela, do acervo. Fecha a objeção da Alice de 16:15.
 4. **Histórico de execução completo.** Cada execução mostra em qual licitação

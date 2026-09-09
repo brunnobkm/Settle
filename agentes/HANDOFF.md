@@ -47,7 +47,7 @@ serão atingidos antes de salvar.
 | A3 | O agente tem um estado ativo/pausado, controlado pelo cliente. |
 | A3b | Antes disso existe o feature flag por conta, controlado pela Settle. Os dois juntos produzem três estados na tela: a conta não tem o agente, tem mas ele não rodou, tem com resultado. |
 | A4 | Excluir um agente não apaga o que ele já produziu. **Em aberto:** o resultado fica órfão ou é removido junto? |
-| A5 | O resultado do agente aparece no contexto onde ele age (widget), e no card da licitação. Não existe uma tela por análise. |
+| A5 | O resultado do agente aparece no contexto onde ele age (widget). Não existe uma tela por análise, e ele não entra no card da lista de licitações: a menção a isso em 03/09 era exemplo, desfeita em 09/09. |
 | A6 | Dois tipos de agente convivem, análise e ação. A diferença não é um tipo declarado: é o campo Permissões. |
 | A7 | Quando a conta não tem o agente, o lugar do resultado continua existindo e vira convite para ativar, contextual à seção. O convite pode ser dispensado, e a dispensa é por seção. Vale só para os agentes padrão. |
 | A8 | Uma seção pode conter mais de um widget, e a ordem é da pessoa. O arrasto reordena dentro da seção e nunca move um widget para outra seção. |
