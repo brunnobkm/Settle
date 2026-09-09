@@ -1307,8 +1307,6 @@ table.dt td.c-sel .ap-check{gap:0;}
 .prep-no{background:var(--destructive);}
 .wg-falhou{margin:0 0 10px;font-size:13px;line-height:20px;color:var(--destructive);}
 @media (max-width:520px){ .prep{left:16px;right:16px;width:auto;} }
-.cp-ctx-lbl{flex:none;width:100%;font-size:11px;font-weight:600;letter-spacing:.03em;
-  text-transform:uppercase;color:var(--muted-foreground);margin-bottom:2px;}
 .cp-ctx-item svg{flex:none;color:var(--muted-foreground);}
 .cp-ctx-aqui{background:var(--accent-100);color:var(--accent-600);}
 .cp-ctx-aqui svg{color:currentColor;}

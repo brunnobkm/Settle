@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909e" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -251,7 +251,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:25</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:28</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -594,7 +594,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909d" defer></script>
+  <script src="../assets/settle.js?v=20260909e" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1923,11 +1923,7 @@
     function cpPintarCtx() {
       var box = document.getElementById('cpCtx');
       box.hidden = !cpContextos.length;
-      /* Sem o rótulo, a fileira de chips acima do campo não diz o que é: parece
-         filtro, ou aba, ou anexo. Ela é o que a Settle AI vai ler para
-         responder. */
-      box.innerHTML = '<span class="cp-ctx-lbl">Vai responder usando</span>' +
-        cpContextos.map(function (c, i) {
+      box.innerHTML = cpContextos.map(function (c, i) {
         return '<span class="cp-ctx-item' + (c.auto ? ' cp-ctx-aqui' : '') + '"' +
           (c.auto ? ' title="A página em que você está"' : '') + '>' +
           ctxIconeHTML(c.tipo) + c.nome +
