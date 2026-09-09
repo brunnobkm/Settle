@@ -396,6 +396,14 @@ body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:h
 .lc-top-left{display:flex;align-items:center;gap:8px;min-width:0;}
 .lc-top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .lc-top-actions .btn{padding:6px 12px;}          /* Figma: botões da barra em 32px */
+/* O card inteiro abre a licitação: sobe um pouco e ganha contorno ao passar o
+   mouse, para dizer que é clicável sem precisar de um botão para isso. */
+.lic-card{margin-bottom:16px;cursor:pointer;
+  transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease;}
+.lic-card:hover{transform:translateY(-2px) scale(1.004);
+  border-color:var(--border-strong);box-shadow:var(--shadow-pop);}
+.lic-card:focus-visible{transform:translateY(-2px) scale(1.004);box-shadow:var(--shadow-pop);}
+.lic-card:last-child{margin-bottom:0;}
 .lic-card .btn svg{width:16px;height:16px;}
 .lc-title{font-size:14px;color:var(--foreground);white-space:nowrap;}
 .lc-title b{font-size:18px;font-weight:700;line-height:28px;}

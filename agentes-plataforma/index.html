@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909k" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909l" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -195,10 +195,6 @@
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="1.6"/><path d="M5 6h6M5 8.6h6M5 11.2h3.5" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Licitações</span>
         </a>
-        <a class="sb-item" href="#" id="viaWork" title="Workspace da licitação">
-          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="11" height="10" rx="1.6"/><path d="M2.5 6.2h11M6.2 6.2V13" stroke-linecap="round"/></svg></span>
-          <span class="sb-label">Workspace da licitação</span>
-        </a>
       </div>
     </nav>
 
@@ -228,10 +224,10 @@
         <nav class="wk-bread" id="navBread" aria-label="Trilha" hidden>
           <a href="#">Licitações</a><span aria-hidden="true">›</span>
           <a href="#">Em andamento</a><span aria-hidden="true">›</span>
-          <b>PE 90014/2026</b>
+          <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:57</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:01</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -344,7 +340,6 @@
       <div id="areaLics" hidden>
         <div class="page-head">
           <h1 class="title">Licitações</h1>
-          <p class="ap-lead">As licitações em andamento da B Design.</p>
         </div>
         <div id="licsLista"></div>
       </div>
@@ -357,45 +352,7 @@
            ================================================ -->
       <div id="areaWorkspace" hidden>
 
-        <div class="card">
-          <div class="segments">
-            <span class="seg">Design de produto</span>
-            <span class="seg">Pesquisa com usuários</span>
-          </div>
-          <p class="ap-obj"><b>Órgão:</b> Secretaria de Estado de Saúde de Minas Gerais
-            <span class="tag-light">ME · EPP</span></p>
-          <p class="ap-obj"><b>Objeto:</b> Contratação de empresa especializada na prestação de serviços
-            de design de produto digital, compreendendo pesquisa com usuários, arquitetura de informação,
-            design de interface e manutenção de design system, para os canais digitais da Secretaria,
-            pelo período de 24 meses.</p>
-          <p class="valor">Valor global: R$ 2.480.000,00</p>
-
-          <div class="grid-box">
-            <div class="grid-left">
-              <div class="pair">
-                <div class="fld"><div class="k">Adicionada</div><div class="v">04/08/2026</div></div>
-                <div class="fld"><div class="k">Atualizada</div><div class="v">26/08/2026</div></div>
-              </div>
-              <div class="fld"><div class="k">Envio da proposta</div>
-                <div class="v warn">11/09/2026</div></div>
-            </div>
-            <div class="grid-main">
-              <div class="fld"><div class="k">ID</div><div class="v">1078513</div></div>
-              <div class="fld"><div class="k">UASG</div><div class="v">986531</div></div>
-              <div class="fld"><div class="k">Modalidade</div><div class="v">Pregão · Eletrônico</div></div>
-              <div class="fld"><div class="k">Julgamento</div><div class="v">Menor preço por item</div></div>
-              <div class="fld"><div class="k">Estado</div><div class="v">MG</div></div>
-              <div class="fld"><div class="k">Cidade</div><div class="v">Belo Horizonte</div></div>
-              <div class="fld"><div class="k">Habitantes</div><div class="v">2.315.560</div></div>
-              <div class="fld"><div class="k">CAPAG Estadual</div>
-                <div class="v"><span class="capag b">B</span></div></div>
-              <div class="fld"><div class="k">CAPAG Municipal</div>
-                <div class="v"><span class="capag c">C</span></div></div>
-              <div class="fld"><div class="k">Portal de disputa</div>
-                <div class="v">compras.mg.gov.br</div></div>
-            </div>
-          </div>
-        </div>
+        <div class="card" id="wkCabeca"></div>
 
         <div class="card">
           <div class="wk-sec-head">
@@ -602,7 +559,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909k" defer></script>
+  <script src="../assets/settle.js?v=20260909l" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5586,11 +5543,58 @@
        edital e ações no topo, segmentos, órgão e objeto, valor, e a grade de
        metadados. O que é nosso é a última seção, com o que cada agente decidiu
        nesta licitação (Alice, 03/09, 11:09). */
+    /* Abrir uma licitação leva o cabeçalho junto: a trilha e o card do topo
+       passam a ser os dela, e não os de uma licitação fixa. */
+    function abrirLicitacao(i) {
+      licAberta = LICS_CARDS[i];
+      irPara('workspace');
+    }
+
+    var licAberta = null;
+
+    function pintarCabecaWk() {
+      var l = licAberta || LICS_CARDS[0];
+      document.getElementById('navBreadLic').textContent = 'PE ' + l.n;
+
+      document.getElementById('wkCabeca').innerHTML =
+        '<div class="segments">' + l.segs.map(function (sg) {
+          return '<span class="seg">' + sg + '</span>';
+        }).join('') + '</div>' +
+        '<p class="ap-obj"><b>Órgão:</b> ' + l.org + ' <span class="tag-light">ME · EPP</span></p>' +
+        '<p class="ap-obj"><b>Objeto:</b> ' + l.objeto + '</p>' +
+        '<p class="valor">Valor global: R$ ' + l.valor + '</p>' +
+        '<div class="grid-box">' +
+          '<div class="grid-left">' +
+            '<div class="pair">' +
+              '<div class="fld"><div class="k">Adicionada</div><div class="v">' + l.adicionada + '</div></div>' +
+              '<div class="fld"><div class="k">Atualizada</div><div class="v">' + l.atualizada + '</div></div>' +
+            '</div>' +
+            '<div class="fld"><div class="k">Envio da proposta</div><div class="v warn">' + l.envio + '</div></div>' +
+          '</div>' +
+          '<div class="grid-main">' +
+            '<div class="fld"><div class="k">ID</div><div class="v">' + l.id + '</div></div>' +
+            '<div class="fld"><div class="k">UASG</div><div class="v">' + l.uasg + '</div></div>' +
+            '<div class="fld"><div class="k">Modalidade</div><div class="v">' + l.modalidade + '</div></div>' +
+            '<div class="fld"><div class="k">Julgamento</div><div class="v">' + l.julgamento + '</div></div>' +
+            '<div class="fld"><div class="k">Estado</div><div class="v">' + l.estado + '</div></div>' +
+            '<div class="fld"><div class="k">Cidade</div><div class="v">' + l.cidade + '</div></div>' +
+            '<div class="fld"><div class="k">Habitantes</div><div class="v">' + l.habitantes + '</div></div>' +
+            '<div class="fld"><div class="k">CAPAG Estadual</div><div class="v">' + capagHTML(l.capagE) + '</div></div>' +
+            '<div class="fld"><div class="k">CAPAG Municipal</div><div class="v">' + capagHTML(l.capagM) + '</div></div>' +
+            '<div class="fld"><div class="k">Portal de disputa</div><div class="v">' + l.portal + '</div></div>' +
+          '</div>' +
+        '</div>';
+
+      var bs = document.getElementById('btnScore');
+      if (bs) bs.lastChild.textContent = ' ' + l.score + '/100';
+    }
+
     function pintarLics() {
       var box = document.getElementById('licsLista');
       if (!box) return;
       box.innerHTML = LICS_CARDS.map(function (l, i) {
-        return '<article class="card lic-card">' +
+        return '<article class="card lic-card" data-licabrir="' + i + '" tabindex="0" role="link" ' +
+          'aria-label="Abrir a licitação Edital ' + l.n + '">' +
           '<div class="card-top">' +
             '<span class="chk" role="checkbox" aria-checked="false" aria-label="Selecionar o edital ' + l.n + '">' +
               '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" ' +
@@ -5654,9 +5658,6 @@
             '</div>' +
           '</div>' +
 
-          '<div class="items-head"><span class="items-total">' +
-            '<button class="ap-mini" type="button" data-licabrir="' + i +
-            '">Abrir a licitação</button></span></div>' +
           '</article>';
       }).join('');
 
@@ -5666,10 +5667,17 @@
       box.querySelectorAll('[data-licenviar]').forEach(function (b) {
         b.addEventListener('click', function () { confirmarEnvio(); });
       });
-      box.querySelectorAll('[data-licabrir]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          if (LICS_CARDS[+b.dataset.licabrir].aqui) { irPara('workspace'); return; }
-          settleToast('No protótipo, só a PE 90014/2026 está montada por dentro');
+      /* O card inteiro abre a licitação. Os controles dentro dele continuam
+         sendo deles: clicar em Descartar não pode navegar. */
+      box.querySelectorAll('[data-licabrir]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (e.target.closest('button, .chk, .ia, a, input, .avatars')) return;
+          abrirLicitacao(+el.dataset.licabrir);
+        });
+        el.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          abrirLicitacao(+el.dataset.licabrir);
         });
       });
     }
@@ -5817,12 +5825,15 @@
       document.getElementById('navHello').hidden = naLic;
       document.getElementById('navBread').hidden = !naLic;
       document.getElementById('navActs').hidden = !naLic;
-      [['viaCons', 'agentes'], ['viaLics', 'lics'], ['viaWork', 'workspace']].forEach(function (par) {
-        var el = document.getElementById(par[0]), on = par[1] === area;
+      /* Dentro da licitação a sidebar mantém Licitações marcada: é de onde a
+         pessoa veio, e é para onde a trilha do topo devolve. */
+      [['viaCons', 'agentes'], ['viaLics', 'lics']].forEach(function (par) {
+        var el = document.getElementById(par[0]);
+        var on = par[1] === area || (naLic && par[1] === 'lics');
         el.classList.toggle('active', on);
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
-      if (area === 'workspace') pintarWorkspace();
+      if (area === 'workspace') { pintarCabecaWk(); pintarWorkspace(); }
       if (area === 'lics') pintarLics();
       cpTrocouDePagina();
     }
@@ -5838,8 +5849,9 @@
     document.getElementById('viaCons').addEventListener('click', function (e) {
       e.preventDefault(); irPara('agentes');
     });
-    document.getElementById('viaWork').addEventListener('click', function (e) {
-      e.preventDefault(); irPara('workspace');
+    /* A trilha do topo é o caminho de volta para a lista. */
+    document.querySelectorAll('#navBread a').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); irPara('lics'); });
     });
 
     /* ---------- boot ---------- */
