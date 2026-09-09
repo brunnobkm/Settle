@@ -59,65 +59,67 @@ complexa o bastante para pedir canvas.
 
 ## 2. Teste com clientes
 
-**Formato:** 60 minutos, remoto, 3 participantes.
-**Perfil:** 1 de empresa com especialista de IA dentro (perfil CS Frotas ou Vivo) e
-2 sem especialista, onde quem mexe é o próprio analista de licitação (perfil
-R Supply ou Spline).
+**Formato:** 45 minutos, remoto, 3 participantes.
+**Perfil (Alice, 09/09, 19:02):** **analista de licitação que faz análise técnica,
+de habilitação ou jurídica**. Não consultor: gente de dentro da operação de uma
+empresa. E não quem só faz triagem, porque o agente de triagem não é o que
+estamos testando.
+**Recrutamento:** qualificar a TI primeiro (a Michelle tem interesse), depois o
+canal de WhatsApp de licitação, depois LinkedIn. Escalando nessa ordem.
 **Material:** protótipo `/agentes-plataforma`, na licitação PE 90014/2026.
 
-Os dois casos foram escolhidos pela Alice em 03/09 (17:09): **Score**, que é um
-agente que a Settle entrega pronto e o cliente ajusta, e **habilitação por
-atestados técnicos**, que é um agente que o cliente cria do zero. A ordem importa:
-o primeiro ensina o vocabulário, o segundo cobra.
+**O que se testa (Alice, 09/09, 16:38):** como a pessoa **interage com os agentes
+e com as ações**, não o racional de um prompt específico. Por isso os casos usam
+extrações simples, como CNPJ e data da sessão. Se a tarefa exigir entender o
+racional de uma regra complexa antes de mexer na tela, ela testa a regra e não a
+interface.
 
-### Bloco A: Score, um agente que já existe
-
-O que se testa: se a pessoa consegue desconfiar de um número, achar de onde ele
-veio e mudar a regra que o produziu.
+### Bloco A: um agente que já existe produziu um resultado
 
 1. **Sem instrução nenhuma:** "Esta licitação tirou 78 de 100. Você concorda com
-   essa nota?" Não aponte nada. Observe se a pessoa abre o painel do Score sozinha
-   e se encontra o critério de atestado que somou 15 pontos sem ter achado a
-   exigência.
+   essa nota?" Não aponte nada. Observe se a pessoa abre o painel do Score
+   sozinha e se encontra o critério de atestado que somou 15 pontos sem ter
+   achado a exigência.
 2. "Faça a Settle parar de somar pontos quando ela não encontra a exigência."
-3. "Crie do zero uma regra que pontue pela CAPAG do órgão." Observe o que ela faz
-   quando o sistema pergunta sobre licitação federal.
-4. "O item 2 ficou inconclusivo. O que você faz com isso?"
-5. "Você confia que esse agente acerta? Como você descobriria?" Observe se ela
-   chega na seção Validação sozinha, e se lê o "8 de 10" como suficiente.
-6. "Quanto essa análise está custando para a sua empresa?"
+   Observe se ela vai pela conversa ou pela configuração.
+3. "O agente de habilitação disse que 3 de 5 exigências estão atendidas. Onde
+   você olharia para conferir isso?" **Sem apontar caminho.** É a tarefa que
+   valida a decisão do widget: observe se ela procura dentro da licitação, na
+   lista de licitações ou numa tela de agentes.
 
-### Bloco B: habilitação por atestados, um agente que ela cria
+### Bloco B: criar um agente simples
 
-O que se testa: se a pessoa consegue descrever uma análise em texto, entender
-que ela roda sobre variáveis, e decidir onde o resultado deve aparecer.
+4. "Você quer que a Settle extraia o CNPJ do órgão em toda licitação e avise
+   quando não encontrar." Observe se ela cria variável ou agente, e se entende a
+   diferença.
+5. "Agora você quer pontuar as licitações: mais pontos para quem tem segmento em
+   comum com a sua empresa, menos para valor abaixo do seu mínimo." Observe qual
+   template ela escolhe, e se o formato de tabela ajuda ou atrapalha. **É a
+   pergunta que a Alice levantou em 21:24:** preencher isso conversando é pior
+   que preencher uma lista de variáveis e pontos?
+6. "Antes de confiar nele para 40 licitações, o que você faria?" Observe se
+   valida, se roda numa licitação de teste, ou se simplesmente ativa.
 
-7. "Você quer saber, em cada licitação, se a sua empresa tem todos os documentos
-   e atestados que o edital exige. Faça a Settle responder isso." Deixe criar do
-   zero, sem apontar o agente pronto. Anote se ela escreve texto corrido, se
-   procura um passo a passo, e se usa o `/` para inserir variável.
-8. "O edital exige atestado com equipe alocada presencialmente e os seus atestados
-   são de trabalho remoto. O que você espera que o agente faça?" (H3 aplicada ao
-   caso 2: "não atende" contra "não avaliado".)
-9. "O agente disse que 3 de 5 exigências estão atendidas. Onde você olharia para
-   conferir isso?" **Sem apontar caminho.** Esta é a tarefa que valida a decisão
-   do widget: observe se ela procura dentro da licitação, numa tela de agentes ou
-   na lista de licitações.
-10. "Antes de confiar nele para 40 licitações, o que você faria?" Observe se
-    valida, se roda em uma licitação de teste, ou se simplesmente ativa.
-11. "Chegou uma licitação nova e você quer que esse agente rode nela. O que
-    acontece antes de ele rodar?" (Confirmação de envio, custo e aprovações.)
+### Bloco C: as ações e o que o agente pode fazer sozinho
+
+7. "Este agente quer mover a licitação para Descartadas. Você deixa?" Observe se
+   ela encontra a fila de aprovações e se entende o lote.
+8. "Você não quer que ele faça isso sem perguntar nunca mais. Como você resolve?"
+   (Permissões.)
+9. "Nesta aba aparece um agente que você não ativou. O que você faz com ele?"
+   Observe se ativa, ignora ou dispensa, e se o convite incomoda.
+10. "Chegou uma licitação nova e você quer que os agentes rodem nela. O que
+    acontece antes?" (Confirmação de envio, custo e aprovações.)
 
 ### O que observar
 
 - Onde ela trava: em **não saber o que quer** ou em **não saber que esqueceu um caso**
 - Se ela lê o "Por que este número" ou ignora
-- Se ela clica na primeira opção da revisão sem ler o motivo
 - Se ela distingue "não encontrado" de "não atende" sem ajuda
 - Se ela procura um fluxograma em algum momento
-- Se ela hesita em salvar por ser algo que vale para a equipe inteira
 - **Onde ela procura o resultado primeiro:** no card da licitação, dentro da
   licitação, ou na tela do agente
+- **Se ela percebe que pode mover os widgets**, e se tenta movê-los entre seções
 - Se ela entende que o agente lê variáveis e não os documentos
 
 ### Hipóteses a derrubar
@@ -130,11 +132,12 @@ que ela roda sobre variáveis, e decidir onde o resultado deve aparecer.
 | H4 | Proveniência resolve a desconfiança no número | Se continuarem desconfiando, falta mais do que citar a fonte |
 | H5 | O resultado no contexto é onde a pessoa procura | Se ela procurar uma tela de agentes, a decisão de 03/09 cai |
 | H6 | Validar cinco casos basta para a pessoa confiar no agente | Se ela pedir mais, ou ignorar a validação, o formato muda |
+| H7 | Para o Score, a tabela de variáveis e pontos é melhor que conversar | Se ela preferir conversar, o template de Score não se justifica |
 
-Anotar, para cada participante, **quantas das regras que ele descreve ramificam**.
-Esse número é o que decide o debate do fluxograma, e não a opinião de ninguém.
-Anotar também **onde ela procurou o resultado na tarefa 9**, que é o número que
-decide se a sétima decisão está certa.
+Anotar, para cada participante: **quantas das regras que ele descreve ramificam**
+(decide o debate do fluxograma), **onde ele procurou o resultado na tarefa 3**
+(decide a sétima decisão) e **qual template ele escolheu na tarefa 5** (decide o
+formato de cadastro).
 
 ---
 
@@ -247,3 +250,58 @@ registrados aqui porque a decisão importa mais que a tela.
 **Segue adiado por decisão:** versionamento de agente (03/09). **Segue no
 handoff:** benchmark de governança e as regras de negócio, agora rascunhadas em
 `HANDOFF.md` para a sessão que a Alice pediu.
+
+---
+
+## Reunião de 09/09 com a Alice
+
+Metade da reunião foi sobre a task do estado de processamento, e o que está
+abaixo é só a parte de agentes, mais uma correção que atinge as duas.
+
+### A correção que atinge as duas tasks
+
+**O Score não roda ao enviar para análise** (02:20). Ele roda em **recomendadas**,
+porque é o que o cliente usa para triar. Existem quatro momentos: na captura do
+edital (agente de triagem), em recomendadas, ao enviar para análise (hoje
+checklist e análise técnica) e sob demanda. A frase que interessa ao nosso
+projeto é dela: **"o cliente vai poder escolher quando o agente é executado"**,
+que é exatamente o campo "Quando roda".
+
+**Existe um segundo eixo de habilitação, que não é o nosso** (02:53 e 09:24). O
+Zé criou uma tabela de feature flag por cliente: a conta tem ou não aquele
+recurso, e se tem, quando ele roda. O front só recebe. Isso convive com o
+ativo/pausado que o cliente controla, e é o que produz o estado "você não tem
+esse agente".
+
+### Fechado
+
+11. **O lugar do resultado existe mesmo quando o agente não está habilitado**
+    (06:57). Vira um convite: *"ative esse agente"*, contextual à aba em que a
+    pessoa está, e com dispensa, porque quem nunca vai querer aquele agente não
+    pode ver o convite para sempre (10:50). Vale para os agentes padrão, não para
+    os que o cliente cria por conta.
+12. **Uma seção pode ter mais de um agente** (15:08), cada um com o seu widget.
+13. **Os widgets se movem por drag and drop, com os seis pontinhos, e só dentro
+    da seção** (15:26 e 15:45). Mover de habilitação para análise técnica não
+    existe: o widget pertence ao contexto.
+14. **O formato do resultado é do agente**: chat, gráfico, o que ele produzir
+    (14:08). O Claude é a referência de "várias formas de apresentar resultado".
+
+### Em aberto
+
+7. **Como é o cadastro do agente.** A Alice traz proposta (21:24 e 23:01). O
+   ponto dela, e é forte: *"quando eu penso em score, eu acho muito ruim o cara
+   ter que fazer 100% conversacional. Se é basicamente você ter uma lista de
+   variáveis e os pontos"*. Ela quer **templates com formatos de preenchimento
+   diferentes**, não só textos de exemplo diferentes. O protótipo já tem uma
+   primeira versão disso, com o template de Score em tabela, para o teste
+   responder a hipótese H7. **A proposta dela substitui essa versão.**
+8. **Configurar um agente durante o processamento.** Ela aceita que clicar no
+   Score mostre "estamos processando" (09:50), e o Brunno manteve que a
+   configuração precisa estar bloqueada nesse estado (10:00). Ficou sem
+   fechamento, e é da outra task.
+
+### Teste
+
+Prazo combinado: protótipo pronto em 10/09, testes a partir de 11/09. O escopo e
+o perfil estão na seção 2, já reescritos.

@@ -224,6 +224,12 @@ por ser humano" (Bruno Ortiz, 46:33).
 **Três estados por ação, não dois**: não pode, pede aprovação, executa sozinho. O estado do meio é o
 que faz a fila de aprovações existir.
 
+**Dois eixos de habilitação, não um** (Alice, 09/09). O cliente liga e desliga o agente (ativo/pausado),
+mas antes disso a conta tem ou não aquele recurso: é o feature flag por cliente, numa tabela que o José
+Victor criou, e que o front apenas recebe. Os dois eixos produzem três estados na tela: a conta não tem
+o agente (o lugar do resultado vira convite para ativar, com dispensa), tem mas ele ainda não rodou, e
+tem com resultado.
+
 **O protótipo simplificou isso para três estados por agente**, não por ação: um seletor de Permissões
 na configuração, com aprovar manualmente, aprovar automaticamente e ignorar todas as aprovações. A
 razão é que a lista de ações que um agente pode executar na plataforma ainda não existe: ela vem do
@@ -249,7 +255,11 @@ estado terminou. Sem isso, confiar uma ação ao agente é confiar sem auditoria
 - **O agente lê variáveis, não documentos** (José Victor, 28:27): se o agente reabre os documentos,
   ele duplica o trabalho da variável, fica caro e fica inconsistente, porque a mesma extração pedida
   duas vezes pode voltar diferente. O agente decide em cima de variáveis e do estado do sistema.
-- **Gatilho é lista fechada pela Settle**, não campo livre (25:21).
+- **Gatilho é lista fechada pela Settle**, não campo livre (25:21). A lista foi
+  corrigida em 09/09 pela Alice: são **quatro momentos**, não três. Na captura do
+  edital (agente de triagem), em recomendadas, ao enviar para análise e sob
+  demanda. **O Score roda em recomendadas**, não ao enviar para análise, porque é
+  o que o cliente usa para triar. Quem escolhe o momento é o cliente.
 - **Para o cliente, variável é o que sai de arquivo.** CAPAG e população vêm de portal e bases, mas
   essas são cadastradas pela Settle (09:55).
 

@@ -43,11 +43,14 @@ serão atingidos antes de salvar.
 | Regra | Enunciado |
 |---|---|
 | A1 | O agente decide sobre **variáveis e sobre o estado do sistema**, nunca reabrindo documentos. Reabrir duplicaria o trabalho da variável, ficaria caro e produziria respostas diferentes para a mesma pergunta. |
-| A2 | O gatilho é uma lista fechada pela Settle, não campo livre. |
-| A3 | O agente tem um estado ativo/pausado. Pausado, não roda em licitação nova, e o que já produziu continua valendo. |
+| A2 | O gatilho é uma lista fechada pela Settle, com quatro momentos: na captura do edital, em recomendadas, ao enviar para análise e sob demanda. O Score roda em recomendadas. |
+| A3 | O agente tem um estado ativo/pausado, controlado pelo cliente. |
+| A3b | Antes disso existe o feature flag por conta, controlado pela Settle. Os dois juntos produzem três estados na tela: a conta não tem o agente, tem mas ele não rodou, tem com resultado. |
 | A4 | Excluir um agente não apaga o que ele já produziu. **Em aberto:** o resultado fica órfão ou é removido junto? |
 | A5 | O resultado do agente aparece no contexto onde ele age (widget), e no card da licitação. Não existe uma tela por análise. |
 | A6 | Dois tipos de agente convivem, análise e ação. A diferença não é um tipo declarado: é o campo Permissões. |
+| A7 | Quando a conta não tem o agente, o lugar do resultado continua existindo e vira convite para ativar, contextual à seção. O convite pode ser dispensado, e a dispensa é por seção. Vale só para os agentes padrão. |
+| A8 | Uma seção pode conter mais de um widget, e a ordem é da pessoa. O arrasto reordena dentro da seção e nunca move um widget para outra seção. |
 
 ## 3. Permissões e aprovação
 
@@ -67,7 +70,7 @@ serão atingidos antes de salvar.
 | E2 | Os estados de término são: concluída, aguardando aprovação, falhou. |
 | E3 | Uma execução que falhou não deixa resultado parcial visível como se fosse resultado. |
 | E4 | Antes de enviar uma licitação para análise, a pessoa vê quais agentes vão rodar, o que cada um produz e o custo estimado. |
-| E5 | Os agentes com gatilho "assim que entra no match" já rodaram antes desse ponto, e isso é dito na confirmação. |
+| E5 | Os agentes com gatilho "em recomendadas" já rodaram antes desse ponto, e isso é dito na confirmação. |
 
 ## 5. Validação
 
@@ -178,6 +181,18 @@ Descartadas não deveriam ter o mesmo tratamento por padrão, e hoje têm.
 [Governança em tempo de execução para agentes](https://arxiv.org/pdf/2603.16586)
 
 ---
+
+## Atualização de 09/09
+
+Três coisas mudaram depois da reunião daquele dia e já estão refletidas acima:
+os quatro momentos de execução com o Score em recomendadas (A2), o feature flag
+como segundo eixo de habilitação (A3b), e o widget como bloco reordenável com
+estado de convite (A7 e A8).
+
+Uma entrou na fila e depende dela: **o formato de cadastro por template**. O
+protótipo tem uma primeira versão, com o Score preenchido numa tabela de
+variável, condição e pontos em vez de conversa. A Alice traz proposta própria, e
+a hipótese H7 do teste existe para dizer qual das duas se sustenta.
 
 ## Pauta sugerida para a sessão com a Alice
 

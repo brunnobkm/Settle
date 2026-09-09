@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260904h" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909a" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -251,7 +251,7 @@
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 4 de setembro às 19:55</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 15:23</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -578,7 +578,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260904h" defer></script>
+  <script src="../assets/settle.js?v=20260909a" defer></script>
   <script>
   (function () {
     'use strict';
@@ -742,21 +742,21 @@
     var AGENTES = [
       { id:'seg',  nome:'Aderência ao segmento', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Compare o objeto e os itens da licitação com os segmentos cadastrados da empresa.',
-        vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:20, ganhos:20, estado:'run', gatilho:'Em recomendadas', custo:0,
         dado:'2 segmentos em comum: design de produto, pesquisa com usuários',
         regraTexto:'Cada segmento em comum soma 10, até o teto de 20',
         prov:'Objeto: serviços de design de produto digital', sistema:true, ramifica:false },
 
       { id:'val',  nome:'Valor estimado da licitação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Pontue por faixa de valor global estimado: até R$ 1 mi vale 5, de R$ 1 mi a R$ 5 mi vale 10, acima de R$ 5 mi vale 20.',
-        vars:[], pontos:15, ganhos:15, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:15, ganhos:15, estado:'run', gatilho:'Em recomendadas', custo:0,
         dado:'R$ 8.240.000,00',
         regraTexto:'Até R$ 1 mi soma 5 · de R$ 1 mi a R$ 5 mi soma 10 · acima de R$ 5 mi soma 15',
         prov:'Valor global estimado no portal: R$ 8.240.000,00', sistema:true, ramifica:true },
 
       { id:'ate',  nome:'Exigência de atestado de capacidade técnica', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Verifique se o edital exige atestado de capacidade técnica. Se não exigir, some 15 pontos.',
-        vars:['atestado'], pontos:15, ganhos:15, estado:'warn', gatilho:'Ao enviar para análise', custo:0.04,
+        vars:['atestado'], pontos:15, ganhos:15, estado:'warn', gatilho:'Em recomendadas', custo:0.04,
         dado:'não encontrado', dadoRuim:true,
         regraTexto:'Não exige soma 15 · exige soma 0',
         prov:'Nada encontrado no item 9 do edital', ramifica:false,
@@ -765,7 +765,7 @@
 
       { id:'cap',  nome:'Saúde financeira do órgão', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Verifique a CAPAG do órgão. Se for A ou B, some 10 pontos.',
-        vars:['esfera','capag'], pontos:10, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.01,
+        vars:['esfera','capag'], pontos:10, ganhos:10, estado:'run', gatilho:'Em recomendadas', custo:0.01,
         dado:'CAPAG B', dadoQualif:'CAPAG estadual, porque o órgão é do estado de Minas Gerais',
         regraTexto:'A ou B soma 10 · C ou D soma 0 · federal e estatal não se aplica',
         prov:'CAPAG B, estadual, base do Tesouro de julho/2026', ramifica:true,
@@ -773,14 +773,14 @@
 
       { id:'praz', nome:'Prazo até a sessão pública', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Menos de 5 dias úteis vale 0, de 5 a 15 dias vale 8, acima de 15 dias vale 10.',
-        vars:[], pontos:10, ganhos:8, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:10, ganhos:8, estado:'run', gatilho:'Em recomendadas', custo:0,
         dado:'9 dias úteis',
         regraTexto:'Menos de 5 dias soma 0 · de 5 a 15 dias soma 8 · acima de 15 dias soma 10',
         prov:'9 dias úteis até 08/09/2026', sistema:true, ramifica:true },
 
       { id:'sub',  nome:'Permite subcontratação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se o Termo de Referência permitir subcontratação, some 10 pontos.',
-        vars:['subcontr'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0.03,
+        vars:['subcontr'], pontos:10, ganhos:0, estado:'run', gatilho:'Em recomendadas', custo:0.03,
         dado:'não permite',
         regraTexto:'Permite soma 10 · não permite soma 0',
         prov:'Item 7.3 do TR: "é vedada a subcontratação do objeto"', ramifica:false,
@@ -788,14 +788,14 @@
 
       { id:'meepp', nome:'Participação exclusiva ME/EPP', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se a licitação for exclusiva para ME/EPP, some 10 pontos.',
-        vars:[], pontos:5, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:[], pontos:5, ganhos:0, estado:'run', gatilho:'Em recomendadas', custo:0,
         dado:'ampla concorrência',
         regraTexto:'Exclusiva para ME/EPP soma 5 · ampla concorrência soma 0',
         prov:'Ampla concorrência, sem reserva para ME/EPP', sistema:true, ramifica:false },
 
       { id:'iso', nome:'Certificação ISO 27001 de segurança da informação', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Se o edital exigir ISO 27001 e a empresa tiver o certificado válido, some 10 pontos.',
-        vars:['segmento'], pontos:10, ganhos:0, estado:'run', gatilho:'Ao enviar para análise', custo:0,
+        vars:['segmento'], pontos:10, ganhos:0, estado:'run', gatilho:'Em recomendadas', custo:0,
         regraTexto:'Exige e temos soma 10 · exige e não temos soma 0',
         prov:'Regra condicionada ao segmento da licitação', ramifica:false,
         /* Regra que só existe em parte das licitações. Alice, 10:37 de 31/08:
@@ -807,7 +807,7 @@
 
       { id:'frota', nome:'Porte do projeto', destino:'score', escopo:'licitacao', agregacao:null,
         instr:'Some a carga horária de todos os itens de serviço de design e pontue pela faixa.',
-        vars:['qtdveic'], pontos:15, ganhos:10, estado:'run', gatilho:'Ao enviar para análise', custo:0.05,
+        vars:['qtdveic'], pontos:15, ganhos:10, estado:'run', gatilho:'Em recomendadas', custo:0.05,
         dado:'2.840 horas', dadoCalc:true,
         regraTexto:'Até 1.000 h soma 0 · de 1.001 a 4.000 h soma 10 · acima de 4.000 h soma 15',
         prov:'Somado de 5 itens do quadro de quantitativos', ramifica:true,
@@ -815,7 +815,7 @@
 
       { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
         instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
-        vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Assim que entra no match', custo:0.06,
+        vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Em recomendadas', custo:0.06,
         dado:'14 documentos exigidos, 11 já cadastrados na empresa',
         regraTexto:'Lista por categoria: jurídica, fiscal, técnica e econômico-financeira',
         prov:'14 documentos extraídos do item 9 do edital', ramifica:false }
@@ -1123,7 +1123,8 @@
         agregacao: destino === 'tecnica' ? 'criticos' : null,
         naoAvaliado:'bloqueia',
         instr:'', vars:[], pontos: destino === 'score' ? 10 : null, ganhos:0,
-        estado:'run', gatilho:'Ao enviar para análise', custo:0, ramifica:false,
+        estado:'run', gatilho: destino === 'score' ? 'Em recomendadas' : 'Ao enviar para análise',
+        custo:0, ramifica:false,
         prov:'', novo:true, contexto:'PE 90014/2026'
       };
       AGENTES.push(novo);
@@ -1862,11 +1863,14 @@
 
     function paginaAtual() {
       if (!document.getElementById('areaWorkspace').hidden) {
-        return { id:'lic', nome:'PE 90014/2026', auto:true };
+        return { id:'lic', nome:'PE 90014/2026', tipo:'licitacao', auto:true };
+      }
+      if (!document.getElementById('areaLics').hidden) {
+        return { id:'lics', nome:'Licitações', tipo:'pagina', auto:true };
       }
       var aba = document.querySelector('.fp-tab.active');
       var nome = aba ? NOME_ABA[aba.dataset.tab] : null;
-      return { id:'agentes', nome:nome || 'Agentes e Variáveis', auto:true };
+      return { id:'agentes', nome:nome || 'Agentes e Variáveis', tipo:'pagina', auto:true };
     }
 
     /* Mudar de tela com o chat aberto tem de mudar o contexto: senão a pergunta
@@ -1884,11 +1888,29 @@
       cpPintarCtx();
     }
 
+    /* O chip precisa dizer que tipo de coisa está no contexto, não só o nome
+       (Alice, 09/09, 12:42). "Aprovações" sozinho não diz que é a página em que
+       a pessoa está; a licitação e o documento também têm cara própria. */
+    var CTX_IC = {
+      pagina:'M4 2.6h8v10.8H4zM6 5.4h4M6 8h4M6 10.6h2.5',
+      licitacao:'M3 3.4h10v9.2H3zM3 6.2h10M6.4 6.2v6.4',
+      documento:'M4.4 2.6h4.8l2.4 2.4v8.4H4.4zM9.2 2.6v2.4h2.4',
+      area:'M2.6 5.5h10.8v7.2H2.6zM8 5.5V3.2M8 2.4a.9.9 0 1 0 0 .1'
+    };
+
+    function ctxIconeHTML(t) {
+      return '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.5" aria-hidden="true"><path d="' + (CTX_IC[t] || CTX_IC.documento) +
+        '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+
     function cpPintarCtx() {
       var box = document.getElementById('cpCtx');
       box.hidden = !cpContextos.length;
       box.innerHTML = cpContextos.map(function (c, i) {
-        return '<span class="cp-ctx-item">' + c.nome +
+        return '<span class="cp-ctx-item' + (c.auto ? ' cp-ctx-aqui' : '') + '"' +
+          (c.auto ? ' title="A página em que você está"' : '') + '>' +
+          ctxIconeHTML(c.tipo) + c.nome +
           '<button type="button" data-ctxdel="' + i + '" aria-label="Tirar ' + c.nome +
           ' do contexto"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" ' +
           'stroke-width="2"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg></button></span>';
@@ -1905,31 +1927,31 @@
        ela entra por rolagem, carregando o próximo lote quando a pessoa chega
        no fim. */
     var LICITACOES = [
-      { id:'l471', nome:'PE 00471/2026', sub:'Prefeitura de Contagem/MG · design de produto', quando:'ontem' },
+      { id:'l471', nome:'PE 00471/2026', tipo:'licitacao', sub:'Prefeitura de Contagem/MG · design de produto', quando:'ontem' },
       { id:'l23',  nome:'PE 00023/2026', sub:'Prefeitura de Itapevi/SP · identidade visual', quando:'há 2 dias' },
       { id:'l88',  nome:'PE 00088/2026', sub:'Secretaria de Educação do RS · pesquisa com usuários', quando:'há 3 dias' },
-      { id:'l112', nome:'PE 90112/2026', sub:'Tribunal Regional Federal da 4ª Região · design system' },
-      { id:'l205', nome:'PE 00205/2026', sub:'Prefeitura de Joinville/SC · redesenho de portal' },
-      { id:'l331', nome:'CC 00331/2026', sub:'Universidade Federal do Paraná · acessibilidade digital' },
-      { id:'l402', nome:'PE 00402/2026', sub:'Companhia de Saneamento do PR · design de serviço' },
-      { id:'l517', nome:'PE 00517/2026', sub:'Secretaria de Fazenda de SC · pesquisa com usuários' },
-      { id:'l660', nome:'PE 00660/2026', sub:'Prefeitura de Niterói/RJ · design system e componentes' },
-      { id:'l781', nome:'CC 00781/2026', sub:'Ministério da Gestão · consultoria em design de produto' },
-      { id:'l844', nome:'PE 00844/2026', sub:'Banco de Desenvolvimento de MG · identidade visual' },
-      { id:'l905', nome:'PE 00905/2026', sub:'Tribunal de Contas do RS · redesenho de portal' }
+      { id:'l112', nome:'PE 90112/2026', tipo:'licitacao', sub:'Tribunal Regional Federal da 4ª Região · design system' },
+      { id:'l205', nome:'PE 00205/2026', tipo:'licitacao', sub:'Prefeitura de Joinville/SC · redesenho de portal' },
+      { id:'l331', nome:'CC 00331/2026', tipo:'licitacao', sub:'Universidade Federal do Paraná · acessibilidade digital' },
+      { id:'l402', nome:'PE 00402/2026', tipo:'licitacao', sub:'Companhia de Saneamento do PR · design de serviço' },
+      { id:'l517', nome:'PE 00517/2026', tipo:'licitacao', sub:'Secretaria de Fazenda de SC · pesquisa com usuários' },
+      { id:'l660', nome:'PE 00660/2026', tipo:'licitacao', sub:'Prefeitura de Niterói/RJ · design system e componentes' },
+      { id:'l781', nome:'CC 00781/2026', tipo:'licitacao', sub:'Ministério da Gestão · consultoria em design de produto' },
+      { id:'l844', nome:'PE 00844/2026', tipo:'licitacao', sub:'Banco de Desenvolvimento de MG · identidade visual' },
+      { id:'l905', nome:'PE 00905/2026', tipo:'licitacao', sub:'Tribunal de Contas do RS · redesenho de portal' }
     ];
 
     var CTX_GRUPOS = [
       { grupo:'Desta licitação', itens:[
-        { id:'lic',      nome:'PE 90014/2026',    sub:'Secretaria de Estado de Saúde de MG' },
-        { id:'edital',   nome:'Edital e anexos',  sub:'12 arquivos' },
-        { id:'tr',       nome:'Termo de Referência', sub:'anexo I' },
-        { id:'contrato', nome:'Minuta do contrato',  sub:'anexo V' } ] },
+        { id:'lic',      nome:'PE 90014/2026', tipo:'licitacao', sub:'Secretaria de Estado de Saúde de MG' },
+        { id:'edital',   nome:'Edital e anexos', tipo:'documento', sub:'12 arquivos' },
+        { id:'tr',       nome:'Termo de Referência', tipo:'documento', sub:'anexo I' },
+        { id:'contrato', nome:'Minuta do contrato', tipo:'documento', sub:'anexo V' } ] },
       { grupo:'Da B Design', itens:[
-        { id:'catalogo',  nome:'Catálogo de serviços', sub:'design de produto, pesquisa, design system' },
-        { id:'atestados', nome:'Atestados de capacidade técnica', sub:'9 documentos' } ] },
+        { id:'catalogo',  nome:'Catálogo de serviços', tipo:'documento', sub:'design de produto, pesquisa, design system' },
+        { id:'atestados', nome:'Atestados de capacidade técnica', tipo:'documento', sub:'9 documentos' } ] },
       { grupo:'Na plataforma', itens:[
-        { id:'agentes', nome:'Agentes e Variáveis', sub:'6 agentes, 14 variáveis' } ] }
+        { id:'agentes', nome:'Agentes e Variáveis', tipo:'area', sub:'6 agentes, 14 variáveis' } ] }
     ];
 
     function ctxJaEsta(o) {
@@ -2076,7 +2098,7 @@
               g.itens.forEach(function (o) { if (o.id === b.dataset.ctxadd) achado = o; });
             });
             LICITACOES.forEach(function (o) { if (o.id === b.dataset.ctxadd) achado = o; });
-            cpContextos.push({ id:achado.id, nome:achado.nome });
+            cpContextos.push({ id:achado.id, nome:achado.nome, tipo:achado.tipo || 'licitacao' });
             fecharMenuCol(); cpPintarCtx();
           });
         });
@@ -2589,7 +2611,7 @@
     document.getElementById('cpArquivo').addEventListener('change', function () {
       var f = this.files && this.files[0];
       if (!f) return;
-      cpContextos.push({ id:'arq-' + Date.now(), nome:f.name });
+      cpContextos.push({ id:'arq-' + Date.now(), nome:f.name, tipo:'documento' });
       cpPintarCtx();
       settleToast(f.name + ' entrou no contexto');
       this.value = '';
@@ -3093,13 +3115,35 @@
       exibir:{ k:'Exibir',    d:'Diz onde o resultado aparece' }
     };
 
-    var GATILHOS_FX = { analise:'Ao enviar para análise', match:'Assim que entrar no match', demanda:'Sob demanda' };
+    /* Os quatro momentos em que um agente roda (Alice, 09/09, 02:20). O Score
+       não roda ao enviar para análise: ele roda em recomendadas, porque é o
+       que o cliente usa para triar. Quem escolhe o momento é o cliente. */
+    var GATILHOS_FX = {
+      captura:'Na captura do edital',
+      recomendadas:'Em recomendadas',
+      analise:'Ao enviar para análise',
+      demanda:'Sob demanda'
+    };
 
     var fx = null, editando = -1;
 
     function fxNovo() {
-      return { nome:'', texto:'', blocos:[], gatilho:'analise', onde:'Score', ativo:false };
+      return { nome:'', texto:'', blocos:[], linhas:[], template:null,
+               gatilho:'analise', onde:'Score', ativo:false };
     }
+
+    /* Templates de cadastro (Alice, 09/09, 21:24). O ponto dela: para o Score,
+       preencher 100% conversando é ruim, porque o que existe ali é uma lista de
+       variáveis e pontos. Então o formato de preenchimento muda com o template,
+       e não só o texto de exemplo. */
+    var TEMPLATES = {
+      score:{ nome:'Score', sub:'Uma lista de variáveis e quanto cada uma vale',
+        gatilho:'recomendadas',
+        ic:'M4 13a6.5 6.5 0 1 1 12 0M10 12.5 13 8' },
+      texto:{ nome:'Em branco', sub:'Você escreve a instrução em texto, com variáveis dentro',
+        gatilho:'analise',
+        ic:'M4 4.5h12M4 8.5h12M4 12.5h7' }
+    };
 
     function fxExemplo() {
       return { nome:'Saúde financeira do órgão', gatilho:'analise', onde:'Score', ativo:true, blocos:[
@@ -3164,7 +3208,115 @@
 
        O construtor de blocos continua no código, sem tela: ele é a hipótese que
        a Alice defendia (fluxograma) e some da criação sem sumir do repositório. */
+    var etapaFx = 'form';
+
+    function pintarTemplates() {
+      document.getElementById('fxTitle').textContent = 'Adicionar agente';
+      document.getElementById('fxAtivar').hidden = true;
+      document.getElementById('fxValidar').hidden = true;
+      document.getElementById('fxBody').innerHTML =
+        '<p class="ap-fhint" style="margin:0 0 14px">Por onde você quer começar. O formato de ' +
+        'preenchimento muda com a escolha.</p>' +
+        Object.keys(TEMPLATES).map(function (k) {
+          var t = TEMPLATES[k];
+          return '<button class="tpl" type="button" data-tpl="' + k + '">' +
+            '<span class="tpl-ic"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" ' +
+            'stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="' + t.ic +
+            '" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+            '<span class="tpl-txt"><b>' + t.nome + '</b><span>' + t.sub + '</span></span></button>';
+        }).join('');
+
+      document.querySelectorAll('[data-tpl]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          fx.template = b.dataset.tpl;
+          fx.gatilho = TEMPLATES[fx.template].gatilho;
+          if (fx.template === 'score' && !fx.linhas.length) {
+            fx.linhas = [{ k:'', cond:'', pontos:10 }];
+          }
+          etapaFx = 'form';
+          document.getElementById('fxAtivar').hidden = false;
+          document.getElementById('fxValidar').hidden = false;
+          pintarFx();
+        });
+      });
+    }
+
+    /* O template de Score: variável, o que conta como acerto, quanto vale. Sem
+       texto corrido, porque a regra do Score é uma tabela. */
+    function pintarFxScore() {
+      var total = fx.linhas.reduce(function (t, l) { return t + (+l.pontos || 0); }, 0);
+      var opcoes = Object.keys(VARS).map(function (k) {
+        return '<option value="' + k + '">' + VARS[k].nome + '</option>';
+      }).join('');
+
+      var h = '<div class="ap-field"><label for="fxNome">Nome do agente</label>' +
+        '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') +
+        '" placeholder="Ex.: Score de aderência" /></div>' +
+
+        '<div class="ap-field"><span class="ap-flabel">Critérios</span>' +
+        '<p class="ap-fhint">Cada linha é uma variável, o que conta como acerto e quanto vale.</p>' +
+        '<div class="sc-tab"><div class="sc-cab"><span>Variável</span><span>Conta quando</span>' +
+        '<span class="sc-pt">Pontos</span><span></span></div>' +
+        fx.linhas.map(function (l, i) {
+          return '<div class="sc-linha">' +
+            '<label class="sr-only" for="scv' + i + '">Variável da linha ' + (i + 1) + '</label>' +
+            '<select class="ap-input" id="scv' + i + '" data-scv="' + i + '">' +
+              '<option value="">Escolher…</option>' +
+              opcoes.replace('value="' + l.k + '"', 'value="' + l.k + '" selected') + '</select>' +
+            '<label class="sr-only" for="scc' + i + '">Condição da linha ' + (i + 1) + '</label>' +
+            '<input class="ap-input" id="scc' + i + '" type="text" data-scc="' + i + '" value="' +
+              (l.cond || '').replace(/"/g, '&quot;') + '" placeholder="Ex.: existe pelo menos um" />' +
+            '<label class="sr-only" for="scp' + i + '">Pontos da linha ' + (i + 1) + '</label>' +
+            '<input class="ap-input sc-pt" id="scp' + i + '" type="number" min="0" data-scp="' + i +
+              '" value="' + (l.pontos || 0) + '" />' +
+            '<button class="icon-btn" type="button" data-scdel="' + i + '" aria-label="Remover a linha ' +
+              (i + 1) + '"><svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" ' +
+              'stroke-width="1.7" aria-hidden="true"><path d="M5 10h10" stroke-linecap="round"/></svg></button>' +
+          '</div>';
+        }).join('') +
+        '</div>' +
+        '<div class="sc-rod"><button class="ap-mini" type="button" id="scAdd">Adicionar critério</button>' +
+        '<span class="ap-dim">' + total + ' pontos no total</span></div></div>';
+
+      h += '<div class="ap-field"><label for="fxGat">Quando roda</label>' +
+           '<p class="ap-fhint">' + PENDENTE + '</p>' +
+           '<select class="ap-input" id="fxGat">' +
+           Object.keys(GATILHOS_FX).map(function (g) {
+             return '<option value="' + g + '"' + (fx.gatilho === g ? ' selected' : '') + '>' +
+                    GATILHOS_FX[g] + '</option>';
+           }).join('') + '</select></div>';
+
+      h += campoAprovacao(fx);
+
+      document.getElementById('fxBody').innerHTML = h;
+      ligarAprovacao(fx, pintarFx);
+      document.getElementById('fxNome').addEventListener('input', function (e) { fx.nome = e.target.value; });
+      document.getElementById('fxGat').addEventListener('change', function (e) { fx.gatilho = e.target.value; });
+      document.getElementById('scAdd').addEventListener('click', function () {
+        fx.linhas.push({ k:'', cond:'', pontos:10 }); pintarFx();
+      });
+      document.querySelectorAll('[data-scdel]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          fx.linhas.splice(+b.dataset.scdel, 1);
+          if (!fx.linhas.length) fx.linhas.push({ k:'', cond:'', pontos:10 });
+          pintarFx();
+        });
+      });
+      document.querySelectorAll('[data-scv]').forEach(function (el) {
+        el.addEventListener('change', function () { fx.linhas[+el.dataset.scv].k = el.value; atualizarRodapeFx(); });
+      });
+      document.querySelectorAll('[data-scc]').forEach(function (el) {
+        el.addEventListener('input', function () { fx.linhas[+el.dataset.scc].cond = el.value; atualizarRodapeFx(); });
+      });
+      document.querySelectorAll('[data-scp]').forEach(function (el) {
+        el.addEventListener('change', function () { fx.linhas[+el.dataset.scp].pontos = +el.value || 0; pintarFx(); });
+      });
+      atualizarRodapeFx();
+    }
+
     function pintarFx() {
+      if (etapaFx === 'template') return pintarTemplates();
+      if (fx.template === 'score') return pintarFxScore();
       var h = '<div class="ap-field"><label for="fxNome">Nome do agente</label>' +
               '<input class="ap-input" id="fxNome" type="text" value="' + fx.nome.replace(/"/g, '&quot;') + '" placeholder="Ex.: Análise de prazos" /></div>';
 
@@ -3240,6 +3392,7 @@
 
     function abrirFx(base) {
       fx = base || fxNovo();
+      etapaFx = (base || fx.template) ? 'form' : 'template';
       editando = -1;
       modoModal = 'outro';
       analiseAberta = null;
@@ -3255,6 +3408,13 @@
 
     function atualizarRodapeFx() {
       if (!fx) return;
+      if (fx.template === 'score') {
+        var prontas = fx.linhas.filter(function (l) { return l.k && l.cond; }).length;
+        document.getElementById('fxCusto').textContent = prontas
+          ? prontas + ' critério(s) preenchido(s)' : '';
+        document.getElementById('fxAtivar').disabled = !prontas;
+        return;
+      }
       var n = fx.blocos.length;
       var temTexto = !!(fx.texto || '').trim();
       document.getElementById('fxCusto').textContent =
@@ -3326,6 +3486,8 @@
         return;
       }
 
+      if (fx && fx.template === 'score') return criarAgenteScore();
+
       var texto = (fx && fx.texto || '').trim();
       if (!texto) { settleToast('Escreva as instruções do agente'); return; }
 
@@ -3347,6 +3509,40 @@
       abrirAnalise(an);
       settleToast('Agente criado');
     });
+
+    /* O agente feito pelo template de Score nasce estruturado: cada linha da
+       tabela vira uma regra, e a soma dos pontos é a nota. */
+    function criarAgenteScore() {
+      var linhas = fx.linhas.filter(function (l) { return l.k && l.cond; });
+      if (!linhas.length) { settleToast('Preencha pelo menos um critério'); return; }
+
+      var an = {
+        id:'nv' + ANALISES.length, nome:fx.nome || 'Score sem nome', formato:'estruturado',
+        desc:linhas.length + ' critérios, ' +
+          linhas.reduce(function (t, l) { return t + (+l.pontos || 0); }, 0) + ' pontos no total',
+        gatilho:GATILHOS_FX[fx.gatilho], destino:'score', propria:true,
+        aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
+      };
+      ANALISES.push(an);
+
+      linhas.forEach(function (l, i) {
+        AGENTES.push({
+          id:'sc' + AGENTES.length + i, nome:VARS[l.k].nome, destino:'score',
+          escopo:'licitacao', agregacao:null,
+          instr:VARS[l.k].nome + ': ' + l.cond,
+          vars:[l.k], pontos:+l.pontos || 0, ganhos:0, estado:'run',
+          gatilho:GATILHOS_FX[fx.gatilho], custo:VARS[l.k].custo || 0.02,
+          dado:'ainda não rodou', regraTexto:l.cond,
+          prov:'', ramifica:false, analise:an.id
+        });
+      });
+
+      pintarAnalises(); pintarVars(); pintarCrits();
+      abaAtiva('agentes');
+      fx = null;
+      abrirAnalise(an);
+      settleToast('Score criado com ' + linhas.length + ' critérios');
+    }
 
     /* ---------- nova variável ---------- */
 
@@ -3922,7 +4118,7 @@
     var ANALISES = [
       { id:'score', nome:'Score', formato:'estruturado',
         desc:'Nota de 0 a 100 que ordena a sua lista de licitações.',
-        gatilho:'Ao enviar para análise', destino:'score',
+        gatilho:'Em recomendadas', destino:'score',
         perms:{ mover:'aprovar', status:'nao', resp:'nao', resumo:'auto', externo:'nao' },
         execs:[
           { quando:'hoje, 14:22', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Calculou 78 de 100', st:'ok' },
@@ -3933,7 +4129,7 @@
         validacao:{ acertos:8, total:10, quando:'28 de agosto', por:'Brunno', correcoes:2 } },
       { id:'resumo', nome:'Resumo', formato:'estruturado',
         desc:'Os campos que aparecem no resumo de cada licitação.',
-        gatilho:'Assim que entra no match', destino:'resumo',
+        gatilho:'Em recomendadas', destino:'resumo',
         perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'auto', externo:'nao' },
         execs:[
           { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Preencheu 6 campos do resumo', st:'ok' },
@@ -3952,7 +4148,7 @@
          que o edital exige. */
       { id:'habil', nome:'Tenho todos os documentos de habilitação?', formato:'texto',
         desc:'Compara a lista de documentos e atestados da B Design com as exigências do edital.',
-        gatilho:'Assim que entra no match', aprovacao:'manual',
+        gatilho:'Em recomendadas', aprovacao:'manual',
         texto:'Compare os documentos e atestados cadastrados da B Design com as exigências de ' +
               'habilitação do edital e diga o que falta. Considere {{docshab}} e {{atestado}}. ' +
               'Some a carga horária dos atestados quando o edital admitir soma.',
@@ -3964,16 +4160,34 @@
             o:'5 de 5 exigências atendidas', st:'ok' }
         ] },
 
-      { id:'juridica', nome:'Análise jurídica', formato:'texto', ativo:false,
+      /* Segundo agente na mesma aba: uma seção pode ter mais de um widget
+         (Alice, 09/09, 15:08). */
+      { id:'certidoes', nome:'Alguma certidão vence antes da sessão?', formato:'texto',
+        desc:'Compara a validade das certidões da B Design com a data da sessão pública.',
+        gatilho:'Em recomendadas', aprovacao:'auto',
+        texto:'Compare a validade de cada certidão cadastrada da B Design com {{sessao}} e ' +
+              'avise quais vencem antes da sessão pública.',
+        vars:['sessao'],
+        execs:[
+          { quando:'hoje, 14:21', lic:'PE 90014/2026 · Secretaria de Estado de Saúde de MG',
+            o:'1 de 4 certidões vence antes da sessão', st:'ok' }
+        ] },
+
+      { id:'juridica', nome:'Análise jurídica', formato:'texto', ativo:false, habilitado:false,
         desc:'Texto livre com variáveis dentro.',
         gatilho:'Ao enviar para análise',
         perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
         execs:[] }
     ];
 
+    /* As regras de um Score criado pelo cliente são só as dele: sem isso, ele
+       herdaria as regras do Score que a Settle entrega. */
     function regrasDa(an) {
-      if (an.destino) return AGENTES.filter(function (a) { return a.destino === an.destino; });
-      return [];
+      if (!an.destino) return [];
+      return AGENTES.filter(function (a) {
+        if (a.analise) return a.analise === an.id;
+        return a.destino === an.destino && !an.propria;
+      });
     }
 
     /* Seleção em lote na lista de agentes: como nas variáveis, a única ação que
@@ -4115,8 +4329,8 @@
     }
 
     var GAT_CLASSE = {
-      'Ao enviar para análise':'analise', 'Assim que entrar no match':'match',
-      'Assim que entra no match':'match', 'Sob demanda':'demanda'
+      'Na captura do edital':'captura', 'Em recomendadas':'match',
+      'Ao enviar para análise':'analise', 'Sob demanda':'demanda'
     };
 
     function gatTag(g) {
@@ -4894,8 +5108,20 @@
        leva de volta para a conversa e para a configuração.
        ===================================================================== */
 
+    /* Os seis pontinhos: a pessoa move o widget dentro da seção, e só dentro
+       dela (Alice, 09/09, 15:26). Mover de habilitação para análise técnica não
+       existe, porque o widget pertence ao contexto. */
+    function wgPega() {
+      return '<span class="wg-pega" aria-hidden="true">' +
+        '<svg viewBox="0 0 10 16" width="9" height="14" fill="currentColor">' +
+        '<circle cx="3" cy="4" r="1.1"/><circle cx="7" cy="4" r="1.1"/>' +
+        '<circle cx="3" cy="8" r="1.1"/><circle cx="7" cy="8" r="1.1"/>' +
+        '<circle cx="3" cy="12" r="1.1"/><circle cx="7" cy="12" r="1.1"/></svg></span>';
+    }
+
     function wgHTML(an, corpo, por) {
-      return '<div class="wg"><div class="wg-head">' +
+      return '<div class="wg" draggable="true" data-wgid="' + an.id + '"><div class="wg-head">' +
+        wgPega() +
         '<span class="wg-marca">' +
           '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5.5" width="11" height="8" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.3" r="1"/><path d="M6 8.6v1.4M10 8.6v1.4" stroke-linecap="round"/></svg>' +
           'Agente</span>' +
@@ -4909,7 +5135,87 @@
         '</div></div>';
     }
 
+    /* O cenário que faltava (Alice, 09/09, 06:57): a conta não tem esse agente
+       habilitado. O lugar do resultado continua existindo e vira convite, com
+       dispensa, porque quem nunca vai querer aquele agente não pode ver isso
+       para sempre (10:50). */
+    var CTA_DISPENSADOS = {};
+
+    function wgConviteHTML(an, nota) {
+      return '<div class="wg wg-convite" data-wgcta="' + an.id + '">' +
+        '<div class="wg-head">' + wgPega() +
+          '<span class="wg-marca wg-marca-off">' +
+          '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5.5" width="11" height="8" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.3" r="1"/><path d="M6 8.6v1.4M10 8.6v1.4" stroke-linecap="round"/></svg>' +
+          'Agente</span>' +
+          '<span class="wg-nome">' + an.nome + '</span>' +
+          '<button class="icon-btn wg-dispensa" type="button" data-wgdisp="' + an.id +
+            '" aria-label="Dispensar o convite de ' + an.nome + '">' +
+            '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="wg-corpo"><p class="wg-convite-txt">' + nota + '</p></div>' +
+        '<div class="wg-foot">' +
+          '<button class="btn btn-primary btn-sm" type="button" data-wgativar="' + an.id + '">Ativar este agente</button>' +
+          '<button class="ap-mini" type="button" data-wgcfg="' + an.id + '">Ver o que ele faz</button>' +
+        '</div></div>';
+    }
+
+    /* Uma seção pode ter mais de um agente (Alice, 15:08). A ordem é da pessoa,
+       e o arrasto só troca posição dentro da mesma seção. */
+    var WIDGETS = { habil:['habil', 'certidoes'], tecnica:['tecnica', 'juridica'] };
+
+    function ligarArrasto(box, secao) {
+      var origem = null;
+      box.querySelectorAll('[data-wgid],[data-wgcta]').forEach(function (el) {
+        el.setAttribute('draggable', 'true');
+        el.addEventListener('dragstart', function (e) {
+          origem = el; el.classList.add('wg-arrastando');
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', ''); } catch (err) { /* Safari */ }
+        });
+        el.addEventListener('dragend', function () {
+          el.classList.remove('wg-arrastando');
+          box.querySelectorAll('.wg-alvo').forEach(function (o) { o.classList.remove('wg-alvo'); });
+          origem = null;
+        });
+        el.addEventListener('dragover', function (e) {
+          if (!origem || origem === el) return;
+          e.preventDefault(); el.classList.add('wg-alvo');
+        });
+        el.addEventListener('dragleave', function () { el.classList.remove('wg-alvo'); });
+        el.addEventListener('drop', function (e) {
+          if (!origem || origem === el) return;
+          e.preventDefault();
+          var ids = WIDGETS[secao];
+          var de = ids.indexOf(origem.dataset.wgid || origem.dataset.wgcta);
+          var para = ids.indexOf(el.dataset.wgid || el.dataset.wgcta);
+          ids.splice(para, 0, ids.splice(de, 1)[0]);
+          pintarWorkspace();
+          settleToast('Ordem dos agentes salva nesta seção');
+        });
+      });
+    }
+
     function ligarWidget(el) {
+      el.querySelectorAll('[data-wgativar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgativar; })[0];
+          if (!an) return;
+          an.habilitado = true; an.ativo = true;
+          pintarWorkspace(); pintarAnalises();
+          settleToast(an.nome + ' ativado nesta licitação');
+        });
+      });
+      el.querySelectorAll('[data-wgdisp]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          CTA_DISPENSADOS[b.dataset.wgdisp] = true;
+          pintarWorkspace();
+          settleToast('Não mostro mais este agente aqui', {
+            undoLabel:'Desfazer',
+            onUndo:function () { delete CTA_DISPENSADOS[b.dataset.wgdisp]; pintarWorkspace(); }
+          });
+        });
+      });
       el.querySelectorAll('[data-wgcfg]').forEach(function (b) {
         b.addEventListener('click', function () {
           var an = ANALISES.filter(function (x) { return x.id === b.dataset.wgcfg; })[0];
@@ -5039,13 +5345,19 @@
        quais agentes vão rodar, o que cada um produz e o que isso custa. */
     var CUSTO_AG = { score:0.19, resumo:0.04, tecnica:0.45, habil:0.08, juridica:0.11 };
 
+    /* "A, B e C", não "A e B e C". */
+    function listaLegivel(nomes) {
+      if (nomes.length < 2) return nomes[0] || '';
+      return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
+    }
+
     function confirmarEnvio(depois) {
       var vao = ANALISES.filter(function (a) {
         return a.ativo !== false && (a.gatilho || '').indexOf('enviar') >= 0;
       });
       var total = vao.reduce(function (t, a) { return t + (CUSTO_AG[a.id] || 0.05); }, 0);
       var jaRodaram = ANALISES.filter(function (a) {
-        return a.ativo !== false && (a.gatilho || '').indexOf('match') >= 0;
+        return a.ativo !== false && (a.gatilho || '').indexOf('recomendadas') >= 0;
       }).map(function (a) { return a.nome; });
 
       var corpo = '<p class="ap-fhint" style="margin:0 0 10px">Estes agentes vão rodar nesta licitação:</p>' +
@@ -5059,8 +5371,9 @@
         '<p class="ap-fhint" style="margin:10px 0 0">Os agentes que pedem aprovação vão parar e esperar por ' +
         'você na fila de aprovações.</p>' +
         (jaRodaram.length
-          ? '<p class="ap-fhint" style="margin:8px 0 0">' + jaRodaram.join(' e ') +
-            ' já rodaram quando a licitação entrou no match.</p>'
+          ? '<p class="ap-fhint" style="margin:8px 0 0">' + listaLegivel(jaRodaram) +
+            (jaRodaram.length > 1 ? ' já rodaram' : ' já rodou') +
+            ' em recomendadas, quando você triou esta licitação.</p>'
           : '');
 
       confirmar('Enviar para análise', corpo, 'Enviar', function () {
@@ -5108,6 +5421,72 @@
       });
     }
 
+    /* O corpo de cada widget depende do agente: o resultado é montado conforme
+       o que ele produz (Alice, 09/09, 14:08), e não num formato único. */
+    function corpoDoWidget(id) {
+      var marca = { ok:'ap-ok', no:'ap-warn', na:'ap-dim' };
+      var icone = {
+        ok:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        no:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke-linecap="round"/></svg>',
+        na:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h8" stroke-linecap="round"/></svg>'
+      };
+      var lista = function (itens) {
+        return '<ul class="wg-lista">' + itens.map(function (x) {
+          return '<li><span class="st ' + marca[x.st] + '">' + icone[x.st] + '</span>' +
+            '<span><b>' + x.doc + '</b><br><span class="ap-dim">' + x.nosso + '</span></span></li>';
+        }).join('') + '</ul>';
+      };
+
+      if (id === 'habil') {
+        return { corpo:lista(HABIL),
+          por:'3 de 5 exigências atendidas. 1 não atende e 1 não foi avaliada, porque o edital ' +
+              'não diz qual conselho profissional.' };
+      }
+      if (id === 'certidoes') {
+        return { corpo:lista(CERTIDOES),
+          por:'A sessão é em 18/09. A certidão de regularidade do FGTS vence em 12/09, seis dias antes.' };
+      }
+      if (id === 'tecnica') {
+        return { corpo:'<p class="wg-espera">Ainda não rodou nesta licitação. Roda quando você ' +
+          'enviar a licitação para análise.</p>', por:null };
+      }
+      return { corpo:'<p class="wg-espera">Sem resultado nesta licitação.</p>', por:null };
+    }
+
+    var CONVITE_TXT = {
+      juridica:'A análise jurídica lê o edital e aponta o que restringe a nossa participação. ' +
+        'Você ainda não ativou este agente nesta conta.'
+    };
+
+    function widgetsDaSecao(secao) {
+      var ids = WIDGETS[secao] || [];
+      var h = ids.map(function (id) {
+        var an = ANALISES.filter(function (x) { return x.id === id; })[0];
+        if (!an) return '';
+        /* Três estados, os mesmos que a Alice listou em 08:21: não habilitado,
+           habilitado e sem resultado, e com resultado. */
+        if (an.habilitado === false) {
+          if (CTA_DISPENSADOS[id]) return '';
+          return wgConviteHTML(an, CONVITE_TXT[id] || 'Você ainda não ativou este agente.');
+        }
+        var c = corpoDoWidget(id);
+        return wgHTML(an, c.corpo, c.por);
+      }).join('');
+
+      if (!h) {
+        return '<div class="empty-state"><strong>Nenhum agente aqui</strong>' +
+          'Você dispensou os agentes desta seção. Eles continuam na tela de Agentes.</div>';
+      }
+      return '<div class="card wg-secao">' + h + '</div>';
+    }
+
+    var CERTIDOES = [
+      { st:'no', doc:'Regularidade do FGTS', nosso:'vence em 12/09, seis dias antes da sessão' },
+      { st:'ok', doc:'Débitos federais e dívida ativa', nosso:'válida até 14/10/2026' },
+      { st:'ok', doc:'Débitos trabalhistas (CNDT)', nosso:'válida até 03/11/2026' },
+      { st:'ok', doc:'Regularidade municipal', nosso:'válida até 28/09/2026' }
+    ];
+
     function pintarWorkspace() {
       var box = document.getElementById('wkPainel');
       if (!box) return;
@@ -5127,29 +5506,10 @@
         return;
       }
 
-      if (wkAba === 'habil') {
-        var anH = ANALISES.filter(function (x) { return x.id === 'habil'; })[0];
-        var marca = { ok:'ap-ok', no:'ap-warn', na:'ap-dim' };
-        var icone = {
-          ok:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          no:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke-linecap="round"/></svg>',
-          na:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h8" stroke-linecap="round"/></svg>'
-        };
-        box.innerHTML = '<div class="card">' + wgHTML(anH,
-          '<ul class="wg-lista">' + HABIL.map(function (x) {
-            return '<li><span class="st ' + marca[x.st] + '">' + icone[x.st] + '</span>' +
-              '<span><b>' + x.doc + '</b><br>' +
-              '<span class="ap-dim">' + x.nosso + '</span></span></li>';
-          }).join('') + '</ul>',
-          '3 de 5 exigências atendidas. 1 não atende e 1 não foi avaliada, porque o edital não ' +
-          'diz qual conselho profissional.') + '</div>';
+      if (wkAba === 'habil' || wkAba === 'tecnica') {
+        box.innerHTML = widgetsDaSecao(wkAba);
         ligarWidget(box);
-        return;
-      }
-
-      if (wkAba === 'tecnica') {
-        box.innerHTML = '<div class="empty-state"><strong>Nada avaliado ainda</strong>' +
-          'A análise técnica roda quando a licitação é enviada para análise.</div>';
+        ligarArrasto(box, wkAba);
         return;
       }
 
