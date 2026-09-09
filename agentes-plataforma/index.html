@@ -41,7 +41,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909m" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909n" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -227,7 +227,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:04</p>
+        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 17:09</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button">Ignorar</button>
@@ -491,7 +491,7 @@
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpCfgAg" aria-label="Configurar este agente" data-tip="Configurar este agente" hidden>
-        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M13.4 3.4a3.7 3.7 0 0 0-4.6 4.6l-5.1 5.1a1.7 1.7 0 0 0 2.4 2.4l5.1-5.1a3.7 3.7 0 0 0 4.6-4.6l-2.2 2.2-2-.4-.4-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="cpNova" aria-label="Começar uma conversa nova">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16.2 4.4 15 3.2a1.1 1.1 0 0 0-1.6 0L7 9.6l-.6 2.9 2.9-.6 6.4-6.4a1.1 1.1 0 0 0 0-1.6z" stroke-linejoin="round"/><path d="M15.6 12.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 15.6V5.8a1.4 1.4 0 0 1 1.4-1.4h3.2" stroke-linecap="round"/></svg>
@@ -531,7 +531,7 @@
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6.5" width="14" height="10" rx="2.5"/><path d="M10 6.5V3.4" stroke-linecap="round"/><circle cx="10" cy="2.6" r="1.3"/><path d="M7.4 10.2v1.6M12.6 10.2v1.6" stroke-linecap="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="pnCfg" aria-label="Configurar o agente do Score" data-tip="Configurar o agente">
-        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 3.2v1.6M10 15.2v1.6M16.8 10h-1.6M4.8 10H3.2M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3 5.2 5.2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M13.4 3.4a3.7 3.7 0 0 0-4.6 4.6l-5.1 5.1a1.7 1.7 0 0 0 2.4 2.4l5.1-5.1a3.7 3.7 0 0 0 4.6-4.6l-2.2 2.2-2-.4-.4-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <button class="icon-btn" type="button" id="pnFechar" aria-label="Fechar o painel">
         <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
@@ -568,7 +568,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909m" defer></script>
+  <script src="../assets/settle.js?v=20260909n" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5430,6 +5430,7 @@
 
       document.getElementById('pnOvl').hidden = false;
       document.getElementById('pn').hidden = false;
+      document.body.classList.add('pn-open');
 
     }
 
@@ -5440,6 +5441,7 @@
     function fecharPainelScore() {
       document.getElementById('pnOvl').hidden = true;
       document.getElementById('pn').hidden = true;
+      document.body.classList.remove('pn-open');
     }
 
     document.getElementById('btnScore').addEventListener('click', abrirPainelScore);
@@ -5451,14 +5453,12 @@
     document.getElementById('pnCfg').addEventListener('click', function () {
       var an = agenteDoScore();
       if (!an) return;
-      fecharPainelScore();
       abrirAnalise(an);
     });
 
     document.getElementById('pnFalar').addEventListener('click', function () {
       var an = agenteDoScore();
       if (!an) return;
-      fecharPainelScore();
       cpAbrirPainel();
       cpSelecionarAgente(an,
         'Cheguei em 78 de 100 nesta licitação. Pode me perguntar por que uma regra ' +
