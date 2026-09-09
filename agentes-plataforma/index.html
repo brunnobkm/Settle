@@ -41,12 +41,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260909g" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260909h" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
     .ap-lead{font-size:14px;line-height:21px;color:var(--muted-foreground);max-width:780px;margin:8px 0 0;}
-    .ap-selo{font-size:12px;color:var(--muted-foreground);margin:0 0 6px;}
+    .ap-selo{max-width:var(--content-max);margin:0 auto;padding:10px 24px 0;
+      font-size:12px;color:var(--muted-foreground);}
     .ap-panel[hidden]{display:none;}
     .btn[hidden],.ap-why[hidden]{display:none;}
     .ap-two{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
@@ -246,12 +247,15 @@
       </div>
     </header>
 
+    <!-- Logo abaixo da barra do topo: assim a data aparece em qualquer tela, e
+         não só na de Agentes. -->
+    <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:37</p>
+
     <main class="content">
 
       <div id="areaAgentes">
 
       <div class="page-head">
-        <p class="ap-selo">Protótipo atualizado no dia 9 de setembro às 16:36</p>
         <h1 class="title" id="phTitle">Agentes</h1>
         <p class="ap-lead" id="phLead" hidden></p>
       </div>
@@ -594,7 +598,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260909g" defer></script>
+  <script src="../assets/settle.js?v=20260909h" defer></script>
   <script>
   (function () {
     'use strict';
