@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910u" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910v" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:47</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:51</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910u" defer></script>
+  <script src="../assets/settle.js?v=20260910v" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5526,8 +5526,11 @@
         id:'1086742', uasg:'925031', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'SC', cidade:'Florianópolis', habitantes:'537.211', capagE:'A', capagM:'B',
         portal:'compras.gov.br', score:64,
-        fx:{ score:'aguardando', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
-        mom:{ score:'analise', checklist:'analise', tecnica:'analise' },
+        /* Sem Checklist: na plataforma ele e o Score não convivem no mesmo
+           card, e aqui quem roda no envio é o Score. Indisponível é o estado
+           em que a funcionalidade não existe para a conta, e não aparece. */
+        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'sem-agente' },
+        mom:{ score:'analise', tecnica:'analise' },
         itens:[
           { nome:'Pesquisa com usuários e arquitetura de informação', seg:'Design de produto', qtd:'520 h', vu:'R$ 200,00', vt:'R$ 104.000,00' },
           { nome:'Design de interface dos canais de atendimento', seg:'Design de produto', qtd:'980 h', vu:'R$ 195,00', vt:'R$ 191.100,00' }
@@ -5643,6 +5646,7 @@
 
     function btnChkHTML(l, i) {
       var st = l.fx.checklist;
+      if (st === 'indisponivel') return '';
       var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
         : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
