@@ -35,13 +35,16 @@ O handoff lista oito momentos. Dois pares deles ("primeira entrada em Análise" 
 mesmo evento com repetição diferente. Tratados como oito gatilhos, a lista cresce
 por multiplicação e o cliente escolhe errado.
 
-No protótipo ficaram **cinco eventos**, num select:
+No protótipo ficaram **quatro eventos**, num select. O quinto da lista da Alice,
+*licitações liberadas ao usuário*, saiu: nem o Notion explica o que é essa
+liberação, nem a plataforma tem uma etapa com esse nome, e escrever uma frase
+sobre um evento que ninguém sabe definir só produziria texto sem sentido na
+tela. Volta quando alguém disser o que é.
 
 | Evento | Frase de espera na funcionalidade |
 |---|---|
 | Quando a licitação é capturada | "O Checklist aparece aqui quando a licitação for capturada." |
 | Quando chega em Recomendadas | "…quando a licitação chegar em Recomendadas." |
-| Quando é liberada para você | "…quando a licitação for liberada para você." |
 | Quando é enviada para análise | "…depois que você enviar a licitação para análise." |
 | Quando você pedir | "…quando você pedir." |
 

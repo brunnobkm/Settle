@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910aa" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910ac" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:37</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:42</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910aa" defer></script>
+  <script src="../assets/settle.js?v=20260910ac" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3228,7 +3228,6 @@
     var GATILHOS_FX = {
       captura:'Quando a licitação é capturada',
       recomendadas:'Quando chega em Recomendadas',
-      liberada:'Quando é liberada para você',
       analise:'Quando é enviada para análise',
       demanda:'Quando você pedir'
     };
@@ -3236,7 +3235,6 @@
     var ESPERA_TXT = {
       'Quando a licitação é capturada':'quando a licitação for capturada',
       'Quando chega em Recomendadas':'quando a licitação chegar em Recomendadas',
-      'Quando é liberada para você':'quando a licitação for liberada para você',
       'Quando é enviada para análise':'depois que você enviar a licitação para análise',
       'Quando você pedir':'quando você pedir'
     };
@@ -4539,7 +4537,7 @@
 
     var GAT_CLASSE = {
       'Quando a licitação é capturada':'captura', 'Quando chega em Recomendadas':'match',
-      'Quando é liberada para você':'captura', 'Quando é enviada para análise':'analise',
+      'Quando é enviada para análise':'analise',
       'Quando você pedir':'demanda'
     };
 
@@ -6145,7 +6143,6 @@
       recomendadas:'quando a licitação chegar em Recomendadas',
       analise:'depois que você enviar a licitação para análise',
       captura:'quando a licitação for capturada',
-      liberada:'quando a licitação for liberada para você',
       demanda:'quando você pedir'
     };
 
@@ -6235,16 +6232,6 @@
        o que está sendo preparado. */
     function blocoDaFuncionalidade(chave) {
       var f = FUNCS[chave];
-      var an = ANALISES.filter(function (x) { return x.id === f.agente; })[0];
-      var nome = f.nome;
-
-      var marca = '<div class="fn-head"><span class="wg-marca">' +
-        '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5.5" width="11" height="8" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.3" r="1"/><path d="M6 8.6v1.4M10 8.6v1.4" stroke-linecap="round"/></svg>' +
-        'Agente</span><span class="wg-nome">' + nome + '</span></div>';
-
-      var cfg = '<div class="fn-acts">' +
-        '<button class="ap-mini" type="button" data-fnfalar="' + chave + '">Falar com o agente</button>' +
-        '<button class="ap-mini" type="button" data-fncfg="' + chave + '">Configurar agente</button></div>';
 
       /* Sem resultado, o padrão é o mesmo do "Não foi possível carregar" da
          plataforma: texto e ação centrados no vazio, sem caixa em volta. */
@@ -6276,9 +6263,12 @@
           '<button class="btn btn-primary btn-sm" type="button" ' +
           'data-fnretry="' + chave + '">Tentar novamente</button>');
       }
+      /* O resultado é o resultado: sem selo de agente e sem os dois botões.
+         A aba já se chama Análise técnica, e falar com quem produziu aquilo é
+         conversa da Settle AI, não um botão dentro da resposta. */
       var c = corpoDoWidget(chave === 'tecnica' ? 'tecnica' : f.agente);
-      return '<div class="wg">' + marca + '<div class="wg-corpo">' + c.corpo + '</div>' +
-        (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + cfg + '</div>';
+      return '<div class="wg"><div class="wg-corpo">' + c.corpo + '</div>' +
+        (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + '</div>';
     }
 
     /* Tentar de novo tem duas portas: a linha do card e o vazio da própria
@@ -6296,23 +6286,6 @@
     function ligarFuncionalidade(box) {
       box.querySelectorAll('[data-fnretry]').forEach(function (b) {
         b.addEventListener('click', function () { tentarDeNovo(b.dataset.fnretry); });
-      });
-      box.querySelectorAll('[data-fncfg]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var an = ANALISES.filter(function (x) { return x.id === FUNCS[b.dataset.fncfg].agente; })[0];
-          if (an) abrirAnalise(an);
-        });
-      });
-      box.querySelectorAll('[data-fnfalar]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var f = FUNCS[b.dataset.fnfalar];
-          var an = ANALISES.filter(function (x) { return x.id === f.agente; })[0];
-          if (!an) return;
-          cpAbrirPainel();
-          cpSelecionarAgente(an, 'Este é o resultado que produzi nesta licitação. Pode me dizer o ' +
-            'que ficou errado, ou pedir para eu explicar como cheguei nele.',
-            'PE ' + (licAberta ? licAberta.n : '90014/2026'));
-        });
       });
       box.querySelectorAll('[data-fncriar]').forEach(function (b) {
         b.addEventListener('click', function () {
