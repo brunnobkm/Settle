@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ak" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910am" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 0.151</p>
+        <p class="ap-selo">Atualização número 152</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ak" defer></script>
+  <script src="../assets/settle.js?v=20260910am" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5224,7 +5224,9 @@
        técnica mesmo, com a comparação item a item. */
     var WIDGETS = { habil:['habil', 'certidoes'], tecnica:[] };
 
-    function ligarArrasto(box, secao) {
+    /* Nome próprio: existe outro ligarArrasto, o da ordenação de variáveis, e
+       duas declarações iguais no mesmo escopo deixam só a última de pé. */
+    function ligarArrastoWidget(box, secao) {
       var origem = null;
       box.querySelectorAll('[data-wgid],[data-wgcta]').forEach(function (el) {
         el.setAttribute('draggable', 'true');
@@ -6295,8 +6297,9 @@
         var c = corpoDoWidget(id);
         var an = ANALISES.filter(function (x) { return x.id === id; })[0];
         var titulo = an ? an.nome : f.nome;
-        return '<div class="wia">' +
-          '<div class="wia-head"><span class="wia-nome">' + IC_IA + titulo + '</span>' +
+        return '<div class="wia" data-wgid="' + id + '">' +
+          '<div class="wia-head">' + wgPega() +
+          '<span class="wia-nome">' + IC_IA + titulo + '</span>' +
           '<span class="wia-acts">' +
             '<button class="wia-act" type="button" data-fnfalar="' + id + '">' +
               'Falar com o agente</button>' +
@@ -6395,6 +6398,8 @@
       /* As duas funcionalidades que moram em aba própria. */
       box.innerHTML = blocoDaFuncionalidade(wkAba);
       ligarFuncionalidade(box);
+      /* Mais de um agente na mesma seção: a ordem é de quem lê. */
+      if (WIDGETS[wkAba] && WIDGETS[wkAba].length > 1) ligarArrastoWidget(box, wkAba);
     }
 
     document.querySelectorAll('[data-wk]').forEach(function (b) {
