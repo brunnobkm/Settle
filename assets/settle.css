@@ -1415,6 +1415,14 @@ body.pn-open .cp-fab{z-index:72;}
 }
 body.pn-open .fp-overlay{z-index:73;}
 body.pn-open .ap-modal{z-index:74;}
+/* Sem resultado, o painel segue o vazio da plataforma: o texto e a ação no
+   centro do espaço vago, não empilhados no topo dentro de uma caixa. */
+.pn-body.pn-vazio{display:flex;align-items:center;justify-content:center;}
+.wg-centro{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  min-height:240px;padding:24px 0;text-align:center;}
+.wg-centro p{margin:0;max-width:300px;font-size:14px;line-height:20px;color:var(--muted-foreground);}
+.wg-centro .cp-spin{margin:0 auto;}
+
 .pn-head{flex:none;display:flex;align-items:center;gap:10px;padding:18px 20px;}
 .pn-head h2{flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;}
 .pn-body{flex:1;min-height:0;overflow-y:auto;padding:0 20px 20px;}

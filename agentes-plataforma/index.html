@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910p" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910r" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:52</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:08</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910p" defer></script>
+  <script src="../assets/settle.js?v=20260910r" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5309,7 +5309,10 @@
       document.getElementById('pnFalar').hidden = !!preparando;
       document.getElementById('pnCfg').hidden = !!preparando;
       document.getElementById('pnTitulo').textContent = titulo;
-      document.getElementById('pnBody').innerHTML = corpo;
+      var body = document.getElementById('pnBody');
+      body.innerHTML = corpo;
+      /* Vazio se centra no painel inteiro; resultado começa do topo. */
+      body.classList.toggle('pn-vazio', !!body.querySelector('.wg-centro'));
       /* Na lista, o painel empurra a tela: o card que abriu precisa continuar
          à vista para dar para comparar botão e resultado. Dentro da licitação
          segue cobrindo, como sempre foi. */
@@ -5944,7 +5947,7 @@
       { id:'pronto',     t:'Resultado disponível',     d:'o agente já rodou e o resultado está aqui' },
       { id:'aguardando', t:'Aguardando o momento',     d:'o agente existe, mas o evento ainda não aconteceu' },
       { id:'preparando', t:'Preparando o resultado',   d:'o agente está rodando agora' },
-      { id:'sem-agente', t:'Agente não configurado',   d:'a funcionalidade existe, o agente não' },
+      { id:'sem-agente', t:'Agente não configurado',   d:'a funcionalidade existe, mas ninguém criou o agente dela' },
       { id:'desativado', t:'Agente desativado',        d:'o agente existe e está desligado' }
     ];
 
@@ -6024,30 +6027,30 @@
         '<button class="ap-mini" type="button" data-fnfalar="' + chave + '">Falar com o agente</button>' +
         '<button class="ap-mini" type="button" data-fncfg="' + chave + '">Configurar agente</button></div>';
 
+      /* Sem resultado, o padrão é o mesmo do "Não foi possível carregar" da
+         plataforma: texto e ação centrados no vazio, sem caixa em volta. */
+      function vazio(txt, acao) {
+        return '<div class="wg-centro"><p>' + txt + '</p>' + (acao || '') + '</div>';
+      }
+
       if (f.estado === 'sem-agente') {
-        return '<div class="wg wg-convite">' + marca +
-          '<p class="wg-convite-txt">Esse recurso funciona através de um Agente. ' +
-          'Configure um Agente para começar a ver as informações.</p>' +
-          '<div class="fn-acts"><button class="btn btn-primary btn-sm" type="button" ' +
-          'data-fncriar="' + chave + '">Configurar Agente</button></div></div>';
+        return vazio('Esse recurso funciona através de um Agente. ' +
+          'Configure um Agente para começar a ver as informações.',
+          '<button class="btn btn-primary btn-sm" type="button" ' +
+          'data-fncriar="' + chave + '">Configurar Agente</button>');
       }
       if (f.estado === 'desativado') {
-        return '<div class="wg wg-convite">' + marca +
-          '<p class="wg-convite-txt">Este agente está desativado. Ative para voltar a ver os ' +
-          'resultados aqui.</p>' +
-          '<div class="fn-acts"><button class="btn btn-primary btn-sm" type="button" ' +
-          'data-fnativar="' + chave + '">Ativar agente</button></div></div>';
+        return vazio('Este agente está desativado. Ative para voltar a ver os resultados aqui.',
+          '<button class="btn btn-primary btn-sm" type="button" ' +
+          'data-fnativar="' + chave + '">Ativar agente</button>');
       }
       if (f.estado === 'aguardando') {
-        return '<div class="wg">' + marca +
-          '<p class="wg-espera">' + f.art + ' ' + f.nome + ' aparece aqui ' +
-          MOMENTO_TXT[f.momento] + '.</p>' +
-          cfg + '</div>';
+        return vazio(f.art + ' ' + f.nome + ' aparece aqui ' + MOMENTO_TXT[f.momento] + '.');
       }
       if (f.estado === 'preparando') {
-        return '<div class="wg">' + marca +
-          '<p class="wg-espera"><span class="cp-spin"></span>Estamos preparando este resultado. ' +
-          'Ele ficará disponível assim que for concluído.</p></div>';
+        return '<div class="wg-centro"><span class="cp-spin"></span>' +
+          '<p>Estamos preparando este resultado. Ele ficará disponível assim que ' +
+          'for concluído.</p></div>';
       }
       var c = corpoDoWidget(chave === 'tecnica' ? 'tecnica' : f.agente);
       return '<div class="wg">' + marca + '<div class="wg-corpo">' + c.corpo + '</div>' +
