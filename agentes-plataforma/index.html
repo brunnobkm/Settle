@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910x" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910y" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:23</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:29</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910x" defer></script>
+  <script src="../assets/settle.js?v=20260910y" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5509,7 +5509,7 @@
        aparece na lista, e não só dentro da licitação. Quem tem 40 licitações
        abertas precisa comparar sem entrar em cada uma. */
     var LICS_CARDS = [
-      { n:'90014/2026', cenario:'Simulador',
+      { n:'90014/2026', cenario:'Simulador', simulador:true,
         org:'SECRETARIA DE ESTADO DE SAÚDE DE MINAS GERAIS',
         objeto:'Contratação de empresa especializada na prestação de serviços de design de produto digital, ' +
           'compreendendo pesquisa com usuários, arquitetura de informação, design de interface e manutenção ' +
@@ -6158,7 +6158,15 @@
     /* Nas abas, a marca do cenário atual faz sentido: a aba já está aberta num
        deles. Nos botões do card não, porque a pessoa clica ali para escolher o
        que quer ver, e nada foi aberto ainda. */
+    /* O dropdown de cenário é ferramenta de um card só. Nos outros dois a
+       licitação se comporta como na plataforma: clicar abre o resultado, e o
+       estado é o que o fluxo produziu. */
+    function podeSimular() {
+      return !!(licAberta && licAberta.simulador);
+    }
+
     function menuCenario(botao, chave) {
+      if (!podeSimular()) return abrirFuncionalidade(chave);
       fecharMenuCol();
       var f = FUNCS[chave];
       /* Em Recomendadas, esperar um evento que já passou não é um estado
@@ -6345,7 +6353,9 @@
     document.querySelectorAll('[data-wk]').forEach(function (b) {
       b.addEventListener('click', function () {
         wkAba = b.dataset.wk;
-        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba); }, 0);
+        if (FUNCS[wkAba] && !b.dataset.semmenu && podeSimular()) {
+          setTimeout(function () { menuCenario(b, wkAba); }, 0);
+        }
         document.querySelectorAll('[data-wk]').forEach(function (o) {
           var on = o === b;
           o.classList.toggle('active', on);
