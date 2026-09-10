@@ -124,10 +124,9 @@ sempre quando um agente quebra.
 
 ## O que o vídeo não mostra
 
-O protótipo é a documentação: quem quiser saber como a tela se comporta,
-assiste à apresentação (o link "Ver a apresentação", no cabeçalho, roda os
-quinze passos sozinho). O que sobra é o que não cabe numa gravação, e é o que
-está escrito aqui.
+O protótipo é a documentação: quem quiser saber como a tela se comporta, abre
+`/agentes-plataforma` e percorre os três cards. O que sobra é o que não cabe
+numa gravação, e é o que está escrito aqui.
 
 **Aviso ao entrar em Agentes com algo rodando.** Quando a pessoa abre a área de
 Agentes e algum agente está preparando um resultado, um aviso na tela precisa

@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910aq" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910ar" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 155 · <button class="ap-selo-tour" type="button" id="btnTour">Ver a apresentação</button></p>
+        <p class="ap-selo">Atualização número 156</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910aq" defer></script>
+  <script src="../assets/settle.js?v=20260910ar" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5155,158 +5155,6 @@
        window.settleTour(TOUR) quando for apresentar. */
     window.tourAgentes = function () { settleTour(TOUR); };
 
-    /* =====================================================================
-       APRESENTAÇÃO DOS RESULTADOS
-       O roteiro da outra task: onde o resultado de um agente aparece, o que a
-       tela diz quando ele ainda não veio, e o que acontece do envio até o
-       resultado. Cada passo faz a ação antes de explicar, para quem assiste
-       ver o sistema reagindo.
-       ===================================================================== */
-
-    /* Põe uma funcionalidade num cenário sem passar pelo dropdown. */
-    function simular(chave, cenario, lic) {
-      var alvo = lic || LICS_CARDS[0];
-      licAberta = alvo;
-      sincronizarFuncs(alvo);
-      FUNCS[chave].estado = cenario;
-      guardarFuncs();
-      repintarTudo();
-    }
-
-    function voltarAoInicio() {
-      settleFecharTudo();
-      LICS_CARDS.forEach(function (l) { l.enviada = false; l.aPreparar = null; });
-      LICS_CARDS[0].fx = { score:'pronto', checklist:'aguardando',
-                           tecnica:'aguardando', habil:'pronto' };
-      LICS_CARDS[1].fx = { score:'aguardando', checklist:'indisponivel',
-                           tecnica:'aguardando', habil:'pronto' };
-      LICS_CARDS[2].fx = { score:'aguardando', checklist:'indisponivel',
-                           tecnica:'aguardando', habil:'pronto' };
-      LICS_CARDS[2].falhar = ['tecnica'];
-      prepItens = [];
-      document.getElementById('prep').hidden = true;
-      document.getElementById('snb').hidden = true;
-      licAberta = LICS_CARDS[0];
-      sincronizarFuncs(licAberta);
-      irPara('lics');
-    }
-
-    function settleFecharTudo() {
-      fecharPainelScore();
-      fecharMenuCol();
-      var m = document.getElementById('fxModal');
-      if (m && !m.hidden) document.getElementById('fxX').click();
-      cpFecharPainel();
-    }
-
-    var TOUR_RES = [
-      { titulo:'Onde o resultado do agente aparece', kicker:'Apresentação',
-        texto:'Um agente produz um resultado, e esse resultado precisa de um lugar na licitação. ' +
-          'Este roteiro mostra esse lugar em cada situação: com resposta, sem resposta ainda, ' +
-          'sem agente configurado e quando algo dá errado.',
-        antes:voltarAoInicio, espera:200 },
-
-      { alvo:'#licsLista', titulo:'Três cenários, três cards',
-        texto:'Cada card da lista reproduz uma situação. O primeiro é o <b>Simulador</b>, onde se troca ' +
-          'o estado de cada funcionalidade pelo dropdown. Os outros dois reproduzem um fluxo inteiro, ' +
-          'do envio até o resultado.',
-        espera:200 },
-
-      { alvo:'#licsLista .lic-card:first-child .btn-chk', titulo:'A funcionalidade continua visível',
-        texto:'O Checklist ainda não tem resposta nesta licitação, e mesmo assim o botão está lá, em ' +
-          'âmbar. Esconder a funcionalidade faria a pessoa achar que ela não existe na conta.',
-        antes:function () { simular('checklist', 'aguardando'); }, espera:220 },
-
-      { alvo:'#licsLista .lic-card:first-child .btn-chk', titulo:'O botão diz o que está faltando',
-        texto:'Cada situação tem seu texto: <b>não gerado</b> quando o momento não chegou, ' +
-          '<b>sem agente</b> quando ninguém configurou, <b>desativado</b> quando alguém desligou e ' +
-          '<b>não carregou</b> quando o agente rodou e falhou.',
-        antes:function () { simular('checklist', 'sem-agente'); }, espera:220 },
-
-      { alvo:'#pn', titulo:'Sem agente, o lugar convida',
-        texto:'Abrindo a funcionalidade, o texto e a ação ficam no centro do vazio, como no ' +
-          '"Não foi possível carregar" que a plataforma já usa. <b>Configurar Agente</b> abre a ' +
-          'configuração por cima, sem tirar a licitação da tela.',
-        antes:function () { abrirPainelChecklist(); }, espera:320 },
-
-      { alvo:'#pn', titulo:'Esperando o momento',
-        texto:'Quando o agente existe mas o evento ainda não aconteceu, a frase é derivada do momento ' +
-          'configurado nele: um agente que roda em Recomendadas não pode dizer que fica pronto depois ' +
-          'do envio para análise.',
-        antes:function () { simular('checklist', 'aguardando'); abrirPainelChecklist(); }, espera:320 },
-
-      { alvo:'#pn', titulo:'Quando não foi possível carregar',
-        texto:'Falha é estado final, com o texto e a ação que a plataforma já usa. ' +
-          '<b>Tentar novamente</b> devolve o item para a preparação.',
-        antes:function () { simular('checklist', 'falhou'); abrirPainelChecklist(); }, espera:320 },
-
-      { alvo:'#pn', titulo:'Com resposta, o resultado se identifica',
-        texto:'Todo conteúdo produzido por um agente aparece nesta moldura, com o nome de quem ' +
-          'respondeu e as duas ações dele: falar pelo chat ou abrir a configuração.',
-        antes:function () { simular('checklist', 'pronto'); abrirPainelChecklist(); }, espera:320 },
-
-      { alvo:'#wkPainel', titulo:'Uma funcionalidade, mais de um agente',
-        texto:'A Habilitação é respondida por dois agentes, e cada resposta é um card com o nome do ' +
-          'seu. A ordem é de quem lê: arrastando pela pega, os cards trocam de lugar.',
-        antes:function () {
-          fecharPainelScore();
-          abrirLicitacao(0);
-          irParaAba('habil');
-        }, espera:420 },
-
-      { alvo:'#licsLista .lic-card:nth-of-type(2) [data-licenviar]', titulo:'Enviar para análise',
-        texto:'Este é o evento que aciona os agentes configurados para ele. Ao enviar, a licitação sai ' +
-          'de Recomendadas, como na plataforma.',
-        antes:function () { settleFecharTudo(); irPara('lics'); }, espera:300 },
-
-      { alvo:'#snb', titulo:'O aviso é o caminho de volta',
-        texto:'A licitação saiu da lista, e o aviso na base fica até ser dispensado. ' +
-          '<b>Abrir licitação</b> leva ao que está acontecendo lá dentro.',
-        antes:function () {
-          licAberta = LICS_CARDS[1];
-          sincronizarFuncs(licAberta);
-          abrirPreparando();
-        }, espera:320 },
-
-      { alvo:'#prep', titulo:'O acompanhamento do que está vindo',
-        texto:'O card lista só o que este envio acionou. Ele aparece para quem entra na licitação, e ' +
-          'não some enquanto houver item em preparação: fechar não pode significar cancelar.',
-        antes:function () { document.getElementById('snbAbrir').click(); }, espera:420 },
-
-      { alvo:'#prep', titulo:'Cada resultado aparece quando fica pronto',
-        texto:'Os itens não esperam uns pelos outros. Cada um ganha o ✓ no seu tempo, e o resultado ' +
-          'aparece na funcionalidade no mesmo instante.',
-        /* O ciclo recomeça aqui: quem leu o passo anterior devagar já teria
-           perdido a única parte que precisa ser vista acontecendo. */
-        antes:function () {
-          var l = LICS_CARDS[1];
-          ['score', 'tecnica'].forEach(function (k) { l.fx[k] = 'preparando'; });
-          sincronizarFuncs(l);
-          l.aPreparar = ['score', 'tecnica'];
-          correrPreparacao(l);
-          repintarTudo();
-        }, espera:5200 },
-
-      { alvo:'#prep', titulo:'Quando um deles não vem',
-        texto:'Terminar com falha não é conclusão: o título muda, o item ganha um ✕ e o botão de ' +
-          'tentar de novo fica na própria linha, em vez de mandar a pessoa procurar.',
-        antes:function () {
-          settleFecharTudo();
-          licAberta = LICS_CARDS[2];
-          sincronizarFuncs(licAberta);
-          abrirPreparando();
-          document.getElementById('snbAbrir').click();
-        }, espera:9200 },
-
-      { titulo:'É isso',
-        texto:'A funcionalidade continua visível sem agente, o texto diz o que falta acontecer, o ' +
-          'resultado se identifica como resposta de um agente e o acompanhamento vive dentro da ' +
-          'licitação. O que não dá para mostrar aqui está em <b>agentes/ESTADOS.md</b>.',
-        antes:voltarAoInicio, espera:200 }
-    ];
-
-    window.tourResultados = function () { settleTour(TOUR_RES); };
-    document.getElementById('btnTour').addEventListener('click', window.tourResultados);
 
     /* =====================================================================
        WORKSPACE DA LICITAÇÃO

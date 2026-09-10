@@ -1442,11 +1442,6 @@ table.dt td.c-sel .ap-check{gap:0;}
   .wia-acts{width:100%;}
 }
 
-/* O disparo da apresentação mora junto do selo: é informação de protótipo, e
-   não uma ação do produto. */
-.ap-selo-tour{border:0;background:none;padding:0;font-family:inherit;font-size:inherit;
-  color:var(--accent-600);text-decoration:underline;cursor:pointer;}
-
 .wg-titulo{margin:0 0 10px;font-size:14px;font-weight:600;color:var(--foreground);}
 
 .btn-score.btn-prep,.btn.btn-prep{border-color:var(--border-strong);
