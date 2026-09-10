@@ -405,6 +405,24 @@ body.nav-hidden .filter-badges{max-height:0; opacity:0; margin-top:0; overflow:h
 .lic-card:focus-visible{transform:translateY(-2px) scale(1.004);box-shadow:var(--shadow-pop);}
 .lic-card:last-child{margin-bottom:0;}
 .lic-card .btn svg{width:16px;height:16px;}
+/* Dentro do card: as mesmas seções que a licitação tem por dentro, para a
+   pessoa decidir sem abrir. */
+.lic-abas{margin-top:16px;border-top:1px solid var(--border);padding-top:14px;}
+.lic-aba-corpo{margin-top:12px;}
+.btn-chk svg{color:var(--muted-foreground);}
+/* Análise técnica: os números em cima, um card por item embaixo. */
+.tec-kpis{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px;}
+@media (min-width:760px){ .tec-kpis{grid-template-columns:repeat(4,minmax(0,1fr));} }
+.tec-kpi{border:1px solid var(--border);border-radius:var(--radius-box);
+  background:var(--card);padding:12px 14px;}
+.tec-kpi-n{display:block;font-size:20px;font-weight:700;color:var(--foreground);line-height:26px;}
+.tec-kpi-t{display:block;font-size:12px;color:var(--muted-foreground);margin-top:2px;}
+.tec-item{border:1px solid var(--border);border-radius:var(--radius-box);
+  background:var(--card);padding:12px 14px;margin-bottom:8px;}
+.tec-item-nome{margin:8px 0 0;font-size:13.5px;font-weight:600;color:var(--foreground);}
+.tec-item-meta{margin:2px 0 0;font-size:12.5px;line-height:18px;color:var(--muted-foreground);}
+/* Seções recolhíveis do Checklist. */
+.pn-sec-corpo{margin-top:2px;}
 .lc-title{font-size:14px;color:var(--foreground);white-space:nowrap;}
 .lc-title b{font-size:18px;font-weight:700;line-height:28px;}
 .lc-title .num{font-size:18px;font-weight:400;line-height:28px;}
@@ -1386,7 +1404,11 @@ body.pn-open .ap-modal{z-index:74;}
   padding:18px 20px;font-size:30px;font-weight:700;margin-bottom:14px;}
 .pn-sec{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);
   margin-bottom:14px;overflow:hidden;}
-.pn-sec-head{display:flex;align-items:center;gap:8px;padding:14px 16px;font-size:14px;font-weight:500;}
+.pn-sec-head{display:flex;align-items:center;gap:8px;width:100%;padding:14px 16px;
+  border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;
+  color:var(--foreground);text-align:left;cursor:pointer;}
+.pn-sec-head svg{flex:none;color:var(--muted-foreground);transition:transform .15s;}
+.pn-sec-head[aria-expanded="false"] svg{transform:rotate(-90deg);}
 .pn-sec-head span{flex:1;min-width:0;}
 .pn-var{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-top:1px solid var(--border);}
 .pn-var-txt{flex:1;min-width:0;display:block;}
