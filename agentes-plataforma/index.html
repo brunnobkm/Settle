@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910o" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910p" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -224,11 +224,11 @@
 
         <nav class="wk-bread" id="navBread" aria-label="Trilha" hidden>
           <a href="#">Licitações</a><span aria-hidden="true">›</span>
-          <a href="#">Em andamento</a><span aria-hidden="true">›</span>
+          <a href="#">Recomendadas</a><span aria-hidden="true">›</span>
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:43</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:52</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -340,7 +340,7 @@
            ==================================== -->
       <div id="areaLics">
         <div class="page-head">
-          <h1 class="title">Licitações</h1>
+          <h1 class="title">Recomendadas</h1>
         </div>
         <div id="licsLista"></div>
       </div>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910o" defer></script>
+  <script src="../assets/settle.js?v=20260910p" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5583,6 +5583,7 @@
       var corpo = st === 'pronto' ? IC_SCORE + l.score + '/100'
         : st === 'preparando' ? '<span class="cp-spin"></span>Calculando o Score'
         : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
+        : st === 'desativado' ? IC_SCORE + 'Score desativado'
         : IC_SCORE + 'Score sem agente';
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licscore="' + i + '"' +
@@ -5953,10 +5954,17 @@
     function menuCenario(botao, chave) {
       fecharMenuCol();
       var f = FUNCS[chave];
+      /* Aqui a licitação já chegou em Recomendadas, e é nesse evento que o
+         agente do Score roda. Esperar por ele seria esperar o que já passou:
+         esse cenário existe antes desta tela, não nela. */
+      var cens = CENARIOS.filter(function (c) {
+        return !(chave === 'score' && c.id === 'aguardando');
+      });
+
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cen-pop';
       pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
-        CENARIOS.map(function (c) {
+        cens.map(function (c) {
           var on = f.estado === c.id;
           return '<button class="cp-op' + (on ? ' on' : '') + '" type="button" ' +
             'data-cen="' + c.id + '">' + (on ? '✓ ' : '') + c.t +
