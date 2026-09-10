@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910i" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910j" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:57</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:04</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910i" defer></script>
+  <script src="../assets/settle.js?v=20260910j" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5608,8 +5608,12 @@
       var st = l.fx.checklist;
       var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
         : IC_CHK + 'Checklist';
+      /* Pronto não tem dica: em produção o botão do Checklist não tem tooltip,
+         porque só existe esse estado. A dica é para os estados que a task cria,
+         onde o botão sozinho não explica por que está vazio. */
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licchk="' + i + '" data-tip="' + DICA_ESTADO[st] + '">' +
+        '" type="button" data-licchk="' + i + '"' +
+        (st === 'pronto' ? '' : ' data-tip="' + DICA_ESTADO[st] + '"') + '>' +
         corpo + '</button>';
     }
 
