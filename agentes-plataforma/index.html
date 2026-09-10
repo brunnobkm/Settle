@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910j" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910l" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -188,11 +188,11 @@
 
     <nav class="sb-content">
       <div class="sb-group">
-        <a class="sb-item active" href="#" id="viaCons" aria-current="page" title="Agentes e Variáveis">
+        <a class="sb-item" href="#" id="viaCons" title="Agentes e Variáveis">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5.5" width="10" height="7.5" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.4" r="1.1"/><path d="M6.2 8.6v1.3M9.8 8.6v1.3" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Agentes e Variáveis</span>
         </a>
-        <a class="sb-item" href="#" id="viaLics" title="Licitações">
+        <a class="sb-item active" href="#" id="viaLics" aria-current="page" title="Licitações">
           <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="1.6"/><path d="M5 6h6M5 8.6h6M5 11.2h3.5" stroke-linecap="round"/></svg></span>
           <span class="sb-label">Licitações</span>
         </a>
@@ -228,13 +228,13 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:04</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:09</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
         <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
         <button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">Em disputa ou Homologação</button>
-        <button class="btn-score" type="button" id="btnScore" data-tip="Score: 78/100 — Quente">
+        <button class="btn-score" type="button" id="btnScore" data-tip="Score Quente" aria-label="Score: 78/100 — Quente">
           <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
           78/100
         </button>
@@ -253,7 +253,7 @@
 
     <main class="content">
 
-      <div id="areaAgentes">
+      <div id="areaAgentes" hidden>
 
       <div class="page-head">
         <h1 class="title" id="phTitle">Agentes</h1>
@@ -338,7 +338,7 @@
            possível, não uma decisão, e o lugar do resultado é o widget dentro
            da licitação.
            ==================================== -->
-      <div id="areaLics" hidden>
+      <div id="areaLics">
         <div class="page-head">
           <h1 class="title">Licitações</h1>
         </div>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910j" defer></script>
+  <script src="../assets/settle.js?v=20260910l" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5575,7 +5575,9 @@
       'stroke-width="1.7" aria-hidden="true"><path d="M4 6h3M4 10h3M4 14h3M9.5 6H16M9.5 10H16M9.5 14H16" ' +
       'stroke-linecap="round"/></svg>';
 
-    /* Na plataforma o tooltip do Score pronto diz "Score: 87/100 — Quente".
+    /* Na plataforma, com resultado, o tooltip do Score diz "Score Quente" e o
+       do Checklist diz "Abrir checklist da licitação". O número fica só no
+       aria-label ("Score: 87/100 — Quente"), que é o rótulo de acessibilidade.
        A classificação vem do backend: o front só traduz QUENTE/MORNO/FRIO em
        rótulo e cor. Os cortes abaixo são inferidos do que está em produção
        (87 e 100 quentes, 65 e 52 mornos) e servem só para o protótipo. */
@@ -5598,9 +5600,11 @@
         : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
         : IC_SCORE + 'Score sem agente';
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licscore="' + i + '" data-tip="' +
-        (st === 'pronto' ? 'Score: ' + l.score + '/100 — ' + classificar(l.score)
-          : DICA_ESTADO[st]) + '">' +
+        '" type="button" data-licscore="' + i + '"' +
+        (st === 'pronto'
+          ? ' data-tip="Score ' + classificar(l.score) + '"' +
+            ' aria-label="Score: ' + l.score + '/100 — ' + classificar(l.score) + '"'
+          : ' data-tip="' + DICA_ESTADO[st] + '"') + '>' +
         corpo + '</button>';
     }
 
@@ -5608,12 +5612,9 @@
       var st = l.fx.checklist;
       var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
         : IC_CHK + 'Checklist';
-      /* Pronto não tem dica: em produção o botão do Checklist não tem tooltip,
-         porque só existe esse estado. A dica é para os estados que a task cria,
-         onde o botão sozinho não explica por que está vazio. */
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licchk="' + i + '"' +
-        (st === 'pronto' ? '' : ' data-tip="' + DICA_ESTADO[st] + '"') + '>' +
+        '" type="button" data-licchk="' + i + '" data-tip="' +
+        (st === 'pronto' ? 'Abrir checklist da licitação' : DICA_ESTADO[st]) + '">' +
         corpo + '</button>';
     }
 
@@ -5695,7 +5696,8 @@
       var bs = document.getElementById('btnScore');
       if (bs) {
         bs.lastChild.textContent = ' ' + l.score + '/100';
-        bs.dataset.tip = 'Score: ' + l.score + '/100 — ' + classificar(l.score);
+        bs.dataset.tip = 'Score ' + classificar(l.score);
+        bs.setAttribute('aria-label', 'Score: ' + l.score + '/100 — ' + classificar(l.score));
       }
     }
 
@@ -6183,6 +6185,9 @@
     ANALISES.forEach(function (an) { instrucaoDe(an); });
     pintarAnalises(); pintarVars(); pintarAprov();
     abaAtiva('agentes');
+    /* Abre em Licitações: é onde o resultado do agente aparece, e é de lá que
+       a pessoa vai para a configuração, não o contrário. */
+    irPara('lics');
   })();
   </script>
 </body>
