@@ -201,11 +201,13 @@ body.sb-open .shell{margin-left:var(--sb-width-open);}
 }
 /* esconde ao rolar p/ baixo, reaparece ao rolar p/ cima */
 body.nav-hidden .navbar{transform:translateY(-100%);}
+/* As ações do topo já nascem com fundo: transparentes, uma fileira de ícones
+   soltos não se lê como botões. O hover escurece um passo. */
 .navbar .icon-btn{
-  width:30px;height:30px;border:none;background:transparent;border-radius:6px;
+  width:30px;height:30px;border:none;background:var(--muted);border-radius:6px;
   display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);
 }
-.navbar .icon-btn:hover{background:var(--muted);color:var(--foreground);}
+.navbar .icon-btn:hover{background:var(--border);color:var(--foreground);}
 .navbar .sep{width:1px;height:22px;background:var(--border);}
 .navbar .hello{font-size:15px;font-weight:600;color:var(--foreground);line-height:20px;}
 /* Título e subtítulo no header: a saudação (ou a trilha, dentro da licitação)
@@ -1410,6 +1412,8 @@ table.dt td.c-sel .ap-check{gap:0;}
 .btn-score.btn-vazio svg,.btn.btn-vazio svg{color:inherit;}
 /* Preparando não é falta: o sistema está trabalhando, e o âmbar diria que
    alguém precisa fazer algo. Fica neutro, como era. */
+.wg-titulo{margin:0 0 10px;font-size:14px;font-weight:600;color:var(--foreground);}
+
 .btn-score.btn-prep,.btn.btn-prep{border-color:var(--border-strong);
   background:var(--card);color:var(--muted-foreground);}
 .btn-score.btn-prep:hover,.btn.btn-prep:hover{background:var(--muted);}

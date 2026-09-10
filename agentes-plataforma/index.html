@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ah" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910ai" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 18:00</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 18:10</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ah" defer></script>
+  <script src="../assets/settle.js?v=20260910ai" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5517,7 +5517,7 @@
         id:'1078513', uasg:'986531', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'MG', cidade:'Belo Horizonte', habitantes:'2.315.560', capagE:'B', capagM:'C',
         portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true,
-        fx:{ score:'pronto', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
+        fx:{ score:'pronto', checklist:'aguardando', tecnica:'aguardando', habil:'pronto' },
         itens:[
           { nome:'Design de interface: telas de novos fluxos, com protótipo navegável', seg:'Design de produto', qtd:'1.200 h', vu:'R$ 190,00', vt:'R$ 228.000,00' },
           { nome:'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', seg:'Pesquisa com usuários', qtd:'480 h', vu:'R$ 210,00', vt:'R$ 100.800,00' },
@@ -5545,7 +5545,7 @@
         /* Sem Checklist: na plataforma ele e o Score não convivem no mesmo
            card, e aqui quem roda no envio é o Score. Indisponível é o estado
            em que a funcionalidade não existe para a conta, e não aparece. */
-        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'sem-agente' },
+        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'pronto' },
         mom:{ score:'analise', tecnica:'analise' },
         itens:[
           { nome:'Pesquisa com usuários e arquitetura de informação', seg:'Design de produto', qtd:'520 h', vu:'R$ 200,00', vt:'R$ 104.000,00' },
@@ -5569,7 +5569,7 @@
         id:'1087915', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'SC', cidade:'Joinville', habitantes:'616.317', capagE:'A', capagM:'B',
         portal:'compras.gov.br', score:71,
-        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'sem-agente' },
+        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'pronto' },
         mom:{ score:'analise', tecnica:'analise' },
         falhar:['tecnica'],
         itens:[
@@ -6282,9 +6282,25 @@
       /* O resultado é o resultado: sem selo de agente e sem os dois botões.
          A aba já se chama Análise técnica, e falar com quem produziu aquilo é
          conversa da Settle AI, não um botão dentro da resposta. */
-      var c = corpoDoWidget(chave === 'tecnica' ? 'tecnica' : f.agente);
-      return '<div class="wg"><div class="wg-corpo">' + c.corpo + '</div>' +
-        (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + '</div>';
+      function bloco(id, titulo) {
+        var c = corpoDoWidget(id);
+        return '<div class="wg">' +
+          (titulo ? '<h3 class="wg-titulo">' + titulo + '</h3>' : '') +
+          '<div class="wg-corpo">' + c.corpo + '</div>' +
+          (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + '</div>';
+      }
+
+      /* Uma funcionalidade pode ser alimentada por mais de um agente, e cada
+         resposta é um card: juntar as duas numa lista só apagaria de quem é
+         cada conclusão. */
+      var varios = WIDGETS[chave];
+      if (varios && varios.length > 1) {
+        return varios.map(function (id) {
+          var an = ANALISES.filter(function (x) { return x.id === id; })[0];
+          return bloco(id, an ? an.nome : null);
+        }).join('');
+      }
+      return bloco(chave === 'tecnica' ? 'tecnica' : f.agente, null);
     }
 
     /* Tentar de novo tem duas portas: a linha do card e o vazio da própria
