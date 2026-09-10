@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ar" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910at" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 156</p>
+        <p class="ap-selo">Atualização número 157</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ar" defer></script>
+  <script src="../assets/settle.js?v=20260910at" defer></script>
   <script>
   (function () {
     'use strict';
@@ -6082,7 +6082,12 @@
         });
       }
       var prep = document.getElementById('prep');
-      if (!prepItens.length) { prep.hidden = true; return; }
+      /* Fora da licitação o card não aparece, nem quando um item fica pronto
+         com a pessoa em outra tela: ele é o acompanhamento daquela licitação. */
+      if (!prepItens.length || document.getElementById('areaWorkspace').hidden) {
+        prep.hidden = true;
+        return;
+      }
       prep.hidden = false;
       pintarPreparando();
     }
@@ -6172,8 +6177,9 @@
           por:'A sessão é em 18/09. A certidão de regularidade do FGTS vence em 12/09, seis dias antes.' };
       }
       if (id === 'tecnica') {
-        return { corpo:abaTecnicaHTML(licAberta || LICS_CARDS[0]),
-          por:null };
+        return { corpo:lista(TECNICA),
+          por:'A comparação por componente está na tabela abaixo. O item 2 é o único que ' +
+              'não fecha: o edital exige laboratório presencial e o nosso catálogo é remoto.' };
       }
       return { corpo:'<p class="wg-espera">Sem resultado nesta licitação.</p>', por:null };
     }
@@ -6344,6 +6350,12 @@
          cada conclusão. */
       var varios = WIDGETS[chave];
       if (varios && varios.length > 1) return varios.map(bloco).join('');
+      /* A Análise técnica é uma tela do sistema, não uma resposta de agente: o
+         widget entra junto dela, e não no lugar dela. */
+      if (chave === 'tecnica') {
+        return bloco(f.agente) +
+          '<div class="wk-padrao">' + abaTecnicaHTML(licAberta || LICS_CARDS[0]) + '</div>';
+      }
       return bloco(f.agente);
     }
 
@@ -6453,6 +6465,11 @@
        o resultado do agente precisa aparecer. */
     function irPara(area) {
       var naLic = area === 'workspace';
+      /* O painel e o card de acompanhamento pertencem ao lugar onde foram
+         abertos: levá-los para a próxima tela é deixar para trás o contexto que
+         explicava os dois. */
+      fecharPainelScore();
+      if (!naLic) document.getElementById('prep').hidden = true;
       document.getElementById('areaAgentes').hidden = area !== 'agentes';
       document.getElementById('areaLics').hidden = area !== 'lics';
       document.getElementById('areaWorkspace').hidden = !naLic;
