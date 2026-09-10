@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ai" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910aj" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 18:10</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 18:25</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ai" defer></script>
+  <script src="../assets/settle.js?v=20260910aj" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5330,9 +5330,12 @@
       pnAgente = agenteId;
       /* Durante a preparação a ação de configurar não aparece: nem aqui, nem
          desabilitada em lugar nenhum. */
-      var preparando = chave && FUNCS[chave] && FUNCS[chave].estado === 'preparando';
-      document.getElementById('pnFalar').hidden = !!preparando;
-      document.getElementById('pnCfg').hidden = !!preparando;
+      /* Com resultado, as duas ações moram no cabeçalho do widget: repetir
+         aqui daria duas portas para a mesma coisa. */
+      var pronto = chave && FUNCS[chave] && FUNCS[chave].estado === 'pronto';
+      var esconder = !chave || pronto || FUNCS[chave].estado === 'preparando';
+      document.getElementById('pnFalar').hidden = !!esconder;
+      document.getElementById('pnCfg').hidden = !!esconder;
       document.getElementById('pnTitulo').textContent = titulo;
       var body = document.getElementById('pnBody');
       body.innerHTML = corpo;
@@ -6108,6 +6111,12 @@
 
     /* O corpo de cada widget depende do agente: o resultado é montado conforme
        o que ele produz (Alice, 09/09, 14:08), e não num formato único. */
+    /* As faíscas: a marca de que aquele conteúdo saiu de um agente. */
+    var IC_IA = '<svg viewBox="0 0 20 20" width="17" height="17" fill="currentColor" ' +
+      'aria-hidden="true"><path d="M7.4 2.6 8.3 5.2 10.9 6.1 8.3 7 7.4 9.6 6.5 7 3.9 6.1 6.5 5.2z"/>' +
+      '<path d="M14 8.4l.65 1.85L16.5 10.9l-1.85.65L14 13.4l-.65-1.85L11.5 10.9l1.85-.65z"/>' +
+      '<path d="M9.6 12.6l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5z"/></svg>';
+
     function corpoDoWidget(id) {
       var marca = { ok:'ap-ok', no:'ap-warn', na:'ap-dim' };
       var icone = {
@@ -6282,25 +6291,28 @@
       /* O resultado é o resultado: sem selo de agente e sem os dois botões.
          A aba já se chama Análise técnica, e falar com quem produziu aquilo é
          conversa da Settle AI, não um botão dentro da resposta. */
-      function bloco(id, titulo) {
+      function bloco(id) {
         var c = corpoDoWidget(id);
-        return '<div class="wg">' +
-          (titulo ? '<h3 class="wg-titulo">' + titulo + '</h3>' : '') +
-          '<div class="wg-corpo">' + c.corpo + '</div>' +
-          (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + '</div>';
+        var an = ANALISES.filter(function (x) { return x.id === id; })[0];
+        var titulo = an ? an.nome : f.nome;
+        return '<div class="wia">' +
+          '<div class="wia-head"><span class="wia-nome">' + IC_IA + titulo + '</span>' +
+          '<span class="wia-acts">' +
+            '<button class="wia-act" type="button" data-fnfalar="' + id + '">' +
+              'Falar com o agente</button>' +
+            '<button class="wia-act" type="button" data-fncfg="' + id + '">' +
+              'Configurar</button>' +
+          '</span></div>' +
+          '<div class="wia-corpo">' + c.corpo +
+          (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + '</div></div>';
       }
 
       /* Uma funcionalidade pode ser alimentada por mais de um agente, e cada
          resposta é um card: juntar as duas numa lista só apagaria de quem é
          cada conclusão. */
       var varios = WIDGETS[chave];
-      if (varios && varios.length > 1) {
-        return varios.map(function (id) {
-          var an = ANALISES.filter(function (x) { return x.id === id; })[0];
-          return bloco(id, an ? an.nome : null);
-        }).join('');
-      }
-      return bloco(chave === 'tecnica' ? 'tecnica' : f.agente, null);
+      if (varios && varios.length > 1) return varios.map(bloco).join('');
+      return bloco(f.agente);
     }
 
     /* Tentar de novo tem duas portas: a linha do card e o vazio da própria
@@ -6318,6 +6330,22 @@
     function ligarFuncionalidade(box) {
       box.querySelectorAll('[data-fnretry]').forEach(function (b) {
         b.addEventListener('click', function () { tentarDeNovo(b.dataset.fnretry); });
+      });
+      box.querySelectorAll('[data-fncfg]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === b.dataset.fncfg; })[0];
+          if (an) abrirAnalise(an);
+        });
+      });
+      box.querySelectorAll('[data-fnfalar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === b.dataset.fnfalar; })[0];
+          if (!an) return;
+          cpAbrirPainel();
+          cpSelecionarAgente(an, 'Este é o resultado que produzi nesta licitação. Pode me dizer o ' +
+            'que ficou errado, ou pedir para eu explicar como cheguei nele.',
+            'PE ' + (licAberta ? licAberta.n : '90014/2026'));
+        });
       });
       box.querySelectorAll('[data-fncriar]').forEach(function (b) {
         b.addEventListener('click', function () {
