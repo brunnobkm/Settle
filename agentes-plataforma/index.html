@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910s" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910t" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:27</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:40</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -558,6 +558,17 @@
     <ul class="prep-lista" id="prepLista"></ul>
   </aside>
 
+  <div class="snb" id="snb" role="status" hidden>
+    <span class="snb-ok" aria-hidden="true"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="m6.5 10.2 2.4 2.4 4.6-5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="snb-txt" id="snbTxt">Licitação enviada para a área Em andamento.</span>
+    <span class="snb-acts">
+      <button class="btn btn-outline btn-sm" type="button" id="snbAbrir">Abrir licitação</button>
+      <button class="icon-btn" type="button" id="snbFechar" aria-label="Fechar aviso">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </span>
+  </div>
+
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
   <div class="cfm" id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitulo" hidden>
     <h2 id="cfmTitulo"></h2>
@@ -570,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910s" defer></script>
+  <script src="../assets/settle.js?v=20260910t" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5501,6 +5512,29 @@
           { st:'ok', nome:'Item 1 · Design de interface', det:'8 de 8 especificações atendidas · 3 perfis do catálogo comparados' },
           { st:'no', nome:'Item 2 · Pesquisa com usuários', det:'4 de 5 · exige laboratório de testes presencial, e o nosso catálogo é remoto' },
           { st:'ok', nome:'Item 3 · Design system', det:'2 de 2 especificações atendidas' }
+        ] } },
+
+      /* O segundo cenário: aqui os dois agentes rodam no envio para análise, e
+         nada foi preparado ainda. É o card do fluxo completo, do envio até o
+         resultado dentro da licitação. */
+      { n:'00312/2026', org:'TRIBUNAL DE JUSTIÇA DO ESTADO DE SANTA CATARINA',
+        objeto:'Contratação de empresa especializada em design de produto digital para a reformulação dos ' +
+          'canais de atendimento ao cidadão, compreendendo pesquisa, arquitetura de informação, design de ' +
+          'interface e testes de usabilidade, pelo período de 18 meses.',
+        segs:['Design de produto'], valor:'1.140.000,00',
+        adicionada:'08/09/2026', atualizada:'10/09/2026', envio:'29/09/2026',
+        id:'1086742', uasg:'925031', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
+        estado:'SC', cidade:'Florianópolis', habitantes:'537.211', capagE:'A', capagM:'B',
+        portal:'compras.gov.br', score:64,
+        fx:{ score:'aguardando', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
+        mom:{ score:'analise', checklist:'analise', tecnica:'analise' },
+        itens:[
+          { nome:'Pesquisa com usuários e arquitetura de informação', seg:'Design de produto', qtd:'520 h', vu:'R$ 200,00', vt:'R$ 104.000,00' },
+          { nome:'Design de interface dos canais de atendimento', seg:'Design de produto', qtd:'980 h', vu:'R$ 195,00', vt:'R$ 191.100,00' }
+        ],
+        tecnica:{ itens:[
+          { st:'ok', nome:'Item 1 · Pesquisa e arquitetura', det:'5 de 5 especificações atendidas' },
+          { st:'ok', nome:'Item 2 · Design de interface', det:'7 de 7 especificações atendidas' }
         ] } }
     ];
 
@@ -5576,9 +5610,13 @@
     /* Esperando, a dica sai do momento configurado no agente, como a frase do
        painel. Um texto fixo diria que o Score chega depois do envio para
        análise quando ele roda em Recomendadas. */
-    function dicaEstado(chave, st) {
-      if (st === 'aguardando') return 'Aparece ' + MOMENTO_TXT[FUNCS[chave].momento];
-      return DICA_ESTADO[st];
+    function dicaEstado(chave, st, l) {
+      if (st !== 'aguardando') return DICA_ESTADO[st];
+      /* Na lista, o momento é o daquele card: cada um simula uma configuração
+         diferente, e o global vale só para a licitação aberta. */
+      var mom = l ? ((l.mom && l.mom[chave]) || MOMENTO_PADRAO[chave])
+                  : FUNCS[chave].momento;
+      return 'Aparece ' + MOMENTO_TXT[mom];
     }
 
     function btnScoreHTML(l, i) {
@@ -5593,7 +5631,7 @@
         (st === 'pronto'
           ? ' data-tip="Score ' + classificar(l.score) + '"' +
             ' aria-label="Score: ' + l.score + '/100 — ' + classificar(l.score) + '"'
-          : ' data-tip="' + dicaEstado('score', st) + '"') + '>' +
+          : ' data-tip="' + dicaEstado('score', st, l) + '"') + '>' +
         corpo + '</button>';
     }
 
@@ -5603,7 +5641,8 @@
         : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="' +
-        (st === 'pronto' ? 'Abrir checklist da licitação' : dicaEstado('checklist', st)) + '">' +
+        (st === 'pronto' ? 'Abrir checklist da licitação'
+          : dicaEstado('checklist', st, l)) + '">' +
         corpo + '</button>';
     }
 
@@ -5629,7 +5668,9 @@
     function abrirLicitacao(i) {
       licAberta = LICS_CARDS[i];
       sincronizarFuncs(licAberta);
+      document.getElementById('snb').hidden = true;
       irPara('workspace');
+      correrPreparacao(licAberta);
     }
 
     /* Cada card da lista está num contexto diferente, para o time ver os cinco
@@ -5639,6 +5680,7 @@
       if (!l) return;
       Object.keys(FUNCS).forEach(function (k) {
         if (l.fx[k]) FUNCS[k].estado = l.fx[k];
+        FUNCS[k].momento = (l.mom && l.mom[k]) || MOMENTO_PADRAO[k];
       });
     }
 
@@ -5646,6 +5688,12 @@
       if (!licAberta) return;
       Object.keys(FUNCS).forEach(function (k) { licAberta.fx[k] = FUNCS[k].estado; });
     }
+
+    /* O momento é do agente, mas cada card simula uma configuração diferente:
+       no primeiro o Score já rodou em Recomendadas, no segundo ele espera o
+       envio para análise. */
+    var MOMENTO_PADRAO = { score:'recomendadas', checklist:'analise',
+                           tecnica:'analise', habil:'analise' };
 
     var licAberta = null;
 
@@ -5693,7 +5741,22 @@
     function pintarLics() {
       var box = document.getElementById('licsLista');
       if (!box) return;
+
+      /* Enviada, a licitação sai de Recomendadas. Se todas saírem, a lista
+         precisa dizer para onde foram e devolver o cenário para quem está
+         demonstrando. */
+      if (LICS_CARDS.every(function (l) { return l.enviada; })) {
+        box.innerHTML = '<div class="empty-state"><strong>Nada em Recomendadas</strong>' +
+          'As licitações enviadas estão em Em andamento, área que este protótipo não simula. ' +
+          '<button class="btn btn-outline btn-sm" type="button" id="licRecomecar">' +
+          'Recomeçar o cenário</button></div>';
+        var rec = document.getElementById('licRecomecar');
+        if (rec) rec.addEventListener('click', function () { location.reload(); });
+        return;
+      }
+
       box.innerHTML = LICS_CARDS.map(function (l, i) {
+        if (l.enviada) return '';
         return '<article class="card lic-card" data-licabrir="' + i + '" tabindex="0" role="link" ' +
           'aria-label="Abrir a licitação Edital ' + l.n + '">' +
           '<div class="card-top">' +
@@ -5797,41 +5860,56 @@
        ativa. */
     var prepItens = [];
 
-    /* Só as funcionalidades que este evento acionou entram na lista. O Score
-       não entra porque já rodou em Recomendadas, e a Habilitação não entra
-       porque não tem agente. */
-    var PREP_TEMPO = { checklist:3000, tecnica:7000 };
+    /* Só as funcionalidades que este evento acionou entram na lista: no primeiro
+       card o Score fica de fora, porque já rodou em Recomendadas; no segundo ele
+       entra. A Habilitação nunca entra, porque não tem agente. Os tempos são
+       diferentes de propósito, para o resultado aparecer um de cada vez. */
+    var PREP_TEMPO = { score:2000, checklist:4000, tecnica:8000 };
 
-    /* Só as funcionalidades que este evento acionou entram na lista. O Score
-       não entra porque já rodou em Recomendadas, e a Habilitação não entra
-       porque não tem agente. */
-    var PREP_TEMPO = { checklist:3000, tecnica:7000 };
-
+    /* Enviar para análise tira a licitação de Recomendadas, como na plataforma.
+       O aviso na base é o que sobra dela na tela, e o único caminho de volta
+       enquanto não for dispensado. */
     function abrirPreparando() {
-      var alvos = ['checklist', 'tecnica'].filter(function (k) {
-        return FUNCS[k].momento === 'analise' &&
-               (FUNCS[k].estado === 'aguardando' || FUNCS[k].estado === 'pronto');
+      var lic = licAberta;
+      var alvos = Object.keys(FUNCS).filter(function (k) {
+        return FUNCS[k].momento === 'analise' && FUNCS[k].estado === 'aguardando';
       });
-      if (!alvos.length) return;
-
-      prepItens = alvos.map(function (k) {
-        FUNCS[k].estado = 'preparando';
-        return { k:k, nome:FUNCS[k].nome };
-      });
+      alvos.forEach(function (k) { FUNCS[k].estado = 'preparando'; });
       guardarFuncs();
-      document.getElementById('prep').hidden = false;
-      pintarPreparando();
-      repintarTudo();
 
-      /* Cada uma fica pronta no seu tempo, e o resultado aparece na hora, sem
-         esperar as outras. */
-      prepItens.forEach(function (it) {
+      if (lic) {
+        lic.enviada = true;
+        /* Os relógios começam quando a pessoa entra na licitação: no envio ela
+           está olhando para a lista, e o ciclo passaria sem ninguém ver. */
+        lic.aPreparar = alvos;
+      }
+      prepItens = [];
+      document.getElementById('prep').hidden = true;
+      pintarLics();
+      mostrarAviso(lic);
+    }
+
+    function mostrarAviso(lic) {
+      var snb = document.getElementById('snb');
+      snb.hidden = false;
+      document.getElementById('snbAbrir').onclick = function () {
+        abrirLicitacao(LICS_CARDS.indexOf(lic));
+      };
+    }
+
+    /* Cada resultado fica pronto no seu tempo, e aparece na hora, sem esperar
+       os outros. */
+    function correrPreparacao(lic) {
+      if (!lic || !lic.aPreparar || !lic.aPreparar.length) return;
+      var alvos = lic.aPreparar;
+      lic.aPreparar = null;
+      alvos.forEach(function (k) {
         setTimeout(function () {
-          FUNCS[it.k].estado = 'pronto';
-          guardarFuncs();
-          pintarPreparando();
+          if (lic.fx[k] !== 'preparando') return;
+          lic.fx[k] = 'pronto';
+          if (licAberta === lic) FUNCS[k].estado = 'pronto';
           repintarTudo();
-        }, PREP_TEMPO[it.k] || 4000);
+        }, PREP_TEMPO[k] || 4000);
       });
     }
 
@@ -5986,11 +6064,12 @@
     function menuCenario(botao, chave) {
       fecharMenuCol();
       var f = FUNCS[chave];
-      /* Aqui a licitação já chegou em Recomendadas, e é nesse evento que o
-         agente do Score roda. Esperar por ele seria esperar o que já passou:
-         esse cenário existe antes desta tela, não nela. */
+      /* Em Recomendadas, esperar um evento que já passou não é um estado
+         possível: quem roda na captura ou na chegada em Recomendadas não pode
+         estar aguardando o momento aqui. */
+      var jaPassou = f.momento === 'recomendadas' || f.momento === 'captura';
       var cens = CENARIOS.filter(function (c) {
-        return !(chave === 'score' && c.id === 'aguardando');
+        return !(jaPassou && c.id === 'aguardando');
       });
 
       var pop = document.createElement('div');
@@ -6189,6 +6268,11 @@
 
     document.getElementById('navEnviar').addEventListener('click', function () {
       abrirPreparando();
+      irPara('lics');
+    });
+
+    document.getElementById('snbFechar').addEventListener('click', function () {
+      document.getElementById('snb').hidden = true;
     });
 
     document.getElementById('viaLics').addEventListener('click', function (e) {

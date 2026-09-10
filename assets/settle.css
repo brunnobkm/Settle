@@ -1415,6 +1415,17 @@ body.pn-open .cp-fab{z-index:72;}
 }
 body.pn-open .fp-overlay{z-index:73;}
 body.pn-open .ap-modal{z-index:74;}
+/* Aviso do envio para análise. Fica preso na base até a pessoa dispensar: ele
+   é o único caminho para a licitação que acabou de sair da lista. */
+.snb{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;
+  display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px);
+  padding:12px 14px;border:1px solid var(--accent);border-radius:var(--radius-box);
+  background:var(--background);box-shadow:var(--shadow-pop);font-size:14px;}
+.snb-ok{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  color:var(--accent-600);}
+.snb-txt{flex:1;min-width:0;}
+.snb-acts{flex:none;display:flex;align-items:center;gap:6px;}
+
 /* Sem resultado, o painel segue o vazio da plataforma: o texto e a ação no
    centro do espaço vago, não empilhados no topo dentro de uma caixa. */
 .pn-body.pn-vazio{display:flex;align-items:center;justify-content:center;}
