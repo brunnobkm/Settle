@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910am" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910an" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,12 +228,16 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 152</p>
+        <p class="ap-selo">Atualização número 153</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
         <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
         <button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">Em disputa ou Homologação</button>
+        <button class="btn btn-outline btn-chk" type="button" id="btnChk">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h3M4 10h3M4 14h3M9.5 6H16M9.5 10H16M9.5 14H16" stroke-linecap="round"/></svg>
+          Checklist
+        </button>
         <button class="btn-score" type="button" id="btnScore" data-tip="Score Quente" aria-label="Score: 78/100 — Quente">
           <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
           78/100
@@ -581,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910am" defer></script>
+  <script src="../assets/settle.js?v=20260910an" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5465,6 +5469,11 @@
       settleToast(oque + ': esta área não foi simulada no protótipo');
     }
 
+    document.getElementById('btnChk').addEventListener('click', function (e) {
+      e.stopPropagation();
+      menuCenario(this, 'checklist');
+    });
+
     document.getElementById('btnScore').addEventListener('click', function (e) {
       /* Sem parar aqui, o clique chega ao document e fecha o menu que ele
          mesmo acabou de abrir. */
@@ -5698,17 +5707,21 @@
         corpo + '</button>';
     }
 
-    function btnChkHTML(l, i) {
-      var st = l.fx.checklist;
-      if (st === 'indisponivel') return '';
-      /* Quatro estados sem resultado com o mesmo rótulo ficam indistinguíveis:
-         a diferença só apareceria no hover. O texto diz qual é, como no Score. */
-      var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
+    /* Quatro estados sem resultado com o mesmo rótulo ficam indistinguíveis:
+       a diferença só apareceria no hover. O texto diz qual é, como no Score. */
+    function corpoChk(st) {
+      return st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
         : st === 'aguardando' ? IC_CHK + 'Checklist não gerado'
         : st === 'sem-agente' ? IC_CHK + 'Checklist sem agente'
         : st === 'desativado' ? IC_CHK + 'Checklist desativado'
         : st === 'falhou' ? IC_CHK + 'Checklist não carregou'
         : IC_CHK + 'Checklist';
+    }
+
+    function btnChkHTML(l, i) {
+      var st = l.fx.checklist;
+      if (st === 'indisponivel') return '';
+      var corpo = corpoChk(st);
       return '<button class="btn btn-outline btn-chk' +
         (st === 'pronto' ? '' : st === 'preparando' ? ' btn-vazio btn-prep' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="' +
@@ -5800,6 +5813,21 @@
             '<div class="fld"><div class="k">Portal de disputa</div><div class="v">' + l.portal + '</div></div>' +
           '</div>' +
         '</div>';
+
+      /* O Checklist mora no cabeçalho como na lista: onde a conta não tem a
+         funcionalidade, o botão não existe. */
+      var bc = document.getElementById('btnChk');
+      if (bc) {
+        var stc = l.fx.checklist;
+        bc.hidden = stc === 'indisponivel';
+        if (!bc.hidden) {
+          bc.innerHTML = corpoChk(stc);
+          bc.classList.toggle('btn-vazio', stc !== 'pronto');
+          bc.classList.toggle('btn-prep', stc === 'preparando');
+          bc.dataset.tip = stc === 'pronto' ? 'Abrir checklist da licitação'
+            : dicaEstado('checklist', stc, l);
+        }
+      }
 
       var st = l.fx.score;
       var bs = document.getElementById('btnScore');
