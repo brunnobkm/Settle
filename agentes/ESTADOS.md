@@ -122,10 +122,12 @@ ser preparados". Nunca "todos estão prontos" com um erro na lista.
 ativo, contando falha como terminado. O contrário prende o card na tela para
 sempre quando um agente quebra.
 
-## Para escrever no Notion, porque o vídeo não mostra
+## O que o vídeo não mostra
 
-Estes três não aparecem no protótipo. Ficam registrados aqui para entrar na
-documentação quando ela for reescrita, depois que o protótipo estiver fechado.
+O protótipo é a documentação: quem quiser saber como a tela se comporta,
+assiste à apresentação (o link "Ver a apresentação", no cabeçalho, roda os
+quinze passos sozinho). O que sobra é o que não cabe numa gravação, e é o que
+está escrito aqui.
 
 **Aviso ao entrar em Agentes com algo rodando.** Quando a pessoa abre a área de
 Agentes e algum agente está preparando um resultado, um aviso na tela precisa
@@ -137,6 +139,11 @@ durante a preparação; o aviso cobre o caminho de quem chega pela outra porta.
 **O card some sozinho em D+1.** Vinte e quatro horas depois do último item ficar
 pronto, contadas por pessoa, junto com o fechamento individual. Não está
 simulado, e é decisão fechada, não esquecimento.
+
+**Não criado e desativado são estados diferentes.** O Notion trata os dois com
+um texto só e uma ação só. São situações distintas e pedem caminhos distintos:
+quem nunca configurou precisa criar o agente; quem desligou precisa reativar, e
+já sabe o que aquilo faz. O protótipo separa os dois, e é essa a decisão.
 
 **Quando o card aparece.** No protótipo ele aparece ao entrar na licitação,
 porque o envio tira a licitação de Recomendadas e não há mais onde mostrá-lo. Na
