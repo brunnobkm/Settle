@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910n" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910o" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:39</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:43</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910n" defer></script>
+  <script src="../assets/settle.js?v=20260910o" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5565,11 +5565,18 @@
 
     var DICA_ESTADO = {
       pronto:'Resultado disponível',
-      aguardando:'Aparece depois do envio para análise',
       preparando:'Estamos preparando este resultado',
       'sem-agente':'Nenhum agente configurado',
       desativado:'O agente desta funcionalidade está desativado'
     };
+
+    /* Esperando, a dica sai do momento configurado no agente, como a frase do
+       painel. Um texto fixo diria que o Score chega depois do envio para
+       análise quando ele roda em Recomendadas. */
+    function dicaEstado(chave, st) {
+      if (st === 'aguardando') return 'Aparece ' + MOMENTO_TXT[FUNCS[chave].momento];
+      return DICA_ESTADO[st];
+    }
 
     function btnScoreHTML(l, i) {
       var st = l.fx.score;
@@ -5582,7 +5589,7 @@
         (st === 'pronto'
           ? ' data-tip="Score ' + classificar(l.score) + '"' +
             ' aria-label="Score: ' + l.score + '/100 — ' + classificar(l.score) + '"'
-          : ' data-tip="' + DICA_ESTADO[st] + '"') + '>' +
+          : ' data-tip="' + dicaEstado('score', st) + '"') + '>' +
         corpo + '</button>';
     }
 
@@ -5592,7 +5599,7 @@
         : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="' +
-        (st === 'pronto' ? 'Abrir checklist da licitação' : DICA_ESTADO[st]) + '">' +
+        (st === 'pronto' ? 'Abrir checklist da licitação' : dicaEstado('checklist', st)) + '">' +
         corpo + '</button>';
     }
 
