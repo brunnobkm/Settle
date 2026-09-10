@@ -39,11 +39,17 @@ No protótipo ficaram **cinco eventos**, num select:
 
 | Evento | Frase de espera na funcionalidade |
 |---|---|
-| Quando a licitação é capturada | "Este resultado fica pronto quando a licitação for capturada." |
+| Quando a licitação é capturada | "O Checklist aparece aqui quando a licitação for capturada." |
 | Quando chega em Recomendadas | "…quando a licitação chegar em Recomendadas." |
 | Quando é liberada para você | "…quando a licitação for liberada para você." |
 | Quando é enviada para análise | "…depois que você enviar a licitação para análise." |
 | Quando você pedir | "…quando você pedir." |
+
+A frase **nomeia a funcionalidade e usa "aparece aqui"**. A versão anterior
+dizia "Este resultado será preparado após o envio da licitação para análise":
+descrevia o trabalho de dentro, na voz passiva e sem dizer o que ia surgir ali.
+Quem está parada num bloco vazio quer saber duas coisas, e são essas duas: o que
+vem e o que falta acontecer.
 
 E uma **regra de repetição** em dois rádios, ao lado: *só na primeira vez* ou
 *toda vez*. Ela some quando o evento é "quando você pedir", porque ali não existe
