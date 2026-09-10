@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910y" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910z" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:29</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:30</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910y" defer></script>
+  <script src="../assets/settle.js?v=20260910z" defer></script>
   <script>
   (function () {
     'use strict';
@@ -6053,13 +6053,12 @@
 
       document.getElementById('prepTitulo').textContent = ativos
         ? 'Preparando resultados'
-        : falhas ? 'Alguns resultados não ficaram prontos' : 'Resultados disponíveis';
+        : falhas ? 'Nem todos os resultados carregaram' : 'Resultados disponíveis';
 
       document.getElementById('prepTexto').textContent = ativos
         ? 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ' +
           'Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
-        : falhas ? 'Os itens marcados não puderam ser preparados. Você pode tentar de novo ' +
-          'dentro de cada um.'
+        : falhas ? 'O que ficou pronto já está na licitação. Tente de novo o que faltou.'
         : 'Todos os itens estão prontos para consulta.';
 
       document.getElementById('prepLista').innerHTML = prepItens.map(function (i) {
@@ -6072,9 +6071,16 @@
           : '<span class="prep-ok-ic"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" ' +
             'stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 8.5 3.5 3.5L13 5" ' +
             'stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+        /* O caminho de volta fica na própria linha: dizer "não carregou" e
+           deixar a pessoa procurar onde tentar de novo é meio caminho. */
         return '<li>' + marca + '<span>' + i.nome + '</span>' +
-          (st === 'falhou' ? '<span class="prep-no-txt">não carregou</span>' : '') + '</li>';
+          (st === 'falhou' ? '<button class="prep-retry" type="button" data-prepretry="' +
+            i.k + '">Tentar novamente</button>' : '') + '</li>';
       }).join('');
+
+      document.querySelectorAll('[data-prepretry]').forEach(function (b) {
+        b.addEventListener('click', function () { tentarDeNovo(b.dataset.prepretry); });
+      });
 
       /* Enquanto houver item em preparação não existe botão de fechar: fechar
          não pode significar cancelar. */
@@ -6275,18 +6281,21 @@
         (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + cfg + '</div>';
     }
 
+    /* Tentar de novo tem duas portas: a linha do card e o vazio da própria
+       funcionalidade. As duas fazem a mesma coisa. */
+    function tentarDeNovo(k) {
+      FUNCS[k].estado = 'preparando';
+      guardarFuncs();
+      if (licAberta) {
+        licAberta.aPreparar = [k];
+        correrPreparacao(licAberta);
+      }
+      repintarTudo();
+    }
+
     function ligarFuncionalidade(box) {
       box.querySelectorAll('[data-fnretry]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var k = b.dataset.fnretry;
-          FUNCS[k].estado = 'preparando';
-          guardarFuncs();
-          if (licAberta) {
-            licAberta.aPreparar = [k];
-            correrPreparacao(licAberta);
-          }
-          repintarTudo();
-        });
+        b.addEventListener('click', function () { tentarDeNovo(b.dataset.fnretry); });
       });
       box.querySelectorAll('[data-fncfg]').forEach(function (b) {
         b.addEventListener('click', function () {
