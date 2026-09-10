@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ag" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910ah" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:58</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 18:00</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ag" defer></script>
+  <script src="../assets/settle.js?v=20260910ah" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5683,7 +5683,8 @@
       var st = l.fx.score;
       var corpo = corpoScore(l, st);
       return '<button class="btn-score' +
-        (st === 'pronto' ? classeScore(l.score) : ' btn-vazio') +
+        (st === 'pronto' ? classeScore(l.score)
+          : st === 'preparando' ? ' btn-vazio btn-prep' : ' btn-vazio') +
         '" type="button" data-licscore="' + i + '"' +
         (st === 'pronto'
           ? ' data-tip="Score ' + classificar(l.score) + '"' +
@@ -5703,7 +5704,8 @@
         : st === 'desativado' ? IC_CHK + 'Checklist desativado'
         : st === 'falhou' ? IC_CHK + 'Checklist não carregou'
         : IC_CHK + 'Checklist';
-      return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
+      return '<button class="btn btn-outline btn-chk' +
+        (st === 'pronto' ? '' : st === 'preparando' ? ' btn-vazio btn-prep' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="' +
         (st === 'pronto' ? 'Abrir checklist da licitação'
           : dicaEstado('checklist', st, l)) + '">' +
@@ -5799,6 +5801,7 @@
       if (bs) {
         bs.innerHTML = corpoScore(l, st);
         bs.classList.toggle('btn-vazio', st !== 'pronto');
+        bs.classList.toggle('btn-prep', st === 'preparando');
         bs.classList.toggle('sc-morno', st === 'pronto' && classeScore(l.score) === ' sc-morno');
         bs.classList.toggle('sc-frio', st === 'pronto' && classeScore(l.score) === ' sc-frio');
         if (st === 'pronto') {
