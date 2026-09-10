@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910h" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910i" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,13 +228,13 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:45</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:57</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
         <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
         <button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">Em disputa ou Homologação</button>
-        <button class="btn-score" type="button" id="btnScore">
+        <button class="btn-score" type="button" id="btnScore" data-tip="Score: 78/100 — Quente">
           <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
           78/100
         </button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910h" defer></script>
+  <script src="../assets/settle.js?v=20260910i" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5497,7 +5497,7 @@
         adicionada:'12/08/2026', atualizada:'02/09/2026', envio:'22/09/2026',
         id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
-        portal:'compras.gov.br', score:86,
+        portal:'compras.gov.br', score:58,
         fx:{ score:'pronto', checklist:'pronto', tecnica:'pronto', habil:'pronto' },
         itens:[
           { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
@@ -5515,7 +5515,7 @@
         adicionada:'21/08/2026', atualizada:'08/09/2026', envio:'30/09/2026',
         id:'1085330', uasg:'090029', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'—', capagM:'—',
-        portal:'compras.gov.br', score:72,
+        portal:'compras.gov.br', score:31,
         fx:{ score:'sem-agente', checklist:'desativado', tecnica:'sem-agente', habil:'sem-agente' },
         itens:[
           { nome:'Criação do design system corporativo, com documentação', seg:'Design system', qtd:'1.400 h', vu:'R$ 205,00', vt:'R$ 287.000,00' },
@@ -5575,6 +5575,14 @@
       'stroke-width="1.7" aria-hidden="true"><path d="M4 6h3M4 10h3M4 14h3M9.5 6H16M9.5 10H16M9.5 14H16" ' +
       'stroke-linecap="round"/></svg>';
 
+    /* Na plataforma o tooltip do Score pronto diz "Score: 87/100 — Quente".
+       A classificação vem do backend: o front só traduz QUENTE/MORNO/FRIO em
+       rótulo e cor. Os cortes abaixo são inferidos do que está em produção
+       (87 e 100 quentes, 65 e 52 mornos) e servem só para o protótipo. */
+    function classificar(n) {
+      return n >= 70 ? 'Quente' : n >= 40 ? 'Morno' : 'Frio';
+    }
+
     var DICA_ESTADO = {
       pronto:'Resultado disponível',
       aguardando:'Aparece depois do envio para análise',
@@ -5590,7 +5598,9 @@
         : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
         : IC_SCORE + 'Score sem agente';
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licscore="' + i + '" data-tip="' + DICA_ESTADO[st] + '">' +
+        '" type="button" data-licscore="' + i + '" data-tip="' +
+        (st === 'pronto' ? 'Score: ' + l.score + '/100 — ' + classificar(l.score)
+          : DICA_ESTADO[st]) + '">' +
         corpo + '</button>';
     }
 
@@ -5679,7 +5689,10 @@
         '</div>';
 
       var bs = document.getElementById('btnScore');
-      if (bs) bs.lastChild.textContent = ' ' + l.score + '/100';
+      if (bs) {
+        bs.lastChild.textContent = ' ' + l.score + '/100';
+        bs.dataset.tip = 'Score: ' + l.score + '/100 — ' + classificar(l.score);
+      }
     }
 
     function pintarLics() {
