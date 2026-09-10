@@ -119,6 +119,29 @@ ser preparados". Nunca "todos estão prontos" com um erro na lista.
 ativo, contando falha como terminado. O contrário prende o card na tela para
 sempre quando um agente quebra.
 
+## Para escrever no Notion, porque o vídeo não mostra
+
+Estes três não aparecem no protótipo. Ficam registrados aqui para entrar na
+documentação quando ela for reescrita, depois que o protótipo estiver fechado.
+
+**Aviso ao entrar em Agentes com algo rodando.** Quando a pessoa abre a área de
+Agentes e algum agente está preparando um resultado, um aviso na tela precisa
+dizer que editar ou excluir pode interromper o que está em curso. O mesmo vale
+para Variáveis: uma variável mexida no meio da execução muda o resultado que
+está sendo produzido. Dentro da funcionalidade a configuração já fica escondida
+durante a preparação; o aviso cobre o caminho de quem chega pela outra porta.
+
+**O card some sozinho em D+1.** Vinte e quatro horas depois do último item ficar
+pronto, contadas por pessoa, junto com o fechamento individual. Não está
+simulado, e é decisão fechada, não esquecimento.
+
+**Quando o card aparece.** No protótipo ele aparece ao entrar na licitação,
+porque o envio tira a licitação de Recomendadas e não há mais onde mostrá-lo. Na
+plataforma o efeito é o mesmo: os agentes rodam por trás, e quem abre a
+licitação encontra o que ainda estiver em curso.
+
+---
+
 ## 5. As decisões de produto que sobraram, com recomendação
 
 Estas eu não fechei porque dependem de você ou da Alice.
