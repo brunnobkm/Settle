@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910w" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910x" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:04</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:23</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910w" defer></script>
+  <script src="../assets/settle.js?v=20260910x" defer></script>
   <script>
   (function () {
     'use strict';
@@ -4624,7 +4624,23 @@
       if (gat) gat.addEventListener('change', function () {
         an.gatilho = GATILHOS_FX[gat.value];
         pintarAnalises();
+        aplicarMomento(an.id, gat.value);
       });
+    }
+
+    /* Mudar o momento na configuração muda a frase de espera da funcionalidade
+       que aquele agente alimenta: é assim que se vê, no protótipo, cada um dos
+       cinco eventos escrito na tela. */
+    function aplicarMomento(agenteId, momento) {
+      Object.keys(FUNCS).forEach(function (k) {
+        if (FUNCS[k].agente !== agenteId) return;
+        FUNCS[k].momento = momento;
+        if (licAberta) {
+          licAberta.mom = licAberta.mom || {};
+          licAberta.mom[k] = momento;
+        }
+      });
+      repintarTudo();
     }
 
     /* Abrir um agente mostra o que ele é e o que ele fez. Editar é outro
@@ -5493,7 +5509,7 @@
        aparece na lista, e não só dentro da licitação. Quem tem 40 licitações
        abertas precisa comparar sem entrar em cada uma. */
     var LICS_CARDS = [
-      { n:'90014/2026', cenario:'Resultados prontos e resultados esperando o envio',
+      { n:'90014/2026', cenario:'Simulador',
         org:'SECRETARIA DE ESTADO DE SAÚDE DE MINAS GERAIS',
         objeto:'Contratação de empresa especializada na prestação de serviços de design de produto digital, ' +
           'compreendendo pesquisa com usuários, arquitetura de informação, design de interface e manutenção ' +
@@ -5920,7 +5936,7 @@
     /* Enviar para análise tira a licitação de Recomendadas, como na plataforma.
        O aviso na base é o que sobra dela na tela, e o único caminho de volta
        enquanto não for dispensado. */
-    function abrirPreparando() {
+    function abrirPreparando(deDentro) {
       var lic = licAberta;
       var alvos = Object.keys(FUNCS).filter(function (k) {
         return FUNCS[k].momento === 'analise' && FUNCS[k].estado === 'aguardando';
@@ -5937,6 +5953,16 @@
       prepItens = [];
       document.getElementById('prep').hidden = true;
       pintarLics();
+
+      /* Enviado de dentro da licitação, o lugar não muda: quem está lá fica lá
+         e vê a preparação começar. O aviso é para quem enviou da lista, onde a
+         licitação acabou de sumir. */
+      if (deDentro) {
+        pintarCabecaWk();
+        sincronizarPreparando(true);
+        correrPreparacao(lic);
+        return;
+      }
       mostrarAviso(lic);
     }
 
@@ -6355,8 +6381,7 @@
     }
 
     document.getElementById('navEnviar').addEventListener('click', function () {
-      abrirPreparando();
-      irPara('lics');
+      abrirPreparando(true);
     });
 
     document.getElementById('snbFechar').addEventListener('click', function () {
