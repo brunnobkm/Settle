@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910e" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 10:50</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 11:15</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910d" defer></script>
+  <script src="../assets/settle.js?v=20260910e" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5478,6 +5478,7 @@
         id:'1078513', uasg:'986531', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'MG', cidade:'Belo Horizonte', habitantes:'2.315.560', capagE:'B', capagM:'C',
         portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true,
+        fx:{ score:'pronto', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
         itens:[
           { nome:'Design de interface: telas de novos fluxos, com protótipo navegável', seg:'Design de produto', qtd:'1.200 h', vu:'R$ 190,00', vt:'R$ 228.000,00' },
           { nome:'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', seg:'Pesquisa com usuários', qtd:'480 h', vu:'R$ 210,00', vt:'R$ 100.800,00' },
@@ -5497,6 +5498,7 @@
         id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
         portal:'compras.gov.br', score:86,
+        fx:{ score:'preparando', checklist:'preparando', tecnica:'preparando', habil:'sem-agente' },
         itens:[
           { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
           { nome:'Acompanhamento da implantação junto ao time interno', seg:'Design de produto', qtd:'700 h', vu:'R$ 195,00', vt:'R$ 136.500,00' }
@@ -5514,6 +5516,7 @@
         id:'1083990', uasg:'925017', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'B', capagM:'A',
         portal:'compras.rs.gov.br', score:81, atualizado:true,
+        fx:{ score:'aguardando', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
         itens:[
           { nome:'Entrevistas e testes de usabilidade em plataformas educacionais', seg:'Pesquisa com usuários', qtd:'620 h', vu:'R$ 210,00', vt:'R$ 130.200,00' },
           { nome:'Relatório e recomendações por ciclo', seg:'Pesquisa com usuários', qtd:'325 h', vu:'R$ 210,00', vt:'R$ 68.250,00' }
@@ -5531,6 +5534,7 @@
         id:'1085330', uasg:'090029', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'—', capagM:'—',
         portal:'compras.gov.br', score:72,
+        fx:{ score:'sem-agente', checklist:'sem-agente', tecnica:'sem-agente', habil:'sem-agente' },
         itens:[
           { nome:'Criação do design system corporativo, com documentação', seg:'Design system', qtd:'1.400 h', vu:'R$ 205,00', vt:'R$ 287.000,00' },
           { nome:'Treinamento das equipes internas', seg:'Design system', qtd:'380 h', vu:'R$ 220,00', vt:'R$ 83.600,00' }
@@ -5544,6 +5548,7 @@
         id:'1086771', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'SP', cidade:'Itapevi', habitantes:'241.256', capagE:'C', capagM:'C',
         portal:'compras.itapevi.sp.gov.br', score:34,
+        fx:{ score:'desativado', checklist:'desativado', tecnica:'desativado', habil:'sem-agente' },
         itens:[
           { nome:'Identidade visual e manual de marca', seg:'Identidade visual', qtd:'320 h', vu:'R$ 175,00', vt:'R$ 56.000,00' },
           { nome:'Peças gráficas para campanhas institucionais', seg:'Identidade visual', qtd:'180 h', vu:'R$ 165,00', vt:'R$ 29.700,00' }
@@ -5591,6 +5596,43 @@
         }).join('');
     }
 
+    /* O botão do Score e o do Checklist dizem o estado do agente que os
+       alimenta. Sem resultado, o número não aparece: fica o traço, para a
+       pessoa ver que o lugar existe e ainda não tem resposta. */
+    var IC_SCORE = '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/>' +
+      '<path d="M10 12.5 13 8" stroke-linecap="round"/></svg>';
+
+    var IC_CHK = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.7" aria-hidden="true"><path d="M4 6h3M4 10h3M4 14h3M9.5 6H16M9.5 10H16M9.5 14H16" ' +
+      'stroke-linecap="round"/></svg>';
+
+    var DICA_ESTADO = {
+      pronto:'Resultado disponível',
+      aguardando:'Será preparado após o envio para análise',
+      preparando:'Estamos preparando este resultado',
+      'sem-agente':'Nenhum agente configurado para isto',
+      desativado:'O agente desta funcionalidade está desativado'
+    };
+
+    function btnScoreHTML(l, i) {
+      var st = l.fx.score;
+      var corpo = st === 'pronto' ? IC_SCORE + l.score + '/100'
+        : st === 'preparando' ? '<span class="cp-spin"></span>Score'
+        : IC_SCORE + '–/100';
+      return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
+        '" type="button" data-licscore="' + i + '" data-tip="Score · ' + DICA_ESTADO[st] + '">' +
+        corpo + '</button>';
+    }
+
+    function btnChkHTML(l, i) {
+      var st = l.fx.checklist;
+      var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Checklist' : IC_CHK + 'Checklist';
+      return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
+        '" type="button" data-licchk="' + i + '" data-tip="Checklist · ' + DICA_ESTADO[st] + '">' +
+        corpo + '</button>';
+    }
+
     function capagHTML(n) {
       if (!n || n === '—') return '—';
       return '<span class="capag ' + n.toLowerCase() + '">' + n + '</span>';
@@ -5612,7 +5654,23 @@
        passam a ser os dela, e não os de uma licitação fixa. */
     function abrirLicitacao(i) {
       licAberta = LICS_CARDS[i];
+      sincronizarFuncs(licAberta);
       irPara('workspace');
+    }
+
+    /* Cada card da lista está num contexto diferente, para o time ver os cinco
+       estados lado a lado. Ao entrar numa licitação, as funcionalidades assumem
+       o estado daquela licitação. */
+    function sincronizarFuncs(l) {
+      if (!l) return;
+      Object.keys(FUNCS).forEach(function (k) {
+        if (l.fx[k]) FUNCS[k].estado = l.fx[k];
+      });
+    }
+
+    function guardarFuncs() {
+      if (!licAberta) return;
+      Object.keys(FUNCS).forEach(function (k) { licAberta.fx[k] = FUNCS[k].estado; });
     }
 
     var licAberta = null;
@@ -5676,14 +5734,7 @@
                 icCard('link', 'Copiar link') + icCard('share', 'Compartilhar') +
                 icCard('arquivo', 'Documentos') + icCard('pasta', 'Pastas') +
               '</span>' +
-              '<button class="btn btn-outline btn-chk" type="button" data-licchk="' + i + '">' +
-                '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" ' +
-                'stroke-width="1.7" aria-hidden="true"><path d="M4 6h3M4 10h3M4 14h3M9.5 6H16M9.5 10H16M9.5 14H16" ' +
-                'stroke-linecap="round"/></svg>Checklist</button>' +
-              '<button class="btn-score" type="button" data-licscore="' + i + '">' +
-                '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" ' +
-                'stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/>' +
-                '<path d="M10 12.5 13 8" stroke-linecap="round"/></svg>' + l.score + '/100</button>' +
+              btnChkHTML(l, i) + btnScoreHTML(l, i) +
             '</div>' +
           '</div>' +
 
@@ -5725,6 +5776,7 @@
         b.addEventListener('click', function (e) {
           e.stopPropagation();
           licAberta = LICS_CARDS[+b.dataset.licchk];
+          sincronizarFuncs(licAberta);
           menuCenario(b, 'checklist');
         });
       });
@@ -5733,6 +5785,7 @@
         b.addEventListener('click', function (e) {
           e.stopPropagation();
           licAberta = LICS_CARDS[+b.dataset.licscore];
+          sincronizarFuncs(licAberta);
           menuCenario(b, 'score');
         });
       });
@@ -5803,6 +5856,7 @@
         FUNCS[k].estado = 'preparando';
         return { k:k, nome:FUNCS[k].nome, st:'preparando' };
       });
+      guardarFuncs();
       document.getElementById('prep').hidden = false;
       pintarPreparando();
       pintarWorkspace();
@@ -5814,6 +5868,7 @@
         setTimeout(function () {
           it.st = 'pronto';
           FUNCS[it.k].estado = 'pronto';
+          guardarFuncs();
           pintarPreparando();
           pintarWorkspace();
           pintarPainelAberto();
@@ -5924,15 +5979,19 @@
       { id:'desativado', t:'Agente desativado',        d:'o agente existe e está desligado' }
     ];
 
-    function menuCenario(botao, chave) {
+    /* Nas abas, a marca do cenário atual faz sentido: a aba já está aberta num
+       deles. Nos botões do card não, porque a pessoa clica ali para escolher o
+       que quer ver, e nada foi aberto ainda. */
+    function menuCenario(botao, chave, marcarAtual) {
       fecharMenuCol();
       var f = FUNCS[chave];
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cen-pop';
       pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
         CENARIOS.map(function (c) {
-          return '<button class="cp-op' + (f.estado === c.id ? ' on' : '') + '" type="button" ' +
-            'data-cen="' + c.id + '">' + (f.estado === c.id ? '✓ ' : '') + c.t +
+          var on = marcarAtual && f.estado === c.id;
+          return '<button class="cp-op' + (on ? ' on' : '') + '" type="button" ' +
+            'data-cen="' + c.id + '">' + (on ? '✓ ' : '') + c.t +
             '<span class="cp-op-sub">' + c.d + '</span></button>';
         }).join('');
       document.body.appendChild(pop);
@@ -5942,7 +6001,9 @@
       pop.querySelectorAll('[data-cen]').forEach(function (b) {
         b.addEventListener('click', function () {
           f.estado = b.dataset.cen;
+          guardarFuncs();
           fecharMenuCol();
+          if (!document.getElementById('areaLics').hidden) pintarLics();
           abrirFuncionalidade(chave);
         });
       });
@@ -6082,7 +6143,7 @@
     document.querySelectorAll('[data-wk]').forEach(function (b) {
       b.addEventListener('click', function () {
         wkAba = b.dataset.wk;
-        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba); }, 0);
+        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba, true); }, 0);
         document.querySelectorAll('[data-wk]').forEach(function (o) {
           var on = o === b;
           o.classList.toggle('active', on);
