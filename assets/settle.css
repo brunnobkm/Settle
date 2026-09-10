@@ -1408,6 +1408,11 @@ table.dt td.c-sel .ap-check{gap:0;}
 .btn-score.btn-vazio:hover,.btn.btn-vazio:hover{
   background:color-mix(in srgb, var(--warning) 14%, var(--card));}
 .btn-score.btn-vazio svg,.btn.btn-vazio svg{color:inherit;}
+/* Preparando não é falta: o sistema está trabalhando, e o âmbar diria que
+   alguém precisa fazer algo. Fica neutro, como era. */
+.btn-score.btn-prep,.btn.btn-prep{border-color:var(--border-strong);
+  background:var(--card);color:var(--muted-foreground);}
+.btn-score.btn-prep:hover,.btn.btn-prep:hover{background:var(--muted);}
 .btn-score .cp-spin,.btn .cp-spin{margin-right:2px;}
 
 .pn-ovl{position:fixed;inset:0;z-index:70;background:rgba(23,23,23,.25);}
