@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 10:40</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 10:50</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910c" defer></script>
+  <script src="../assets/settle.js?v=20260910d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5300,18 +5300,27 @@
        esse agente. */
     var pnAgente = 'score';
 
-    function abrirPainel(titulo, corpo, agenteId) {
+    function abrirPainel(titulo, corpo, agenteId, chave) {
       pnAgente = agenteId;
+      /* Durante a preparação a ação de configurar não aparece: nem aqui, nem
+         desabilitada em lugar nenhum. */
+      var preparando = chave && FUNCS[chave] && FUNCS[chave].estado === 'preparando';
+      document.getElementById('pnFalar').hidden = !!preparando;
+      document.getElementById('pnCfg').hidden = !!preparando;
       document.getElementById('pnTitulo').textContent = titulo;
       document.getElementById('pnBody').innerHTML = corpo;
       document.getElementById('pnOvl').hidden = false;
       document.getElementById('pn').hidden = false;
       document.body.classList.add('pn-open');
+      ligarFuncionalidade(document.getElementById('pnBody'));
     }
 
     function abrirPainelScore(lic) {
       /* A nota é da licitação que abriu o painel, não de uma fixa. */
       var alvo = lic || licAberta;
+      if (FUNCS.score.estado !== 'pronto') {
+        return abrirPainel('Score', blocoDaFuncionalidade('score'), 'score', 'score');
+      }
       var badge = { ok:'<span class="ap-tag run">Atende</span>',
                     no:'<span class="ap-tag warn">Não atende</span>',
                     na:'<span class="ap-tag pause">Não se aplica</span>' };
@@ -5323,7 +5332,7 @@
             '<span class="pn-var-q">' + x.q + '</span>' +
             '<span class="pn-var-v">' + x.v + '</span></span>' +
             '<span class="pn-var-pt">' + x.pt + '</span>' + badge[x.st] + '</div>';
-        }).join('') + '</div>', 'score');
+        }).join('') + '</div>', 'score', 'score');
     }
 
     /* O Checklist como na plataforma: seções recolhíveis, cada linha com a
@@ -5362,6 +5371,9 @@
     ];
 
     function abrirPainelChecklist() {
+      if (FUNCS.checklist.estado !== 'pronto') {
+        return abrirPainel('Checklist', blocoDaFuncionalidade('checklist'), 'checklist', 'checklist');
+      }
       var corpo = CHECKLIST.map(function (g, i) {
         return '<div class="pn-sec"><button class="pn-sec-head" type="button" data-chk="' + i + '" ' +
           'aria-expanded="true"><span>' + g.s + '</span>' +
@@ -5377,7 +5389,7 @@
           }).join('') + '</div></div>';
       }).join('');
 
-      abrirPainel('Checklist', corpo, 'checklist');
+      abrirPainel('Checklist', corpo, 'checklist', 'checklist');
 
       document.querySelectorAll('[data-chk]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -5414,7 +5426,7 @@
     }
 
     document.getElementById('btnScore').addEventListener('click', function () {
-      abrirPainelScore();
+      menuCenario(this, 'score');
     });
     document.getElementById('pnFechar').addEventListener('click', fecharPainelScore);
     document.getElementById('pnOvl').addEventListener('click', fecharPainelScore);
@@ -5710,12 +5722,18 @@
       }).join('');
 
       box.querySelectorAll('[data-licchk]').forEach(function (b) {
-        b.addEventListener('click', function () { abrirPainelChecklist(); });
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          licAberta = LICS_CARDS[+b.dataset.licchk];
+          menuCenario(b, 'checklist');
+        });
       });
 
       box.querySelectorAll('[data-licscore]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          abrirPainelScore(LICS_CARDS[+b.dataset.licscore]);
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          licAberta = LICS_CARDS[+b.dataset.licscore];
+          menuCenario(b, 'score');
         });
       });
       box.querySelectorAll('[data-licenviar]').forEach(function (b) {
@@ -5741,57 +5759,100 @@
        ativa. */
     var prepItens = [];
 
-    function abrirPreparando(agentes) {
-      if (!agentes.length) return;
-      prepItens = agentes.map(function (an) {
-        an.rodando = true; an.falhou = false;
-        return { id:an.id, nome:an.nome, st:'preparando' };
+    /* Só as funcionalidades que este evento acionou entram na lista. O Score
+       não entra porque já rodou em Recomendadas, e a Habilitação não entra
+       porque não tem agente. */
+    var PREP_TEMPO = { checklist:3000, tecnica:7000 };
+
+    /* O que o envio dispara: só quem tem o momento "após o envio para análise"
+       e ainda não rodou. O Score e a Habilitação ficam de fora, e a
+       confirmação diz isso. */
+    function confirmarEnvio(depois) {
+      var vao = ['checklist', 'tecnica'].filter(function (k) {
+        return FUNCS[k].momento === 'analise' && FUNCS[k].estado !== 'sem-agente' &&
+               FUNCS[k].estado !== 'desativado';
+      });
+      var fora = Object.keys(FUNCS).filter(function (k) { return vao.indexOf(k) < 0; });
+
+      var corpo = '<p class="ap-fhint" style="margin:0 0 10px">Vão ser preparados agora:</p>' +
+        '<ul class="cfm-lista">' + vao.map(function (k) {
+          return '<li><b>' + FUNCS[k].nome + '</b></li>';
+        }).join('') + '</ul>' +
+        '<p class="ap-fhint" style="margin:12px 0 0">' +
+          fora.map(function (k) {
+            var f = FUNCS[k];
+            if (f.estado === 'sem-agente') return '<b>' + f.nome + '</b> não tem agente configurado';
+            if (f.estado === 'desativado') return '<b>' + f.nome + '</b> está com o agente desativado';
+            return '<b>' + f.nome + '</b> já ficou pronto ' + MOMENTO_TXT[f.momento];
+          }).join('. ') + '. Nenhum deles é acionado agora.</p>';
+
+      confirmar('Enviar para análise', corpo, 'Enviar', function () {
+        abrirPreparando();
+        if (depois) depois();
+      });
+    }
+
+    function abrirPreparando() {
+      var alvos = ['checklist', 'tecnica'].filter(function (k) {
+        return FUNCS[k].momento === 'analise' &&
+               (FUNCS[k].estado === 'aguardando' || FUNCS[k].estado === 'pronto');
+      });
+      if (!alvos.length) return;
+
+      prepItens = alvos.map(function (k) {
+        FUNCS[k].estado = 'preparando';
+        return { k:k, nome:FUNCS[k].nome, st:'preparando' };
       });
       document.getElementById('prep').hidden = false;
       pintarPreparando();
       pintarWorkspace();
+      pintarPainelAberto();
 
-      /* No protótipo os resultados chegam em sequência, para a pessoa ver o
-         card mudar item a item. */
-      prepItens.forEach(function (it, i) {
+      /* Cada uma fica pronta no seu tempo, e o resultado aparece na hora, sem
+         esperar as outras. */
+      prepItens.forEach(function (it) {
         setTimeout(function () {
-          var an = ANALISES.filter(function (x) { return x.id === it.id; })[0];
           it.st = 'pronto';
-          if (an) { an.rodando = false; an.temResultado = true; }
-          pintarPreparando(); pintarWorkspace();
-        }, 2200 + i * 1800);
+          FUNCS[it.k].estado = 'pronto';
+          pintarPreparando();
+          pintarWorkspace();
+          pintarPainelAberto();
+        }, PREP_TEMPO[it.k] || 4000);
       });
+    }
+
+    /* Se o painel do Score ou do Checklist estiver aberto quando o estado muda,
+       ele se redesenha sozinho. */
+    function pintarPainelAberto() {
+      if (document.getElementById('pn').hidden) return;
+      if (pnAgente === 'checklist') abrirPainelChecklist();
+      else if (pnAgente === 'score') abrirPainelScore();
     }
 
     function pintarPreparando() {
       var ativos = prepItens.filter(function (i) { return i.st === 'preparando'; }).length;
-      var falhas = prepItens.filter(function (i) { return i.st === 'falhou'; }).length;
+      var prep = document.getElementById('prep');
+      prep.classList.toggle('prep-ok', ativos === 0);
 
       document.getElementById('prepTitulo').textContent = ativos
-        ? 'Preparando resultados'
-        : (falhas ? 'Alguns resultados não ficaram prontos' : 'Resultados disponíveis');
+        ? 'Preparando resultados' : 'Resultados disponíveis';
 
       document.getElementById('prepTexto').textContent = ativos
-        ? 'Depois do envio desta licitação para análise, estamos preparando os resultados ' +
-          'abaixo. Você pode continuar navegando: cada item recebe um ✓ quando fica disponível.'
-        : (falhas ? 'Os itens marcados não puderam ser preparados.'
-                  : 'Todos os itens estão prontos para consulta.');
+        ? 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ' +
+          'Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
+        : 'Todos os itens estão prontos para consulta.';
 
       document.getElementById('prepLista').innerHTML = prepItens.map(function (i) {
         var marca = i.st === 'pronto'
-          ? '<span class="prep-ok"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" ' +
-            'stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" ' +
+          ? '<span class="prep-ok-ic"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" ' +
+            'stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 8.5 3.5 3.5L13 5" ' +
             'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
-          : (i.st === 'falhou'
-            ? '<span class="prep-no"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" ' +
-              'stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" ' +
-              'stroke-linecap="round"/></svg></span>'
-            : '<span class="cp-spin"></span>');
+          : '<span class="cp-spin"></span>';
         return '<li>' + marca + '<span>' + i.nome + '</span></li>';
       }).join('');
 
-      /* Enquanto houver item ativo não existe botão de fechar: fechar não pode
-         significar cancelar, e o card é a única pista de que algo está vindo. */
+      /* Enquanto houver item em preparação não existe botão de fechar: fechar
+         não pode significar cancelar. */
       document.getElementById('prepFechar').hidden = ativos > 0;
     }
 
@@ -5826,82 +5887,167 @@
           por:'A sessão é em 18/09. A certidão de regularidade do FGTS vence em 12/09, seis dias antes.' };
       }
       if (id === 'tecnica') {
-        return { corpo:lista(TECNICA),
-          por:'15 componentes avaliados em 3 itens. O item 2 depende de um componente que o ' +
-              'catálogo não cobre, e por isso ficou pendente de decisão sua.' };
+        return { corpo:abaTecnicaHTML(licAberta || LICS_CARDS[0]),
+          por:null };
       }
       return { corpo:'<p class="wg-espera">Sem resultado nesta licitação.</p>', por:null };
     }
 
-    var CONVITE_TXT = {
-      juridica:'A análise jurídica lê o edital e aponta o que restringe a nossa participação.'
+    /* =====================================================================
+       AS QUATRO FUNCIONALIDADES DA SIMULAÇÃO
+       Cada uma mostra o estado do agente que a alimenta. Os estados são os
+       mesmos para todas; o que muda é em que estado cada uma começa e em que
+       momento o agente dela roda.
+       ===================================================================== */
+    var FUNCS = {
+      score:     { nome:'Score', agente:'score', momento:'recomendadas', estado:'pronto' },
+      checklist: { nome:'Checklist', agente:'checklist', momento:'analise', estado:'aguardando' },
+      tecnica:   { nome:'Análise técnica', agente:'tecnica', momento:'analise', estado:'aguardando' },
+      habil:     { nome:'Habilitação', agente:'habil', momento:'analise', estado:'sem-agente' }
     };
 
-    /* Os estados de uma funcionalidade, do mais distante do resultado ao
-       resultado em si. Cada um tem uma frase e, quando cabe, uma ação. A frase
-       da espera muda com o momento configurado no agente: dizer "após o envio
-       para análise" num agente que roda em Recomendadas seria mentira. */
-    function estadoDaFuncionalidade(an) {
-      if (an.disponivel === false) return 'indisponivel';
-      if (an.criado === false) return 'sem-agente';
-      if (an.habilitado === false) return 'desativado';
-      if (an.ativo === false) return 'desativado';
-      if (an.rodando) return 'preparando';
-      if (an.falhou) return 'falhou';
-      if (an.temResultado) return 'pronto';
-      return 'espera';
+    var MOMENTO_TXT = {
+      recomendadas:'quando a licitação chegar em Recomendadas',
+      analise:'após o envio da licitação para análise',
+      captura:'quando a licitação for capturada',
+      demanda:'quando você pedir'
+    };
+
+    /* Os cenários que o dropdown oferece. São os estados possíveis de qualquer
+       funcionalidade, e servem para mostrar cada um sem ter que esperar o
+       evento que o produz. */
+    var CENARIOS = [
+      { id:'pronto',     t:'Resultado disponível',     d:'o agente já rodou e o resultado está aqui' },
+      { id:'aguardando', t:'Aguardando o momento',     d:'o agente existe, mas o evento ainda não aconteceu' },
+      { id:'preparando', t:'Preparando o resultado',   d:'o agente está rodando agora' },
+      { id:'sem-agente', t:'Agente não configurado',   d:'a funcionalidade existe, o agente não' },
+      { id:'desativado', t:'Agente desativado',        d:'o agente existe e está desligado' }
+    ];
+
+    function menuCenario(botao, chave) {
+      fecharMenuCol();
+      var f = FUNCS[chave];
+      var pop = document.createElement('div');
+      pop.className = 'fb-pop col-pop cen-pop';
+      pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
+        CENARIOS.map(function (c) {
+          return '<button class="cp-op' + (f.estado === c.id ? ' on' : '') + '" type="button" ' +
+            'data-cen="' + c.id + '">' + (f.estado === c.id ? '✓ ' : '') + c.t +
+            '<span class="cp-op-sub">' + c.d + '</span></button>';
+        }).join('');
+      document.body.appendChild(pop);
+      pop.addEventListener('click', function (e) { e.stopPropagation(); });
+      posicionarPop(pop, botao, true);
+
+      pop.querySelectorAll('[data-cen]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          f.estado = b.dataset.cen;
+          fecharMenuCol();
+          abrirFuncionalidade(chave);
+        });
+      });
     }
 
-    function textoDeEspera(an) {
-      return 'Este resultado fica pronto ' +
-        (ESPERA_TXT[an.gatilho] || 'quando o agente rodar') + '.';
-    }
-
-    function widgetsDaSecao(secao) {
-      var ids = WIDGETS[secao] || [];
-      var h = ids.map(function (id) {
-        var an = ANALISES.filter(function (x) { return x.id === id; })[0];
-        if (!an) return '';
-        var st = estadoDaFuncionalidade(an);
-
-        /* Indisponível na conta e agente personalizado que nunca existiu não
-           reservam espaço: não há o que ativar ali. */
-        if (st === 'indisponivel') return '';
-        if (st === 'sem-agente' && !an.padrao) return '';
-        if ((st === 'sem-agente' || st === 'desativado') && CTA_DISPENSADOS[id]) return '';
-
-        if (st === 'sem-agente') {
-          return wgConviteHTML(an,
-            (CONVITE_TXT[id] ? CONVITE_TXT[id] + ' ' : '') +
-            'Configure um agente para gerar este resultado.', 'Criar agente');
-        }
-        if (st === 'desativado') {
-          return wgConviteHTML(an,
-            (CONVITE_TXT[id] ? CONVITE_TXT[id] + ' ' : '') +
-            'Este agente está desativado. Ative para gerar resultados aqui.', 'Ativar agente');
-        }
-        if (st === 'espera') {
-          return wgHTML(an, '<p class="wg-espera">' + textoDeEspera(an) + '</p>', null);
-        }
-        if (st === 'preparando') {
-          return wgHTML(an, '<p class="wg-espera"><span class="cp-spin"></span>' +
-            'Estamos preparando este resultado. Ele fica disponível assim que estiver pronto.</p>', null);
-        }
-        if (st === 'falhou') {
-          return wgHTML(an, '<p class="wg-falhou">Não foi possível preparar este resultado.</p>' +
-            '<button class="ap-mini" type="button" data-wgretry="' + an.id + '">Tentar de novo</button>', null);
-        }
-        var c = corpoDoWidget(id);
-        return wgHTML(an, c.corpo, c.por);
-      }).join('');
-
-      if (!h) {
-        return '<div class="empty-state"><strong>Nenhum agente aqui</strong>' +
-          'Você dispensou os agentes desta seção. Eles continuam na tela de Agentes.</div>';
+    /* Onde cada funcionalidade aparece: Score e Checklist num painel lateral,
+       Análise técnica e Habilitação na aba delas. */
+    function abrirFuncionalidade(chave) {
+      if (chave === 'score') return abrirPainelScore();
+      if (chave === 'checklist') return abrirPainelChecklist();
+      if (!document.getElementById('areaWorkspace').hidden) {
+        irParaAba(chave);
+      } else {
+        irPara('workspace');
+        irParaAba(chave);
       }
-      /* Um card por agente: dois resultados diferentes na mesma seção são duas
-         coisas, e empilhá-los dentro de um card só os faz parecer um. */
-      return '<div class="wg-secao">' + h + '</div>';
+    }
+
+    function irParaAba(wk) {
+      var b = document.querySelector('[data-wk="' + wk + '"]');
+      if (!b) return;
+      /* Clique programático não pergunta o cenário de novo. */
+      b.dataset.semmenu = '1';
+      b.click();
+      delete b.dataset.semmenu;
+    }
+
+    /* O bloco de estado de uma funcionalidade. A ação de configurar existe em
+       todos os estados menos "preparando": ali ela não aparece, e não aparece
+       desabilitada, porque mexer na configuração no meio de uma execução muda
+       o que está sendo preparado. */
+    function blocoDaFuncionalidade(chave) {
+      var f = FUNCS[chave];
+      var an = ANALISES.filter(function (x) { return x.id === f.agente; })[0];
+      var nome = f.nome;
+
+      var marca = '<div class="fn-head"><span class="wg-marca">' +
+        '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5.5" width="11" height="8" rx="2"/><path d="M8 5.5V3" stroke-linecap="round"/><circle cx="8" cy="2.3" r="1"/><path d="M6 8.6v1.4M10 8.6v1.4" stroke-linecap="round"/></svg>' +
+        'Agente</span><span class="wg-nome">' + nome + '</span></div>';
+
+      var cfg = '<div class="fn-acts">' +
+        '<button class="ap-mini" type="button" data-fnfalar="' + chave + '">Falar com o agente</button>' +
+        '<button class="ap-mini" type="button" data-fncfg="' + chave + '">Configurar agente</button></div>';
+
+      if (f.estado === 'sem-agente') {
+        return '<div class="wg wg-convite">' + marca +
+          '<p class="wg-convite-txt">Esse recurso funciona através de um Agente. ' +
+          'Configure um Agente para começar a ver as informações.</p>' +
+          '<div class="fn-acts"><button class="btn btn-primary btn-sm" type="button" ' +
+          'data-fncriar="' + chave + '">Configurar Agente</button></div></div>';
+      }
+      if (f.estado === 'desativado') {
+        return '<div class="wg wg-convite">' + marca +
+          '<p class="wg-convite-txt">Este agente está desativado. Ative para voltar a ver os ' +
+          'resultados aqui.</p>' +
+          '<div class="fn-acts"><button class="btn btn-primary btn-sm" type="button" ' +
+          'data-fnativar="' + chave + '">Ativar agente</button></div></div>';
+      }
+      if (f.estado === 'aguardando') {
+        return '<div class="wg">' + marca +
+          '<p class="wg-espera">Este resultado será preparado ' + MOMENTO_TXT[f.momento] + '.</p>' +
+          cfg + '</div>';
+      }
+      if (f.estado === 'preparando') {
+        return '<div class="wg">' + marca +
+          '<p class="wg-espera"><span class="cp-spin"></span>Estamos preparando este resultado. ' +
+          'Ele ficará disponível assim que for concluído.</p></div>';
+      }
+      var c = corpoDoWidget(chave === 'tecnica' ? 'tecnica' : f.agente);
+      return '<div class="wg">' + marca + '<div class="wg-corpo">' + c.corpo + '</div>' +
+        (c.por ? '<div class="wg-por">' + c.por + '</div>' : '') + cfg + '</div>';
+    }
+
+    function ligarFuncionalidade(box) {
+      box.querySelectorAll('[data-fncfg]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var an = ANALISES.filter(function (x) { return x.id === FUNCS[b.dataset.fncfg].agente; })[0];
+          if (an) abrirAnalise(an);
+        });
+      });
+      box.querySelectorAll('[data-fnfalar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var f = FUNCS[b.dataset.fnfalar];
+          var an = ANALISES.filter(function (x) { return x.id === f.agente; })[0];
+          if (!an) return;
+          cpAbrirPainel();
+          cpSelecionarAgente(an, 'Este é o resultado que produzi nesta licitação. Pode me dizer o ' +
+            'que ficou errado, ou pedir para eu explicar como cheguei nele.',
+            'PE ' + (licAberta ? licAberta.n : '90014/2026'));
+        });
+      });
+      box.querySelectorAll('[data-fncriar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          setVia('cons'); irPara('agentes'); abaAtiva('agentes'); abrirFx(null);
+        });
+      });
+      box.querySelectorAll('[data-fnativar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          FUNCS[b.dataset.fnativar].estado = 'pronto';
+          pintarWorkspace();
+        });
+      });
+      box.querySelectorAll('[data-tecitem]').forEach(function (b) {
+        b.addEventListener('click', function () { naoSimulado('A comparação item a item'); });
+      });
     }
 
     var TECNICA = [
@@ -5928,19 +6074,15 @@
         return;
       }
 
-      if (wkAba === 'tecnica') {
-        box.innerHTML = '<div class="card">' + abaTecnicaHTML(licAberta || LICS_CARDS[0]) + '</div>';
-        return;
-      }
-
-      box.innerHTML = widgetsDaSecao(wkAba);
-      ligarWidget(box);
-      ligarArrasto(box, wkAba);
+      /* As duas funcionalidades que moram em aba própria. */
+      box.innerHTML = blocoDaFuncionalidade(wkAba);
+      ligarFuncionalidade(box);
     }
 
     document.querySelectorAll('[data-wk]').forEach(function (b) {
       b.addEventListener('click', function () {
         wkAba = b.dataset.wk;
+        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba); }, 0);
         document.querySelectorAll('[data-wk]').forEach(function (o) {
           var on = o === b;
           o.classList.toggle('active', on);
