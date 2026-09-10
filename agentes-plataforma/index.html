@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910r" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910s" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:08</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:27</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910r" defer></script>
+  <script src="../assets/settle.js?v=20260910s" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5816,7 +5816,7 @@
 
       prepItens = alvos.map(function (k) {
         FUNCS[k].estado = 'preparando';
-        return { k:k, nome:FUNCS[k].nome, st:'preparando' };
+        return { k:k, nome:FUNCS[k].nome };
       });
       guardarFuncs();
       document.getElementById('prep').hidden = false;
@@ -5827,7 +5827,6 @@
          esperar as outras. */
       prepItens.forEach(function (it) {
         setTimeout(function () {
-          it.st = 'pronto';
           FUNCS[it.k].estado = 'pronto';
           guardarFuncs();
           pintarPreparando();
@@ -5840,7 +5839,11 @@
        as abas da licitação e o painel, se estiver aberto. */
     function repintarTudo() {
       if (!document.getElementById('areaLics').hidden) pintarLics();
-      if (!document.getElementById('areaWorkspace').hidden) pintarWorkspace();
+      var naLic = !document.getElementById('areaWorkspace').hidden;
+      if (naLic) pintarWorkspace();
+      /* O card só nasce dentro da licitação; fora dela ele apenas se ajusta ao
+         que já está acompanhando. */
+      sincronizarPreparando(naLic);
       pintarPainelAberto();
     }
 
@@ -5852,8 +5855,34 @@
       else if (pnAgente === 'score') abrirPainelScore();
     }
 
+    /* Entrar numa licitação com resultado em preparação mostra o card: ele é a
+       resposta para "por que este lugar está vazio", e precisa estar lá quando
+       a pessoa chega, não só para quem apertou Enviar para análise. */
+    function sincronizarPreparando(criar) {
+      /* Sai da lista quem deixou de ter resultado a caminho: um agente que foi
+         desativado no meio não é um item que ficou pronto. */
+      prepItens = prepItens.filter(function (i) {
+        var e = FUNCS[i.k].estado;
+        return e === 'preparando' || e === 'pronto';
+      });
+      if (criar) {
+        Object.keys(FUNCS).forEach(function (k) {
+          if (FUNCS[k].estado === 'preparando' &&
+              !prepItens.some(function (i) { return i.k === k; })) {
+            prepItens.push({ k:k, nome:FUNCS[k].nome });
+          }
+        });
+      }
+      var prep = document.getElementById('prep');
+      if (!prepItens.length) { prep.hidden = true; return; }
+      prep.hidden = false;
+      pintarPreparando();
+    }
+
     function pintarPreparando() {
-      var ativos = prepItens.filter(function (i) { return i.st === 'preparando'; }).length;
+      var ativos = prepItens.filter(function (i) {
+        return FUNCS[i.k].estado === 'preparando';
+      }).length;
       var prep = document.getElementById('prep');
       prep.classList.toggle('prep-ok', ativos === 0);
 
@@ -5866,7 +5895,7 @@
         : 'Todos os itens estão prontos para consulta.';
 
       document.getElementById('prepLista').innerHTML = prepItens.map(function (i) {
-        var marca = i.st === 'pronto'
+        var marca = FUNCS[i.k].estado !== 'preparando'
           ? '<span class="prep-ok-ic"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" ' +
             'stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 8.5 3.5 3.5L13 5" ' +
             'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
@@ -5982,7 +6011,7 @@
           f.estado = b.dataset.cen;
           guardarFuncs();
           fecharMenuCol();
-          if (!document.getElementById('areaLics').hidden) pintarLics();
+          repintarTudo();
           abrirFuncionalidade(chave);
         });
       });
@@ -6153,7 +6182,7 @@
         el.classList.toggle('active', on);
         if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
       });
-      if (area === 'workspace') { pintarCabecaWk(); pintarWorkspace(); }
+      if (area === 'workspace') { pintarCabecaWk(); pintarWorkspace(); sincronizarPreparando(true); }
       if (area === 'lics') pintarLics();
       cpTrocouDePagina();
     }
