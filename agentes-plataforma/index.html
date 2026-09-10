@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910a" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910b" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,12 +228,12 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 10:25</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 10:34</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
-        <button class="btn btn-outline" type="button">Ignorar</button>
+        <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
         <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
-        <button class="btn btn-status" type="button">Em disputa ou Homologação</button>
+        <button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">Em disputa ou Homologação</button>
         <button class="btn-score" type="button" id="btnScore">
           <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13a6.5 6.5 0 1 1 12 0" stroke-linecap="round"/><path d="M10 12.5 13 8" stroke-linecap="round"/></svg>
           78/100
@@ -243,11 +243,11 @@
           <span class="av add">+</span>
         </span>
         <span class="sep" aria-hidden="true"></span>
-        <button class="icon-btn" type="button" aria-label="Copiar link da licitação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" stroke-linecap="round"/></svg></button>
-        <button class="icon-btn" type="button" aria-label="Compartilhar"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14.5" cy="5.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="14.5" r="2"/><path d="M7.3 9 12.7 6.4M7.3 11l5.4 2.6" stroke-linecap="round"/></svg></button>
-        <button class="icon-btn" type="button" aria-label="Documentos da licitação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3h5l3 3v11H6z" stroke-linejoin="round"/><path d="M11 3v3h3" stroke-linejoin="round"/></svg></button>
-        <button class="icon-btn" type="button" aria-label="Pastas"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6.5h5l1.4 1.6H17V15H3z" stroke-linejoin="round"/></svg></button>
-        <button class="icon-btn" type="button" aria-label="Comentários"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 5h12v8H8.5L5 15.5V13H4z" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Copiar link da licitação" data-naosim="Esta ação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" stroke-linecap="round"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Compartilhar" data-naosim="Esta ação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14.5" cy="5.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="14.5" r="2"/><path d="M7.3 9 12.7 6.4M7.3 11l5.4 2.6" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Documentos da licitação" data-naosim="Esta ação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3h5l3 3v11H6z" stroke-linejoin="round"/><path d="M11 3v3h3" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Pastas" data-naosim="Esta ação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6.5h5l1.4 1.6H17V15H3z" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Comentários" data-naosim="Esta ação"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 5h12v8H8.5L5 15.5V13H4z" stroke-linejoin="round"/></svg></button>
       </div>
     </header>
 
@@ -525,6 +525,18 @@
     </form>
   </aside>
 
+  <!-- Comparação do item: exigências do edital contra o que a empresa oferece. -->
+  <div class="cfm-ovl" id="mtzOvl" hidden></div>
+  <div class="ap-modal mtz" id="mtz" role="dialog" aria-modal="true" aria-labelledby="mtzTitulo" hidden>
+    <div class="ap-mhead">
+      <h2 id="mtzTitulo">Item</h2>
+      <button class="icon-btn" type="button" id="mtzFechar" aria-label="Fechar a comparação">
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="ap-mbody" id="mtzBody"></div>
+  </div>
+
   <div class="pn-ovl" id="pnOvl" hidden></div>
   <aside class="pn" id="pn" hidden aria-label="Resultado do agente">
     <div class="pn-head">
@@ -570,7 +582,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910a" defer></script>
+  <script src="../assets/settle.js?v=20260910b" defer></script>
   <script>
   (function () {
     'use strict';
@@ -4319,6 +4331,18 @@
           { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Preencheu 6 campos do resumo', st:'ok' },
           { quando:'hoje, 11:02', lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'Preencheu 5 campos, 1 sem valor', st:'ok' }
         ] },
+      /* O Checklist e o Resumo são agentes diferentes: um monta a lista de
+         perguntas sobre o edital, o outro preenche os campos do resumo. */
+      { id:'checklist', nome:'Checklist', formato:'estruturado', padrao:true,
+        desc:'Responde as perguntas fixas sobre o edital, agrupadas por seção.',
+        gatilho:'Quando chega em Recomendadas', destino:'checklist',
+        execs:[
+          { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Estado de Saúde de MG',
+            o:'Respondeu 21 de 23 perguntas · 2 marcadas para revisar', st:'ok' },
+          { quando:'ontem, 11:02', lic:'PE 00471/2026 · Prefeitura de Contagem/MG',
+            o:'Respondeu 23 de 23 perguntas', st:'ok' }
+        ] },
+
       { id:'tecnica', nome:'Análise técnica', formato:'composicao', padrao:true,
         desc:'Compara componente a componente do Termo de Referência com o catálogo da empresa.',
         gatilho:'Quando é enviada para análise',
@@ -5117,19 +5141,6 @@
        WORKSPACE DA LICITAÇÃO
        ===================================================================== */
 
-    var MANIF = [
-      { t:'Aviso', quando:'26/08/2026 às 14:12', publicada:'26/08/2026 às 14:12',
-        m:'Fica remarcada a sessão pública para 11/09/2026, às 09h00, no mesmo endereço eletrônico.' },
-      { t:'Questionamento', quando:'22/08/2026 às 17:40', publicada:'21/08/2026 às 16:03',
-        m:'Sobre o item 7.3: a exigência de atestado de capacidade técnica em projetos de design ' +
-          'digital admite soma de atestados, desde que emitidos por pessoa jurídica de direito ' +
-          'público ou privado?' },
-      { t:'Impugnação', quando:'19/08/2026 às 11:05', publicada:'18/08/2026 às 09:47',
-        m:'Impugnação ao item 5.2 do Termo de Referência, que restringe a participação a empresas ' +
-          'com equipe de design alocada presencialmente na sede do órgão.' },
-      { t:'Não identificada', quando:'14/08/2026 às 09:22', publicada:'14/08/2026 às 09:22',
-        m:'Publicada a errata do Anexo II, com correção da carga horária do item 3.' }
-    ];
 
     var wkAba = 'manif';
 
@@ -5195,7 +5206,9 @@
 
     /* Uma seção pode ter mais de um agente (Alice, 15:08). A ordem é da pessoa,
        e o arrasto só troca posição dentro da mesma seção. */
-    var WIDGETS = { habil:['habil', 'certidoes'], tecnica:['tecnica', 'juridica'] };
+    /* A aba de análise técnica não tem widget de agente: ela é a análise
+       técnica mesmo, com a comparação item a item. */
+    var WIDGETS = { habil:['habil', 'certidoes'], tecnica:[] };
 
     function ligarArrasto(box, secao) {
       var origem = null;
@@ -5377,7 +5390,7 @@
           }).join('') + '</div></div>';
       }).join('');
 
-      abrirPainel('Checklist', corpo, 'resumo');
+      abrirPainel('Checklist', corpo, 'checklist');
 
       document.querySelectorAll('[data-chk]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -5403,7 +5416,27 @@
       document.body.classList.remove('pn-open');
     }
 
-    document.getElementById('btnScore').addEventListener('click', abrirPainelScore);
+    /* Um lugar só: qualquer controle marcado com data-naosim avisa em vez de
+       fingir que funciona. */
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-naosim]');
+      if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      naoSimulado(b.dataset.naosim);
+    });
+
+    document.getElementById('mtzFechar').addEventListener('click', fecharMatriz);
+    document.getElementById('mtzOvl').addEventListener('click', fecharMatriz);
+
+    /* O protótipo cobre o caminho dos agentes. O resto da plataforma está aqui
+       para dar contexto, e diz isso quando a pessoa tenta usar. */
+    function naoSimulado(oque) {
+      settleToast(oque + ': esta área não foi simulada no protótipo');
+    }
+
+    document.getElementById('btnScore').addEventListener('click', function () {
+      abrirPainelScore();
+    });
     document.getElementById('pnFechar').addEventListener('click', fecharPainelScore);
     document.getElementById('pnOvl').addEventListener('click', fecharPainelScore);
 
@@ -5553,6 +5586,71 @@
         }).join('') + '</tbody></table></div>';
     }
 
+    /* A comparação que a plataforma mostra ao abrir um item: as exigências do
+       edital nas linhas, o que a empresa tem para ofertar nas colunas, e a
+       fração de atendimento no topo de cada oferta. */
+    var TEC_MATRIZ = {
+      'Item 1 · Design de interface':{
+        desc:'Design de interface para os novos fluxos do aplicativo do cidadão, com entrega de ' +
+          'protótipo navegável, especificação de componentes e acompanhamento da implementação, ' +
+          'por 24 meses.',
+        naoAnalisadas:['Acessibilidade WCAG', 'Idioma da documentação', 'Ferramenta de prototipagem',
+                       'Periodicidade das entregas'],
+        extras:1,
+        specs:[
+          { k:'Experiência mínima da empresa', req:'3 anos em design de produto digital' },
+          { k:'Profissionais alocados', req:'2 designers sênior' },
+          { k:'Entrega de protótipo navegável', req:'Obrigatória' },
+          { k:'Especificação de componentes', req:'Obrigatória' }
+        ],
+        ofertas:[
+          { nome:'Squad de produto sênior', sub:'B Design · catálogo',
+            vals:[{v:'6 anos', ok:true}, {v:'2 sênior + 1 pleno', ok:true},
+                  {v:'Figma navegável', ok:true}, {v:'Documentado no design system', ok:true}] },
+          { nome:'Squad de produto pleno', sub:'B Design · catálogo',
+            vals:[{v:'6 anos', ok:true}, {v:'2 pleno', ok:false},
+                  {v:'Figma navegável', ok:true}, {v:'Documentado no design system', ok:true}] },
+          { nome:'Consultoria pontual', sub:'B Design · catálogo',
+            vals:[{v:'6 anos', ok:true}, {v:'1 sênior', ok:false},
+                  {v:'Só telas estáticas', ok:false}, {v:'Não incluída', ok:false}] }
+        ] },
+      'Item 2 · Pesquisa com usuários':{
+        desc:'Pesquisa com usuários dos canais digitais da Secretaria, com entrevistas, testes de ' +
+          'usabilidade moderados e relatório com recomendações por ciclo.',
+        naoAnalisadas:['Número mínimo de participantes', 'Perfil dos participantes', 'Gravação das sessões'],
+        extras:0,
+        specs:[
+          { k:'Testes de usabilidade', req:'Moderados, com roteiro' },
+          { k:'Local dos testes', req:'Laboratório presencial em Belo Horizonte' },
+          { k:'Entrega de relatório', req:'Por ciclo, com recomendações' },
+          { k:'Experiência do pesquisador', req:'2 anos em pesquisa com usuários' },
+          { k:'Recrutamento dos participantes', req:'Por conta da contratada' }
+        ],
+        ofertas:[
+          { nome:'Pesquisa remota moderada', sub:'B Design · catálogo',
+            vals:[{v:'Moderados, com roteiro', ok:true}, {v:'Remoto, por videochamada', ok:false},
+                  {v:'Por ciclo, com recomendações', ok:true}, {v:'8 anos', ok:true},
+                  {v:'Incluído', ok:true}] },
+          { nome:'Pesquisa em campo', sub:'B Design · catálogo',
+            vals:[{v:'Moderados, com roteiro', ok:true}, {v:'No cliente, sem laboratório fixo', ok:false},
+                  {v:'Por ciclo, com recomendações', ok:true}, {v:'8 anos', ok:true},
+                  {v:'Incluído', ok:true}] }
+        ] },
+      'Item 3 · Design system':{
+        desc:'Manutenção evolutiva do design system da Secretaria, com componentes, documentação e ' +
+          'suporte às equipes internas.',
+        naoAnalisadas:['Tecnologia dos componentes'],
+        extras:2,
+        specs:[
+          { k:'Componentes documentados', req:'Biblioteca versionada' },
+          { k:'Suporte às equipes', req:'Canal com resposta em até 2 dias úteis' }
+        ],
+        ofertas:[
+          { nome:'Design system evolutivo', sub:'B Design · catálogo',
+            vals:[{v:'Biblioteca versionada no Figma', ok:true}, {v:'Canal com SLA de 1 dia útil', ok:true}] }
+        ] }
+    };
+
     function abaTecnicaHTML(l) {
       var t = l.tecnica;
       if (!t) {
@@ -5574,11 +5672,96 @@
           kpi(atende, atende === 1 ? 'Item atendido' : 'Itens atendidos') +
           kpi(nao, nao === 1 ? 'Item não atendido' : 'Itens não atendidos') +
         '</div>' +
-        t.itens.map(function (x) {
-          return '<div class="tec-item">' + badge[x.st] +
+        t.itens.map(function (x, k) {
+          var tem = !!TEC_MATRIZ[x.nome];
+          return '<' + (tem ? 'button' : 'div') + ' class="tec-item' + (tem ? ' tec-item-abre' : '') + '"' +
+            (tem ? ' type="button" data-tecitem="' + x.nome.replace(/"/g, '&quot;') + '"' : '') + '>' +
+            badge[x.st] +
             '<p class="tec-item-nome">' + x.nome + '</p>' +
-            '<p class="tec-item-meta">' + x.det + '</p></div>';
+            '<p class="tec-item-meta">' + x.det + '</p>' +
+            '</' + (tem ? 'button' : 'div') + '>';
         }).join('');
+    }
+
+    /* A comparação abre em modal, como na plataforma: números em cima, o que
+       ficou de fora em seguida, e a tabela do edital contra o catálogo. */
+    function abrirMatriz(nome) {
+      var m = TEC_MATRIZ[nome];
+      if (!m) return;
+
+      var totalSpecs = m.specs.length;
+      var melhor = 0;
+      m.ofertas.forEach(function (o) {
+        var n = o.vals.filter(function (v) { return v.ok; }).length;
+        if (n > melhor) melhor = n;
+      });
+      var atende = m.ofertas.filter(function (o) {
+        return o.vals.every(function (v) { return v.ok; });
+      }).length;
+
+      var kpi = function (n, rot) {
+        return '<div class="tec-kpi"><span class="tec-kpi-n">' + n + '</span>' +
+               '<span class="tec-kpi-t">' + rot + '</span></div>';
+      };
+
+      var cabecalho = '<tr><th scope="col">Exigência do edital</th>' +
+        '<th scope="col">Valor requerido</th>' +
+        m.ofertas.map(function (o) {
+          var n = o.vals.filter(function (v) { return v.ok; }).length;
+          var pct = Math.round(n / totalSpecs * 100);
+          return '<th scope="col"><span class="mtz-of">' + o.nome + '</span>' +
+            '<span class="mtz-of-sub">' + o.sub + '</span>' +
+            '<span class="mtz-fr">' + n + '/' + totalSpecs + '<b>' + pct + '%</b></span>' +
+            '<span class="mtz-barra"><i style="width:' + pct + '%"></i></span></th>';
+        }).join('') + '</tr>';
+
+      var linhas = m.specs.map(function (sp, i) {
+        return '<tr><th scope="row"><span class="mtz-k">' + sp.k + '</span>' +
+          '<span class="mtz-req">' + sp.req + '</span></th>' +
+          '<td>' + sp.req + '</td>' +
+          m.ofertas.map(function (o) {
+            var v = o.vals[i] || { v:'—', ok:false };
+            return '<td><span class="mtz-cel ' + (v.ok ? 'sim' : 'nao') + '">' +
+              (v.ok
+                ? '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                : '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke-linecap="round"/></svg>') +
+              v.v + '</span></td>';
+          }).join('') + '</tr>';
+      }).join('');
+
+      document.getElementById('mtzTitulo').textContent = nome;
+      document.getElementById('mtzBody').innerHTML =
+        '<div class="tec-kpis">' +
+          kpi(m.ofertas.length, m.ofertas.length === 1 ? 'Oferta analisada' : 'Ofertas analisadas') +
+          kpi(atende, 'Atende') +
+          kpi(m.ofertas.length - atende, 'Não atende') +
+          kpi(melhor + '/' + totalSpecs, 'Melhor cobertura') +
+        '</div>' +
+
+        '<details class="mtz-det" open><summary>Descrição completa</summary>' +
+          '<p>' + m.desc + '</p></details>' +
+        '<details class="mtz-det"><summary>Do catálogo e não exigido no edital <b>' + m.extras +
+          '</b></summary><p>' + (m.extras
+            ? 'O que a B Design oferece além do que o edital pede. Não conta como atendimento.'
+            : 'Nada além do que o edital pede.') + '</p></details>' +
+        '<details class="mtz-det" open><summary>Exigido no edital e ainda não analisado <b>' +
+          m.naoAnalisadas.length + '</b></summary>' +
+          '<p>Exigências do edital que não têm resposta no seu catálogo. Não é "não atende": é ' +
+          'falta de informação.</p>' +
+          '<div class="mtz-chips">' + m.naoAnalisadas.map(function (x) {
+            return '<span class="tag-light">' + x + '</span>';
+          }).join('') + '</div></details>' +
+
+        '<div class="datatable mtz-tab"><table class="dt"><thead>' + cabecalho + '</thead>' +
+        '<tbody>' + linhas + '</tbody></table></div>';
+
+      document.getElementById('mtzOvl').hidden = false;
+      document.getElementById('mtz').hidden = false;
+    }
+
+    function fecharMatriz() {
+      document.getElementById('mtzOvl').hidden = true;
+      document.getElementById('mtz').hidden = true;
     }
 
     function capagHTML(n) {
@@ -5587,7 +5770,8 @@
     }
 
     function icCard(k, titulo) {
-      return '<button class="ia" type="button" title="' + titulo + '" aria-label="' + titulo + '">' +
+      return '<button class="ia" type="button" title="' + titulo + '" aria-label="' + titulo +
+        '" data-naosim="' + titulo + '">' +
         '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" ' +
         'stroke-width="1.6" aria-hidden="true"><path d="' + IC_CARD[k] + '" stroke-linecap="round" ' +
         'stroke-linejoin="round"/></svg></button>';
@@ -5661,9 +5845,9 @@
                 '" stroke-linecap="round" stroke-linejoin="round"/></svg>Atualizado</span>'
               : '') +
             '<div class="card-top-right">' +
-              '<button class="btn btn-outline" type="button">Descartar</button>' +
+              '<button class="btn btn-outline" type="button" data-naosim="Descartar">Descartar</button>' +
               '<button class="btn btn-primary" type="button" data-licenviar="' + i + '">Enviar para análise</button>' +
-              '<button class="btn btn-status" type="button">' +
+              '<button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">' +
                 '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" ' +
                 'stroke-width="1.7" aria-hidden="true"><path d="' + IC_CARD.lapis + '" stroke-linecap="round" ' +
                 'stroke-linejoin="round"/></svg>Em disputa ou Homologação</button>' +
@@ -5729,6 +5913,11 @@
           '</article>';
       }).join('');
 
+      box.querySelectorAll('[data-tecitem]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopPropagation(); abrirMatriz(b.dataset.tecitem);
+        });
+      });
       box.querySelectorAll('[data-licchk]').forEach(function (b) {
         b.addEventListener('click', function () { abrirPainelChecklist(); });
       });
@@ -5741,8 +5930,16 @@
             o.classList.toggle('active', on);
             o.setAttribute('aria-selected', on ? 'true' : 'false');
           });
-          document.getElementById('licAba' + i).innerHTML =
-            aba === 'tecnica' ? abaTecnicaHTML(LICS_CARDS[i]) : abaItensHTML(LICS_CARDS[i]);
+          var corpo = document.getElementById('licAba' + i);
+          corpo.innerHTML = aba === 'tecnica'
+            ? abaTecnicaHTML(LICS_CARDS[i]) : abaItensHTML(LICS_CARDS[i]);
+          /* Os itens da análise técnica nascem aqui, então o clique é ligado
+             aqui também. */
+          corpo.querySelectorAll('[data-tecitem]').forEach(function (t) {
+            t.addEventListener('click', function (e) {
+              e.stopPropagation(); abrirMatriz(t.dataset.tecitem);
+            });
+          });
         });
       });
 
@@ -5954,55 +6151,24 @@
       var box = document.getElementById('wkPainel');
       if (!box) return;
 
-      if (wkAba === 'itens') {
-        box.innerHTML = '<div class="datatable"><table class="dt"><thead><tr>' +
-          '<th scope="col">Item</th><th scope="col">Descrição</th><th scope="col">Horas</th>' +
-          '<th scope="col">Valor da hora</th><th scope="col">Valor total</th></tr></thead><tbody>' +
-          [['1', 'Design de interface: telas de novos fluxos, com protótipo navegável', '1.200 h', 'R$ 190,00', 'R$ 228.000,00'],
-           ['2', 'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', '480 h', 'R$ 210,00', 'R$ 100.800,00'],
-           ['3', 'Design system: componentes, documentação e manutenção evolutiva', '640 h', 'R$ 205,00', 'R$ 131.200,00']]
-            .map(function (l) {
-              return '<tr><td>' + l[0] + '</td><td style="white-space:normal">' + l[1] + '</td>' +
-                     '<td class="num">' + l[2] + '</td><td class="num">' + l[3] + '</td>' +
-                     '<td class="num">' + l[4] + '</td></tr>';
-            }).join('') + '</tbody></table></div>';
+      if (wkAba === 'itens' || wkAba === 'manif') {
+        box.innerHTML = '<div class="empty-state"><strong>Fora do protótipo</strong>' +
+          'Esta área existe na plataforma e não foi simulada aqui. O que este protótipo cobre é ' +
+          'o caminho dos agentes: o resultado deles, a configuração e as aprovações.</div>';
         return;
       }
 
-      if (wkAba === 'habil' || wkAba === 'tecnica') {
-        box.innerHTML = widgetsDaSecao(wkAba);
-        ligarWidget(box);
-        ligarArrasto(box, wkAba);
+      if (wkAba === 'tecnica') {
+        box.innerHTML = '<div class="card">' + abaTecnicaHTML(licAberta || LICS_CARDS[0]) + '</div>';
+        box.querySelectorAll('[data-tecitem]').forEach(function (b) {
+          b.addEventListener('click', function () { abrirMatriz(b.dataset.tecitem); });
+        });
         return;
       }
 
-      var conta = function (t) {
-        return MANIF.filter(function (x) { return x.t === t; }).length;
-      };
-
-      box.innerHTML =
-        '<div class="card"><div class="wk-sub">' +
-          '<div class="fp-tabs">' +
-            '<button class="fp-tab active" type="button">Todas <span class="fp-c">' + MANIF.length + '</span></button>' +
-            '<button class="fp-tab" type="button">Avisos <span class="fp-c">' + conta('Aviso') + '</span></button>' +
-            '<button class="fp-tab" type="button">Questionamentos <span class="fp-c">' + conta('Questionamento') + '</span></button>' +
-            '<button class="fp-tab" type="button">Impugnações <span class="fp-c">' + conta('Impugnação') + '</span></button>' +
-            '<button class="fp-tab" type="button">Não identificadas <span class="fp-c">' + conta('Não identificada') + '</span></button>' +
-          '</div>' +
-          '<select class="ap-input" style="width:auto" aria-label="Filtrar manifestações">' +
-            '<option>Manifestações aguardando resposta</option>' +
-            '<option>Todas as manifestações</option>' +
-            '<option>Manifestações respondidas</option>' +
-          '</select>' +
-        '</div>' +
-        MANIF.map(function (x) {
-          return '<div class="wk-manif"><div class="wk-manif-top">' +
-            '<span class="tag-light">' + x.t + '</span>' +
-            '<span class="wk-manif-quando">Atualizado <span>em ' + x.quando + '</span></span></div>' +
-            '<div class="wk-manif-div"></div>' +
-            '<div class="wk-manif-data">' + x.publicada + '</div>' +
-            '<p><b>Mensagem:</b> ' + x.m + '</p></div>';
-        }).join('') + '</div>';
+      box.innerHTML = widgetsDaSecao(wkAba);
+      ligarWidget(box);
+      ligarArrasto(box, wkAba);
     }
 
     document.querySelectorAll('[data-wk]').forEach(function (b) {
