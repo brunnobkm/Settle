@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910t" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910u" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,10 +228,10 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:40</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 16:47</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
-        <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
+        <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
         <button class="btn btn-primary" type="button" id="navEnviar">Enviar para análise</button>
         <button class="btn btn-status" type="button" data-naosim="Mudar o estado da licitação">Em disputa ou Homologação</button>
         <button class="btn-score" type="button" id="btnScore" data-tip="Score Quente" aria-label="Score: 78/100 — Quente">
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910t" defer></script>
+  <script src="../assets/settle.js?v=20260910u" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5619,13 +5619,19 @@
       return 'Aparece ' + MOMENTO_TXT[mom];
     }
 
-    function btnScoreHTML(l, i) {
-      var st = l.fx.score;
-      var corpo = st === 'pronto' ? IC_SCORE + l.score + '/100'
+    /* O botão é o mesmo na lista e no cabeçalho da licitação: enquanto o
+       resultado não fica pronto, o número não aparece em lugar nenhum. */
+    function corpoScore(l, st) {
+      return st === 'pronto' ? IC_SCORE + l.score + '/100'
         : st === 'preparando' ? '<span class="cp-spin"></span>Calculando o Score'
         : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
         : st === 'desativado' ? IC_SCORE + 'Score desativado'
         : IC_SCORE + 'Score sem agente';
+    }
+
+    function btnScoreHTML(l, i) {
+      var st = l.fx.score;
+      var corpo = corpoScore(l, st);
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licscore="' + i + '"' +
         (st === 'pronto'
@@ -5730,12 +5736,24 @@
           '</div>' +
         '</div>';
 
+      var st = l.fx.score;
       var bs = document.getElementById('btnScore');
       if (bs) {
-        bs.lastChild.textContent = ' ' + l.score + '/100';
-        bs.dataset.tip = 'Score ' + classificar(l.score);
-        bs.setAttribute('aria-label', 'Score: ' + l.score + '/100 — ' + classificar(l.score));
+        bs.innerHTML = corpoScore(l, st);
+        bs.classList.toggle('btn-vazio', st !== 'pronto');
+        if (st === 'pronto') {
+          bs.dataset.tip = 'Score ' + classificar(l.score);
+          bs.setAttribute('aria-label', 'Score: ' + l.score + '/100 — ' + classificar(l.score));
+        } else {
+          bs.dataset.tip = dicaEstado('score', st, l);
+          bs.removeAttribute('aria-label');
+        }
       }
+
+      /* Enviada, a licitação não está mais em Recomendadas: ignorar e enviar
+         são ações de lá, e não fazem mais sentido aqui. */
+      document.getElementById('navIgnorar').hidden = !!l.enviada;
+      document.getElementById('navEnviar').hidden = !!l.enviada;
     }
 
     function pintarLics() {
@@ -5918,7 +5936,7 @@
     function repintarTudo() {
       if (!document.getElementById('areaLics').hidden) pintarLics();
       var naLic = !document.getElementById('areaWorkspace').hidden;
-      if (naLic) pintarWorkspace();
+      if (naLic) { pintarCabecaWk(); pintarWorkspace(); }
       /* O card só nasce dentro da licitação; fora dela ele apenas se ajusta ao
          que já está acompanhando. */
       sincronizarPreparando(naLic);
