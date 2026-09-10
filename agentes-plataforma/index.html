@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910g" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910h" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:39</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:45</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910g" defer></script>
+  <script src="../assets/settle.js?v=20260910h" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5579,7 +5579,7 @@
       pronto:'Resultado disponível',
       aguardando:'Aparece depois do envio para análise',
       preparando:'Estamos preparando este resultado',
-      'sem-agente':'Nenhum agente configurado para isto',
+      'sem-agente':'Nenhum agente configurado',
       desativado:'O agente desta funcionalidade está desativado'
     };
 
@@ -5590,7 +5590,7 @@
         : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
         : IC_SCORE + 'Score sem agente';
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licscore="' + i + '" data-tip="Score · ' + DICA_ESTADO[st] + '">' +
+        '" type="button" data-licscore="' + i + '" data-tip="' + DICA_ESTADO[st] + '">' +
         corpo + '</button>';
     }
 
@@ -5599,7 +5599,7 @@
       var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
         : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
-        '" type="button" data-licchk="' + i + '" data-tip="Checklist · ' + DICA_ESTADO[st] + '">' +
+        '" type="button" data-licchk="' + i + '" data-tip="' + DICA_ESTADO[st] + '">' +
         corpo + '</button>';
     }
 
