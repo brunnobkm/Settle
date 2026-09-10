@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910ac" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910ae" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:42</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 17:52</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -581,7 +581,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910ac" defer></script>
+  <script src="../assets/settle.js?v=20260910ae" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5644,6 +5644,10 @@
       return n >= 70 ? 'Quente' : n >= 40 ? 'Morno' : 'Frio';
     }
 
+    function classeScore(n) {
+      return n >= 70 ? '' : n >= 40 ? ' sc-morno' : ' sc-frio';
+    }
+
     var DICA_ESTADO = {
       pronto:'Resultado disponível',
       preparando:'Estamos preparando este resultado',
@@ -5678,7 +5682,8 @@
     function btnScoreHTML(l, i) {
       var st = l.fx.score;
       var corpo = corpoScore(l, st);
-      return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
+      return '<button class="btn-score' +
+        (st === 'pronto' ? classeScore(l.score) : ' btn-vazio') +
         '" type="button" data-licscore="' + i + '"' +
         (st === 'pronto'
           ? ' data-tip="Score ' + classificar(l.score) + '"' +
@@ -5690,7 +5695,13 @@
     function btnChkHTML(l, i) {
       var st = l.fx.checklist;
       if (st === 'indisponivel') return '';
+      /* Quatro estados sem resultado com o mesmo rótulo ficam indistinguíveis:
+         a diferença só apareceria no hover. O texto diz qual é, como no Score. */
       var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
+        : st === 'aguardando' ? IC_CHK + 'Checklist não gerado'
+        : st === 'sem-agente' ? IC_CHK + 'Checklist sem agente'
+        : st === 'desativado' ? IC_CHK + 'Checklist desativado'
+        : st === 'falhou' ? IC_CHK + 'Checklist não carregou'
         : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="' +
@@ -5788,6 +5799,8 @@
       if (bs) {
         bs.innerHTML = corpoScore(l, st);
         bs.classList.toggle('btn-vazio', st !== 'pronto');
+        bs.classList.toggle('sc-morno', st === 'pronto' && classeScore(l.score) === ' sc-morno');
+        bs.classList.toggle('sc-frio', st === 'pronto' && classeScore(l.score) === ' sc-frio');
         if (st === 'pronto') {
           bs.dataset.tip = 'Score ' + classificar(l.score);
           bs.setAttribute('aria-label', 'Score: ' + l.score + '/100 — ' + classificar(l.score));
@@ -6289,13 +6302,18 @@
       });
       box.querySelectorAll('[data-fncriar]').forEach(function (b) {
         b.addEventListener('click', function () {
-          setVia('cons'); irPara('agentes'); abaAtiva('agentes'); abrirFx(null);
+          /* Configurar abre por cima de onde a pessoa está. Levá-la para a área
+             de Agentes tira a licitação da tela, e é justamente a licitação que
+             deu o motivo do clique. */
+          setVia('cons');
+          abrirFx(null);
         });
       });
       box.querySelectorAll('[data-fnativar]').forEach(function (b) {
         b.addEventListener('click', function () {
           FUNCS[b.dataset.fnativar].estado = 'pronto';
-          pintarWorkspace();
+          guardarFuncs();
+          repintarTudo();
         });
       });
       box.querySelectorAll('[data-tecitem]').forEach(function (b) {
