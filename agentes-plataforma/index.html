@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910e" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910f" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 11:15</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 11:45</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910e" defer></script>
+  <script src="../assets/settle.js?v=20260910f" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1153,7 +1153,7 @@
           (MOSTRAR_CUSTO ? '<p class="ap-fhint" style="margin-top:10px">Custo estimado: ' + moeda(0.59) +
             ' nesta licitação, somando as quatro análises.</p>' : '');
         el.querySelector('#btnEnviar').addEventListener('click', function () {
-          confirmarEnvio(function () { setEstado('calculando'); });
+          abrirPreparando(); setEstado('calculando');
         });
         return;
       }
@@ -5498,7 +5498,7 @@
         id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
         portal:'compras.gov.br', score:86,
-        fx:{ score:'preparando', checklist:'preparando', tecnica:'preparando', habil:'sem-agente' },
+        fx:{ score:'pronto', checklist:'pronto', tecnica:'pronto', habil:'pronto' },
         itens:[
           { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
           { nome:'Acompanhamento da implantação junto ao time interno', seg:'Design de produto', qtd:'700 h', vu:'R$ 195,00', vt:'R$ 136.500,00' }
@@ -5506,24 +5506,6 @@
         tecnica:{ itens:[
           { st:'ok', nome:'Item 1 · Redesenho do portal', det:'6 de 6 especificações atendidas' },
           { st:'ok', nome:'Item 2 · Acompanhamento da implantação', det:'4 de 4 especificações atendidas' }
-        ] } },
-
-      { n:'00088/2026', org:'SECRETARIA DE ESTADO DA EDUCAÇÃO DO RIO GRANDE DO SUL',
-        objeto:'Serviços de pesquisa com usuários e testes de usabilidade em plataformas educacionais, ' +
-          'com entrega de relatórios e recomendações por ciclo.',
-        segs:['Pesquisa com usuários'], valor:'198.400,00',
-        adicionada:'19/08/2026', atualizada:'05/09/2026', envio:'25/09/2026',
-        id:'1083990', uasg:'925017', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
-        estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'B', capagM:'A',
-        portal:'compras.rs.gov.br', score:81, atualizado:true,
-        fx:{ score:'aguardando', checklist:'aguardando', tecnica:'aguardando', habil:'sem-agente' },
-        itens:[
-          { nome:'Entrevistas e testes de usabilidade em plataformas educacionais', seg:'Pesquisa com usuários', qtd:'620 h', vu:'R$ 210,00', vt:'R$ 130.200,00' },
-          { nome:'Relatório e recomendações por ciclo', seg:'Pesquisa com usuários', qtd:'325 h', vu:'R$ 210,00', vt:'R$ 68.250,00' }
-        ],
-        tecnica:{ itens:[
-          { st:'ok', nome:'Item 1 · Entrevistas e testes', det:'5 de 5 especificações atendidas' },
-          { st:'na', nome:'Item 2 · Relatório por ciclo', det:'2 de 4 · a periodicidade exigida não está cadastrada no seu catálogo' }
         ] } },
 
       { n:'90112/2026', org:'TRIBUNAL REGIONAL FEDERAL DA 4ª REGIÃO',
@@ -5534,24 +5516,10 @@
         id:'1085330', uasg:'090029', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'—', capagM:'—',
         portal:'compras.gov.br', score:72,
-        fx:{ score:'sem-agente', checklist:'sem-agente', tecnica:'sem-agente', habil:'sem-agente' },
+        fx:{ score:'sem-agente', checklist:'desativado', tecnica:'sem-agente', habil:'sem-agente' },
         itens:[
           { nome:'Criação do design system corporativo, com documentação', seg:'Design system', qtd:'1.400 h', vu:'R$ 205,00', vt:'R$ 287.000,00' },
           { nome:'Treinamento das equipes internas', seg:'Design system', qtd:'380 h', vu:'R$ 220,00', vt:'R$ 83.600,00' }
-        ] },
-
-      { n:'00023/2026', org:'PREFEITURA MUNICIPAL DE ITAPEVI - SECRETARIA DE COMUNICAÇÃO',
-        objeto:'Serviços de criação de identidade visual e peças gráficas para campanhas institucionais ' +
-          'do município, com entrega de manual de marca.',
-        segs:['Identidade visual'], valor:'86.000,00',
-        adicionada:'27/08/2026', atualizada:'01/09/2026', envio:'12/09/2026',
-        id:'1086771', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
-        estado:'SP', cidade:'Itapevi', habitantes:'241.256', capagE:'C', capagM:'C',
-        portal:'compras.itapevi.sp.gov.br', score:34,
-        fx:{ score:'desativado', checklist:'desativado', tecnica:'desativado', habil:'sem-agente' },
-        itens:[
-          { nome:'Identidade visual e manual de marca', seg:'Identidade visual', qtd:'320 h', vu:'R$ 175,00', vt:'R$ 56.000,00' },
-          { nome:'Peças gráficas para campanhas institucionais', seg:'Identidade visual', qtd:'180 h', vu:'R$ 165,00', vt:'R$ 29.700,00' }
         ] }
     ];
 
@@ -5618,8 +5586,9 @@
     function btnScoreHTML(l, i) {
       var st = l.fx.score;
       var corpo = st === 'pronto' ? IC_SCORE + l.score + '/100'
-        : st === 'preparando' ? '<span class="cp-spin"></span>Score'
-        : IC_SCORE + '–/100';
+        : st === 'preparando' ? '<span class="cp-spin"></span>Calculando o Score'
+        : st === 'aguardando' ? IC_SCORE + 'Score não calculado'
+        : IC_SCORE + 'Score sem agente';
       return '<button class="btn-score' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licscore="' + i + '" data-tip="Score · ' + DICA_ESTADO[st] + '">' +
         corpo + '</button>';
@@ -5627,7 +5596,8 @@
 
     function btnChkHTML(l, i) {
       var st = l.fx.checklist;
-      var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Checklist' : IC_CHK + 'Checklist';
+      var corpo = st === 'preparando' ? '<span class="cp-spin"></span>Preparando o Checklist'
+        : IC_CHK + 'Checklist';
       return '<button class="btn btn-outline btn-chk' + (st === 'pronto' ? '' : ' btn-vazio') +
         '" type="button" data-licchk="' + i + '" data-tip="Checklist · ' + DICA_ESTADO[st] + '">' +
         corpo + '</button>';
@@ -5790,7 +5760,14 @@
         });
       });
       box.querySelectorAll('[data-licenviar]').forEach(function (b) {
-        b.addEventListener('click', function () { confirmarEnvio(); });
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          /* O envio é daquela licitação: sem isso, o estado voltaria para o
+             card errado. */
+          licAberta = LICS_CARDS[+b.dataset.licenviar];
+          sincronizarFuncs(licAberta);
+          abrirPreparando();
+        });
       });
       /* O card inteiro abre a licitação. Os controles dentro dele continuam
          sendo deles: clicar em Descartar não pode navegar. */
@@ -5817,33 +5794,10 @@
        porque não tem agente. */
     var PREP_TEMPO = { checklist:3000, tecnica:7000 };
 
-    /* O que o envio dispara: só quem tem o momento "após o envio para análise"
-       e ainda não rodou. O Score e a Habilitação ficam de fora, e a
-       confirmação diz isso. */
-    function confirmarEnvio(depois) {
-      var vao = ['checklist', 'tecnica'].filter(function (k) {
-        return FUNCS[k].momento === 'analise' && FUNCS[k].estado !== 'sem-agente' &&
-               FUNCS[k].estado !== 'desativado';
-      });
-      var fora = Object.keys(FUNCS).filter(function (k) { return vao.indexOf(k) < 0; });
-
-      var corpo = '<p class="ap-fhint" style="margin:0 0 10px">Vão ser preparados agora:</p>' +
-        '<ul class="cfm-lista">' + vao.map(function (k) {
-          return '<li><b>' + FUNCS[k].nome + '</b></li>';
-        }).join('') + '</ul>' +
-        '<p class="ap-fhint" style="margin:12px 0 0">' +
-          fora.map(function (k) {
-            var f = FUNCS[k];
-            if (f.estado === 'sem-agente') return '<b>' + f.nome + '</b> não tem agente configurado';
-            if (f.estado === 'desativado') return '<b>' + f.nome + '</b> está com o agente desativado';
-            return '<b>' + f.nome + '</b> já ficou pronto ' + MOMENTO_TXT[f.momento];
-          }).join('. ') + '. Nenhum deles é acionado agora.</p>';
-
-      confirmar('Enviar para análise', corpo, 'Enviar', function () {
-        abrirPreparando();
-        if (depois) depois();
-      });
-    }
+    /* Só as funcionalidades que este evento acionou entram na lista. O Score
+       não entra porque já rodou em Recomendadas, e a Habilitação não entra
+       porque não tem agente. */
+    var PREP_TEMPO = { checklist:3000, tecnica:7000 };
 
     function abrirPreparando() {
       var alvos = ['checklist', 'tecnica'].filter(function (k) {
@@ -5859,8 +5813,7 @@
       guardarFuncs();
       document.getElementById('prep').hidden = false;
       pintarPreparando();
-      pintarWorkspace();
-      pintarPainelAberto();
+      repintarTudo();
 
       /* Cada uma fica pronta no seu tempo, e o resultado aparece na hora, sem
          esperar as outras. */
@@ -5870,10 +5823,17 @@
           FUNCS[it.k].estado = 'pronto';
           guardarFuncs();
           pintarPreparando();
-          pintarWorkspace();
-          pintarPainelAberto();
+          repintarTudo();
         }, PREP_TEMPO[it.k] || 4000);
       });
+    }
+
+    /* Um estado que muda precisa aparecer em toda parte que o mostra: a lista,
+       as abas da licitação e o painel, se estiver aberto. */
+    function repintarTudo() {
+      if (!document.getElementById('areaLics').hidden) pintarLics();
+      if (!document.getElementById('areaWorkspace').hidden) pintarWorkspace();
+      pintarPainelAberto();
     }
 
     /* Se o painel do Score ou do Checklist estiver aberto quando o estado muda,
@@ -5982,14 +5942,14 @@
     /* Nas abas, a marca do cenário atual faz sentido: a aba já está aberta num
        deles. Nos botões do card não, porque a pessoa clica ali para escolher o
        que quer ver, e nada foi aberto ainda. */
-    function menuCenario(botao, chave, marcarAtual) {
+    function menuCenario(botao, chave) {
       fecharMenuCol();
       var f = FUNCS[chave];
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cen-pop';
       pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
         CENARIOS.map(function (c) {
-          var on = marcarAtual && f.estado === c.id;
+          var on = f.estado === c.id;
           return '<button class="cp-op' + (on ? ' on' : '') + '" type="button" ' +
             'data-cen="' + c.id + '">' + (on ? '✓ ' : '') + c.t +
             '<span class="cp-op-sub">' + c.d + '</span></button>';
@@ -6143,7 +6103,7 @@
     document.querySelectorAll('[data-wk]').forEach(function (b) {
       b.addEventListener('click', function () {
         wkAba = b.dataset.wk;
-        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba, true); }, 0);
+        if (FUNCS[wkAba] && !b.dataset.semmenu) setTimeout(function () { menuCenario(b, wkAba); }, 0);
         document.querySelectorAll('[data-wk]').forEach(function (o) {
           var on = o === b;
           o.classList.toggle('active', on);
@@ -6179,7 +6139,7 @@
     }
 
     document.getElementById('navEnviar').addEventListener('click', function () {
-      confirmarEnvio();
+      abrirPreparando();
     });
 
     document.getElementById('viaLics').addEventListener('click', function (e) {
