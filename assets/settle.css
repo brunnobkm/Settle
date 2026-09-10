@@ -1391,6 +1391,16 @@ table.dt td.c-sel .ap-check{gap:0;}
 .btn-score .cp-spin,.btn .cp-spin{margin-right:2px;}
 
 .pn-ovl{position:fixed;inset:0;z-index:70;background:rgba(23,23,23,.25);}
+/* Aberto pela lista, o painel empurra a tela em vez de cobri-la: assim o card
+   que abriu continua à vista, e dá para ver o botão e o resultado mudarem
+   juntos quando o cenário troca. Sem cobrir, não há overlay para clicar: sai
+   pelo X ou pelo Esc. */
+body.pn-lado .pn{width:424px;}
+body.pn-lado .shell{margin-right:424px;transition:margin-right .2s ease;}
+@media (max-width:900px){ body.pn-lado .shell{margin-right:0;} }
+/* Com a tela empurrada, o botão da Settle AI acompanha: parado no canto ele
+   ficaria em cima do painel. */
+@media (min-width:901px){ body.pn-lado .cp-fab{right:448px;} }
 .pn{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;z-index:71;
   background:var(--background);border-left:1px solid var(--border);display:flex;flex-direction:column;
   box-shadow:var(--shadow-pop);}

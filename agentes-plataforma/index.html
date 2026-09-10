@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910l" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910m" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:09</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:21</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910l" defer></script>
+  <script src="../assets/settle.js?v=20260910m" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3144,6 +3144,7 @@
       if (e.key !== 'Escape') return;
       if (!document.getElementById('modal').hidden) fechar();
       else if (!document.getElementById('fxModal').hidden) fecharFx();
+      else if (!document.getElementById('pn').hidden) fecharPainelScore();
     });
 
 
@@ -5309,9 +5310,15 @@
       document.getElementById('pnCfg').hidden = !!preparando;
       document.getElementById('pnTitulo').textContent = titulo;
       document.getElementById('pnBody').innerHTML = corpo;
-      document.getElementById('pnOvl').hidden = false;
+      /* Na lista, o painel empurra a tela: o card que abriu precisa continuar
+         à vista para dar para comparar botão e resultado. Dentro da licitação
+         segue cobrindo, como sempre foi. */
+      var pelaLista = !document.getElementById('areaLics').hidden;
+      if (pelaLista && document.body.classList.contains('cp-lateral')) cpFecharPainel();
+      document.getElementById('pnOvl').hidden = pelaLista;
       document.getElementById('pn').hidden = false;
       document.body.classList.add('pn-open');
+      document.body.classList.toggle('pn-lado', pelaLista);
       ligarFuncionalidade(document.getElementById('pnBody'));
     }
 
@@ -5407,7 +5414,7 @@
     function fecharPainelScore() {
       document.getElementById('pnOvl').hidden = true;
       document.getElementById('pn').hidden = true;
-      document.body.classList.remove('pn-open');
+      document.body.classList.remove('pn-open', 'pn-lado');
     }
 
     /* Um lugar só: qualquer controle marcado com data-naosim avisa em vez de
@@ -5425,7 +5432,10 @@
       settleToast(oque + ': esta área não foi simulada no protótipo');
     }
 
-    document.getElementById('btnScore').addEventListener('click', function () {
+    document.getElementById('btnScore').addEventListener('click', function (e) {
+      /* Sem parar aqui, o clique chega ao document e fecha o menu que ele
+         mesmo acabou de abrir. */
+      e.stopPropagation();
       menuCenario(this, 'score');
     });
     document.getElementById('pnFechar').addEventListener('click', fecharPainelScore);
@@ -5488,39 +5498,7 @@
           { st:'ok', nome:'Item 1 · Design de interface', det:'8 de 8 especificações atendidas · 3 perfis do catálogo comparados' },
           { st:'no', nome:'Item 2 · Pesquisa com usuários', det:'4 de 5 · exige laboratório de testes presencial, e o nosso catálogo é remoto' },
           { st:'ok', nome:'Item 3 · Design system', det:'2 de 2 especificações atendidas' }
-        ] } },
-
-      { n:'00471/2026', org:'PREFEITURA MUNICIPAL DE CONTAGEM - SECRETARIA DE PLANEJAMENTO',
-        objeto:'Prestação de serviços de design de produto digital para o redesenho do portal do cidadão, ' +
-          'incluindo pesquisa, protótipo navegável e acompanhamento da implantação.',
-        segs:['Design de produto'], valor:'312.000,00',
-        adicionada:'12/08/2026', atualizada:'02/09/2026', envio:'22/09/2026',
-        id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
-        estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
-        portal:'compras.gov.br', score:58,
-        fx:{ score:'pronto', checklist:'pronto', tecnica:'pronto', habil:'pronto' },
-        itens:[
-          { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
-          { nome:'Acompanhamento da implantação junto ao time interno', seg:'Design de produto', qtd:'700 h', vu:'R$ 195,00', vt:'R$ 136.500,00' }
-        ],
-        tecnica:{ itens:[
-          { st:'ok', nome:'Item 1 · Redesenho do portal', det:'6 de 6 especificações atendidas' },
-          { st:'ok', nome:'Item 2 · Acompanhamento da implantação', det:'4 de 4 especificações atendidas' }
-        ] } },
-
-      { n:'90112/2026', org:'TRIBUNAL REGIONAL FEDERAL DA 4ª REGIÃO',
-        objeto:'Contratação de serviços de criação e manutenção de design system corporativo, com ' +
-          'documentação, componentes e treinamento das equipes internas.',
-        segs:['Design system'], valor:'540.000,00',
-        adicionada:'21/08/2026', atualizada:'08/09/2026', envio:'30/09/2026',
-        id:'1085330', uasg:'090029', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
-        estado:'RS', cidade:'Porto Alegre', habitantes:'1.332.570', capagE:'—', capagM:'—',
-        portal:'compras.gov.br', score:31,
-        fx:{ score:'sem-agente', checklist:'desativado', tecnica:'sem-agente', habil:'sem-agente' },
-        itens:[
-          { nome:'Criação do design system corporativo, com documentação', seg:'Design system', qtd:'1.400 h', vu:'R$ 205,00', vt:'R$ 287.000,00' },
-          { nome:'Treinamento das equipes internas', seg:'Design system', qtd:'380 h', vu:'R$ 220,00', vt:'R$ 83.600,00' }
-        ] }
+        ] } }
     ];
 
     var IC_CARD = {
@@ -5968,13 +5946,22 @@
     function menuCenario(botao, chave) {
       fecharMenuCol();
       var f = FUNCS[chave];
+      /* O Score pronto se desdobra nas três classificações da plataforma: com
+         um card só na lista, é aqui que Quente, Morno e Frio aparecem. */
+      var lista = chave !== 'score' ? CENARIOS : [
+        { id:'pronto', nota:78, t:'Resultado disponível · Quente', d:'78/100' },
+        { id:'pronto', nota:58, t:'Resultado disponível · Morno', d:'58/100' },
+        { id:'pronto', nota:31, t:'Resultado disponível · Frio', d:'31/100' }
+      ].concat(CENARIOS.filter(function (c) { return c.id !== 'pronto'; }));
+
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cen-pop';
       pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
-        CENARIOS.map(function (c) {
-          var on = f.estado === c.id;
+        lista.map(function (c, k) {
+          var on = f.estado === c.id &&
+            (c.nota == null || (licAberta && licAberta.score === c.nota));
           return '<button class="cp-op' + (on ? ' on' : '') + '" type="button" ' +
-            'data-cen="' + c.id + '">' + (on ? '✓ ' : '') + c.t +
+            'data-cen="' + k + '">' + (on ? '✓ ' : '') + c.t +
             '<span class="cp-op-sub">' + c.d + '</span></button>';
         }).join('');
       document.body.appendChild(pop);
@@ -5983,7 +5970,9 @@
 
       pop.querySelectorAll('[data-cen]').forEach(function (b) {
         b.addEventListener('click', function () {
-          f.estado = b.dataset.cen;
+          var c = lista[+b.dataset.cen];
+          f.estado = c.id;
+          if (c.nota != null && licAberta) licAberta.score = c.nota;
           guardarFuncs();
           fecharMenuCol();
           if (!document.getElementById('areaLics').hidden) pintarLics();
