@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910m" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910n" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:21</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 15:39</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910m" defer></script>
+  <script src="../assets/settle.js?v=20260910n" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5946,22 +5946,13 @@
     function menuCenario(botao, chave) {
       fecharMenuCol();
       var f = FUNCS[chave];
-      /* O Score pronto se desdobra nas três classificações da plataforma: com
-         um card só na lista, é aqui que Quente, Morno e Frio aparecem. */
-      var lista = chave !== 'score' ? CENARIOS : [
-        { id:'pronto', nota:78, t:'Resultado disponível · Quente', d:'78/100' },
-        { id:'pronto', nota:58, t:'Resultado disponível · Morno', d:'58/100' },
-        { id:'pronto', nota:31, t:'Resultado disponível · Frio', d:'31/100' }
-      ].concat(CENARIOS.filter(function (c) { return c.id !== 'pronto'; }));
-
       var pop = document.createElement('div');
       pop.className = 'fb-pop col-pop cen-pop';
       pop.innerHTML = '<div class="fb-list-head"><span>' + f.nome + ': qual cenário?</span></div>' +
-        lista.map(function (c, k) {
-          var on = f.estado === c.id &&
-            (c.nota == null || (licAberta && licAberta.score === c.nota));
+        CENARIOS.map(function (c) {
+          var on = f.estado === c.id;
           return '<button class="cp-op' + (on ? ' on' : '') + '" type="button" ' +
-            'data-cen="' + k + '">' + (on ? '✓ ' : '') + c.t +
+            'data-cen="' + c.id + '">' + (on ? '✓ ' : '') + c.t +
             '<span class="cp-op-sub">' + c.d + '</span></button>';
         }).join('');
       document.body.appendChild(pop);
@@ -5970,9 +5961,7 @@
 
       pop.querySelectorAll('[data-cen]').forEach(function (b) {
         b.addEventListener('click', function () {
-          var c = lista[+b.dataset.cen];
-          f.estado = c.id;
-          if (c.nota != null && licAberta) licAberta.score = c.nota;
+          f.estado = b.dataset.cen;
           guardarFuncs();
           fecharMenuCol();
           if (!document.getElementById('areaLics').hidden) pintarLics();
