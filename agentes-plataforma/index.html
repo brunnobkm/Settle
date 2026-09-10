@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910f" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260910g" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 11:45</p>
+        <p class="ap-selo">Protótipo atualizado no dia 10 de setembro às 14:39</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" data-naosim="Ignorar">Ignorar</button>
@@ -570,7 +570,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910f" defer></script>
+  <script src="../assets/settle.js?v=20260910g" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5577,7 +5577,7 @@
 
     var DICA_ESTADO = {
       pronto:'Resultado disponível',
-      aguardando:'Será preparado após o envio para análise',
+      aguardando:'Aparece depois do envio para análise',
       preparando:'Estamos preparando este resultado',
       'sem-agente':'Nenhum agente configurado para isto',
       desativado:'O agente desta funcionalidade está desativado'
@@ -5915,15 +5915,19 @@
        momento o agente dela roda.
        ===================================================================== */
     var FUNCS = {
-      score:     { nome:'Score', agente:'score', momento:'recomendadas', estado:'pronto' },
-      checklist: { nome:'Checklist', agente:'checklist', momento:'analise', estado:'aguardando' },
-      tecnica:   { nome:'Análise técnica', agente:'tecnica', momento:'analise', estado:'aguardando' },
-      habil:     { nome:'Habilitação', agente:'habil', momento:'analise', estado:'sem-agente' }
+      score:     { nome:'Score', art:'O', agente:'score', momento:'recomendadas', estado:'pronto' },
+      checklist: { nome:'Checklist', art:'O', agente:'checklist', momento:'analise', estado:'aguardando' },
+      tecnica:   { nome:'Análise técnica', art:'A', agente:'tecnica', momento:'analise', estado:'aguardando' },
+      habil:     { nome:'Habilitação', art:'A', agente:'habil', momento:'analise', estado:'sem-agente' }
     };
 
+    /* A frase de espera diz o que a pessoa vai ver e o que falta acontecer para
+       isso: "O Checklist aparece aqui depois que você enviar a licitação para
+       análise". Falar em "resultado será preparado" descreve o trabalho de
+       dentro, que não é o que ela veio buscar. */
     var MOMENTO_TXT = {
       recomendadas:'quando a licitação chegar em Recomendadas',
-      analise:'após o envio da licitação para análise',
+      analise:'depois que você enviar a licitação para análise',
       captura:'quando a licitação for capturada',
       demanda:'quando você pedir'
     };
@@ -6024,7 +6028,8 @@
       }
       if (f.estado === 'aguardando') {
         return '<div class="wg">' + marca +
-          '<p class="wg-espera">Este resultado será preparado ' + MOMENTO_TXT[f.momento] + '.</p>' +
+          '<p class="wg-espera">' + f.art + ' ' + f.nome + ' aparece aqui ' +
+          MOMENTO_TXT[f.momento] + '.</p>' +
           cfg + '</div>';
       }
       if (f.estado === 'preparando') {
