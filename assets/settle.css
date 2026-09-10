@@ -1399,12 +1399,15 @@ table.dt td.c-sel .ap-check{gap:0;}
   background:color-mix(in srgb, var(--destructive) 10%, var(--card));color:var(--destructive);}
 .btn-score.sc-frio:hover{background:color-mix(in srgb, var(--destructive) 16%, var(--card));}
 
-/* Sem resultado, o botão fica neutro e com contorno tracejado: o lugar existe,
-   a resposta ainda não. */
-.btn-score.btn-vazio{border-style:dashed;border-color:var(--border-strong);
-  background:var(--card);color:var(--muted-foreground);}
-.btn-score.btn-vazio:hover{background:var(--muted);}
-.btn.btn-vazio{border-style:dashed;color:var(--muted-foreground);}
+/* Sem resultado, o botão fica em âmbar e com contorno tracejado: o lugar
+   existe, a resposta ainda não, e isso precisa ser notado de longe. O tracejado
+   segura a diferença para quem não distingue a cor. */
+.btn-score.btn-vazio,.btn.btn-vazio{border-style:dashed;
+  border-color:color-mix(in srgb, var(--warning) 38%, var(--card));
+  background:color-mix(in srgb, var(--warning) 8%, var(--card));color:var(--warning);}
+.btn-score.btn-vazio:hover,.btn.btn-vazio:hover{
+  background:color-mix(in srgb, var(--warning) 14%, var(--card));}
+.btn-score.btn-vazio svg,.btn.btn-vazio svg{color:inherit;}
 .btn-score .cp-spin,.btn .cp-spin{margin-right:2px;}
 
 .pn-ovl{position:fixed;inset:0;z-index:70;background:rgba(23,23,23,.25);}
