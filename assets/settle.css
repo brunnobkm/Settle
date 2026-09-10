@@ -1382,6 +1382,13 @@ table.dt td.c-sel .ap-check{gap:0;}
   border-radius:var(--radius-field);padding:7px 12px;font-family:inherit;font-size:13px;
   font-weight:600;cursor:pointer;}
 .btn-score:hover{background:color-mix(in srgb, var(--success) 16%, var(--card));}
+/* Sem resultado, o botão fica neutro e com contorno tracejado: o lugar existe,
+   a resposta ainda não. */
+.btn-score.btn-vazio{border-style:dashed;border-color:var(--border-strong);
+  background:var(--card);color:var(--muted-foreground);}
+.btn-score.btn-vazio:hover{background:var(--muted);}
+.btn.btn-vazio{border-style:dashed;color:var(--muted-foreground);}
+.btn-score .cp-spin,.btn .cp-spin{margin-right:2px;}
 
 .pn-ovl{position:fixed;inset:0;z-index:70;background:rgba(23,23,23,.25);}
 .pn{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100vw;z-index:71;
