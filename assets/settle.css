@@ -1298,7 +1298,10 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ap-radios{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;}
 /* Card de acompanhamento, no canto inferior esquerdo: fica fora do caminho do
    botão da Settle AI, que mora no canto direito. */
-.prep{position:fixed;left:24px;bottom:24px;z-index:58;width:min(360px,calc(100vw - 32px));
+/* Começa depois da sidebar: encostado na borda da janela, o card cobria o
+   avatar do rodapé dela. Acompanha a sidebar quando ela abre. */
+.prep{position:fixed;left:calc(var(--sb-width-closed) + 16px);bottom:24px;z-index:58;
+  width:min(360px,calc(100vw - 32px));transition:left .2s ease;
   border:1px solid var(--border);border-radius:14px;background:var(--background);
   box-shadow:var(--shadow-pop);padding:18px 20px 8px;}
 .prep-head{display:flex;align-items:flex-start;gap:8px;}
@@ -1318,7 +1321,8 @@ table.dt td.c-sel .ap-check{gap:0;}
   color:var(--foreground);cursor:pointer;}
 .prep-retry:hover{background:var(--muted);}
 .prep.prep-parcial .prep-head h2{color:var(--foreground);}
-@media (max-width:520px){ .prep{left:16px;right:16px;width:auto;} }
+body.sb-open .prep{left:calc(var(--sb-width-open) + 16px);}
+@media (max-width:520px){ .prep,body.sb-open .prep{left:16px;right:16px;width:auto;} }
 .cp-ctx-item svg{flex:none;color:var(--muted-foreground);}
 .cp-ctx-aqui{background:var(--accent-100);color:var(--accent-600);}
 .cp-ctx-aqui svg{color:currentColor;}
