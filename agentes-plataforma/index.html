@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911j" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911k" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 166</p>
+        <p class="ap-selo">Atualização número 167</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911j" defer></script>
+  <script src="../assets/settle.js?v=20260911k" defer></script>
   <script>
   (function () {
     'use strict';
@@ -703,7 +703,6 @@
        resposta, onde procurar e quando roda. Na reunião de 02/09 o José Victor
        ficou de passar as três (10:04 sobre os tipos, 15:07 sobre as fontes,
        25:21 sobre o gatilho). Até chegarem, o que está aqui é provisório. */
-    var PENDENTE = '<span class="ap-pend">Lista provisória: as opções de verdade vêm do backend, e ficaram de ser passadas pelo José Victor e pelo Bruno Ortiz (reunião de 02/09).</span>';
 
     /* As fontes possíveis, em dois níveis. O nível fino existe porque dentro
        de "Edital e anexos" há documento que vale e documento que já não vale:
@@ -3366,7 +3365,6 @@
           : '') +
 
         '<div class="ap-field"><label for="' + pref + 'Gat">Quando roda</label>' +
-        '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<select class="ap-input" id="' + pref + 'Gat">' + opcoesGat(g) + '</select>' +
         '<div class="ap-agenda" id="' + pref + 'Agenda"' + (g === 'agendado' ? '' : ' hidden') + '>' +
           sel('Freq', 'Frequência', FREQS, ag.freq) +
@@ -4133,7 +4131,6 @@
           : '') +
 
         '<div class="ap-field"><label for="vTipo">Tipo</label>' +
-        '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<select class="ap-input" id="vTipo"' + dis + '>' + TIPOS_VAR.map(function (t) {
           return '<option value="' + t + '"' + (t === vForm.tipo ? ' selected' : '') + '>' + cap(t) + '</option>';
         }).join('') + '</select></div>' +
@@ -4144,7 +4141,6 @@
         (v ? (v.prompt || '') : '') + '</textarea></div>' +
 
         '<div class="ap-field"><span class="ap-flabel">Onde procurar</span>' +
-        '<p class="ap-fhint">' + PENDENTE + '</p>' +
         '<div id="vOrdem"></div>' +
         '<label class="ap-check" style="margin-top:10px"><input type="checkbox" id="vResto"' + dis +
         (vForm.resto ? ' checked' : '') + ' /> <span>Se não achar em nenhuma delas, procurar nos outros ' +
