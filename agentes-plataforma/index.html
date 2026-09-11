@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911d" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911e" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 161</p>
+        <p class="ap-selo">Atualização número 162</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911d" defer></script>
+  <script src="../assets/settle.js?v=20260911e" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3254,20 +3254,8 @@
 
     var REPETICAO = { primeira:'Só na primeira vez', sempre:'Toda vez' };
 
-    /* Onde o agente trabalha (Ortiz, 11/09, 43:40): numa licitação, com os
-       arquivos dela, ou num conjunto de licitações da conta. O contexto decide
-       quais gatilhos fazem sentido: um evento como "enviada para análise"
-       acontece com uma licitação; um resumo da semana roda por horário sobre
-       várias. O horário agendado vale nos dois: uma licitação continua sendo
-       atualizada, e rodar de novo sobre ela de tempos em tempos faz sentido. */
-    var CONTEXTOS = {
-      licitacao:{ t:'Em uma licitação',
-        d:'Lê os arquivos da licitação em que roda. É o caso do Score, do Checklist e da Análise técnica.' },
-      conjunto:{ t:'Em um conjunto de licitações',
-        d:'Consulta várias licitações da conta de uma vez, como as que chegaram na semana acima de R$ 1 milhão.' }
-    };
-    var GAT_POR_CONTEXTO = { licitacao:['captura', 'recomendadas', 'analise', 'agendado', 'demanda'],
-                             conjunto:['agendado', 'demanda'] };
+    /* "Onde o agente trabalha" (uma licitação ou várias de uma vez, Ortiz na
+       diária de 11/09) saiu do protótipo até ficar mais claro. */
     /* Frequência no padrão das tarefas agendadas do Claude: cada opção pede só
        o que ela precisa. Diário e dias úteis pedem a hora; semanal, a hora e
        o dia; mensal, a data de início e a hora; por hora, nada. */
@@ -3296,8 +3284,8 @@
       return (ag.dia === 'sab' || ag.dia === 'dom' ? 'Todo ' : 'Toda ') + d + ' às ' + h;
     }
 
-    function opcoesGat(ctx, atual) {
-      return GAT_POR_CONTEXTO[ctx].map(function (g) {
+    function opcoesGat(atual) {
+      return Object.keys(GATILHOS_FX).map(function (g) {
         return '<option value="' + g + '"' + (atual === g ? ' selected' : '') + '>' +
           GATILHOS_FX[g] + '</option>';
       }).join('');
@@ -3306,7 +3294,6 @@
     /* O mesmo bloco serve à criação (fx, gatilho como chave) e à edição de um
        agente existente (an, gatilho como texto). */
     function blocoQuando(alvo, pref, comOnde) {
-      var ctx = alvo.contexto || 'licitacao';
       var ag = alvo.agenda || (alvo.agenda = JSON.parse(JSON.stringify(AGENDA_PADRAO)));
       var g = gatKeyDe(alvo);
       var sel = function (id, nome, mapa, val) {
@@ -3316,34 +3303,28 @@
             return '<option value="' + k + '"' + (val === k ? ' selected' : '') + '>' + mapa[k] + '</option>';
           }).join('') + '</select></label>';
       };
-      return '<div class="ap-field"><span class="ap-flabel">Onde o agente trabalha</span>' +
-        '<div class="ap-radios ap-radios-col">' +
-        Object.keys(CONTEXTOS).map(function (c) {
-          return '<label class="ap-check"><input type="radio" name="' + pref + 'Ctx" value="' + c + '"' +
-            (ctx === c ? ' checked' : '') + ' /> <span><b>' + CONTEXTOS[c].t + '</b>' +
-            '<span class="ap-ctx-d">' + CONTEXTOS[c].d + '</span></span></label>';
-        }).join('') + '</div></div>' +
-
-        /* Um agente de conjunto também pode entregar em cada licitação: roda
-           sobre várias e grava na Análise técnica de cada uma. O que não tem
-           lugar é um resultado único para o conjunto, como um resumo da semana. */
+      return '' +
+        /* "Nenhum lugar" é para instruções que são ações, como mover a
+           licitação ou marcar um responsável: não geram AI Widget, e o que o
+           agente fez fica no histórico dele. */
         (comOnde
           ? '<div class="ap-field">' +
               '<label for="fxOnde">Onde o resultado aparece</label>' +
               '<select class="ap-input" id="fxOnde">' +
+              '<option value=""' + (alvo.onde ? '' : ' selected') + '>Nenhum lugar</option>' +
               Object.keys(FUNCIONALIDADES).map(function (k) {
                 return '<option value="' + k + '"' + (alvo.onde === k ? ' selected' : '') + '>' +
                   FUNCIONALIDADES[k] + '</option>';
               }).join('') + '</select>' +
-              '<p class="ap-fhint" id="' + pref + 'OndeHint"' + (ctx === 'conjunto' ? '' : ' hidden') + '>' +
-                'O resultado é gravado nessa funcionalidade em cada licitação do conjunto. Um resultado ' +
-                'único para o conjunto todo, como um resumo da semana, ainda não tem lugar definido.</p>' +
+              '<p class="ap-fhint" id="fxOndeNada"' + (alvo.onde ? ' hidden' : '') + '>' +
+                'Para instruções que são ações, como mover a licitação ou marcar um responsável. ' +
+                'O agente não gera AI Widget, e o que ele fez fica no histórico dele.</p>' +
             '</div>'
           : '') +
 
         '<div class="ap-field"><label for="' + pref + 'Gat">Quando roda</label>' +
         '<p class="ap-fhint">' + PENDENTE + '</p>' +
-        '<select class="ap-input" id="' + pref + 'Gat">' + opcoesGat(ctx, g) + '</select>' +
+        '<select class="ap-input" id="' + pref + 'Gat">' + opcoesGat(g) + '</select>' +
         '<div class="ap-agenda" id="' + pref + 'Agenda"' + (g === 'agendado' ? '' : ' hidden') + '>' +
           sel('Freq', 'Frequência', FREQS, ag.freq) +
           '<span class="ap-agenda-item" id="' + pref + 'InicioBox"' + (ag.freq === 'mes' ? '' : ' hidden') + '>' +
@@ -3372,13 +3353,12 @@
       var $ = function (id) { return document.getElementById(pref + id); };
       var setGat = function (k) { alvo.gatilho = pref === 'fx' ? k : GATILHOS_FX[k]; };
       function sync() {
-        var g = gatKeyDe(alvo), ctx = alvo.contexto || 'licitacao';
+        var g = gatKeyDe(alvo);
         if ($('Agenda')) $('Agenda').hidden = g !== 'agendado';
         var fq = alvo.agenda.freq;
         if ($('DiaBox')) $('DiaBox').hidden = fq !== 'semana';
         if ($('HoraBox')) $('HoraBox').hidden = fq === 'hora';
         if ($('InicioBox')) $('InicioBox').hidden = fq !== 'mes';
-        if ($('OndeHint')) $('OndeHint').hidden = ctx !== 'conjunto';
         var rep = document.getElementById('fxRepBox');
         if (pref === 'fx' && rep) rep.hidden = g === 'demanda' || g === 'agendado';
       }
@@ -3390,15 +3370,6 @@
           if (MOMENTO_TXT[g]) aplicarMomento(alvo.id, g);
         }
       }
-      document.querySelectorAll('input[name="' + pref + 'Ctx"]').forEach(function (r) {
-        r.addEventListener('change', function () {
-          alvo.contexto = r.value;
-          var ok = GAT_POR_CONTEXTO[r.value];
-          if (ok.indexOf(gatKeyDe(alvo)) < 0) setGat(ok[0]);
-          $('Gat').innerHTML = opcoesGat(r.value, gatKeyDe(alvo));
-          mudou();
-        });
-      });
       var gat = $('Gat');
       if (gat) gat.addEventListener('change', function () {
         setGat(gat.value);
@@ -3433,7 +3404,7 @@
     function fxNovo() {
       return { nome:'', texto:'', blocos:[], linhas:[], template:null,
                gatilho:'analise', repete:'primeira', onde:'tecnica', ativo:false,
-               contexto:'licitacao', agenda:JSON.parse(JSON.stringify(AGENDA_PADRAO)) };
+               agenda:JSON.parse(JSON.stringify(AGENDA_PADRAO)) };
     }
 
     /* Templates de cadastro (Alice, 09/09, 21:24), no formato das Tarefas
@@ -3545,7 +3516,10 @@
 
     function ligarQuandoRoda(aoMudar) {
       var onde = document.getElementById('fxOnde');
-      if (onde) onde.addEventListener('change', function () { fx.onde = onde.value; });
+      if (onde) onde.addEventListener('change', function () {
+        fx.onde = onde.value;
+        document.getElementById('fxOndeNada').hidden = !!onde.value;
+      });
       ligarBlocoQuando(fx, 'fx', aoMudar);
       document.querySelectorAll('input[name="fxRep"]').forEach(function (r) {
         r.addEventListener('change', function () { fx.repete = r.value; });
@@ -3590,7 +3564,6 @@
           fx.template = k === 'zero' ? 'texto' : TEMPLATES[k].formato;
           fx.gatilho = f.gatilho;
           fx.onde = f.onde;
-          fx.contexto = 'licitacao';
           fx.nome = '';
           if (fx.template === 'score' && !fx.linhas.length) {
             fx.linhas = [{ k:'', cond:'', pontos:10 }];
@@ -3851,7 +3824,7 @@
           var t = textoLegivel(texto);
           return t.length > 90 ? t.slice(0, 88) + '…' : t;
         })(),
-        gatilho:GATILHOS_FX[fx.gatilho], contexto:fx.contexto, agenda:fx.agenda,
+        gatilho:GATILHOS_FX[fx.gatilho], agenda:fx.agenda,
         texto:texto, vars:varsNoTexto(),
         aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
       };
@@ -3873,7 +3846,7 @@
         id:'nv' + ANALISES.length, nome:fx.nome || 'Score sem nome', formato:'estruturado',
         desc:linhas.length + ' critérios, ' +
           linhas.reduce(function (t, l) { return t + (+l.pontos || 0); }, 0) + ' pontos no total',
-        gatilho:GATILHOS_FX[fx.gatilho], contexto:fx.contexto, agenda:fx.agenda,
+        gatilho:GATILHOS_FX[fx.gatilho], agenda:fx.agenda,
         destino:'score', propria:true,
         aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
       };
@@ -4529,7 +4502,10 @@
          (Alice, 09/09, 15:08). */
       { id:'certidoes', nome:'Alguma certidão vence antes da sessão?', formato:'texto', temResultado:true,
         desc:'Compara a validade das certidões da B Design com a data da sessão pública.',
-        gatilho:'Quando chega em Recomendadas', aprovacao:'auto',
+        /* Agendado toda segunda: a validade das certidões muda com o tempo, e
+           a mesma licitação precisa ser conferida de novo até a sessão. */
+        gatilho:'Em um horário agendado',
+        agenda:{ freq:'semana', dia:'seg', hora:'08:00', inicio:'2026-09-14' }, aprovacao:'auto',
         texto:'Compare a validade de cada certidão cadastrada da B Design com {{sessao}} e ' +
               'avise quais vencem antes da sessão pública.',
         vars:['sessao'],
@@ -4543,17 +4519,7 @@
         desc:'Texto livre com variáveis dentro.',
         gatilho:'Quando é enviada para análise',
         perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
-        execs:[] },
-      /* Exemplo de agente agendado, o caso que o Ortiz descreveu na diária de
-         11/09: roda toda sexta sobre as licitações da semana. */
-      { id:'semana', nome:'Licitações da semana acima de R$ 1 milhão', formato:'texto', temResultado:false,
-        desc:'Toda sexta, lista as licitações que chegaram na semana com valor global acima de R$ 1 milhão.',
-        gatilho:'Em um horário agendado', contexto:'conjunto',
-        agenda:{ freq:'semana', dia:'sex', hora:'09:00', inicio:'2026-09-12' },
-        aprovacao:'manual',
-        texto:'Liste as licitações que chegaram nesta semana com valor global acima de R$ 1.000.000,00, ' +
-              'ordenadas pela data de envio da proposta, com órgão, objeto e valor.',
-        vars:[], execs:[], ativo:true }
+        execs:[] }
     ];
 
     /* As regras de um Score criado pelo cliente são só as dele: sem isso, ele
@@ -4864,8 +4830,6 @@
           '</div></div>' +
           '<div>' +
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
-            '<div class="ag-sec"><h3>Onde trabalha</h3><p>' +
-              CONTEXTOS[an.contexto || 'licitacao'].t + '</p></div>' +
             '<div class="ag-sec"><h3>Quando roda</h3><p>' +
               (gatKeyDe(an) === 'agendado'
                 ? '<span class="gat gat-agendado">' + descAgenda(an.agenda) + '</span>'
