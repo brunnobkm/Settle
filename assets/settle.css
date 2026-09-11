@@ -1242,7 +1242,9 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ag-sel input{margin:0;accent-color:var(--accent);cursor:pointer;}
 .ag-card:hover .ag-sel,.ag-sel:focus-within,.ag-card.sel .ag-sel{opacity:1;}
 .ag-card.sel{border-color:var(--accent);}
-.ag-acts{display:flex;align-items:center;gap:2px;flex:none;}
+/* Executar, ativar e excluir lado a lado: espaço suficiente para não errar o
+   alvo entre um e outro. */
+.ag-acts{display:flex;align-items:center;gap:10px;flex:none;}
 
 /* ==========================================================================
    32. WORKSPACE DA LICITAÇÃO

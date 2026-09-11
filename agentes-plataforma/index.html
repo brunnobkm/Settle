@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911g" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911h" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 163</p>
+        <p class="ap-selo">Atualização número 164</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911g" defer></script>
+  <script src="../assets/settle.js?v=20260911h" defer></script>
   <script>
   (function () {
     'use strict';
@@ -2565,6 +2565,34 @@
       b.appendChild(el); b.scrollTop = b.scrollHeight;
     }
 
+    /* Executar pelo chat, dentro da licitação: o alvo é a licitação aberta, e
+       o resultado segue o caminho de qualquer outro, com o card de
+       acompanhamento e a funcionalidade passando por "preparando". Evita ir
+       até Agentes só para disparar uma execução. */
+    function cpExecutarAqui() {
+      var an = cpAgente, lic = licAberta || LICS_CARDS[0];
+      if (!an) return;
+      if (an.ativo === false) {
+        cpBolha('bot', 'Estou desativado. Ative o agente para eu poder rodar nesta licitação.');
+        return;
+      }
+      an.execs = an.execs || [];
+      an.execs.unshift({ quando:'agora', lic:'PE ' + lic.n, o:'Execução pedida no chat', st:'ok' });
+      var k = Object.keys(FUNCS).filter(function (x) { return FUNCS[x].agente === an.id; })[0];
+      if (k && lic.fx[k] !== 'indisponivel') {
+        lic.fx[k] = 'preparando';
+        if (licAberta === lic) FUNCS[k].estado = 'preparando';
+        lic.aPreparar = [k];
+        prepMotivo = 'pedido';
+        correrPreparacao(lic);
+        repintarTudo();
+        cpBolha('bot', 'Comecei a rodar na PE ' + lic.n + '. O resultado aparece em <b>' + FUNCS[k].nome +
+          '</b> quando ficar pronto, e o card no canto da tela mostra o andamento.');
+      } else {
+        cpBolha('bot', 'Rodei na PE ' + lic.n + '. O que eu fiz fica no meu histórico.');
+      }
+    }
+
     function cpSugestoes(regra) {
       var box = document.createElement('div');
       box.className = 'ap-chips';
@@ -2572,7 +2600,8 @@
         ? [{ t:'O dado extraído está errado', faz:function () { cpDadoErrado(regra); } },
            { t:'A regra está errada', faz:function () { cpRegraErrada(regra); } }]
         : naLicitacao()
-          ? [{ t:'O que você produziu nesta licitação?', faz:function () {
+          ? [{ t:'Executar nesta licitação', faz:function () { cpExecutarAqui(); } },
+             { t:'O que você produziu nesta licitação?', faz:function () {
                 cpBolha('bot', 'Nesta licitação, a PE 90014/2026, produzi ' +
                   (cpAgente.destino ? regrasDa(cpAgente).length + ' resultados' : '15 resultados') +
                   '. Pode citar um deles que eu te mostro de onde saiu.'); } },
@@ -4628,10 +4657,10 @@
             '</span>' +
           '</button>' +
           '<span class="ag-acts">' +
-            /* Quem roda "quando você pedir" não tem outro gatilho: sem um botão
-               no card, o único jeito de rodar é abrir o agente. Como o
-               "Executar agora" das tarefas agendadas do Claude. */
-            (gatKeyDe(an) === 'demanda' && ativo
+            /* Qualquer agente ativo pode ser forçado a rodar, além do próprio
+               momento dele. Como o "Executar agora" das tarefas agendadas do
+               Claude. */
+            (ativo
               ? '<button class="icon-btn" type="button" data-agrun="' + an.id + '" aria-label="Executar ' +
                 an.nome.replace(/"/g, '&quot;') + ' agora" data-tip="Executar agora"><svg viewBox="0 0 20 20" ' +
                 'width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' +
@@ -6142,6 +6171,9 @@
        acionado pelo mesmo evento; o card só fecha quando nenhuma linha está
        ativa. */
     var prepItens = [];
+    /* O que disparou a preparação: o envio para análise ou um pedido no chat.
+       O texto de apoio muda com isso. */
+    var prepMotivo = 'envio';
 
     /* Só as funcionalidades que este evento acionou entram na lista: no primeiro
        card o Score fica de fora, porque já rodou em Recomendadas; no segundo ele
@@ -6154,6 +6186,7 @@
        enquanto não for dispensado. */
     function abrirPreparando(deDentro) {
       var lic = licAberta;
+      prepMotivo = 'envio';
       var alvos = Object.keys(FUNCS).filter(function (k) {
         return FUNCS[k].momento === 'analise' && FUNCS[k].estado === 'aguardando';
       });
@@ -6277,7 +6310,9 @@
         : falhas ? 'Nem todos os resultados carregaram' : 'Resultados disponíveis';
 
       document.getElementById('prepTexto').textContent = ativos
-        ? 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ' +
+        ? (prepMotivo === 'pedido'
+            ? 'A seu pedido, estamos preparando os resultados abaixo nesta licitação. '
+            : 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ') +
           'Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
         : falhas ? 'O que ficou pronto já está na licitação. Tente de novo o que faltou.'
         : 'Todos os itens estão prontos para consulta.';
