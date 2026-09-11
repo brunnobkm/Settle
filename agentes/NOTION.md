@@ -13,7 +13,7 @@ O comportamento das telas está no vídeo e no protótipo. Aqui fica só o que n
 
 ## Aviso ao entrar em Agentes ou Variáveis com algo rodando
 
-- Se algum agente estiver preparando um resultado, ao abrir a área de Agentes ou de Variáveis mostrar um aviso (sonner) dizendo que editar ou excluir pode interromper o que está em curso.
+- Se um agente estiver preparando um resultado, ao abrir esse agente, ou uma variável usada por ele, apresentar um aviso via Sonner informando que editar ou excluir configurações pode interromper o que está em curso. Abrir apenas a área de Agentes ou de Variáveis, sem entrar em nenhum item, não mostra o aviso.
 - Dentro da funcionalidade, durante a preparação, a ação de configurar o agente fica oculta. Não aparece como botão desabilitado.
 
 ## Quando a funcionalidade aparece
