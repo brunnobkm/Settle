@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911l" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911m" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 168</p>
+        <p class="ap-selo">Atualização número 169</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911l" defer></script>
+  <script src="../assets/settle.js?v=20260911m" defer></script>
   <script>
   (function () {
     'use strict';
@@ -4754,11 +4754,12 @@
       manual:{ t:'Aprovar manualmente',
         d:'O agente pausa para você aprovar cada ação na plataforma.' },
       auto:{ t:'Aprovar automaticamente',
-        d:'O agente vai mover licitações, marcar responsáveis e preencher campos sem pausar para ' +
-          'aprovação. Ele só para antes de ações arriscadas, como descartar uma licitação. Isso pode ' +
-          'gerar mudanças que ninguém revisou.' },
+        d:'O agente faz sozinho as ações do dia a dia, como mover licitações e marcar responsáveis, ' +
+          'e só pausa para você aprovar antes de ações arriscadas, como descartar uma licitação.' },
       nunca:{ t:'Ignorar todas as aprovações',
-        d:'O agente nunca pausa, mesmo em ação arriscada.' }
+        d:'O agente vai mover licitações, marcar responsáveis, preencher campos e descartar licitações ' +
+          'sem pausar para aprovação, nem antes de ações arriscadas. Isso pode gerar mudanças nas suas ' +
+          'licitações que ninguém revisou.' }
     };
 
     function campoAprovacao(alvo) {
