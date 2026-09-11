@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 160</p>
+        <p class="ap-selo">Atualização número 161</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911c" defer></script>
+  <script src="../assets/settle.js?v=20260911d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3268,9 +3268,13 @@
     };
     var GAT_POR_CONTEXTO = { licitacao:['captura', 'recomendadas', 'analise', 'agendado', 'demanda'],
                              conjunto:['agendado', 'demanda'] };
-    var FREQS = { dia:'Todo dia', semana:'Toda semana', mes:'Todo mês, no dia 1' };
-    var DIAS = { seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta' };
-    var AGENDA_PADRAO = { freq:'semana', dia:'sex', hora:'09:00' };
+    /* Frequência no padrão das tarefas agendadas do Claude: cada opção pede só
+       o que ela precisa. Diário e dias úteis pedem a hora; semanal, a hora e
+       o dia; mensal, a data de início e a hora; por hora, nada. */
+    var FREQS = { hora:'Por hora', dia:'Diário', uteis:'Dias úteis', semana:'Semanal', mes:'Mensal' };
+    var DIAS = { seg:'segunda-feira', ter:'terça-feira', qua:'quarta-feira', qui:'quinta-feira',
+                 sex:'sexta-feira', sab:'sábado', dom:'domingo' };
+    var AGENDA_PADRAO = { freq:'semana', dia:'sex', hora:'09:00', inicio:'2026-09-12' };
 
     /* O gatilho mora como chave no formulário e como texto no agente salvo. */
     function gatKeyDe(alvo) {
@@ -3280,10 +3284,16 @@
       })[0] || 'analise';
     }
 
+    /* O texto do selo, como o Claude escreve: "Toda sexta-feira às 9:00". */
     function descAgenda(ag) {
       ag = ag || AGENDA_PADRAO;
-      return FREQS[ag.freq] + (ag.freq === 'semana' ? ', ' + DIAS[ag.dia].toLowerCase() : '') +
-        ', às ' + ag.hora;
+      var h = (ag.hora || '09:00').replace(/^0/, '');
+      if (ag.freq === 'hora') return 'A cada hora';
+      if (ag.freq === 'dia') return 'Todo dia às ' + h;
+      if (ag.freq === 'uteis') return 'Dias úteis às ' + h;
+      if (ag.freq === 'mes') return 'Todo mês no dia ' + (+(ag.inicio || '2026-09-12').slice(8)) + ' às ' + h;
+      var d = DIAS[ag.dia] || DIAS.sex;
+      return (ag.dia === 'sab' || ag.dia === 'dom' ? 'Todo ' : 'Toda ') + d + ' às ' + h;
     }
 
     function opcoesGat(ctx, atual) {
@@ -3336,10 +3346,16 @@
         '<select class="ap-input" id="' + pref + 'Gat">' + opcoesGat(ctx, g) + '</select>' +
         '<div class="ap-agenda" id="' + pref + 'Agenda"' + (g === 'agendado' ? '' : ' hidden') + '>' +
           sel('Freq', 'Frequência', FREQS, ag.freq) +
+          '<span class="ap-agenda-item" id="' + pref + 'InicioBox"' + (ag.freq === 'mes' ? '' : ' hidden') + '>' +
+            '<span class="ap-agenda-pre">começa em</span>' +
+            '<label><span class="sr-only">Data de início</span>' +
+            '<input class="ap-input" type="date" id="' + pref + 'Inicio" value="' + (ag.inicio || AGENDA_PADRAO.inicio) + '" /></label>' +
+          '</span>' +
+          '<label class="ap-agenda-item" id="' + pref + 'HoraBox"' + (ag.freq === 'hora' ? ' hidden' : '') + '>' +
+            '<span class="sr-only">Horário</span>' +
+            '<input class="ap-input" type="time" id="' + pref + 'Hora" value="' + ag.hora + '" /></label>' +
           '<span id="' + pref + 'DiaBox"' + (ag.freq === 'semana' ? '' : ' hidden') + '>' +
             sel('Dia', 'Dia da semana', DIAS, ag.dia) + '</span>' +
-          '<label class="ap-agenda-item"><span class="sr-only">Horário</span>' +
-            '<input class="ap-input" type="time" id="' + pref + 'Hora" value="' + ag.hora + '" /></label>' +
         '</div>' +
         (pref === 'fx'
           ? '<div class="ap-radios" id="fxRepBox"' + (g === 'demanda' || g === 'agendado' ? ' hidden' : '') + '>' +
@@ -3358,7 +3374,10 @@
       function sync() {
         var g = gatKeyDe(alvo), ctx = alvo.contexto || 'licitacao';
         if ($('Agenda')) $('Agenda').hidden = g !== 'agendado';
-        if ($('DiaBox')) $('DiaBox').hidden = alvo.agenda.freq !== 'semana';
+        var fq = alvo.agenda.freq;
+        if ($('DiaBox')) $('DiaBox').hidden = fq !== 'semana';
+        if ($('HoraBox')) $('HoraBox').hidden = fq === 'hora';
+        if ($('InicioBox')) $('InicioBox').hidden = fq !== 'mes';
         if ($('OndeHint')) $('OndeHint').hidden = ctx !== 'conjunto';
         var rep = document.getElementById('fxRepBox');
         if (pref === 'fx' && rep) rep.hidden = g === 'demanda' || g === 'agendado';
@@ -3386,10 +3405,10 @@
         mudou();
         if (aoMudar) aoMudar();
       });
-      ['Freq', 'Dia', 'Hora'].forEach(function (c) {
+      ['Freq', 'Dia', 'Hora', 'Inicio'].forEach(function (c) {
         var el = $(c);
         if (el) el.addEventListener('change', function () {
-          alvo.agenda[{ Freq:'freq', Dia:'dia', Hora:'hora' }[c]] = el.value;
+          alvo.agenda[{ Freq:'freq', Dia:'dia', Hora:'hora', Inicio:'inicio' }[c]] = el.value;
           mudou();
         });
       });
@@ -3519,8 +3538,7 @@
        não diz em que lugar da licitação a resposta vai parar. */
     var FUNCIONALIDADES = {
       score:'Score', checklist:'Checklist', tecnica:'Análise técnica',
-      juridica:'Análise jurídica', habilitacao:'Habilitação', resumo:'Resumo',
-      resultado:'Registro do resultado da licitação'
+      juridica:'Análise jurídica', habilitacao:'Habilitação'
     };
 
     function campoQuandoRoda() { return blocoQuando(fx, 'fx', true); }
@@ -4525,7 +4543,17 @@
         desc:'Texto livre com variáveis dentro.',
         gatilho:'Quando é enviada para análise',
         perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'nao', externo:'nao' },
-        execs:[] }
+        execs:[] },
+      /* Exemplo de agente agendado, o caso que o Ortiz descreveu na diária de
+         11/09: roda toda sexta sobre as licitações da semana. */
+      { id:'semana', nome:'Licitações da semana acima de R$ 1 milhão', formato:'texto', temResultado:false,
+        desc:'Toda sexta, lista as licitações que chegaram na semana com valor global acima de R$ 1 milhão.',
+        gatilho:'Em um horário agendado', contexto:'conjunto',
+        agenda:{ freq:'semana', dia:'sex', hora:'09:00', inicio:'2026-09-12' },
+        aprovacao:'manual',
+        texto:'Liste as licitações que chegaram nesta semana com valor global acima de R$ 1.000.000,00, ' +
+              'ordenadas pela data de envio da proposta, com órgão, objeto e valor.',
+        vars:[], execs:[], ativo:true }
     ];
 
     /* As regras de um Score criado pelo cliente são só as dele: sem isso, ele
@@ -4612,9 +4640,9 @@
             '<span class="ag-card-foot">' +
               (quebr.length ? '<span class="ap-tag warn" data-tip="' + dicaQuebra(quebr) + '">' +
                 'Precisa de atenção</span>' : '') +
-              gatTag(an.gatilho) +
               (gatKeyDe(an) === 'agendado'
-                ? '<span class="ag-agenda-txt">' + descAgenda(an.agenda) + '</span>' : '') +
+                ? '<span class="gat gat-agendado">' + descAgenda(an.agenda) + '</span>'
+                : gatTag(an.gatilho)) +
               (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
             '</span>' +
           '</button>' +
@@ -4838,9 +4866,10 @@
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
             '<div class="ag-sec"><h3>Onde trabalha</h3><p>' +
               CONTEXTOS[an.contexto || 'licitacao'].t + '</p></div>' +
-            '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) +
+            '<div class="ag-sec"><h3>Quando roda</h3><p>' +
               (gatKeyDe(an) === 'agendado'
-                ? ' <span class="ag-agenda-txt">' + descAgenda(an.agenda) + '</span>' : '') +
+                ? '<span class="gat gat-agendado">' + descAgenda(an.agenda) + '</span>'
+                : gatTag(an.gatilho)) +
             '</p></div>' +
             '<div class="ag-sec"><h3>Permissões</h3><p>' +
               APROVACAO[an.aprovacao || 'manual'].t + '</p></div>' +

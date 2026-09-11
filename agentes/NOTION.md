@@ -47,7 +47,7 @@ Não criado e desativado são estados diferentes, com textos e ações diferente
 
 ## Momentos de execução
 
-- Cinco opções: quando a licitação é capturada, quando chega em Recomendadas, quando é enviada para análise, em um horário agendado (todo dia, toda semana ou todo mês) e quando o usuário pedir.
+- Cinco opções: quando a licitação é capturada, quando chega em Recomendadas, quando é enviada para análise, em um horário agendado (por hora, diário, dias úteis, semanal ou mensal) e quando o usuário pedir.
 - Regra de repetição: só na primeira vez ou toda vez. Não se aplica a "quando o usuário pedir" nem ao horário agendado, que já se repete por definição.
 - A frase de espera da funcionalidade vem do evento configurado no agente. Um agente que roda em Recomendadas não pode dizer que fica pronto depois do envio para análise.
 
