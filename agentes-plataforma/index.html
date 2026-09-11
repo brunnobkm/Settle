@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911h" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911i" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 164</p>
+        <p class="ap-selo">Atualização número 165</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911h" defer></script>
+  <script src="../assets/settle.js?v=20260911i" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3284,14 +3284,13 @@
 
     var REPETICAO = { primeira:'Só na primeira vez', sempre:'Toda vez' };
 
-    /* A repetição diz o que conta como "de novo" em cada momento: a licitação
-       pode ser enviada para análise mais de uma vez, e a capturada continua
-       recebendo atualizações. Sem o nome do evento, "Só na primeira vez" não
-       dizia a primeira vez de quê. */
+    /* A repetição só existe onde o evento se repete: a licitação capturada e a
+       recomendada continuam recebendo atualizações. O envio para análise
+       acontece uma vez só, então ali não há o que escolher. Só os momentos
+       desta lista mostram a repetição. */
     var REP_POR_GAT = {
       captura:{ primeira:'Só quando é capturada', sempre:'Também a cada atualização da licitação' },
-      recomendadas:{ primeira:'Só quando chega em Recomendadas', sempre:'Também a cada atualização da licitação' },
-      analise:{ primeira:'Só no primeiro envio para análise', sempre:'A cada envio para análise' }
+      recomendadas:{ primeira:'Só quando chega em Recomendadas', sempre:'Também a cada atualização da licitação' }
     };
     function repeticaoTxt(g, r) { return (REP_POR_GAT[g] || REPETICAO)[r]; }
 
@@ -3382,7 +3381,7 @@
             sel('Dia', 'Dia da semana', DIAS, ag.dia) + '</span>' +
         '</div>' +
         (pref === 'fx'
-          ? '<div class="ap-radios" id="fxRepBox"' + (!g || g === 'demanda' || g === 'agendado' ? ' hidden' : '') + '>' +
+          ? '<div class="ap-radios" id="fxRepBox"' + (REP_POR_GAT[g] ? '' : ' hidden') + '>' +
             '<span class="ap-rep-t">Repetição</span>' +
             Object.keys(REPETICAO).map(function (r) {
               return '<label class="ap-check"><input type="radio" name="fxRep" value="' + r + '"' +
@@ -3405,7 +3404,7 @@
         if ($('InicioBox')) $('InicioBox').hidden = fq !== 'mes';
         var rep = document.getElementById('fxRepBox');
         if (pref === 'fx' && rep) {
-          rep.hidden = !g || g === 'demanda' || g === 'agendado';
+          rep.hidden = !REP_POR_GAT[g];
           Object.keys(REPETICAO).forEach(function (r) {
             var t = document.getElementById('fxRepTxt_' + r);
             if (t) t.textContent = repeticaoTxt(g, r);
