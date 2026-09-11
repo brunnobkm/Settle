@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911e" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911g" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 162</p>
+        <p class="ap-selo">Atualização número 163</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911e" defer></script>
+  <script src="../assets/settle.js?v=20260911g" defer></script>
   <script>
   (function () {
     'use strict';
@@ -605,7 +605,7 @@
 
     var DESTINOS = {
       score:  { nome:'Score',        tipo:'número',            escopos:['licitacao'], nota:'Vira um critério com pontuação.' },
-      resumo: { nome:'Resumo',       tipo:'texto ou lista',    escopos:['licitacao'], nota:'Vira um campo do resumo da licitação.' },
+      resumo: { nome:'Checklist',    tipo:'texto ou lista',    escopos:['licitacao'], nota:'Vira um item do checklist da licitação.' },
       aba:    { nome:'Aba própria',  tipo:'livre',             escopos:['licitacao'], nota:'Cria uma aba na licitação com o resultado completo.' },
       tecnica:{ nome:'Análise técnica', tipo:'status por item', escopos:['componente'], nota:'Exige escopo por componente e regra de agregação.', bloqueado:true },
       match:  { nome:'Match',        tipo:'sim ou não',        escopos:['licitacao'], nota:'Filtra a licitação antes da triagem.', bloqueado:true }
@@ -1150,7 +1150,7 @@
     var estadoExec = 'pronto';
 
     var PROGRESSO = [
-      { nome:'Resumo',           st:'ok',      det:'10 campos preenchidos' },
+      { nome:'Checklist',        st:'ok',      det:'10 itens preenchidos' },
       { nome:'Score',            st:'rodando', det:'5 de 8 regras' },
       { nome:'Análise técnica',  st:'rodando', det:'4 de 15 componentes' },
       { nome:'Análise jurídica', st:'fila',    det:'na fila' }
@@ -2474,7 +2474,8 @@
     function agenteDe(regra) {
       if (!regra) return null;
       if (regra.id === 'tec') return 'tecnica';
-      if (regra.destino === 'resumo') return 'resumo';
+      /* "Resumo" é o nome antigo do Checklist: o que escrevia nele é do Checklist. */
+      if (regra.destino === 'resumo') return 'checklist';
       return 'score';
     }
 
@@ -2859,11 +2860,11 @@
              '<input class="ap-input" id="fPts" type="number" min="0" max="50" value="' + (draft.pontos || 10) + '" />' +
              '<p class="ap-fhint" style="margin-top:6px">O Score exige um número. Hoje seus critérios somam 100 pontos.</p></div>';
       } else if (draft.destino === 'resumo') {
-        h += '<div class="ap-field"><span class="ap-flabel">Formato no Resumo</span>' +
+        h += '<div class="ap-field"><span class="ap-flabel">Formato no Checklist</span>' +
              '<div class="ap-chips">' +
              '<button class="ap-chip" type="button" aria-pressed="true">Lista <small>com status por item</small></button>' +
              '<button class="ap-chip" type="button" aria-pressed="false">Texto <small>um parágrafo</small></button>' +
-             '</div><p class="ap-fhint" style="margin-top:8px">O Resumo não aceita número solto: precisa de algo legível.</p></div>';
+             '</div><p class="ap-fhint" style="margin-top:8px">O Checklist não aceita número solto: precisa de algo legível.</p></div>';
       }
 
       h += '<div class="ap-field" id="fieldVars"><span class="ap-flabel">Informações que ele extrai</span>' +
@@ -2958,7 +2959,7 @@
               '<div class="ap-conn" aria-hidden="true"></div>' +
               '<div class="ap-node"><span class="k">Decide</span>Qual a esfera?</div>' +
               '<div class="ap-branches">' +
-              '<div class="ap-branch"><b>Federal</b><br>Não existe CAPAG federal: 0 ponto, com nota no Resumo</div>' +
+              '<div class="ap-branch"><b>Federal</b><br>Não existe CAPAG federal: 0 ponto, com nota no Checklist</div>' +
               '<div class="ap-branch"><b>Estadual</b><br>Usa a CAPAG estadual</div>' +
               '<div class="ap-branch"><b>Municipal</b><br>Usa a CAPAG municipal</div>' +
               '</div><div class="ap-conn" aria-hidden="true"></div>' +
@@ -2978,7 +2979,7 @@
       if (/capag/.test(t) && !/federal/.test(t)) {
         L.push({ id:'federal', label:'Se o órgão for federal',
           q:'E quando o órgão for federal?',
-          why:'CAPAG só existe para estado e município. Isso não é informação faltando, é pergunta que não se aplica, e o Resumo mostra os dois casos de formas diferentes.',
+          why:'CAPAG só existe para estado e município. Isso não é informação faltando, é pergunta que não se aplica, e o Checklist mostra os dois casos de formas diferentes.',
           ops:['Não pontuar e mostrar "não se aplica"','Pontuar como se fosse favorável'] });
       }
       if (/capag/.test(t) && !/estatal|economia mista/.test(t)) {
@@ -3092,7 +3093,7 @@
         } else {
           var f = draft.mudou.ans_federal || '';
           if (/favorável/.test(f)) { v = '+' + p; cls = 'ap-dim'; why = 'Órgão federal. Pela sua escolha, pontua assim mesmo.'; }
-          else { v = '0'; cls = 'ap-dim'; why = 'Órgão federal: a pergunta não se aplica, e o Resumo diz isso em vez de mostrar zero seco.'; }
+          else { v = '0'; cls = 'ap-dim'; why = 'Órgão federal: a pergunta não se aplica, e o Checklist diz isso em vez de mostrar zero seco.'; }
         }
         h += '<div class="ap-prev"><div class="ap-prev-main"><div class="ap-prev-ed">' + l.ed +
              (l.atual ? ' <span class="tag-light">esta licitação</span>' : '') + '</div>' +
@@ -3254,6 +3255,17 @@
 
     var REPETICAO = { primeira:'Só na primeira vez', sempre:'Toda vez' };
 
+    /* A repetição diz o que conta como "de novo" em cada momento: a licitação
+       pode ser enviada para análise mais de uma vez, e a capturada continua
+       recebendo atualizações. Sem o nome do evento, "Só na primeira vez" não
+       dizia a primeira vez de quê. */
+    var REP_POR_GAT = {
+      captura:{ primeira:'Só quando é capturada', sempre:'Também a cada atualização da licitação' },
+      recomendadas:{ primeira:'Só quando chega em Recomendadas', sempre:'Também a cada atualização da licitação' },
+      analise:{ primeira:'Só no primeiro envio para análise', sempre:'A cada envio para análise' }
+    };
+    function repeticaoTxt(g, r) { return (REP_POR_GAT[g] || REPETICAO)[r]; }
+
     /* "Onde o agente trabalha" (uma licitação ou várias de uma vez, Ortiz na
        diária de 11/09) saiu do protótipo até ficar mais claro. */
     /* Frequência no padrão das tarefas agendadas do Claude: cada opção pede só
@@ -3266,6 +3278,7 @@
 
     /* O gatilho mora como chave no formulário e como texto no agente salvo. */
     function gatKeyDe(alvo) {
+      if (!alvo.gatilho) return '';
       if (GATILHOS_FX[alvo.gatilho]) return alvo.gatilho;
       return Object.keys(GATILHOS_FX).filter(function (k) {
         return GATILHOS_FX[k] === alvo.gatilho;
@@ -3285,7 +3298,8 @@
     }
 
     function opcoesGat(atual) {
-      return Object.keys(GATILHOS_FX).map(function (g) {
+      return (atual ? '' : '<option value="" disabled selected>Escolha quando o agente roda</option>') +
+        Object.keys(GATILHOS_FX).map(function (g) {
         return '<option value="' + g + '"' + (atual === g ? ' selected' : '') + '>' +
           GATILHOS_FX[g] + '</option>';
       }).join('');
@@ -3339,11 +3353,12 @@
             sel('Dia', 'Dia da semana', DIAS, ag.dia) + '</span>' +
         '</div>' +
         (pref === 'fx'
-          ? '<div class="ap-radios" id="fxRepBox"' + (g === 'demanda' || g === 'agendado' ? ' hidden' : '') + '>' +
+          ? '<div class="ap-radios" id="fxRepBox"' + (!g || g === 'demanda' || g === 'agendado' ? ' hidden' : '') + '>' +
+            '<span class="ap-rep-t">Repetição</span>' +
             Object.keys(REPETICAO).map(function (r) {
               return '<label class="ap-check"><input type="radio" name="fxRep" value="' + r + '"' +
-                ((alvo.repete || 'primeira') === r ? ' checked' : '') + ' /> <span>' +
-                REPETICAO[r] + '</span></label>';
+                ((alvo.repete || 'primeira') === r ? ' checked' : '') + ' /> <span id="fxRepTxt_' + r + '">' +
+                repeticaoTxt(g, r) + '</span></label>';
             }).join('') + '</div>'
           : '') +
         '</div>';
@@ -3360,7 +3375,13 @@
         if ($('HoraBox')) $('HoraBox').hidden = fq === 'hora';
         if ($('InicioBox')) $('InicioBox').hidden = fq !== 'mes';
         var rep = document.getElementById('fxRepBox');
-        if (pref === 'fx' && rep) rep.hidden = g === 'demanda' || g === 'agendado';
+        if (pref === 'fx' && rep) {
+          rep.hidden = !g || g === 'demanda' || g === 'agendado';
+          Object.keys(REPETICAO).forEach(function (r) {
+            var t = document.getElementById('fxRepTxt_' + r);
+            if (t) t.textContent = repeticaoTxt(g, r);
+          });
+        }
       }
       function mudou() {
         sync();
@@ -3403,7 +3424,7 @@
 
     function fxNovo() {
       return { nome:'', texto:'', blocos:[], linhas:[], template:null,
-               gatilho:'analise', repete:'primeira', onde:'tecnica', ativo:false,
+               gatilho:'', repete:'primeira', onde:'', ativo:false,
                agenda:JSON.parse(JSON.stringify(AGENDA_PADRAO)) };
     }
 
@@ -3443,7 +3464,7 @@
       return { nome:'Saúde financeira do órgão', gatilho:'analise', onde:'Score', ativo:true, blocos:[
         { t:'extrair', v:'esfera' },
         { t:'decidir', sobre:'esfera', ramos:[
-          { se:'Federal',   faz:'não pontuar e escrever "não se aplica" no Resumo' },
+          { se:'Federal',   faz:'não pontuar e escrever "não se aplica" no Checklist' },
           { se:'Estadual',  faz:'usar a CAPAG estadual' },
           { se:'Municipal', faz:'usar a CAPAG municipal' } ] },
         { t:'extrair', v:'capag' },
@@ -3487,7 +3508,7 @@
       }
       if (b.t === 'exibir') {
         h += '<p class="ap-fhint" style="margin-bottom:6px">Onde o resultado aparece</p><div class="ap-chips">';
-        ['Score', 'Resumo', 'Nova aba na licitação'].forEach(function (o) {
+        ['Score', 'Checklist', 'Nova aba na licitação'].forEach(function (o) {
           h += '<button class="ap-chip" type="button" data-onde="' + o + '" data-i="' + i + '" aria-pressed="' + (b.onde === o) + '">' + o + '</button>';
         });
         h += '</div>';
@@ -3562,8 +3583,10 @@
           var k = b.dataset.tpl;
           var f = k === 'zero' ? FORMATOS.texto : FORMATOS[TEMPLATES[k].formato];
           fx.template = k === 'zero' ? 'texto' : TEMPLATES[k].formato;
-          fx.gatilho = f.gatilho;
-          fx.onde = f.onde;
+          /* Do zero, nada vem escolhido: um momento pré-marcado é uma decisão
+             que a pessoa não tomou. Os modelos trazem os deles. */
+          fx.gatilho = k === 'zero' ? '' : f.gatilho;
+          fx.onde = k === 'zero' ? '' : f.onde;
           fx.nome = '';
           if (fx.template === 'score' && !fx.linhas.length) {
             fx.linhas = [{ k:'', cond:'', pontos:10 }];
@@ -3695,7 +3718,7 @@
 
     function ramosDe(k) {
       if (k === 'esfera') return [
-        { se:'Federal',   faz:'não pontuar e escrever "não se aplica" no Resumo' },
+        { se:'Federal',   faz:'não pontuar e escrever "não se aplica" no Checklist' },
         { se:'Estadual',  faz:'usar a CAPAG estadual' },
         { se:'Municipal', faz:'usar a CAPAG municipal' } ];
       if (VARS[k] && VARS[k].tipo === 'sim ou não') return [ { se:'Sim', faz:'seguir' }, { se:'Não', faz:'seguir' } ];
@@ -3816,6 +3839,7 @@
 
       var texto = (fx && fx.texto || '').trim();
       if (!texto) { settleToast('Escreva as instruções do agente'); return; }
+      if (!fx.gatilho) { settleToast('Escolha quando o agente roda'); return; }
 
       /* Um agente novo é uma análise nova, não uma regra dentro do Score. */
       var an = {
@@ -3841,6 +3865,7 @@
     function criarAgenteScore() {
       var linhas = fx.linhas.filter(function (l) { return l.k && l.cond; });
       if (!linhas.length) { settleToast('Preencha pelo menos um critério'); return; }
+      if (!fx.gatilho) { settleToast('Escolha quando o agente roda'); return; }
 
       var an = {
         id:'nv' + ANALISES.length, nome:fx.nome || 'Score sem nome', formato:'estruturado',
@@ -4259,8 +4284,8 @@
         sub:'Ex.: marcar um componente como não atende na análise técnica.' },
       { k:'resp',    nome:'Marcar responsável',
         sub:'Atribuir a licitação a alguém do time.' },
-      { k:'resumo',  nome:'Escrever no resumo da licitação',
-        sub:'Preencher ou substituir campos do resumo.' },
+      { k:'resumo',  nome:'Escrever no checklist da licitação',
+        sub:'Preencher ou substituir itens do checklist.' },
       { k:'externo', nome:'Consultar sites fora da Settle',
         sub:'Ex.: comparar com o catálogo publicado de um fabricante.' }
     ];
@@ -4453,16 +4478,6 @@
           { quando:'ontem, 17:40', lic:'PE 00088/2026 · Secretaria de Educação do RS', o:'Calculou 81 de 100', st:'ok' },
           { quando:'ontem, 09:14', lic:'PE 90112/2026 · Tribunal Regional Federal da 4ª Região', o:'Não encontrou CAPAG: órgão federal não tem', st:'falhou' }
         ] },
-      { id:'resumo', nome:'Resumo', formato:'estruturado',
-        desc:'Os campos que aparecem no resumo de cada licitação.',
-        gatilho:'Quando chega em Recomendadas', destino:'resumo',
-        perms:{ mover:'nao', status:'nao', resp:'nao', resumo:'auto', externo:'nao' },
-        execs:[
-          { quando:'hoje, 14:20', lic:'PE 90014/2026 · Secretaria de Saúde de MG', o:'Preencheu 6 campos do resumo', st:'ok' },
-          { quando:'hoje, 11:02', lic:'PE 00471/2026 · Prefeitura de Contagem/MG', o:'Preencheu 5 campos, 1 sem valor', st:'ok' }
-        ] },
-      /* O Checklist e o Resumo são agentes diferentes: um monta a lista de
-         perguntas sobre o edital, o outro preenche os campos do resumo. */
       { id:'checklist', nome:'Checklist', formato:'estruturado', padrao:true,
         desc:'Responde as perguntas fixas sobre o edital, agrupadas por seção.',
         gatilho:'Quando chega em Recomendadas', destino:'checklist',
@@ -4486,7 +4501,7 @@
          que o edital exige. */
       { id:'habil', nome:'Tenho todos os documentos de habilitação?', formato:'texto', temResultado:true,
         desc:'Compara a lista de documentos e atestados da B Design com as exigências do edital.',
-        gatilho:'Quando chega em Recomendadas', aprovacao:'manual',
+        gatilho:'Quando você pedir', aprovacao:'manual',
         texto:'Compare os documentos e atestados cadastrados da B Design com as exigências de ' +
               'habilitação do edital e diga o que falta. Considere {{docshab}} e {{atestado}}. ' +
               'Some a carga horária dos atestados quando o edital admitir soma.',
@@ -4613,6 +4628,15 @@
             '</span>' +
           '</button>' +
           '<span class="ag-acts">' +
+            /* Quem roda "quando você pedir" não tem outro gatilho: sem um botão
+               no card, o único jeito de rodar é abrir o agente. Como o
+               "Executar agora" das tarefas agendadas do Claude. */
+            (gatKeyDe(an) === 'demanda' && ativo
+              ? '<button class="icon-btn" type="button" data-agrun="' + an.id + '" aria-label="Executar ' +
+                an.nome.replace(/"/g, '&quot;') + ' agora" data-tip="Executar agora"><svg viewBox="0 0 20 20" ' +
+                'width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' +
+                '<path d="M7 5.2v9.6L15 10z" stroke-linejoin="round"/></svg></button>'
+              : '') +
             '<label class="sw"><input type="checkbox"' + (ativo ? ' checked' : '') +
             ' /><i></i><span class="sr-only">Ativar ' + an.nome + '</span></label>' +
             '<button class="icon-btn" type="button" data-agdel="' + an.id + '" aria-label="Excluir ' +
@@ -4623,6 +4647,13 @@
         if (agSel[an.id]) el.classList.add('sel');
 
         el.querySelector('.ag-abrir').addEventListener('click', function () { abrirAnalise(an); });
+        var run = el.querySelector('[data-agrun]');
+        if (run) run.addEventListener('click', function () {
+          an.execs = an.execs || [];
+          an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
+            o:'Execução manual, disparada por você', st:'ok' });
+          settleToast('Executando ' + an.nome + ' em PE 90014/2026');
+        });
         el.querySelector('.sw input').addEventListener('change', function (e) {
           an.ativo = e.target.checked;
           pintarAnalises();
@@ -4724,7 +4755,7 @@
 
     function campoGatilho(an) { return blocoQuando(an, 'an', false); }
 
-    /* Score e Resumo nasceram como lista de regras, antes de a instrução em
+    /* Score e Checklist nasceram como lista de regras, antes de a instrução em
        texto virar a forma de criar agente. A instrução deles é derivada uma vez
        das regras, com as variáveis já como variáveis, e a partir daí é texto
        como a de qualquer outro. */
