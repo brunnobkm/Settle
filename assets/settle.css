@@ -1195,7 +1195,9 @@ table.dt td.c-sel .ap-check{gap:0;}
 .gat-match{background:#e8eefb;color:#1e3a8a;}
 .gat-demanda{background:#f3ecdf;color:#6b4f14;}
 .gat-off{background:var(--muted);color:var(--muted-foreground);}
-.gat-agendado{background:#e6f0fb;color:#1d4f86;}
+/* Agendado vira selo com o próprio horário, como nas tarefas do Claude. */
+.gat-agendado{background:color-mix(in srgb, var(--success) 13%, var(--card));color:var(--success);
+  font-weight:500;}
 .ag-agenda-txt{font-size:12px;color:var(--muted-foreground);}
 
 /* Agente afetado por uma variável excluída. */
@@ -1213,6 +1215,8 @@ table.dt td.c-sel .ap-check{gap:0;}
 .ap-radios-col .ap-check input{margin-top:3px;}
 .ap-ctx-d{display:block;font-size:12.5px;line-height:18px;color:var(--muted-foreground);}
 .ap-agenda{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
+.ap-agenda-item{display:inline-flex;align-items:center;gap:8px;}
+.ap-agenda-pre{font-size:13px;color:var(--muted-foreground);white-space:nowrap;}
 .ap-agenda-item .ap-input,.ap-agenda span .ap-input{width:auto;min-width:130px;}
 
 /* Card do agente: a instrução ocupa duas linhas, não mais. */
