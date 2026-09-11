@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911m" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911n" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 169</p>
+        <p class="ap-selo">Atualização número 170</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911m" defer></script>
+  <script src="../assets/settle.js?v=20260911n" defer></script>
   <script>
   (function () {
     'use strict';
@@ -4750,16 +4750,24 @@
        sem auditoria (José Victor, 02/09). */
     var ESTADO_EXEC = { ok:'Concluída', aguardando:'Aguardando aprovação', falhou:'Falhou' };
 
+    /* No modelo das permissões do Claude, adaptado à Settle: o nome diz o
+       resultado, e o texto diz o custo de cada modo. O do meio pressupõe uma
+       verificação que classifica cada ação como segura ou arriscada; a lista
+       do que é arriscado ainda precisa ser definida. */
     var APROVACAO = {
-      manual:{ t:'Aprovar manualmente',
-        d:'O agente pausa para você aprovar cada ação na plataforma.' },
-      auto:{ t:'Aprovar automaticamente',
-        d:'O agente faz sozinho as ações do dia a dia, como mover licitações e marcar responsáveis, ' +
-          'e só pausa para você aprovar antes de ações arriscadas, como descartar uma licitação.' },
-      nunca:{ t:'Ignorar todas as aprovações',
-        d:'O agente vai mover licitações, marcar responsáveis, preencher campos e descartar licitações ' +
-          'sem pausar para aprovação, nem antes de ações arriscadas. Isso pode gerar mudanças nas suas ' +
-          'licitações que ninguém revisou.' }
+      manual:{ t:'Pedir aprovação para tudo',
+        d:'O agente pede sua aprovação antes de cada ação, como mover uma licitação ou marcar um ' +
+          'responsável. É o modo mais seguro, mas cada ação fica parada na fila de Aprovações até ' +
+          'alguém aprovar.' },
+      auto:{ t:'Aprovar o que for seguro',
+        d:'As ações do dia a dia seguem sozinhas. As arriscadas, como descartar uma licitação, são ' +
+          'barradas, e o agente procura outro caminho. Se ele insistir, você recebe um pedido de ' +
+          'aprovação. Reduz o risco, mas não o elimina: uma ação arriscada ainda pode passar quando ' +
+          'falta contexto.' },
+      nunca:{ t:'Nunca pedir aprovação',
+        d:'O agente age na hora, sem pedir aprovação e sem verificar se a ação é arriscada. Use só em ' +
+          'agentes cujas ações você já conferiu: um erro vira mudança nas suas licitações que ninguém ' +
+          'revisou.' }
     };
 
     function campoAprovacao(alvo) {
