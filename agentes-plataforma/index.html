@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911b" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911c" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 159</p>
+        <p class="ap-selo">Atualização número 160</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911b" defer></script>
+  <script src="../assets/settle.js?v=20260911c" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3258,14 +3258,15 @@
        arquivos dela, ou num conjunto de licitações da conta. O contexto decide
        quais gatilhos fazem sentido: um evento como "enviada para análise"
        acontece com uma licitação; um resumo da semana roda por horário sobre
-       várias. */
+       várias. O horário agendado vale nos dois: uma licitação continua sendo
+       atualizada, e rodar de novo sobre ela de tempos em tempos faz sentido. */
     var CONTEXTOS = {
       licitacao:{ t:'Em uma licitação',
         d:'Lê os arquivos da licitação em que roda. É o caso do Score, do Checklist e da Análise técnica.' },
       conjunto:{ t:'Em um conjunto de licitações',
         d:'Consulta várias licitações da conta de uma vez, como as que chegaram na semana acima de R$ 1 milhão.' }
     };
-    var GAT_POR_CONTEXTO = { licitacao:['captura', 'recomendadas', 'analise', 'demanda'],
+    var GAT_POR_CONTEXTO = { licitacao:['captura', 'recomendadas', 'analise', 'agendado', 'demanda'],
                              conjunto:['agendado', 'demanda'] };
     var FREQS = { dia:'Todo dia', semana:'Toda semana', mes:'Todo mês, no dia 1' };
     var DIAS = { seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta' };
@@ -3313,17 +3314,21 @@
             '<span class="ap-ctx-d">' + CONTEXTOS[c].d + '</span></span></label>';
         }).join('') + '</div></div>' +
 
+        /* Um agente de conjunto também pode entregar em cada licitação: roda
+           sobre várias e grava na Análise técnica de cada uma. O que não tem
+           lugar é um resultado único para o conjunto, como um resumo da semana. */
         (comOnde
-          ? '<div class="ap-field" id="' + pref + 'OndeBox"' + (ctx === 'conjunto' ? ' hidden' : '') + '>' +
+          ? '<div class="ap-field">' +
               '<label for="fxOnde">Onde o resultado aparece</label>' +
               '<select class="ap-input" id="fxOnde">' +
               Object.keys(FUNCIONALIDADES).map(function (k) {
                 return '<option value="' + k + '"' + (alvo.onde === k ? ' selected' : '') + '>' +
                   FUNCIONALIDADES[k] + '</option>';
-              }).join('') + '</select></div>' +
-            '<p class="ap-fhint" id="' + pref + 'OndeHint"' + (ctx === 'conjunto' ? '' : ' hidden') + '>' +
-              'Onde aparece o resultado de um agente que trabalha num conjunto de licitações ainda ' +
-              'não está definido.</p>'
+              }).join('') + '</select>' +
+              '<p class="ap-fhint" id="' + pref + 'OndeHint"' + (ctx === 'conjunto' ? '' : ' hidden') + '>' +
+                'O resultado é gravado nessa funcionalidade em cada licitação do conjunto. Um resultado ' +
+                'único para o conjunto todo, como um resumo da semana, ainda não tem lugar definido.</p>' +
+            '</div>'
           : '') +
 
         '<div class="ap-field"><label for="' + pref + 'Gat">Quando roda</label>' +
@@ -3354,7 +3359,6 @@
         var g = gatKeyDe(alvo), ctx = alvo.contexto || 'licitacao';
         if ($('Agenda')) $('Agenda').hidden = g !== 'agendado';
         if ($('DiaBox')) $('DiaBox').hidden = alvo.agenda.freq !== 'semana';
-        if ($('OndeBox')) $('OndeBox').hidden = ctx === 'conjunto';
         if ($('OndeHint')) $('OndeHint').hidden = ctx !== 'conjunto';
         var rep = document.getElementById('fxRepBox');
         if (pref === 'fx' && rep) rep.hidden = g === 'demanda' || g === 'agendado';
@@ -6345,6 +6349,7 @@
       recomendadas:'quando a licitação chegar em Recomendadas',
       analise:'depois que você enviar a licitação para análise',
       captura:'quando a licitação for capturada',
+      agendado:'no próximo horário agendado',
       demanda:'quando você pedir'
     };
 
