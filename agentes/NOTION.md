@@ -4,6 +4,23 @@ Protótipo: https://brunnobkm.github.io/Settle/agentes-plataforma/
 
 O comportamento das telas está no vídeo e no protótipo. Aqui fica só o que não dá para ver neles.
 
+## Termos
+
+Funcionalidade é o lugar, agente é quem produz, resultado é o que aparece. Tratar os três como uma coisa só leva a esconder a funcionalidade quando o agente não existe.
+
+| Termo | O que é |
+|---|---|
+| Funcionalidade | O lugar na licitação onde um resultado aparece: Score, Checklist, Análise técnica, Habilitação. Continua existindo mesmo sem agente. |
+| Agente | Quem produz o resultado. Tem instrução, variáveis e momento de execução. |
+| Agente padrão | Agente que a Settle oferece para uma funcionalidade. Enquanto não é criado, a funcionalidade aparece com o convite para configurar. |
+| Agente personalizado | Agente criado pelo cliente. Enquanto não existe, a funcionalidade dele não aparece. |
+| Resultado | O que o agente entrega, exibido dentro da funcionalidade. |
+| Widget de resultado | A moldura que identifica um resultado como resposta de um agente, com o nome dele e as ações Falar com o agente e Configurar. |
+| Variável | Dado extraído do edital e usado nas instruções dos agentes. |
+| Momento de execução | O evento que faz o agente rodar, com a regra de repetição (só na primeira vez ou toda vez). |
+| Feature flag | Liga ou desliga uma funcionalidade para a conta. É decisão da Settle, não do cliente. |
+| Card de acompanhamento | Card flutuante no canto inferior esquerdo da licitação que lista os resultados em preparação. |
+
 ## Quem vê o card de acompanhamento
 
 - Todos os usuários com acesso à licitação veem o card enquanto houver item em preparação.
