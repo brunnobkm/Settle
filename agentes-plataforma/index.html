@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260910au" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911b" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 158</p>
+        <p class="ap-selo">Atualização número 159</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260910au" defer></script>
+  <script src="../assets/settle.js?v=20260911b" defer></script>
   <script>
   (function () {
     'use strict';
@@ -1393,6 +1393,13 @@
       });
       if (AGENTE_TEC.vars.indexOf(k) >= 0) u.push({ agente:'Análise técnica', regra:'Conformidade técnica do item' });
       if (JURIDICA.vars.indexOf(k) >= 0) u.push({ agente:'Análise jurídica', regra:'instrução em texto' });
+      /* Agentes de instrução em texto guardam a variável no próprio texto. Sem
+         eles aqui, a confirmação de exclusão contava menos agentes do que os
+         que depois ficam marcados como precisando de atenção. */
+      ANALISES.filter(function (an) {
+        return an.formato === 'texto' && an.id !== 'juridica' &&
+               varsDoTexto(instrucaoDe(an)).indexOf(k) >= 0;
+      }).forEach(function (an) { u.push({ agente:an.nome, regra:'instrução em texto' }); });
       return u;
     }
 
@@ -3233,6 +3240,7 @@
       captura:'Quando a licitação é capturada',
       recomendadas:'Quando chega em Recomendadas',
       analise:'Quando é enviada para análise',
+      agendado:'Em um horário agendado',
       demanda:'Quando você pedir'
     };
 
@@ -3240,16 +3248,169 @@
       'Quando a licitação é capturada':'quando a licitação for capturada',
       'Quando chega em Recomendadas':'quando a licitação chegar em Recomendadas',
       'Quando é enviada para análise':'depois que você enviar a licitação para análise',
+      'Em um horário agendado':'no próximo horário agendado',
       'Quando você pedir':'quando você pedir'
     };
 
     var REPETICAO = { primeira:'Só na primeira vez', sempre:'Toda vez' };
 
+    /* Onde o agente trabalha (Ortiz, 11/09, 43:40): numa licitação, com os
+       arquivos dela, ou num conjunto de licitações da conta. O contexto decide
+       quais gatilhos fazem sentido: um evento como "enviada para análise"
+       acontece com uma licitação; um resumo da semana roda por horário sobre
+       várias. */
+    var CONTEXTOS = {
+      licitacao:{ t:'Em uma licitação',
+        d:'Lê os arquivos da licitação em que roda. É o caso do Score, do Checklist e da Análise técnica.' },
+      conjunto:{ t:'Em um conjunto de licitações',
+        d:'Consulta várias licitações da conta de uma vez, como as que chegaram na semana acima de R$ 1 milhão.' }
+    };
+    var GAT_POR_CONTEXTO = { licitacao:['captura', 'recomendadas', 'analise', 'demanda'],
+                             conjunto:['agendado', 'demanda'] };
+    var FREQS = { dia:'Todo dia', semana:'Toda semana', mes:'Todo mês, no dia 1' };
+    var DIAS = { seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta' };
+    var AGENDA_PADRAO = { freq:'semana', dia:'sex', hora:'09:00' };
+
+    /* O gatilho mora como chave no formulário e como texto no agente salvo. */
+    function gatKeyDe(alvo) {
+      if (GATILHOS_FX[alvo.gatilho]) return alvo.gatilho;
+      return Object.keys(GATILHOS_FX).filter(function (k) {
+        return GATILHOS_FX[k] === alvo.gatilho;
+      })[0] || 'analise';
+    }
+
+    function descAgenda(ag) {
+      ag = ag || AGENDA_PADRAO;
+      return FREQS[ag.freq] + (ag.freq === 'semana' ? ', ' + DIAS[ag.dia].toLowerCase() : '') +
+        ', às ' + ag.hora;
+    }
+
+    function opcoesGat(ctx, atual) {
+      return GAT_POR_CONTEXTO[ctx].map(function (g) {
+        return '<option value="' + g + '"' + (atual === g ? ' selected' : '') + '>' +
+          GATILHOS_FX[g] + '</option>';
+      }).join('');
+    }
+
+    /* O mesmo bloco serve à criação (fx, gatilho como chave) e à edição de um
+       agente existente (an, gatilho como texto). */
+    function blocoQuando(alvo, pref, comOnde) {
+      var ctx = alvo.contexto || 'licitacao';
+      var ag = alvo.agenda || (alvo.agenda = JSON.parse(JSON.stringify(AGENDA_PADRAO)));
+      var g = gatKeyDe(alvo);
+      var sel = function (id, nome, mapa, val) {
+        return '<label class="ap-agenda-item"><span class="sr-only">' + nome + '</span>' +
+          '<select class="ap-input" id="' + pref + id + '">' +
+          Object.keys(mapa).map(function (k) {
+            return '<option value="' + k + '"' + (val === k ? ' selected' : '') + '>' + mapa[k] + '</option>';
+          }).join('') + '</select></label>';
+      };
+      return '<div class="ap-field"><span class="ap-flabel">Onde o agente trabalha</span>' +
+        '<div class="ap-radios ap-radios-col">' +
+        Object.keys(CONTEXTOS).map(function (c) {
+          return '<label class="ap-check"><input type="radio" name="' + pref + 'Ctx" value="' + c + '"' +
+            (ctx === c ? ' checked' : '') + ' /> <span><b>' + CONTEXTOS[c].t + '</b>' +
+            '<span class="ap-ctx-d">' + CONTEXTOS[c].d + '</span></span></label>';
+        }).join('') + '</div></div>' +
+
+        (comOnde
+          ? '<div class="ap-field" id="' + pref + 'OndeBox"' + (ctx === 'conjunto' ? ' hidden' : '') + '>' +
+              '<label for="fxOnde">Onde o resultado aparece</label>' +
+              '<select class="ap-input" id="fxOnde">' +
+              Object.keys(FUNCIONALIDADES).map(function (k) {
+                return '<option value="' + k + '"' + (alvo.onde === k ? ' selected' : '') + '>' +
+                  FUNCIONALIDADES[k] + '</option>';
+              }).join('') + '</select></div>' +
+            '<p class="ap-fhint" id="' + pref + 'OndeHint"' + (ctx === 'conjunto' ? '' : ' hidden') + '>' +
+              'Onde aparece o resultado de um agente que trabalha num conjunto de licitações ainda ' +
+              'não está definido.</p>'
+          : '') +
+
+        '<div class="ap-field"><label for="' + pref + 'Gat">Quando roda</label>' +
+        '<p class="ap-fhint">' + PENDENTE + '</p>' +
+        '<select class="ap-input" id="' + pref + 'Gat">' + opcoesGat(ctx, g) + '</select>' +
+        '<div class="ap-agenda" id="' + pref + 'Agenda"' + (g === 'agendado' ? '' : ' hidden') + '>' +
+          sel('Freq', 'Frequência', FREQS, ag.freq) +
+          '<span id="' + pref + 'DiaBox"' + (ag.freq === 'semana' ? '' : ' hidden') + '>' +
+            sel('Dia', 'Dia da semana', DIAS, ag.dia) + '</span>' +
+          '<label class="ap-agenda-item"><span class="sr-only">Horário</span>' +
+            '<input class="ap-input" type="time" id="' + pref + 'Hora" value="' + ag.hora + '" /></label>' +
+        '</div>' +
+        (pref === 'fx'
+          ? '<div class="ap-radios" id="fxRepBox"' + (g === 'demanda' || g === 'agendado' ? ' hidden' : '') + '>' +
+            Object.keys(REPETICAO).map(function (r) {
+              return '<label class="ap-check"><input type="radio" name="fxRep" value="' + r + '"' +
+                ((alvo.repete || 'primeira') === r ? ' checked' : '') + ' /> <span>' +
+                REPETICAO[r] + '</span></label>';
+            }).join('') + '</div>'
+          : '') +
+        '</div>';
+    }
+
+    function ligarBlocoQuando(alvo, pref, aoMudar) {
+      var $ = function (id) { return document.getElementById(pref + id); };
+      var setGat = function (k) { alvo.gatilho = pref === 'fx' ? k : GATILHOS_FX[k]; };
+      function sync() {
+        var g = gatKeyDe(alvo), ctx = alvo.contexto || 'licitacao';
+        if ($('Agenda')) $('Agenda').hidden = g !== 'agendado';
+        if ($('DiaBox')) $('DiaBox').hidden = alvo.agenda.freq !== 'semana';
+        if ($('OndeBox')) $('OndeBox').hidden = ctx === 'conjunto';
+        if ($('OndeHint')) $('OndeHint').hidden = ctx !== 'conjunto';
+        var rep = document.getElementById('fxRepBox');
+        if (pref === 'fx' && rep) rep.hidden = g === 'demanda' || g === 'agendado';
+      }
+      function mudou() {
+        sync();
+        if (pref === 'an') {
+          pintarAnalises();
+          var g = gatKeyDe(alvo);
+          if (MOMENTO_TXT[g]) aplicarMomento(alvo.id, g);
+        }
+      }
+      document.querySelectorAll('input[name="' + pref + 'Ctx"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+          alvo.contexto = r.value;
+          var ok = GAT_POR_CONTEXTO[r.value];
+          if (ok.indexOf(gatKeyDe(alvo)) < 0) setGat(ok[0]);
+          $('Gat').innerHTML = opcoesGat(r.value, gatKeyDe(alvo));
+          mudou();
+        });
+      });
+      var gat = $('Gat');
+      if (gat) gat.addEventListener('change', function () {
+        setGat(gat.value);
+        mudou();
+        if (aoMudar) aoMudar();
+      });
+      ['Freq', 'Dia', 'Hora'].forEach(function (c) {
+        var el = $(c);
+        if (el) el.addEventListener('change', function () {
+          alvo.agenda[{ Freq:'freq', Dia:'dia', Hora:'hora' }[c]] = el.value;
+          mudou();
+        });
+      });
+    }
+
+    /* Agentes afetados por uma variável excluída: a exclusão continua livre,
+       mas quem usava a variável precisa aparecer como pendente, na lista e
+       dentro do agente, até alguém revisar a instrução. */
+    function varsQuebradas(an) {
+      return varsDoTexto(instrucaoDe(an)).filter(function (k) { return VARS_EX[k] && !VARS[k]; });
+    }
+
+    function dicaQuebra(q) {
+      var nomes = q.map(function (k) { return '“' + VARS_EX[k] + '”'; }).join(', ');
+      return (q.length === 1 ? 'A variável ' + nomes + ' foi excluída'
+                             : 'As variáveis ' + nomes + ' foram excluídas') +
+        ' e a instrução não tem mais como preencher esse dado.';
+    }
+
     var fx = null, editando = -1;
 
     function fxNovo() {
       return { nome:'', texto:'', blocos:[], linhas:[], template:null,
-               gatilho:'analise', repete:'primeira', onde:'tecnica', ativo:false };
+               gatilho:'analise', repete:'primeira', onde:'tecnica', ativo:false,
+               contexto:'licitacao', agenda:JSON.parse(JSON.stringify(AGENDA_PADRAO)) };
     }
 
     /* Templates de cadastro (Alice, 09/09, 21:24), no formato das Tarefas
@@ -3358,42 +3519,12 @@
       resultado:'Registro do resultado da licitação'
     };
 
-    function campoQuandoRoda() {
-      var semRepeticao = fx.gatilho === 'demanda';
-      return '<div class="ap-field"><label for="fxOnde">Onde o resultado aparece</label>' +
-        '<select class="ap-input" id="fxOnde">' +
-        Object.keys(FUNCIONALIDADES).map(function (k) {
-          return '<option value="' + k + '"' + (fx.onde === k ? ' selected' : '') + '>' +
-                 FUNCIONALIDADES[k] + '</option>';
-        }).join('') + '</select></div>' +
-
-        '<div class="ap-field"><label for="fxGat">Quando roda</label>' +
-        '<p class="ap-fhint">' + PENDENTE + '</p>' +
-        '<select class="ap-input" id="fxGat">' +
-        Object.keys(GATILHOS_FX).map(function (g) {
-          return '<option value="' + g + '"' + (fx.gatilho === g ? ' selected' : '') + '>' +
-                 GATILHOS_FX[g] + '</option>';
-        }).join('') + '</select>' +
-        (semRepeticao ? '' :
-          '<div class="ap-radios">' +
-          Object.keys(REPETICAO).map(function (r) {
-            return '<label class="ap-check"><input type="radio" name="fxRep" value="' + r + '"' +
-              ((fx.repete || 'primeira') === r ? ' checked' : '') + ' /> <span>' +
-              REPETICAO[r] + '</span></label>';
-          }).join('') + '</div>') +
-        '</div>';
-    }
+    function campoQuandoRoda() { return blocoQuando(fx, 'fx', true); }
 
     function ligarQuandoRoda(aoMudar) {
       var onde = document.getElementById('fxOnde');
       if (onde) onde.addEventListener('change', function () { fx.onde = onde.value; });
-      var gat = document.getElementById('fxGat');
-      if (gat) {
-        gat.addEventListener('change', function () {
-          fx.gatilho = gat.value;
-          if (aoMudar) aoMudar();
-        });
-      }
+      ligarBlocoQuando(fx, 'fx', aoMudar);
       document.querySelectorAll('input[name="fxRep"]').forEach(function (r) {
         r.addEventListener('change', function () { fx.repete = r.value; });
       });
@@ -3437,6 +3568,7 @@
           fx.template = k === 'zero' ? 'texto' : TEMPLATES[k].formato;
           fx.gatilho = f.gatilho;
           fx.onde = f.onde;
+          fx.contexto = 'licitacao';
           fx.nome = '';
           if (fx.template === 'score' && !fx.linhas.length) {
             fx.linhas = [{ k:'', cond:'', pontos:10 }];
@@ -3697,7 +3829,7 @@
           var t = textoLegivel(texto);
           return t.length > 90 ? t.slice(0, 88) + '…' : t;
         })(),
-        gatilho:GATILHOS_FX[fx.gatilho],
+        gatilho:GATILHOS_FX[fx.gatilho], contexto:fx.contexto, agenda:fx.agenda,
         texto:texto, vars:varsNoTexto(),
         aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
       };
@@ -3719,7 +3851,8 @@
         id:'nv' + ANALISES.length, nome:fx.nome || 'Score sem nome', formato:'estruturado',
         desc:linhas.length + ' critérios, ' +
           linhas.reduce(function (t, l) { return t + (+l.pontos || 0); }, 0) + ' pontos no total',
-        gatilho:GATILHOS_FX[fx.gatilho], destino:'score', propria:true,
+        gatilho:GATILHOS_FX[fx.gatilho], contexto:fx.contexto, agenda:fx.agenda,
+        destino:'score', propria:true,
         aprovacao:fx.aprovacao || 'manual', execs:[], ativo:true
       };
       ANALISES.push(an);
@@ -4437,7 +4570,8 @@
       ANALISES.forEach(function (an) {
         var el = document.createElement('div');
         var ativo = an.ativo !== false;
-        el.className = 'ag-card' + (ativo ? '' : ' off');
+        var quebr = varsQuebradas(an);
+        el.className = 'ag-card' + (ativo ? '' : ' off') + (quebr.length ? ' atencao' : '');
         var resumo, custo;
         if (an.formato === 'estruturado') {
           var rs = regrasDa(an);
@@ -4472,7 +4606,11 @@
             '<span class="ag-card-nome">' + an.nome + '</span>' +
             '<span class="ag-card-instr">' + instr + '</span>' +
             '<span class="ag-card-foot">' +
+              (quebr.length ? '<span class="ap-tag warn" data-tip="' + dicaQuebra(quebr) + '">' +
+                'Precisa de atenção</span>' : '') +
               gatTag(an.gatilho) +
+              (gatKeyDe(an) === 'agendado'
+                ? '<span class="ag-agenda-txt">' + descAgenda(an.agenda) + '</span>' : '') +
               (MOSTRAR_CUSTO ? '<span class="ap-money">' + moeda(custo) + '</span>' : '') +
             '</span>' +
           '</button>' +
@@ -4542,6 +4680,7 @@
     var GAT_CLASSE = {
       'Quando a licitação é capturada':'captura', 'Quando chega em Recomendadas':'match',
       'Quando é enviada para análise':'analise',
+      'Em um horário agendado':'agendado',
       'Quando você pedir':'demanda'
     };
 
@@ -4585,15 +4724,7 @@
       });
     }
 
-    function campoGatilho(an) {
-      return '<div class="ap-field"><label for="anGat">Quando roda</label>' +
-        '<p class="ap-fhint">' + PENDENTE + '</p>' +
-        '<select class="ap-input" id="anGat">' +
-        Object.keys(GATILHOS_FX).map(function (g) {
-          return '<option value="' + g + '"' +
-                 (GATILHOS_FX[g] === an.gatilho ? ' selected' : '') + '>' + GATILHOS_FX[g] + '</option>';
-        }).join('') + '</select></div>';
-    }
+    function campoGatilho(an) { return blocoQuando(an, 'an', false); }
 
     /* Score e Resumo nasceram como lista de regras, antes de a instrução em
        texto virar a forma de criar agente. A instrução deles é derivada uma vez
@@ -4622,12 +4753,7 @@
         document.getElementById('fxTitle').textContent = an.nome;
         pintarAnalises();
       });
-      var gat = document.getElementById('anGat');
-      if (gat) gat.addEventListener('change', function () {
-        an.gatilho = GATILHOS_FX[gat.value];
-        pintarAnalises();
-        aplicarMomento(an.id, gat.value);
-      });
+      if (document.getElementById('anGat')) ligarBlocoQuando(an, 'an');
     }
 
     /* Mudar o momento na configuração muda a frase de espera da funcionalidade
@@ -4677,8 +4803,14 @@
       var ativo = an.ativo !== false;
       /* As variáveis vêm do próprio texto: é o que a instrução realmente usa. */
       var vs = varsDoTexto(instrucaoDe(an));
+      var quebr = varsQuebradas(an);
 
       document.getElementById('fxBody').innerHTML =
+        (quebr.length
+          ? '<div class="ag-atencao"><b>Precisa de atenção</b><span>' + dicaQuebra(quebr) +
+            ' Revise a instrução ou troque a variável.</span>' +
+            '<button class="btn btn-outline btn-sm" type="button" id="agRevisar">Revisar instrução</button></div>'
+          : '') +
         '<div class="ag-top">' +
           '<label class="sw"><input type="checkbox" id="agAtivo"' + (ativo ? ' checked' : '') +
           ' /><i></i><span class="sr-only">Agente ativo</span></label>' +
@@ -4700,7 +4832,12 @@
           '</div></div>' +
           '<div>' +
             '<div class="ag-sec"><h3>Instruções</h3><p>' + textoParaHTML(instrucaoDe(an)) + '</p></div>' +
-            '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) + '</p></div>' +
+            '<div class="ag-sec"><h3>Onde trabalha</h3><p>' +
+              CONTEXTOS[an.contexto || 'licitacao'].t + '</p></div>' +
+            '<div class="ag-sec"><h3>Quando roda</h3><p>' + gatTag(an.gatilho) +
+              (gatKeyDe(an) === 'agendado'
+                ? ' <span class="ag-agenda-txt">' + descAgenda(an.agenda) + '</span>' : '') +
+            '</p></div>' +
             '<div class="ag-sec"><h3>Permissões</h3><p>' +
               APROVACAO[an.aprovacao || 'manual'].t + '</p></div>' +
             '<div class="ag-sec"><h3>Variáveis usadas</h3>' +
@@ -4709,6 +4846,9 @@
             '</div>' +
           '</div>' +
         '</div>';
+
+      var rev = document.getElementById('agRevisar');
+      if (rev) rev.addEventListener('click', function () { document.getElementById('agEditar').click(); });
 
       document.getElementById('agAtivo').addEventListener('change', function (e) {
         an.ativo = e.target.checked;
