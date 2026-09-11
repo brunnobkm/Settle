@@ -15,9 +15,10 @@ Funcionalidade é o lugar, agente é quem produz, resultado é o que aparece. Tr
 | Agente padrão | Agente que a Settle oferece para uma funcionalidade. Enquanto não é criado, a funcionalidade aparece com o convite para configurar. |
 | Agente personalizado | Agente criado pelo cliente. Enquanto não existe, a funcionalidade dele não aparece. |
 | Resultado | O que o agente entrega, exibido dentro da funcionalidade. |
-| Widget de resultado | A moldura que identifica um resultado como resposta de um agente, com o nome dele e as ações Falar com o agente e Configurar. |
+| AI Widget | O card que identifica um resultado como resposta de um agente, com o nome dele e as ações Falar com o agente e Configurar. Cada player do mercado usa um nome diferente (artefato, canvas, card); este é o nosso por enquanto. |
 | Variável | Dado extraído do edital e usado nas instruções dos agentes. |
-| Momento de execução | O evento que faz o agente rodar, com a regra de repetição (só na primeira vez ou toda vez). |
+| Contexto de execução | Onde o agente trabalha: em uma licitação, com os arquivos dela, ou em um conjunto de licitações da conta. |
+| Momento de execução | O que faz o agente rodar: um evento da licitação, um horário agendado ou o pedido do usuário. |
 | Feature flag | Liga ou desliga uma funcionalidade para a conta. É decisão da Settle, não do cliente. |
 | Card de acompanhamento | Card flutuante no canto inferior esquerdo da licitação que lista os resultados em preparação. |
 
@@ -46,9 +47,15 @@ Não criado e desativado são estados diferentes, com textos e ações diferente
 
 ## Momentos de execução
 
-- Quatro eventos: quando a licitação é capturada, quando chega em Recomendadas, quando é enviada para análise e quando o usuário pedir.
-- Regra de repetição: só na primeira vez ou toda vez. Não se aplica a "quando o usuário pedir".
+- Cinco opções: quando a licitação é capturada, quando chega em Recomendadas, quando é enviada para análise, em um horário agendado (todo dia, toda semana ou todo mês) e quando o usuário pedir.
+- Regra de repetição: só na primeira vez ou toda vez. Não se aplica a "quando o usuário pedir" nem ao horário agendado, que já se repete por definição.
 - A frase de espera da funcionalidade vem do evento configurado no agente. Um agente que roda em Recomendadas não pode dizer que fica pronto depois do envio para análise.
+
+## Contexto de execução
+
+- **Em uma licitação:** o agente lê os arquivos daquela licitação. Aceita todos os momentos. O horário agendado serve para rodar de novo sobre uma licitação que continua sendo atualizada.
+- **Em um conjunto de licitações:** o agente consulta várias licitações da conta de uma vez. Aceita só o horário agendado e o pedido do usuário, porque os eventos acontecem com uma licitação.
+- Nos dois contextos, o resultado vai para a funcionalidade escolhida em cada licitação. Um agente de conjunto pode, por exemplo, rodar toda semana e gravar na Análise técnica de cada licitação.
 
 ## Textos
 
@@ -60,11 +67,12 @@ Não criado e desativado são estados diferentes, com textos e ações diferente
 - A classificação quente, morno ou frio vem do backend. Os cortes usados no protótipo são só ilustração.
 - Com resultado, o tooltip do botão é o de produção ("Score Quente"). O número fica no rótulo de acessibilidade ("Score: 87/100, Quente").
 
-## Widgets de resultado
+## AI Widgets
 
-- Quando uma funcionalidade é respondida por mais de um agente, cada resposta é um widget próprio.
-- A ordem dos widgets numa seção é de cada usuário e fica salva para ele. O protótipo simula o arrasto, mas não guarda a ordem.
+- Quando uma funcionalidade é respondida por mais de um agente, cada resposta é um AI Widget próprio.
+- A ordem dos AI Widgets numa seção é de cada usuário e fica salva para ele. O protótipo simula o arrasto, mas não guarda a ordem.
 
 ## Em aberto
 
+- Onde aparece um resultado único para um conjunto de licitações, como um resumo da semana. Hoje o resultado de um agente de conjunto só tem lugar dentro de cada licitação.
 - "Licitações liberadas ao usuário" saiu da lista de momentos: não existe definição do que é essa liberação, nem etapa com esse nome na plataforma. Volta quando for definida.
