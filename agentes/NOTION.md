@@ -17,7 +17,6 @@ Funcionalidade é o lugar, agente é quem produz, resultado é o que aparece. Tr
 | Resultado | O que o agente entrega, exibido dentro da funcionalidade. |
 | AI Widget | O card que identifica um resultado como resposta de um agente, com o nome dele e as ações Falar com o agente e Configurar. Cada player do mercado usa um nome diferente (artefato, canvas, card); este é o nosso por enquanto. |
 | Variável | Dado extraído do edital e usado nas instruções dos agentes. |
-| Contexto de execução | Onde o agente trabalha: em uma licitação, com os arquivos dela, ou em um conjunto de licitações da conta. |
 | Momento de execução | O que faz o agente rodar: um evento da licitação, um horário agendado ou o pedido do usuário. |
 | Feature flag | Liga ou desliga uma funcionalidade para a conta. É decisão da Settle, não do cliente. |
 | Card de acompanhamento | Card flutuante no canto inferior esquerdo da licitação que lista os resultados em preparação. |
@@ -51,12 +50,6 @@ Não criado e desativado são estados diferentes, com textos e ações diferente
 - Regra de repetição: só na primeira vez ou toda vez. Não se aplica a "quando o usuário pedir" nem ao horário agendado, que já se repete por definição.
 - A frase de espera da funcionalidade vem do evento configurado no agente. Um agente que roda em Recomendadas não pode dizer que fica pronto depois do envio para análise.
 
-## Contexto de execução
-
-- **Em uma licitação:** o agente lê os arquivos daquela licitação. Aceita todos os momentos. O horário agendado serve para rodar de novo sobre uma licitação que continua sendo atualizada.
-- **Em um conjunto de licitações:** o agente consulta várias licitações da conta de uma vez. Aceita só o horário agendado e o pedido do usuário, porque os eventos acontecem com uma licitação.
-- Nos dois contextos, o resultado vai para a funcionalidade escolhida em cada licitação. Um agente de conjunto pode, por exemplo, rodar toda semana e gravar na Análise técnica de cada licitação.
-
 ## Textos
 
 - Na licitação, os textos falam em preparando, disponível, pronto e "Não foi possível carregar". Não usam processamento, processado, execução, fila ou job.
@@ -71,8 +64,9 @@ Não criado e desativado são estados diferentes, com textos e ações diferente
 
 - Quando uma funcionalidade é respondida por mais de um agente, cada resposta é um AI Widget próprio.
 - A ordem dos AI Widgets numa seção é de cada usuário e fica salva para ele. O protótipo simula o arrasto, mas não guarda a ordem.
+- Agentes cuja instrução é uma ação, como mover a licitação ou marcar um responsável, não geram AI Widget. Em "Onde o resultado aparece" eles ficam em "Nenhum lugar", e o que fizeram aparece no histórico do agente.
 
 ## Em aberto
 
-- Onde aparece um resultado único para um conjunto de licitações, como um resumo da semana. Hoje o resultado de um agente de conjunto só tem lugar dentro de cada licitação.
+- Onde o agente trabalha, em uma licitação ou em várias de uma vez, saiu do protótipo até ficar mais claro. A questão veio do Ortiz na diária de 11/09: um agente pode precisar ler várias licitações juntas, como num resumo semanal, e aí não está definido quais licitações entram nem onde o resultado aparece.
 - "Licitações liberadas ao usuário" saiu da lista de momentos: não existe definição do que é essa liberação, nem etapa com esse nome na plataforma. Volta quando for definida.
