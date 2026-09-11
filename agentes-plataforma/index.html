@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260911n" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260911o" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -228,7 +228,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 170</p>
+        <p class="ap-selo">Atualização número 171</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -585,7 +585,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260911n" defer></script>
+  <script src="../assets/settle.js?v=20260911o" defer></script>
   <script>
   (function () {
     'use strict';
@@ -3848,11 +3848,8 @@
       var rotulo = document.getElementById('fxAtivar').textContent;
       if (analiseAberta && rotulo === 'Executar agora') {
         var alvo = analiseAberta;
-        alvo.execs = alvo.execs || [];
-        alvo.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Execução manual, disparada por você', st:'ok' });
+        executarEmTodas(alvo);
         pintarDetalhe(alvo);
-        settleToast('Executando o agente');
         return;
       }
       if (analiseAberta && rotulo === 'Salvar alterações') {
@@ -4385,14 +4382,20 @@
         '</div></div>';
     }
 
+    /* Executar pelo agente, no card ou na modal, roda em todas as licitações.
+       Só o chat, aberto dentro de uma licitação, roda numa licitação só. */
+    function executarEmTodas(an) {
+      an.execs = an.execs || [];
+      an.execs.unshift({ quando:'agora', lic:'Todas as licitações',
+        o:'Execução manual em todas as licitações, disparada por você', st:'ok' });
+      settleToast('Executando ' + an.nome + ' em todas as licitações');
+    }
+
     function ligarExec(an) {
       var r = document.getElementById('execRodar');
       if (r) r.addEventListener('click', function () {
-        an.execs = an.execs || [];
-        an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-          o:'Execução manual, disparada por você', st:'ok' });
+        executarEmTodas(an);
         abrirAnalise(an);
-        settleToast('Executando o agente');
       });
       var pz = document.getElementById('execPausar');
       if (pz) pz.addEventListener('click', function () {
@@ -4675,10 +4678,7 @@
         el.querySelector('.ag-abrir').addEventListener('click', function () { abrirAnalise(an); });
         var run = el.querySelector('[data-agrun]');
         if (run) run.addEventListener('click', function () {
-          an.execs = an.execs || [];
-          an.execs.unshift({ quando:'agora', lic:'PE 90014/2026 · Secretaria de Saúde de MG',
-            o:'Execução manual, disparada por você', st:'ok' });
-          settleToast('Executando ' + an.nome + ' em PE 90014/2026');
+          executarEmTodas(an);
         });
         el.querySelector('.sw input').addEventListener('change', function (e) {
           an.ativo = e.target.checked;
