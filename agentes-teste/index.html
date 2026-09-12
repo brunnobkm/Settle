@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260912c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260912d" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -239,7 +239,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 174</p>
+        <p class="ap-selo">Atualização número 175</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -596,7 +596,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260912c" defer></script>
+  <script src="../assets/settle.js?v=20260912d" defer></script>
   <script>
   (function () {
     'use strict';
@@ -4543,7 +4543,7 @@
          que o edital exige. */
       { id:'habil', nome:'Tenho todos os documentos de habilitação?', formato:'texto', temResultado:true,
         desc:'Compara a lista de documentos e atestados da B Design com as exigências do edital.',
-        gatilho:'Quando você pedir', aprovacao:'manual',
+        gatilho:'Quando é enviada para análise', aprovacao:'manual',
         texto:'Compare os documentos e atestados cadastrados da B Design com as exigências de ' +
               'habilitação do edital e diga o que falta. Considere {{docshab}} e {{atestado}}. ' +
               'Some a carga horária dos atestados quando o edital admitir soma.',
@@ -5752,7 +5752,7 @@
         id:'1078513', uasg:'986531', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'MG', cidade:'Belo Horizonte', habitantes:'2.315.560', capagE:'B', capagM:'C',
         portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true,
-        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'aguardando', habil:'aguardando' },
         itens:[
           { nome:'Design de interface: telas de novos fluxos, com protótipo navegável', seg:'Design de produto', qtd:'1.200 h', vu:'R$ 190,00', vt:'R$ 228.000,00' },
           { nome:'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', seg:'Pesquisa com usuários', qtd:'480 h', vu:'R$ 210,00', vt:'R$ 100.800,00' },
@@ -5772,7 +5772,7 @@
         id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
         portal:'compras.gov.br', score:58,
-        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'aguardando', habil:'aguardando' },
         itens:[
           { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
           { nome:'Acompanhamento da implantação junto ao time interno', seg:'Design de produto', qtd:'700 h', vu:'R$ 195,00', vt:'R$ 136.500,00' }
@@ -5791,7 +5791,7 @@
         id:'1083990', uasg:'153079', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
         estado:'PR', cidade:'Curitiba', habitantes:'1.773.718', capagE:'A', capagM:'A',
         portal:'compras.gov.br', score:86, atualizado:true,
-        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'aguardando', habil:'aguardando' },
         itens:[
           { nome:'Reformulação do portal do aluno, com protótipo navegável', seg:'Design de produto', qtd:'1.400 h', vu:'R$ 198,00', vt:'R$ 277.200,00' },
           { nome:'Testes de usabilidade com estudantes e professores', seg:'Pesquisa com usuários', qtd:'520 h', vu:'R$ 215,00', vt:'R$ 111.800,00' }
@@ -5809,7 +5809,7 @@
         id:'1085112', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
         estado:'PE', cidade:'Recife', habitantes:'1.653.461', capagE:'C', capagM:'C',
         portal:'peintegrado.pe.gov.br', score:39,
-        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'aguardando', habil:'aguardando' },
         itens:[
           { nome:'Auditoria de acessibilidade WCAG nos sistemas tributários', seg:'Design system', qtd:'620 h', vu:'R$ 180,00', vt:'R$ 111.600,00' },
           { nome:'Treinamento das equipes internas em acessibilidade', seg:'Design system', qtd:'240 h', vu:'R$ 215,00', vt:'R$ 51.600,00' }
@@ -5828,7 +5828,7 @@
         id:'1086744', uasg:'080020', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'SC', cidade:'Florianópolis', habitantes:'537.211', capagE:'A', capagM:'B',
         portal:'compras.gov.br', score:67,
-        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'aguardando', habil:'aguardando' },
         itens:[
           { nome:'Design de interface do aplicativo de acompanhamento processual', seg:'Design de produto', qtd:'880 h', vu:'R$ 192,00', vt:'R$ 168.960,00' },
           { nome:'Manutenção evolutiva do design system', seg:'Design system', qtd:'460 h', vu:'R$ 205,00', vt:'R$ 94.300,00' }
@@ -6224,7 +6224,7 @@
        card o Score fica de fora, porque já rodou em Recomendadas; no segundo ele
        entra. A Habilitação nunca entra, porque não tem agente. Os tempos são
        diferentes de propósito, para o resultado aparecer um de cada vez. */
-    var PREP_TEMPO = { score:2000, checklist:4000, tecnica:8000 };
+    var PREP_TEMPO = { score:6000, checklist:12000, tecnica:24000 };
 
     /* Enviar para análise tira a licitação de Recomendadas, como na plataforma.
        O aviso na base é o que sobra dela na tela, e o único caminho de volta
@@ -6285,7 +6285,7 @@
           if (vaiFalhar) lic.falhar = lic.falhar.filter(function (x) { return x !== k; });
           if (licAberta === lic) FUNCS[k].estado = lic.fx[k];
           repintarTudo();
-        }, PREP_TEMPO[k] || 4000);
+        }, PREP_TEMPO[k] || 12000);
       });
     }
 
