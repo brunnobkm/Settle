@@ -118,22 +118,31 @@ na hora; se tenta fechar o card; se sai da licitação e volta.
 
 Com a análise concluída, abra a aba Habilitação.
 
+**Aqui a pessoa só fala.** Ela olha a tela e conta o que entende. Não peça para
+clicar nos botões: pergunte o que ela espera que aconteça em cada um.
+
 1. Me conte o que você está vendo aqui.
 2. De onde veio essa informação? Dá para confiar?
 3. O que você faria se discordasse deste resultado?
-4. O que estes dois botões fazem?
+4. Olhando estes dois botões, o que você espera de cada um?
 
 **Observar:** se percebe que o conteúdo foi produzido por um agente; se o nome
 do agente no topo significa alguma coisa para ela; se procura a origem do dado.
 
 ## Bloco 8: o chat (5 min)
 
+Abra o chat do canto direito e deixe a pessoa olhar.
+
+**Aqui a pessoa só fala.** Nada de digitar nem enviar mensagem: o protótipo não
+responde de verdade, e a resposta dele não é o que queremos testar.
+
 1. O que você acha que dá para fazer com isso?
-2. Tente pedir alguma coisa para ele.
-3. (Se não escolher um agente) O que muda ao escolher um agente aqui?
+2. O que você pediria para ele? Me conte em voz alta, sem digitar.
+3. Olhando a lista de agentes aqui dentro, o que muda ao escolher um deles?
 
 **Observar:** se espera um assistente genérico ou uma conversa com o agente; se
-pensa em corrigir um resultado por ali.
+pensa em corrigir um resultado por ali; se o nome do agente escolhido muda o que
+ela imagina poder pedir.
 
 ## Fechamento (5 min)
 
@@ -143,7 +152,7 @@ pensa em corrigir um resultado por ali.
 
 ## O que não está simulado
 
-Falar com o agente pelo chat responde pouca coisa, a área de Itens e a de
+O chat não responde de verdade (por isso os blocos 7 e 8 são só de conversa), a área de Itens e a de
 Manifestações avisam que não fazem parte do protótipo, e o resultado de um
 agente que executa uma ação não aparece em lugar nenhum além do histórico.
 Se a pessoa cair em um desses pontos, anote e siga.
