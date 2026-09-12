@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260912a" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260912c" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -239,7 +239,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 172</p>
+        <p class="ap-selo">Atualização número 173</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -596,7 +596,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260912a" defer></script>
+  <script src="../assets/settle.js?v=20260912c" defer></script>
   <script>
   (function () {
     'use strict';
@@ -830,7 +830,7 @@
         prov:'Somado de 5 itens do quadro de quantitativos', ramifica:true,
         ausencia:'registra como não encontrado' },
 
-      { id:'hab',  nome:'Checklist de habilitação', destino:'resumo', escopo:'licitacao', agregacao:null,
+      { id:'hab',  nome:'Checklist de habilitação', destino:'checklist', escopo:'licitacao', agregacao:null,
         instr:'Liste todos os documentos de habilitação exigidos, separando por jurídica, fiscal, técnica e econômico-financeira.',
         vars:['docshab'], pontos:null, ganhos:null, estado:'run', gatilho:'Quando chega em Recomendadas', custo:0.06,
         dado:'14 documentos exigidos, 11 já cadastrados na empresa',
@@ -2484,8 +2484,10 @@
     function agenteDe(regra) {
       if (!regra) return null;
       if (regra.id === 'tec') return 'tecnica';
-      /* "Resumo" é o nome antigo do Checklist: o que escrevia nele é do Checklist. */
-      if (regra.destino === 'resumo') return 'checklist';
+      /* "Resumo" é o nome antigo do Checklist: o que escrevia nele é do Checklist.
+         O destino antigo continua mapeado por causa das regras criadas pelo
+         formulário, que ainda usa a chave antiga. */
+      if (regra.destino === 'checklist' || regra.destino === 'resumo') return 'checklist';
       return 'score';
     }
 
