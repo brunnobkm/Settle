@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260912a" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260912b" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -239,7 +239,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 172</p>
+        <p class="ap-selo">Atualização número 173</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -596,7 +596,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../assets/settle.js?v=20260912a" defer></script>
+  <script src="../assets/settle.js?v=20260912b" defer></script>
   <script>
   (function () {
     'use strict';
@@ -5737,9 +5737,11 @@
     /* O resultado no card (Alice, 03/09, 11:09): o que cada agente decidiu
        aparece na lista, e não só dentro da licitação. Quem tem 40 licitações
        abertas precisa comparar sem entrar em cada uma. */
+    /* Cenário do teste de usabilidade: licitações diferentes entre si, cada uma
+       com Score calculado. O Checklist não existe nesta conta, então o botão
+       dele não aparece. */
     var LICS_CARDS = [
-      { n:'90014/2026', cenario:'Simulador', simulador:true,
-        org:'SECRETARIA DE ESTADO DE SAÚDE DE MINAS GERAIS',
+      { n:'90014/2026', org:'SECRETARIA DE ESTADO DE SAÚDE DE MINAS GERAIS',
         objeto:'Contratação de empresa especializada na prestação de serviços de design de produto digital, ' +
           'compreendendo pesquisa com usuários, arquitetura de informação, design de interface e manutenção ' +
           'de design system, para os canais digitais da Secretaria, pelo período de 24 meses.',
@@ -5748,7 +5750,7 @@
         id:'1078513', uasg:'986531', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
         estado:'MG', cidade:'Belo Horizonte', habitantes:'2.315.560', capagE:'B', capagM:'C',
         portal:'compras.mg.gov.br', score:78, atualizado:true, aqui:true,
-        fx:{ score:'pronto', checklist:'aguardando', tecnica:'aguardando', habil:'pronto' },
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
         itens:[
           { nome:'Design de interface: telas de novos fluxos, com protótipo navegável', seg:'Design de produto', qtd:'1.200 h', vu:'R$ 190,00', vt:'R$ 228.000,00' },
           { nome:'Pesquisa com usuários: entrevistas, testes de usabilidade e relatório', seg:'Pesquisa com usuários', qtd:'480 h', vu:'R$ 210,00', vt:'R$ 100.800,00' },
@@ -5760,56 +5762,78 @@
           { st:'ok', nome:'Item 3 · Design system', det:'2 de 2 especificações atendidas' }
         ] } },
 
-      /* O segundo cenário: aqui os dois agentes rodam no envio para análise, e
-         nada foi preparado ainda. É o card do fluxo completo, do envio até o
-         resultado dentro da licitação. */
-      { n:'00312/2026', cenario:'Todos os agentes rodam no envio para análise',
-        org:'TRIBUNAL DE JUSTIÇA DO ESTADO DE SANTA CATARINA',
-        objeto:'Contratação de empresa especializada em design de produto digital para a reformulação dos ' +
-          'canais de atendimento ao cidadão, compreendendo pesquisa, arquitetura de informação, design de ' +
-          'interface e testes de usabilidade, pelo período de 18 meses.',
-        segs:['Design de produto'], valor:'1.140.000,00',
-        adicionada:'08/09/2026', atualizada:'10/09/2026', envio:'29/09/2026',
-        id:'1086742', uasg:'925031', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
-        estado:'SC', cidade:'Florianópolis', habitantes:'537.211', capagE:'A', capagM:'B',
-        portal:'compras.gov.br', score:64,
-        /* Sem Checklist: na plataforma ele e o Score não convivem no mesmo
-           card, e aqui quem roda no envio é o Score. Indisponível é o estado
-           em que a funcionalidade não existe para a conta, e não aparece. */
-        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'pronto' },
-        mom:{ score:'analise', tecnica:'analise' },
+      { n:'00471/2026', org:'PREFEITURA MUNICIPAL DE CONTAGEM - SECRETARIA DE PLANEJAMENTO',
+        objeto:'Prestação de serviços de design de produto digital para o redesenho do portal do cidadão, ' +
+          'incluindo pesquisa, protótipo navegável e acompanhamento da implantação.',
+        segs:['Design de produto'], valor:'312.000,00',
+        adicionada:'12/08/2026', atualizada:'02/09/2026', envio:'22/09/2026',
+        id:'1081204', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
+        estado:'MG', cidade:'Contagem', habitantes:'673.849', capagE:'B', capagM:'B',
+        portal:'compras.gov.br', score:58,
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
         itens:[
-          { nome:'Pesquisa com usuários e arquitetura de informação', seg:'Design de produto', qtd:'520 h', vu:'R$ 200,00', vt:'R$ 104.000,00' },
-          { nome:'Design de interface dos canais de atendimento', seg:'Design de produto', qtd:'980 h', vu:'R$ 195,00', vt:'R$ 191.100,00' }
+          { nome:'Redesenho do portal do cidadão, com protótipo navegável', seg:'Design de produto', qtd:'900 h', vu:'R$ 195,00', vt:'R$ 175.500,00' },
+          { nome:'Acompanhamento da implantação junto ao time interno', seg:'Design de produto', qtd:'700 h', vu:'R$ 195,00', vt:'R$ 136.500,00' }
         ],
         tecnica:{ itens:[
-          { st:'ok', nome:'Item 1 · Pesquisa e arquitetura', det:'5 de 5 especificações atendidas' },
-          { st:'ok', nome:'Item 2 · Design de interface', det:'7 de 7 especificações atendidas' }
+          { st:'ok', nome:'Item 1 · Redesenho do portal', det:'6 de 6 especificações atendidas' },
+          { st:'ok', nome:'Item 2 · Acompanhamento da implantação', det:'4 de 4 especificações atendidas' }
         ] } },
 
-      /* O terceiro cenário: os dois agentes rodam no envio e um deles não
-         entrega. Serve para ver a conclusão parcial no card e o caminho de
-         volta dentro da funcionalidade. */
-      { n:'00758/2026', cenario:'Um dos itens deu erro no processamento',
-        org:'PREFEITURA MUNICIPAL DE JOINVILLE - SECRETARIA DE ADMINISTRAÇÃO',
-        objeto:'Contratação de empresa especializada em design de produto digital para a evolução do ' +
-          'aplicativo de serviços ao cidadão, compreendendo pesquisa, design de interface e ' +
-          'manutenção de design system, pelo período de 12 meses.',
-        segs:['Design de produto', 'Design system'], valor:'860.000,00',
-        adicionada:'09/09/2026', atualizada:'10/09/2026', envio:'02/10/2026',
-        id:'1087915', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
-        estado:'SC', cidade:'Joinville', habitantes:'616.317', capagE:'A', capagM:'B',
-        portal:'compras.gov.br', score:71,
-        fx:{ score:'aguardando', checklist:'indisponivel', tecnica:'aguardando', habil:'pronto' },
-        mom:{ score:'analise', tecnica:'analise' },
-        falhar:['tecnica'],
+      { n:'90233/2026', org:'UNIVERSIDADE FEDERAL DO PARANÁ - PRÓ-REITORIA DE TECNOLOGIA',
+        objeto:'Contratação de serviços de design de interface e pesquisa com usuários para a reformulação ' +
+          'do portal do aluno e dos sistemas acadêmicos, incluindo testes de usabilidade com estudantes ' +
+          'e professores, pelo período de 18 meses.',
+        segs:['Design de produto', 'Pesquisa com usuários'], valor:'1.870.000,00',
+        adicionada:'26/08/2026', atualizada:'09/09/2026', envio:'25/09/2026',
+        id:'1083990', uasg:'153079', modalidade:'Pregão · Eletrônico', julgamento:'Técnica e preço',
+        estado:'PR', cidade:'Curitiba', habitantes:'1.773.718', capagE:'A', capagM:'A',
+        portal:'compras.gov.br', score:86, atualizado:true,
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
         itens:[
-          { nome:'Evolução do aplicativo de serviços ao cidadão', seg:'Design de produto', qtd:'760 h', vu:'R$ 195,00', vt:'R$ 148.200,00' },
-          { nome:'Manutenção do design system', seg:'Design system', qtd:'420 h', vu:'R$ 205,00', vt:'R$ 86.100,00' }
+          { nome:'Reformulação do portal do aluno, com protótipo navegável', seg:'Design de produto', qtd:'1.400 h', vu:'R$ 198,00', vt:'R$ 277.200,00' },
+          { nome:'Testes de usabilidade com estudantes e professores', seg:'Pesquisa com usuários', qtd:'520 h', vu:'R$ 215,00', vt:'R$ 111.800,00' }
         ],
         tecnica:{ itens:[
-          { st:'ok', nome:'Item 1 · Evolução do aplicativo', det:'6 de 6 especificações atendidas' },
-          { st:'ok', nome:'Item 2 · Manutenção do design system', det:'3 de 3 especificações atendidas' }
+          { st:'ok', nome:'Item 1 · Reformulação do portal do aluno', det:'7 de 7 especificações atendidas' },
+          { st:'ok', nome:'Item 2 · Testes de usabilidade', det:'5 de 5 especificações atendidas' }
+        ] } },
+
+      { n:'00905/2026', org:'SECRETARIA DA FAZENDA DO ESTADO DE PERNAMBUCO',
+        objeto:'Contratação de empresa para adequação de acessibilidade digital dos sistemas tributários, ' +
+          'com auditoria WCAG, correções de interface e treinamento das equipes internas.',
+        segs:['Design system'], valor:'428.000,00',
+        adicionada:'01/09/2026', atualizada:'10/09/2026', envio:'19/09/2026',
+        id:'1085112', uasg:'—', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço global',
+        estado:'PE', cidade:'Recife', habitantes:'1.653.461', capagE:'C', capagM:'C',
+        portal:'peintegrado.pe.gov.br', score:39,
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        itens:[
+          { nome:'Auditoria de acessibilidade WCAG nos sistemas tributários', seg:'Design system', qtd:'620 h', vu:'R$ 180,00', vt:'R$ 111.600,00' },
+          { nome:'Treinamento das equipes internas em acessibilidade', seg:'Design system', qtd:'240 h', vu:'R$ 215,00', vt:'R$ 51.600,00' }
+        ],
+        tecnica:{ itens:[
+          { st:'no', nome:'Item 1 · Auditoria WCAG', det:'3 de 6 · exige certificação específica que não temos no catálogo' },
+          { st:'ok', nome:'Item 2 · Treinamento das equipes', det:'3 de 3 especificações atendidas' }
+        ] } },
+
+      { n:'90417/2026', org:'TRIBUNAL REGIONAL DO TRABALHO DA 12ª REGIÃO',
+        objeto:'Prestação de serviços de design de produto digital para o aplicativo de acompanhamento ' +
+          'processual, incluindo arquitetura de informação, design de interface e manutenção do design ' +
+          'system, pelo período de 12 meses.',
+        segs:['Design de produto', 'Design system'], valor:'760.000,00',
+        adicionada:'03/09/2026', atualizada:'11/09/2026', envio:'01/10/2026',
+        id:'1086744', uasg:'080020', modalidade:'Pregão · Eletrônico', julgamento:'Menor preço por item',
+        estado:'SC', cidade:'Florianópolis', habitantes:'537.211', capagE:'A', capagM:'B',
+        portal:'compras.gov.br', score:67,
+        fx:{ score:'pronto', checklist:'indisponivel', tecnica:'pronto', habil:'pronto' },
+        itens:[
+          { nome:'Design de interface do aplicativo de acompanhamento processual', seg:'Design de produto', qtd:'880 h', vu:'R$ 192,00', vt:'R$ 168.960,00' },
+          { nome:'Manutenção evolutiva do design system', seg:'Design system', qtd:'460 h', vu:'R$ 205,00', vt:'R$ 94.300,00' }
+        ],
+        tecnica:{ itens:[
+          { st:'ok', nome:'Item 1 · Design de interface do aplicativo', det:'6 de 6 especificações atendidas' },
+          { st:'ok', nome:'Item 2 · Manutenção do design system', det:'2 de 2 especificações atendidas' }
         ] } }
     ];
 
@@ -6089,13 +6113,13 @@
       box.innerHTML = LICS_CARDS.map(function (l, i) {
         if (l.enviada) return '';
         return '<article class="card lic-card" data-licabrir="' + i + '" tabindex="0" role="link" ' +
-          'aria-label="Abrir o cenário: ' + l.cenario + '">' +
+          'aria-label="Abrir a licitação Edital ' + l.n + '">' +
           '<div class="card-top">' +
             '<span class="chk" role="checkbox" aria-checked="false" aria-label="Selecionar o edital ' + l.n + '">' +
               '<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" ' +
               'stroke-width="2.4" aria-hidden="true"><path d="' + IC_CARD.check + '" stroke-linecap="round" ' +
               'stroke-linejoin="round"/></svg></span>' +
-            '<span class="edital"><b>' + l.cenario + '</b></span>' +
+            '<span class="edital">Edital <b>' + l.n + '</b></span>' +
             '<div class="card-top-right">' +
               '<button class="btn btn-outline" type="button" data-naosim="Descartar">Descartar</button>' +
               '<button class="btn btn-primary" type="button" data-licenviar="' + i + '">Enviar para análise</button>' +
