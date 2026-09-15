@@ -22,11 +22,96 @@
     {grupo:9,tipo:'Fechamento',titulo:'Para terminar',perguntas:['Se isso existisse amanhã, o que você usaria primeiro?','O que deixaria você com receio de usar?','Há algo que você não entendeu e ficou sem perguntar?'],botao:'Encerrar teste'},
     {grupo:9,tipo:'Teste encerrado',titulo:'Obrigado pela participação',cenario:'Suas impressões ajudam a melhorar a ferramenta. Avise quem acompanha a sessão que você terminou.',final:true}
   ];
+  const ajudas = {
+  "Aprovações": {
+    "dica": "Procure uma aba que reúna ações aguardando sua decisão.",
+    "passos": [
+      "Na página de Agentes, clique na aba “Aprovações”.",
+      "Observe os itens ou a mensagem exibida e responda às perguntas do roteiro. Não é necessário aprovar nada."
+    ]
+  },
+  "Vamos simular um cenário": {
+    "dica": "Um agente pode seguir uma instrução sua em cada licitação. Procure como adicionar um.",
+    "passos": [
+      "Na aba “Agentes”, clique em “Adicionar agente” e escolha “Criar do zero”.",
+      "Dê um nome ao agente e escreva uma instrução para verificar se o edital exige atestado de capacidade técnica.",
+      "Escolha onde o resultado deve aparecer e quando o agente deve rodar. Revise as permissões.",
+      "Clique em “Ativar agente”. Se algum campo impedir o avanço, leia o aviso e complete a configuração."
+    ]
+  },
+  "Um dado para reutilizar": {
+    "dica": "Dados que podem ser reutilizados pelos agentes ficam na área de Variáveis.",
+    "passos": [
+      "Abra a aba “Variáveis” e clique em “Adicionar variável”.",
+      "Preencha “Nome da variável”, “Tipo” e “Instruções” para identificar o prazo de vigência do contrato.",
+      "Em “Onde procurar”, indique as fontes em que esse dado deve ser buscado. Revise o que fazer quando não for encontrado.",
+      "Clique em “Criar variável”."
+    ]
+  },
+  "Confira a confirmação": {
+    "dica": "Abra a variável para encontrar a ação de exclusão. Nesta tarefa, leia a confirmação e cancele.",
+    "passos": [
+      "Na aba “Variáveis”, encontre e abra “Documentos de habilitação”.",
+      "Clique em “Excluir esta variável”.",
+      "Leia a confirmação em voz alta e clique em “Cancelar”. Não confirme a exclusão.",
+      "Se a variável não estiver disponível, avise quem acompanha o teste e continue o roteiro."
+    ]
+  },
+  "Leve uma oportunidade adiante": {
+    "dica": "Na lista de recomendadas, procure a ação que envia uma oportunidade para análise.",
+    "passos": [
+      "Abra “Licitações Recomendadas” no menu da plataforma.",
+      "Escolha uma licitação e clique em “Enviar para análise”.",
+      "Observe o acompanhamento dos resultados e conte em voz alta o que acontece."
+    ]
+  },
+  "Resultados na Habilitação": {
+    "dica": "Os resultados ficam nas abas da licitação que você enviou para análise.",
+    "passos": [
+      "Abra a licitação enviada para análise.",
+      "Clique na aba “Habilitação” e aguarde o processamento, se necessário.",
+      "Observe os blocos e responda às perguntas sem clicar nos botões dos resultados.",
+      "Se não encontrar a licitação, avise quem acompanha a sessão."
+    ]
+  },
+  "Uma conversa com a ferramenta": {
+    "dica": "Procure o acesso à conversa no canto direito da plataforma.",
+    "passos": [
+      "Abra o chat no canto direito do protótipo.",
+      "Observe o campo de mensagem e o seletor de agentes.",
+      "Responda às perguntas em voz alta, sem digitar nem enviar mensagens."
+    ]
+  }
+};
+  const usoAjuda = new Map();
+  const visitadas = new Set();
   let atual = 0;
   const el = id => document.getElementById(id);
   function render(focar) {
     const etapa = etapas[atual];
     const intro = !!etapa.intro;
+    if (etapa.tarefa) visitadas.add(atual);
+    const ajuda = etapa.tarefa && ajudas[etapa.titulo];
+    const nivel = usoAjuda.get(atual) || 0;
+    el('ajudaTarefa').hidden = !ajuda;
+    el('conteudoAjuda').hidden = !nivel;
+    el('pedirAjuda').setAttribute('aria-expanded', String(nivel > 0));
+    el('dicaAjuda').textContent = ajuda ? ajuda.dica : '';
+    el('passosAjuda').replaceChildren();
+    if (ajuda) ajuda.passos.forEach(texto => {
+      const li = document.createElement('li'); li.textContent = texto; el('passosAjuda').append(li);
+    });
+    el('passosAjuda').hidden = nivel < 2;
+    el('verPassos').setAttribute('aria-expanded', String(nivel === 2));
+    el('resumoAjuda').hidden = !etapa.final;
+    if (etapa.final) {
+      el('listaAjuda').replaceChildren();
+      visitadas.forEach(indice => {
+        const li = document.createElement('li');
+        li.textContent = etapas[indice].titulo + ': ' + ['Sem ajuda solicitada', 'Dica consultada', 'Passo a passo consultado'][usoAjuda.get(indice) || 0];
+        el('listaAjuda').append(li);
+      });
+    }
     el('checklistInicio').hidden = atual !== 0;
     document.body.classList.toggle('guia-intro',intro);
     document.querySelector('.teste-prototipo').inert = intro;
@@ -74,6 +159,18 @@
     if (atual >= etapas.length - 1) return;
     atual += 1; render(true);
   }
+  el('pedirAjuda').addEventListener('click', () => {
+    usoAjuda.set(atual, Math.max(1, usoAjuda.get(atual) || 0));
+    el('conteudoAjuda').hidden = false;
+    el('pedirAjuda').setAttribute('aria-expanded','true');
+    el('tituloAjuda').focus();
+  });
+  el('verPassos').addEventListener('click', () => {
+    usoAjuda.set(atual,2);
+    el('passosAjuda').hidden = false;
+    el('verPassos').setAttribute('aria-expanded','true');
+    el('passosAjuda').scrollIntoView({block:'nearest'});
+  });
   el('avancar').addEventListener('click', avancar);
   el('voltar').addEventListener('click', () => { if (atual > 0) { atual -= 1; render(true); } });
   document.querySelector('.teste-painel').addEventListener('keydown', event => {

@@ -62,3 +62,12 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 .teste-guia #toasts .toast-ico{display:none;}
 .teste-guia #toasts{max-width:calc(100vw - 48px);}
 .teste-guia #toasts .toast{min-width:0;max-width:100%;}
+
+.teste-ajuda{margin:20px 0;font-size:13px;line-height:20px;}
+.teste-ajuda>.btn{width:100%;justify-content:center;}
+#conteudoAjuda{margin-top:12px;padding:14px;border:1px solid color-mix(in srgb,var(--primary-foreground) 25%,transparent);border-radius:var(--radius-field);}
+#tituloAjuda{font-size:15px;line-height:22px;margin:0 0 10px;}
+#dicaAjuda{margin:0 0 14px;}
+#passosAjuda,#listaAjuda{padding-left:20px;}
+#passosAjuda li+li,#listaAjuda li+li{margin-top:12px;}
+#resumoAjuda summary{cursor:pointer;font-weight:600;}
