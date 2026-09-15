@@ -39,10 +39,11 @@ técnica. Evitar consultor que atende várias empresas, porque o uso dele é out
 - Não explique nada antes da pessoa tentar. Devolva as perguntas: "o que você
   acha que aconteceria?".
 
-## Aquecimento (5 min)
+## Introdução no guia
 
-1. Me conte como você decide hoje se vale a pena participar de uma licitação.
-2. Quem faz essa análise com você? Alguém confere depois?
+Duas telas em modal apresentam o teste e a orientação para pensar em voz alta.
+A pergunta sobre a rotina atual foi removida. A partir de Primeiras impressões,
+o guia aparece como uma sidebar preta recolhível, separada visualmente da plataforma.
 
 ## Bloco 1: as três áreas (8 min)
 

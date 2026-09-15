@@ -37,3 +37,28 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
  .teste-guia.guia-recolhido{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 70px;}
  .guia-recolhido .teste-topo{flex-direction:row;padding:10px 16px;}
 }
+
+/* O guia escuro pertence à sessão de pesquisa, separado da plataforma. */
+.teste-painel{background:var(--primary);color:var(--primary-foreground);}
+.teste-painel .teste-topo{border-color:color-mix(in srgb,var(--primary-foreground) 18%,transparent);}
+.teste-painel .teste-topo p,.teste-painel .teste-topo button,.teste-painel #voltar,
+.teste-painel .teste-progresso,.teste-painel .teste-lembrete,.teste-painel .teste-privacidade{
+ color:color-mix(in srgb,var(--primary-foreground) 75%,transparent);}
+.teste-painel .teste-tipo{color:var(--primary-foreground);}
+.teste-painel .teste-nota,.teste-painel .teste-topo button:hover,.teste-painel #voltar:hover:not(:disabled){
+ background:color-mix(in srgb,var(--primary-foreground) 9%,var(--primary));color:var(--primary-foreground);}
+.teste-painel .btn-primary{background:var(--primary-foreground);border-color:var(--primary-foreground);color:var(--primary);}
+.teste-painel .btn-primary:hover{background:var(--background);}
+.teste-painel .btn-outline{color:var(--primary-foreground);background:transparent;border-color:color-mix(in srgb,var(--primary-foreground) 40%,transparent);}
+.teste-painel .btn-outline:hover{background:color-mix(in srgb,var(--primary-foreground) 9%,var(--primary));}
+.teste-painel :focus-visible{outline:2px solid var(--primary-foreground);outline-offset:3px;}
+.teste-painel [hidden]{display:none;}
+.teste-guia.guia-intro{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);}
+.guia-intro::before{content:'';position:fixed;inset:0;background:color-mix(in srgb,var(--primary) 60%,transparent);z-index:1;}
+.guia-intro .teste-painel{position:fixed;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);
+ width:min(500px,calc(100vw - 32px));height:auto;max-height:calc(100dvh - 32px);border:1px solid color-mix(in srgb,var(--primary-foreground) 18%,transparent);border-radius:var(--radius-box);overflow:hidden;box-shadow:var(--shadow-pop);}
+.guia-intro .teste-prototipo{height:100dvh;}
+.guia-intro .teste-conteudo{min-height:0;flex:1 1 auto;}
+.guia-intro .teste-progresso,.guia-intro .teste-lembrete{display:none;}
+
+.teste-painel #tituloEtapa:focus-visible{outline-color:transparent;}

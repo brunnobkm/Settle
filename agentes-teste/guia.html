@@ -6,20 +6,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Settle — Guia do teste de usabilidade</title>
   <link rel="stylesheet" href="../assets/settle.css?v=20260915-card-hover">
-  <link rel="stylesheet" href="guia.css?v=1">
-  <script src="guia.js?v=1" defer></script>
+  <link rel="stylesheet" href="guia.css?v=2">
+  <script src="guia.js?v=2" defer></script>
 </head>
-<body class="teste-guia">
+<body class="teste-guia guia-intro">
   <main class="teste-prototipo" aria-label="Protótipo para explorar">
     <iframe id="prototipo" title="Protótipo da Settle para teste de usabilidade" src="index.html?ir=agentes"></iframe>
   </main>
-  <aside class="teste-painel" aria-label="Guia do teste">
+  <aside class="teste-painel" role="dialog" aria-modal="true" aria-label="Guia do teste">
     <header class="teste-topo">
       <div><strong>Guia do teste</strong><p id="resumoEtapa">Antes de começar</p></div>
       <button id="recolher" type="button" aria-expanded="true" aria-controls="guiaConteudo">Recolher</button>
     </header>
     <div id="guiaConteudo" class="teste-conteudo">
-      <div class="teste-progresso"><progress id="progresso" max="10" value="0" aria-label="Progresso do teste"></progress><span id="contador">Introdução</span></div>
+      <div class="teste-progresso"><progress id="progresso" max="9" value="0" aria-label="Progresso do teste"></progress><span id="contador">Introdução</span></div>
       <section id="etapa" aria-labelledby="tituloEtapa">
         <p id="tipoEtapa" class="teste-tipo"></p>
         <h1 id="tituloEtapa" tabindex="-1"></h1>
