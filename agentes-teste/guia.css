@@ -17,7 +17,6 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 #perguntas{padding-left:22px;}
 #perguntas li+li{margin-top:12px;}
 .teste-nota{font-size:13px;line-height:20px;background:var(--muted);padding:12px;border-radius:var(--radius-field);}
-.teste-lembrete{font-size:13px;line-height:20px;font-weight:600;color:var(--primary);background:color-mix(in srgb,gold 45%,var(--background));padding:14px 16px;border-radius:var(--radius-field);margin:24px 0;}
 .teste-acoes{display:flex;flex-direction:column;gap:8px;}
 .teste-acoes .btn{justify-content:center;min-height:42px;width:100%;white-space:normal;}
 .teste-acoes [hidden]{display:none;}
@@ -50,7 +49,7 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
  width:min(500px,calc(100vw - 32px));height:auto;max-height:calc(100dvh - 32px);border:1px solid color-mix(in srgb,var(--primary-foreground) 18%,transparent);border-radius:var(--radius-box);overflow:hidden;box-shadow:var(--shadow-pop);}
 .guia-intro .teste-prototipo{height:100dvh;}
 .guia-intro .teste-conteudo{min-height:0;flex:1 1 auto;}
-.guia-intro .teste-progresso,.guia-intro .teste-lembrete{display:none;}
+.guia-intro .teste-progresso{display:none;}
 
 .teste-painel #tituloEtapa:focus-visible{outline-color:transparent;}
 
