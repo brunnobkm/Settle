@@ -17,8 +17,8 @@ Duração prevista: 45 a 60 minutos.
 ## O que queremos descobrir
 
 1. A pessoa entende o que são as áreas Agentes, Variáveis e Aprovações.
-2. Ela consegue criar um agente e entende para que serve cada campo.
-3. Ela consegue criar uma variável e entende para que serve cada campo.
+2. Ela consegue criar uma variável e entende para que serve cada campo.
+3. Ela consegue criar um agente usando a variável criada e entende a relação entre os dois.
 4. Ela entende o botão de executar e o interruptor de ativar.
 5. Ela prevê o que acontece ao excluir uma variável e ao excluir um agente.
 6. Ela entende o que está acontecendo depois de enviar uma licitação para análise.
@@ -58,33 +58,33 @@ Abra a página em Agentes e Variáveis, sem explicar nada.
 a mesma coisa que o resultado (Score, Checklist); se entende a fila de
 aprovações como trabalho dela ou de outra pessoa.
 
-## Bloco 2: criar um agente (10 min)
+## Bloco 2: criar o dado reutilizável (8 min)
 
-**Tarefa:** você quer que o sistema avise, em toda licitação, se o edital exige
-atestado de capacidade técnica. Crie isso aqui.
+**Tarefa:** imagine que você precisa identificar se cada edital exige atestado de capacidade técnica. Primeiro, cadastre esse dado para poder reutilizá-lo depois, com o nome “Atestado exigido (teste)”. Como faria isso na ferramenta?
 
-Enquanto ela cria, sem interromper, anotar onde para. Depois:
+Não indique de início que a solução é criar uma variável. O nome com “(teste)” diferencia o cadastro novo da variável “Atestado exigido” já presente no protótipo.
 
-1. O que significa "Onde o resultado aparece"? E "Nenhum lugar"?
-2. O que significa "Quando roda"? Qual você escolheria e por quê?
-3. (Se aparecer a repetição) Qual a diferença entre as duas opções?
-4. O que são as Permissões? O que mudaria se escolhesse cada uma delas?
-5. Você confiaria neste agente rodando sozinho? Por quê?
-
-**Observar:** se escolhe o momento sem ler; se entende que o destino é onde o
-resultado aparece na licitação; se percebe o risco das permissões.
-
-## Bloco 3: variáveis (8 min)
-
-**Tarefa:** o edital traz o prazo de vigência do contrato, e você quer usar esse
-dado nos seus agentes. Cadastre isso.
-
-1. O que significa "Onde procurar" e essa ordem?
+1. O que significa “Onde procurar” e essa ordem?
 2. O que acontece se a variável não for encontrada?
-3. Na lista, o que a coluna de agentes está te dizendo?
+3. Na lista, o que a coluna de agentes está dizendo?
 
-**Observar:** se entende a variável como um dado reaproveitável, e não como uma
-pergunta solta de um agente.
+**Observar:** se descobre a área de Variáveis, cadastra o dado como sim ou não e entende que poderá reutilizá-lo. Anote a ajuda solicitada e se concluiu depois dela.
+
+## Bloco 3: criar um agente usando o dado (10 min)
+
+**Tarefa:** agora você quer receber um aviso, em toda licitação, quando o edital exigir atestado de capacidade técnica. Crie um agente que use a variável “Atestado exigido (teste)” que acabou de cadastrar.
+
+Enquanto a pessoa cria, anote onde para. Depois:
+
+1. Como usou a variável no agente? Como sabe que está vinculada?
+2. Qual a diferença entre o que a variável faz e o que o agente faz?
+3. O que significa “Onde o resultado aparece”? E “Nenhum lugar”?
+4. O que significa “Quando roda”? Qual opção escolheu e por quê?
+5. Se apareceu repetição, qual a diferença entre as opções?
+6. O que são as Permissões? O que mudaria ao escolher cada uma?
+7. Você confiaria nesse agente rodando sozinho? Por quê?
+
+**Observar:** se insere a variável criada pelo menu de /, em vez de apenas escrever seu nome; se compreende a relação entre dado e agente; se entende o destino, o momento de execução e as permissões. Se não criou a variável, registre a dificuldade anterior separadamente e permita voltar à tarefa ou pedir ajuda antes de avaliar a reutilização.
 
 ## Bloco 4: executar e ativar (5 min)
 

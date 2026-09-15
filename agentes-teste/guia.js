@@ -5,11 +5,11 @@
     {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Continuar” para avançar para a próxima etapa.',botao:'Entendi, começar o teste'},
     {grupo:1,tipo:'Observe e fale',titulo:'Primeiras impressões',perguntas:['Olhando a tela ao lado, o que você acha que dá para fazer aqui?','O que você acha que é um agente? E uma variável?']},
     {grupo:1,tipo:'Explore e fale',titulo:'Aprovações',cenario:'Explore a área de Aprovações.',perguntas:['O que você imagina que está aqui?','Quem resolveria isso na sua rotina?'],tarefa:true},
-    {grupo:2,tipo:'Tarefa',titulo:'Vamos simular um cenário',cenario:'Imagine que, no seu trabalho, você precisa saber se cada edital exige atestado de capacidade técnica e quer que o sistema avise isso em toda licitação. Como você configuraria esse aviso? Tente fazer isso na ferramenta.',tarefa:true},
-    {grupo:2,tipo:'Depois da tentativa',titulo:'Sobre o que você configurou',perguntas:['O que significa “Onde o resultado aparece”? E “Nenhum lugar”?','O que significa “Quando roda”? Qual opção você escolheu, ou escolheria, e por quê?','Se viu opções de repetição, qual a diferença entre elas?'],nota:'Responda com o que entendeu. Se não viu algum campo, pode dizer isso.'},
-    {grupo:2,tipo:'Depois da tentativa',titulo:'Permissões e confiança',perguntas:['O que são as Permissões? O que mudaria ao escolher cada opção?','Você confiaria nesse agente rodando sozinho? Por quê?']},
-    {grupo:3,tipo:'Tarefa',titulo:'Um dado para reutilizar',cenario:'O edital traz o prazo de vigência do contrato, e você quer usar esse dado nos seus agentes. Cadastre isso.',tarefa:true},
-    {grupo:3,tipo:'Depois da tentativa',titulo:'Sobre esse dado',perguntas:['O que significa “Onde procurar” e a ordem apresentada?','O que acontece se a variável não for encontrada?','Na lista, o que a coluna de agentes está dizendo?']},
+    {grupo:2,tipo:'Tarefa',titulo:'Vamos simular um cenário',cenario:'Imagine que, no seu trabalho, você precisa identificar se cada edital exige atestado de capacidade técnica. Primeiro, cadastre esse dado para poder reutilizá-lo depois. Dê a ele o nome “Atestado exigido (teste)”. Como você faria isso na ferramenta?',tarefa:true},
+    {grupo:2,tipo:'Depois da tentativa',titulo:'Sobre esse dado',perguntas:['O que significa “Onde procurar” e a ordem apresentada?','O que acontece se a variável não for encontrada?','Na lista, o que a coluna de agentes está dizendo?']},
+    {grupo:3,tipo:'Tarefa',titulo:'Um agente usando seu dado',cenario:'Agora imagine que você quer receber um aviso, em toda licitação, quando o edital exigir atestado de capacidade técnica. Crie um agente que use a variável “Atestado exigido (teste)” que você acabou de cadastrar para produzir esse aviso.',tarefa:true},
+    {grupo:3,tipo:'Depois da tentativa',titulo:'Sobre o que você configurou',perguntas:['Como você usou a variável que criou no agente? Como sabe que ela está vinculada?','Qual a diferença entre o que a variável faz e o que o agente faz?','O que significa “Onde o resultado aparece”? E “Nenhum lugar”?','O que significa “Quando roda”? Qual opção você escolheu, ou escolheria, e por quê?','Se viu opções de repetição, qual a diferença entre elas?'],nota:'Responda com o que entendeu. Se não conseguiu criar ou usar a variável, conte onde encontrou dificuldade.'},
+    {grupo:3,tipo:'Depois da tentativa',titulo:'Permissões e confiança',perguntas:['O que são as Permissões? O que mudaria ao escolher cada opção?','Você confiaria nesse agente rodando sozinho? Por quê?']},
     {grupo:4,tipo:'Observe antes de agir',titulo:'Executar e ativar',cenario:'Volte para a lista de agentes. Nesta etapa, apenas observe e conte o que espera, sem executar ou desligar.',perguntas:['O que o botão de play faz? Em quantas licitações?','E o interruptor ao lado?','Se você desligasse agora, o que aconteceria com as licitações já analisadas? E com as próximas?']},
     {grupo:5,tipo:'Antes de clicar',titulo:'Se você excluir uma variável…',cenario:'Encontre a variável “Documentos de habilitação”. Ainda não tente excluí-la.',perguntas:['O que você acha que acontece se excluir essa variável?','O que aconteceria com os agentes que usam esse dado?'],botao:'Já contei minha expectativa'},
     {grupo:5,tipo:'Tarefa',titulo:'Confira a confirmação',cenario:'Agora tente excluir “Documentos de habilitação”. Leia a confirmação em voz alta e cancele no final.',nota:'Não confirme a exclusão. Se não encontrar essa variável, conte isso e siga.',tarefa:true},
@@ -31,21 +31,13 @@
     ]
   },
   "Vamos simular um cenário": {
-    "dica": "Um agente pode seguir uma instrução sua em cada licitação. Procure como adicionar um.",
-    "passos": [
-      "Na aba “Agentes”, clique em “Adicionar agente” e escolha “Criar do zero”.",
-      "Dê um nome ao agente e escreva uma instrução para verificar se o edital exige atestado de capacidade técnica.",
-      "Escolha onde o resultado deve aparecer e quando o agente deve rodar. Revise as permissões.",
-      "Clique em “Ativar agente”. Se algum campo impedir o avanço, leia o aviso e complete a configuração."
-    ]
-  },
-  "Um dado para reutilizar": {
     "dica": "Dados que podem ser reutilizados pelos agentes ficam na área de Variáveis.",
     "passos": [
       "Abra a aba “Variáveis” e clique em “Adicionar variável”.",
-      "Preencha “Nome da variável”, “Tipo” e “Instruções” para identificar o prazo de vigência do contrato.",
-      "Em “Onde procurar”, indique as fontes em que esse dado deve ser buscado. Revise o que fazer quando não for encontrado.",
-      "Clique em “Criar variável”."
+      "Em “Nome da variável”, escreva “Atestado exigido (teste)” e, em “Tipo”, escolha “Sim ou não”.",
+      "Em “Instruções”, peça para identificar se o edital exige atestado de capacidade técnica.",
+      "Em “Onde procurar”, indique o edital como fonte. Revise o que fazer quando o dado não for encontrado.",
+      "Clique em “Criar variável”. Você usará esse dado na próxima tarefa."
     ]
   },
   "Confira a confirmação": {
@@ -80,6 +72,17 @@
       "Abra o chat no canto direito do protótipo.",
       "Observe o campo de mensagem e o seletor de agentes.",
       "Responda às perguntas em voz alta, sem digitar nem enviar mensagens."
+    ]
+  },
+  "Um agente usando seu dado": {
+    "dica": "No campo de instruções do agente, é possível inserir uma variável já cadastrada para usar o resultado dela.",
+    "passos": [
+      "Na aba “Agentes”, clique em “Adicionar agente” e escolha “Criar do zero”.",
+      "Dê um nome ao agente. Em “Instruções”, digite / e selecione “Atestado exigido (teste)”. Escolha a variável que você criou, não a “Atestado exigido” que já existia.",
+      "Complete a instrução para avisar quando a variável indicar que o atestado é exigido. Mantenha a variável inserida no texto.",
+      "Escolha onde o resultado deve aparecer e quando o agente deve rodar. Revise as permissões.",
+      "Clique em “Ativar agente”. Se algum campo impedir o avanço, leia o aviso e complete a configuração.",
+      "Se não conseguiu cadastrar a variável na tarefa anterior, volte àquela etapa e consulte a ajuda. Se ainda não conseguir, avise quem acompanha o teste."
     ]
   }
 };
