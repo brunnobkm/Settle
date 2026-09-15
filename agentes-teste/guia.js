@@ -59,7 +59,18 @@
     el('guiaConteudo').scrollTop = 0;
     if (focar) el('tituloEtapa').focus({preventScroll:true});
   }
+  let fecharAviso;
   function avancar() {
+    if (atual === 0) {
+      const pendente = el('checklistInicio').querySelector('input:not(:checked)');
+      if (pendente) {
+        if (fecharAviso) fecharAviso();
+        fecharAviso = window.settleToast('Leia atentamente e marque cada opção do checklist antes de continuar.', {duration:6000});
+        pendente.focus();
+        return;
+      }
+    }
+    if (fecharAviso) { fecharAviso(); fecharAviso = null; }
     if (atual >= etapas.length - 1) return;
     atual += 1; render(true);
   }

@@ -58,3 +58,8 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 .teste-checklist legend{padding:0;margin-bottom:12px;font-size:13px;font-weight:600;}
 .teste-checklist label{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:21px;padding:8px 0;cursor:pointer;}
 .teste-checklist input{flex:none;width:17px;height:17px;margin:2px 0 0;accent-color:var(--primary-foreground);color-scheme:dark;}
+
+/* O aviso do checklist usa o toast da plataforma, sem ícone de sucesso. */
+.teste-guia #toasts .toast-ico{display:none;}
+.teste-guia #toasts{max-width:calc(100vw - 48px);}
+.teste-guia #toasts .toast{min-width:0;max-width:100%;}
