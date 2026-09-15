@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/settle.css?v=20260912c" />
+  <link rel="stylesheet" href="../assets/settle.css?v=20260915-card" />
 
   <style>
     /* Específico desta tela. O que for reutilizável deve migrar para settle.css. */
@@ -239,7 +239,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 178</p>
+        <p class="ap-selo">Atualização número 179</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -6347,10 +6347,21 @@
             'stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
         /* O caminho de volta fica na própria linha: dizer "não carregou" e
            deixar a pessoa procurar onde tentar de novo é meio caminho. */
-        return '<li>' + marca + '<span>' + i.nome + '</span>' +
+        return '<li class="prep-item"><button class="prep-abrir" type="button" data-prepabrir="' +
+          i.k + '">' + marca + '<span>' + i.nome + '</span></button>' +
           (st === 'falhou' ? '<button class="prep-retry" type="button" data-prepretry="' +
             i.k + '">Tentar novamente</button>' : '') + '</li>';
       }).join('');
+
+      document.querySelectorAll('[data-prepabrir]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var chave = b.dataset.prepabrir;
+          abrirFuncionalidade(chave);
+          if (chave === 'tecnica' || chave === 'habil') {
+            document.getElementById('wkTabs').scrollIntoView({ behavior:'smooth', block:'center' });
+          }
+        });
+      });
 
       document.querySelectorAll('[data-prepretry]').forEach(function (b) {
         b.addEventListener('click', function () { tentarDeNovo(b.dataset.prepretry); });

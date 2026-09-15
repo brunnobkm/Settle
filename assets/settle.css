@@ -1342,6 +1342,13 @@ table.dt td.c-sel .ap-check{gap:0;}
 .prep-lista li{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;
   color:var(--foreground);padding:11px 0;border-top:1px solid var(--border);}
 .prep-lista li > span:last-child{flex:1;min-width:0;}
+.prep-lista li.prep-item{padding:0;gap:0;}
+.prep-abrir{display:flex;align-items:center;gap:10px;flex:1;min-width:0;width:100%;
+  min-height:42px;padding:11px 8px;border:0;border-radius:var(--radius-selector);
+  background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;}
+.prep-abrir > span:last-child{flex:1;min-width:0;}
+.prep-abrir:hover,.prep-abrir:focus-visible{background:var(--muted);}
+.prep-item > .prep-retry{margin-left:8px;}
 .prep-ok-ic{flex:none;display:inline-flex;color:var(--success);}
 /* Falha é estado final, e precisa se distinguir do ✓ sem depender só da cor:
    o ícone é outro. */
