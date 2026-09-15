@@ -6,7 +6,7 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 #voltar{border:0;background:transparent;color:var(--muted-foreground);font:inherit;font-size:13px;cursor:pointer;padding:8px;border-radius:var(--radius-selector);}
 #voltar:hover:not(:disabled){background:var(--muted);color:var(--foreground);}
 #voltar:disabled{opacity:.5;cursor:default;}
-.teste-conteudo{overflow:auto;padding:22px 20px;flex:1;}
+.teste-conteudo{min-height:0;overflow:auto;padding:22px 20px;flex:1;}
 .teste-conteudo[hidden]{display:none;}
 .teste-progresso{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted-foreground);margin-bottom:28px;}
 .teste-progresso progress{width:100%;min-width:0;height:6px;accent-color:var(--accent);}
@@ -71,3 +71,7 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 #passosAjuda,#listaAjuda{padding-left:20px;}
 #passosAjuda li+li,#listaAjuda li+li{margin-top:12px;}
 #resumoAjuda summary{cursor:pointer;font-weight:600;}
+
+.teste-ajuda-rodape{flex:none;padding:16px 20px;border-top:1px solid color-mix(in srgb,var(--primary-foreground) 15%,transparent);}
+.teste-ajuda-rodape .btn{width:100%;justify-content:center;min-height:42px;}
+@media(max-width:800px){.teste-ajuda-rodape{padding:10px 16px;}}

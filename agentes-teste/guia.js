@@ -93,7 +93,8 @@
     if (etapa.tarefa) visitadas.add(atual);
     const ajuda = etapa.tarefa && ajudas[etapa.titulo];
     const nivel = usoAjuda.get(atual) || 0;
-    el('ajudaTarefa').hidden = !ajuda;
+    el('ajudaRodape').hidden = !ajuda;
+    el('ajudaTarefa').hidden = !ajuda || !nivel;
     el('conteudoAjuda').hidden = !nivel;
     el('pedirAjuda').setAttribute('aria-expanded', String(nivel > 0));
     el('dicaAjuda').textContent = ajuda ? ajuda.dica : '';
@@ -161,6 +162,7 @@
   }
   el('pedirAjuda').addEventListener('click', () => {
     usoAjuda.set(atual, Math.max(1, usoAjuda.get(atual) || 0));
+    el('ajudaTarefa').hidden = false;
     el('conteudoAjuda').hidden = false;
     el('pedirAjuda').setAttribute('aria-expanded','true');
     el('tituloAjuda').focus();

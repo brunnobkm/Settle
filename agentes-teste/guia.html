@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Settle — Guia do teste de usabilidade</title>
   <link rel="stylesheet" href="../assets/settle.css?v=20260915-card-hover">
-  <link rel="stylesheet" href="guia.css?v=9">
+  <link rel="stylesheet" href="guia.css?v=10">
   <script src="../assets/settle.js" defer></script>
-  <script src="guia.js?v=12" defer></script>
+  <script src="guia.js?v=13" defer></script>
 </head>
 <body class="teste-guia guia-intro">
   <main class="teste-prototipo" aria-label="Protótipo para explorar">
@@ -31,7 +31,6 @@
         <p id="nota" class="teste-nota" hidden></p>
       </section>
       <section id="ajudaTarefa" class="teste-ajuda" aria-label="Ajuda para a tarefa" hidden>
-        <button class="btn btn-outline" id="pedirAjuda" type="button" aria-expanded="false" aria-controls="conteudoAjuda">Preciso de ajuda</button>
         <div id="conteudoAjuda" hidden>
           <h2 id="tituloAjuda" tabindex="-1">Uma dica para começar</h2>
           <p id="dicaAjuda"></p>
@@ -48,6 +47,9 @@
         <button class="btn btn-primary" id="avancar" type="button">Começar</button>
         <button id="voltar" type="button" hidden disabled>Voltar</button>
       </footer>
+    </div>
+    <div id="ajudaRodape" class="teste-ajuda-rodape" hidden>
+        <button class="btn btn-outline" id="pedirAjuda" type="button" aria-expanded="false" aria-controls="conteudoAjuda">Preciso de ajuda</button>
     </div>
   </aside>
 </body>
