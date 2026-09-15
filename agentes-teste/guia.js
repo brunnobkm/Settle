@@ -6,7 +6,7 @@
     {grupo:1,tipo:'Observe e fale',titulo:'Primeiras impressões',perguntas:['Olhando a tela ao lado, o que você acha que dá para fazer aqui?','O que você acha que é um agente? E uma variável?']},
     {grupo:1,tipo:'Explore e fale',titulo:'Aprovações',cenario:'Explore a área de Aprovações.',perguntas:['O que você imagina que está aqui?','Quem resolveria isso na sua rotina?'],tarefa:true},
     {grupo:2,tipo:'Tarefa',titulo:'Vamos simular um cenário',cenario:'Imagine que, no seu trabalho, você precisa identificar se cada edital exige atestado de capacidade técnica. Primeiro, cadastre esse dado para poder reutilizá-lo depois. Dê a ele o nome “Atestado exigido (teste)”. Como você faria isso na ferramenta?',tarefa:true},
-    {grupo:2,tipo:'Depois da tentativa',titulo:'Sobre esse dado',perguntas:['O que significa “Onde procurar” e a ordem apresentada?','O que acontece se a variável não for encontrada?','Na lista, o que a coluna de agentes está dizendo?']},
+    {grupo:2,tipo:'Depois da tentativa',titulo:'Sobre esse dado',perguntas:['O que significa a coluna “Onde procurar” e a ordem apresentada?','O que acontece se a variável não for encontrada?','Na lista, o que a coluna de agentes está dizendo?']},
     {grupo:3,tipo:'Tarefa',titulo:'Um agente usando seu dado',cenario:'Agora imagine que você quer receber um aviso, em toda licitação, quando o edital exigir atestado de capacidade técnica. Crie um agente que use a variável “Atestado exigido (teste)” que você acabou de cadastrar para produzir esse aviso.',tarefa:true},
     {grupo:3,tipo:'Depois da tentativa',titulo:'Sobre o que você configurou',perguntas:['Como você usou a variável que criou no agente? Como sabe que ela está vinculada?','Qual a diferença entre o que a variável faz e o que o agente faz?','O que significa “Onde o resultado aparece”? E “Nenhum lugar”?','O que significa “Quando roda”? Qual opção você escolheu, ou escolheria, e por quê?','Se viu opções de repetição, qual a diferença entre elas?'],nota:'Responda com o que entendeu. Se não conseguiu criar ou usar a variável, conte onde encontrou dificuldade.'},
     {grupo:3,tipo:'Depois da tentativa',titulo:'Permissões e confiança',perguntas:['O que são as Permissões? O que mudaria ao escolher cada opção?','Você confiaria nesse agente rodando sozinho? Por quê?']},
@@ -14,7 +14,7 @@
     {grupo:5,tipo:'Antes de clicar',titulo:'Se você excluir uma variável…',cenario:'Encontre a variável “Documentos de habilitação”. Ainda não tente excluí-la.',perguntas:['O que você acha que acontece se excluir essa variável?','O que aconteceria com os agentes que usam esse dado?'],botao:'Já contei minha expectativa'},
     {grupo:5,tipo:'Tarefa',titulo:'Confira a confirmação',cenario:'Agora tente excluir “Documentos de habilitação”. Leia a confirmação em voz alta e cancele no final.',nota:'Não confirme a exclusão. Se não encontrar essa variável, conte isso e siga.',tarefa:true},
     {grupo:5,tipo:'Depois da tentativa',titulo:'O impacto da exclusão',perguntas:['A confirmação trouxe algo diferente do que você esperava?','O que aconteceria com os agentes que usavam essa variável?','E se você excluísse um agente inteiro? Apenas conte o que espera, sem excluir.']},
-    {grupo:6,tipo:'Tarefa',titulo:'Leve uma oportunidade adiante',cenario:'Vá para Licitações Recomendadas. Escolha uma licitação que pareça interessante e leve adiante. Continue contando o que percebe enquanto usa a ferramenta.',tarefa:true},
+    {grupo:6,tipo:'Tarefa',titulo:'Leve uma oportunidade adiante',cenario:'Vá para Licitações Recomendadas e clique no card de uma licitação que pareça interessante para abrir os detalhes. Dentro da licitação, clique em “Enviar para análise”. Essa ação inicia as análises dos agentes configurados para essa etapa, ajudando você a avaliar a oportunidade antes de decidir participar. Continue contando o que percebe enquanto usa a ferramenta.',tarefa:true},
     {grupo:6,tipo:'Depois da tentativa',titulo:'O que aconteceu?',perguntas:['O que aconteceu depois da sua ação?','Se apareceu um card de acompanhamento, o que ele significa? Quem pediu isso?','Quanto tempo você esperaria? Poderia sair da tela?','Como você sabe que terminou?'],nota:'Pode explorar enquanto responde. Se não apareceu um resultado, conte isso; não precisa adivinhar.'},
     {grupo:7,tipo:'Observe e fale',titulo:'Resultados na Habilitação',cenario:'Na licitação que você escolheu, abra Habilitação quando a preparação terminar. Observe os blocos de resultado e responda em voz alta.',perguntas:['O que você está vendo?','De onde veio essa informação? Dá para confiar?'],nota:'Nesta etapa, não clique nos botões dos blocos. Se não chegou a essa tela, avise quem acompanha o teste.',tarefa:true},
     {grupo:7,tipo:'Só sua expectativa',titulo:'E se você discordar?',perguntas:['O que você faria se discordasse de um resultado?','O que você espera dos botões “Falar com o agente” e “Configurar”?'],nota:'Conte o que faria, sem clicar nesses botões.'},
@@ -50,10 +50,11 @@
     ]
   },
   "Leve uma oportunidade adiante": {
-    "dica": "Na lista de recomendadas, procure a ação que envia uma oportunidade para análise.",
+    "dica": "Abra os detalhes pelo card da licitação. O botão “Enviar para análise” fica dentro da licitação.",
     "passos": [
       "Abra “Licitações Recomendadas” no menu da plataforma.",
-      "Escolha uma licitação e clique em “Enviar para análise”.",
+      "Clique no card de uma licitação para abrir seus detalhes.",
+      "Dentro da licitação, clique em “Enviar para análise” para iniciar as análises dos agentes configurados para essa etapa.",
       "Observe o acompanhamento dos resultados e conte em voz alta o que acontece."
     ]
   },
@@ -81,8 +82,7 @@
       "Dê um nome ao agente. Em “Instruções”, digite / e selecione “Atestado exigido (teste)”. Escolha a variável que você criou, não a “Atestado exigido” que já existia.",
       "Complete a instrução para avisar quando a variável indicar que o atestado é exigido. Mantenha a variável inserida no texto.",
       "Escolha onde o resultado deve aparecer e quando o agente deve rodar. Revise as permissões.",
-      "Clique em “Ativar agente”. Se algum campo impedir o avanço, leia o aviso e complete a configuração.",
-      "Se não conseguiu cadastrar a variável na tarefa anterior, volte àquela etapa e consulte a ajuda. Se ainda não conseguir, avise quem acompanha o teste."
+      "Clique em “Ativar agente”. Se algum campo impedir o avanço, leia o aviso e complete a configuração."
     ]
   }
 };

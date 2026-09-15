@@ -64,7 +64,7 @@ aprovações como trabalho dela ou de outra pessoa.
 
 Não indique de início que a solução é criar uma variável. O nome com “(teste)” diferencia o cadastro novo da variável “Atestado exigido” já presente no protótipo.
 
-1. O que significa “Onde procurar” e essa ordem?
+1. O que significa a coluna “Onde procurar” e a ordem apresentada?
 2. O que acontece se a variável não for encontrada?
 3. Na lista, o que a coluna de agentes está dizendo?
 
@@ -113,7 +113,7 @@ marcação "Precisa de atenção" comunica o estrago sem explicação.
 
 Vá para Licitações Recomendadas.
 
-**Tarefa:** escolha uma licitação que te pareça interessante e leve adiante.
+**Tarefa:** Vá para Licitações Recomendadas e clique no card de uma licitação que pareça interessante para abrir os detalhes. Dentro da licitação, clique em “Enviar para análise”. Essa ação inicia as análises dos agentes configurados para essa etapa, ajudando você a avaliar a oportunidade antes de decidir participar. Continue contando o que percebe enquanto usa a ferramenta.
 
 Quando enviar para análise, deixe rolar sem falar nada.
 
@@ -122,7 +122,7 @@ Quando enviar para análise, deixe rolar sem falar nada.
 3. Quanto tempo você esperaria por isso? Poderia sair da tela?
 4. Como você sabe que terminou?
 
-**Observar:** se entende que o envio disparou os agentes; se espera o resultado
+**Observar:** após a explicação do envio, se relaciona o processamento aos agentes; se espera o resultado
 na hora; se tenta fechar o card; se sai da licitação e volta.
 
 ## Bloco 7: o AI Widget da Habilitação (5 min)
