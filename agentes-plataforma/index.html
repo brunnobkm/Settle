@@ -239,7 +239,7 @@
           <b id="navBreadLic">PE 90014/2026</b>
         </nav>
 
-        <p class="ap-selo">Atualização número 173</p>
+        <p class="ap-selo">Atualização número 178</p>
       </div>
       <div class="wk-acts" id="navActs" hidden>
         <button class="btn btn-outline" type="button" id="navIgnorar" data-naosim="Ignorar">Ignorar</button>
@@ -6331,10 +6331,7 @@
         : falhas ? 'Nem todos os resultados carregaram' : 'Resultados disponíveis';
 
       document.getElementById('prepTexto').textContent = ativos
-        ? (prepMotivo === 'pedido'
-            ? 'A seu pedido, estamos preparando os resultados abaixo nesta licitação. '
-            : 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ') +
-          'Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
+        ? 'Estamos preparando os resultados abaixo. Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
         : falhas ? 'O que ficou pronto já está na licitação. Tente de novo o que faltou.'
         : 'Todos os itens estão prontos para consulta.';
 

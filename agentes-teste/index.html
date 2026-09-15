@@ -6355,10 +6355,7 @@
         : falhas ? 'Nem todos os resultados carregaram' : 'Resultados disponíveis';
 
       document.getElementById('prepTexto').textContent = ativos
-        ? (prepMotivo === 'pedido'
-            ? 'A seu pedido, estamos preparando os resultados abaixo nesta licitação. '
-            : 'Após o envio desta licitação para análise, estamos preparando os resultados abaixo. ') +
-          'Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
+        ? 'Estamos preparando os resultados abaixo. Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível.'
         : falhas ? 'O que ficou pronto já está na licitação. Tente de novo o que faltou.'
         : 'Todos os itens estão prontos para consulta.';
 
