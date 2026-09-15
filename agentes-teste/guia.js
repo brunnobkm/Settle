@@ -43,7 +43,6 @@
       el('recolher').setAttribute('aria-expanded','true');
     }
 
-    el('resumoEtapa').textContent = etapa.final ? 'Concluído' : etapa.titulo;
     el('contador').textContent = etapa.grupo ? `Etapa ${etapa.grupo} de 9` : 'Introdução';
     el('progresso').value = etapa.final ? 9 : Math.max(0, etapa.grupo - 1);
     el('tipoEtapa').textContent = etapa.tipo;
