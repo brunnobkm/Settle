@@ -28,6 +28,7 @@
   function render(focar) {
     const etapa = etapas[atual];
     const intro = !!etapa.intro;
+    el('checklistInicio').hidden = atual !== 0;
     document.body.classList.toggle('guia-intro',intro);
     document.querySelector('.teste-prototipo').inert = intro;
     const painel = document.querySelector('.teste-painel');
@@ -83,7 +84,7 @@
   });
   document.querySelector('.teste-painel').addEventListener('keydown', event => {
     if (!etapas[atual].intro || event.key !== 'Tab') return;
-    const botoes = [...document.querySelectorAll('.teste-painel button')].filter(b => !b.hidden && !b.disabled);
+    const botoes = [...document.querySelectorAll('.teste-painel button, .teste-painel input')].filter(b => !b.closest('[hidden]') && !b.disabled);
     const primeiro = botoes[0], ultimo = botoes[botoes.length - 1];
     if (event.shiftKey && (document.activeElement === primeiro || document.activeElement === el('tituloEtapa'))) {
       event.preventDefault(); ultimo.focus();

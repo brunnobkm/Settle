@@ -62,3 +62,8 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 .guia-intro .teste-progresso,.guia-intro .teste-lembrete{display:none;}
 
 .teste-painel #tituloEtapa:focus-visible{outline-color:transparent;}
+
+.teste-checklist{margin:0 0 20px;padding:0;border:0;min-width:0;}
+.teste-checklist legend{padding:0;margin-bottom:12px;font-size:13px;font-weight:600;}
+.teste-checklist label{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:21px;padding:8px 0;cursor:pointer;}
+.teste-checklist input{flex:none;width:17px;height:17px;margin:2px 0 0;accent-color:var(--primary-foreground);color-scheme:dark;}

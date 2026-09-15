@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Settle — Guia do teste de usabilidade</title>
   <link rel="stylesheet" href="../assets/settle.css?v=20260915-card-hover">
-  <link rel="stylesheet" href="guia.css?v=2">
-  <script src="guia.js?v=2" defer></script>
+  <link rel="stylesheet" href="guia.css?v=3">
+  <script src="guia.js?v=3" defer></script>
 </head>
 <body class="teste-guia guia-intro">
   <main class="teste-prototipo" aria-label="Protótipo para explorar">
@@ -24,6 +24,14 @@
         <p id="tipoEtapa" class="teste-tipo"></p>
         <h1 id="tituloEtapa" tabindex="-1"></h1>
         <p id="cenario"></p>
+        <fieldset id="checklistInicio" class="teste-checklist" hidden>
+          <legend>Antes de começar</legend>
+          <label><input type="checkbox"> <span>Pense em voz alta sobre cada ação que for realizar: conte o que espera e o que percebe.</span></label>
+          <label><input type="checkbox"> <span>Leia as tarefas com atenção e responda às perguntas falando.</span></label>
+          <label><input type="checkbox"> <span>Se algo não fizer sentido ou você não conseguir continuar, conte isso e use “Não consegui / seguir”.</span></label>
+          <label><input type="checkbox"> <span>Você pode recolher o guia para explorar a plataforma e reabri-lo quando precisar.</span></label>
+          <label><input type="checkbox"> <span>Não recarregue a página durante o teste: isso reinicia a sessão e apaga o progresso.</span></label>
+        </fieldset>
         <ol id="perguntas"></ol>
         <p id="nota" class="teste-nota" hidden></p>
       </section>
