@@ -2,7 +2,7 @@
   'use strict';
   const etapas = [
     {grupo:0,intro:true,tipo:'Boas-vindas',titulo:'Vamos experimentar juntos',cenario:'Você vai explorar um protótipo da Settle. Estamos avaliando a ferramenta, não o seu desempenho.',nota:'Não precisa se preparar. Algumas partes são simuladas, e não há resposta certa ou errada.',botao:'Continuar'},
-    {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Terminei” para avançar ou “Não consegui / seguir” se não conseguir concluir.',botao:'Entendi, começar o teste'},
+    {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Continuar” para avançar para a próxima etapa.',botao:'Entendi, começar o teste'},
     {grupo:1,tipo:'Observe e fale',titulo:'Primeiras impressões',perguntas:['Olhando a tela ao lado, o que você acha que dá para fazer aqui?','O que você acha que é um agente? E uma variável?']},
     {grupo:1,tipo:'Explore e fale',titulo:'Aprovações',cenario:'Explore a área de Aprovações.',perguntas:['O que você imagina que está aqui?','Quem resolveria isso na sua rotina?'],tarefa:true},
     {grupo:2,tipo:'Tarefa',titulo:'Um aviso para suas licitações',cenario:'Você quer que o sistema avise, em toda licitação, se o edital exige atestado de capacidade técnica. Crie isso na ferramenta.',tarefa:true},
@@ -23,7 +23,6 @@
     {grupo:9,tipo:'Teste encerrado',titulo:'Obrigado pela participação',cenario:'Suas impressões ajudam a melhorar a ferramenta. Avise quem acompanha a sessão que você terminou.',final:true}
   ];
   let atual = 0;
-  const respostas = new Map();
   const el = id => document.getElementById(id);
   function render(focar) {
     const etapa = etapas[atual];
@@ -50,23 +49,20 @@
     el('nota').textContent = etapa.nota || '';
     el('nota').hidden = !etapa.nota;
     el('avancar').hidden = !!etapa.final;
-    el('avancar').textContent = etapa.botao || (etapa.tarefa ? 'Terminei' : 'Já respondi / continuar');
-    el('pular').hidden = !etapa.tarefa;
+    el('avancar').textContent = etapa.botao || 'Continuar';
     el('voltar').disabled = atual === 0;
     if (etapa.final) {
-      const puladas = [...respostas.values()].filter(x => x === 'pulou').length;
-      el('nota').textContent = puladas ? `Você seguiu sem concluir ${puladas} tarefa(s). Isso também faz parte do teste e pode ser conversado agora.` : 'Você chegou ao fim do roteiro. Não é necessário preencher respostas por escrito.';
+      el('nota').textContent = 'Você chegou ao fim do roteiro. Não é necessário preencher respostas por escrito.';
       el('nota').hidden = false;
     }
     el('guiaConteudo').scrollTop = 0;
     if (focar) el('tituloEtapa').focus({preventScroll:true});
   }
-  function avancar(status) {
+  function avancar() {
     if (atual >= etapas.length - 1) return;
-    respostas.set(atual,status); atual += 1; render(true);
+    atual += 1; render(true);
   }
-  el('avancar').addEventListener('click', () => avancar('terminou'));
-  el('pular').addEventListener('click', () => avancar('pulou'));
+  el('avancar').addEventListener('click', avancar);
   el('voltar').addEventListener('click', () => { if (atual > 0) { atual -= 1; render(true); } });
   document.querySelector('.teste-painel').addEventListener('keydown', event => {
     if (!etapas[atual].intro || event.key !== 'Tab') return;

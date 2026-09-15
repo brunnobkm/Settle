@@ -7,7 +7,7 @@
   <title>Settle — Guia do teste de usabilidade</title>
   <link rel="stylesheet" href="../assets/settle.css?v=20260915-card-hover">
   <link rel="stylesheet" href="guia.css?v=5">
-  <script src="guia.js?v=5" defer></script>
+  <script src="guia.js?v=6" defer></script>
 </head>
 <body class="teste-guia guia-intro">
   <main class="teste-prototipo" aria-label="Protótipo para explorar">
@@ -23,7 +23,7 @@
         <fieldset id="checklistInicio" class="teste-checklist" hidden>
           <legend>Antes de começar</legend>
           <label><input type="checkbox"> <span>Leia as tarefas com atenção e responda às perguntas falando.</span></label>
-          <label><input type="checkbox"> <span>Se algo não fizer sentido ou você não conseguir continuar, conte isso e use “Não consegui / seguir”.</span></label>
+          <label><input type="checkbox"> <span>Se algo não fizer sentido ou você não conseguir continuar, conte isso e avance para a próxima etapa.</span></label>
           <label><input type="checkbox"> <span>Não recarregue a página durante o teste: isso reinicia a sessão e apaga o progresso.</span></label>
         </fieldset>
         <ol id="perguntas"></ol>
@@ -32,7 +32,6 @@
       <p class="teste-lembrete">Conte em voz alta o que está pensando. Não há resposta certa ou errada.</p>
       <footer class="teste-acoes">
         <button class="btn btn-primary" id="avancar" type="button">Começar</button>
-        <button class="btn btn-outline" id="pular" type="button" hidden>Não consegui / seguir</button>
         <button id="voltar" type="button" disabled>Voltar</button>
       </footer>
       <p class="teste-privacidade">Responda falando. Este guia não grava áudio nem salva suas respostas. Recarregar esta página reinicia a sessão.</p>
