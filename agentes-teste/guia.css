@@ -1,0 +1,39 @@
+html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
+.teste-guia{display:grid;grid-template-columns:minmax(0,1fr) 340px;background:var(--background);color:var(--foreground);font-family:Arial,sans-serif;}
+.teste-prototipo{min-width:0;height:100dvh;}
+.teste-prototipo iframe{display:block;width:100%;height:100%;border:0;}
+.teste-painel{min-width:0;display:flex;flex-direction:column;height:100dvh;border-left:1px solid var(--border);background:var(--background);}
+.teste-topo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border);}
+.teste-topo strong{font-size:14px;}
+.teste-topo p{margin:5px 0 0;font-size:12px;line-height:18px;color:var(--muted-foreground);}
+.teste-topo button,#voltar{border:0;background:transparent;color:var(--muted-foreground);font:inherit;font-size:13px;cursor:pointer;padding:8px;border-radius:var(--radius-selector);}
+.teste-topo button:hover,#voltar:hover:not(:disabled){background:var(--muted);color:var(--foreground);}
+#voltar:disabled{opacity:.5;cursor:default;}
+.teste-conteudo{overflow:auto;padding:22px 20px;flex:1;}
+.teste-conteudo[hidden]{display:none;}
+.teste-progresso{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted-foreground);margin-bottom:28px;}
+.teste-progresso progress{width:100%;min-width:0;height:6px;accent-color:var(--accent);}
+.teste-progresso span{white-space:nowrap;}
+.teste-tipo{font-size:12px;font-weight:600;color:var(--accent);margin:0 0 10px;}
+#tituloEtapa{font-size:23px;line-height:30px;letter-spacing:-.4px;margin:0 0 16px;}
+#cenario,#perguntas{font-size:15px;line-height:24px;margin:0 0 20px;}
+#perguntas{padding-left:22px;}
+#perguntas li+li{margin-top:12px;}
+.teste-nota{font-size:13px;line-height:20px;background:var(--muted);padding:12px;border-radius:var(--radius-field);}
+.teste-lembrete{font-size:13px;line-height:20px;color:var(--muted-foreground);margin:24px 0;}
+.teste-acoes{display:flex;flex-direction:column;gap:8px;}
+.teste-acoes .btn{justify-content:center;min-height:42px;width:100%;white-space:normal;}
+.teste-acoes [hidden]{display:none;}
+.teste-privacidade{font-size:11px;line-height:17px;color:var(--muted-foreground);margin:24px 0 0;}
+.teste-guia.guia-recolhido{grid-template-columns:minmax(0,1fr) 170px;}
+.guia-recolhido .teste-topo{flex-direction:column;padding:16px;}
+@media(max-width:800px){
+ .teste-guia{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) min(44dvh,380px);}
+ .teste-prototipo{height:100%;}
+ .teste-painel{height:100%;border-left:0;border-top:1px solid var(--border);}
+ .teste-topo{padding:10px 16px;}
+ .teste-conteudo{padding:16px;}
+ .teste-progresso{margin-bottom:16px;}
+ .teste-guia.guia-recolhido{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 70px;}
+ .guia-recolhido .teste-topo{flex-direction:row;padding:10px 16px;}
+}

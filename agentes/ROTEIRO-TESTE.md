@@ -2,6 +2,15 @@
 
 Protótipo do teste: https://brunnobkm.github.io/Settle/agentes-teste/
 
+Guia por etapas para o participante: https://brunnobkm.github.io/Settle/agentes-teste/guia.html
+
+O guia abre o protótipo ao lado, em Agentes, e apresenta tarefas e reflexões separadamente.
+A pessoa pode recolher o painel, voltar e seguir quando não conseguir concluir uma tarefa.
+As perguntas de expectativa sobre exclusão aparecem antes da tentativa; a exclusão deve ser cancelada.
+Habilitação e chat continuam sendo etapas de resposta verbal. O guia não grava áudio nem salva respostas.
+Recarregue a página inteira do guia para iniciar outra sessão; isso também reinicia o protótipo.
+Se a pessoa não alcançar uma tela necessária, o moderador pode ajudar na transição e registrar a intervenção.
+
 Duração prevista: 45 a 60 minutos.
 
 ## O que queremos descobrir
