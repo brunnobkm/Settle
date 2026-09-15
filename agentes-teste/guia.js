@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const etapas = [
-    {grupo:0,intro:true,tipo:'Boas-vindas',titulo:'Vamos experimentar juntos',cenario:'Você vai explorar um protótipo da Settle. Estamos avaliando a ferramenta, não o seu desempenho.',nota:'Não precisa se preparar. Algumas partes são simuladas, e não há resposta certa ou errada.',botao:'Continuar'},
+    {grupo:0,intro:true,tipo:'Boas-vindas',titulo:'Vamos experimentar juntos',cenario:'Você vai explorar um protótipo da Settle. Estamos avaliando a ferramenta, não o seu desempenho.',botao:'Continuar'},
     {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Continuar” para avançar para a próxima etapa.',botao:'Entendi, começar o teste'},
     {grupo:1,tipo:'Observe e fale',titulo:'Primeiras impressões',perguntas:['Olhando a tela ao lado, o que você acha que dá para fazer aqui?','O que você acha que é um agente? E uma variável?']},
     {grupo:1,tipo:'Explore e fale',titulo:'Aprovações',cenario:'Explore a área de Aprovações.',perguntas:['O que você imagina que está aqui?','Quem resolveria isso na sua rotina?'],tarefa:true},
