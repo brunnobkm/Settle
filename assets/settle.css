@@ -1343,6 +1343,8 @@ table.dt td.c-sel .ap-check{gap:0;}
   color:var(--foreground);padding:11px 0;border-top:1px solid var(--border);}
 .prep-lista li > span:last-child{flex:1;min-width:0;}
 .prep-lista li.prep-item{padding:0;gap:0;}
+.prep-lista li.prep-item:hover,.prep-lista li.prep-item:focus-within,
+.prep-lista li.prep-item:hover + li,.prep-lista li.prep-item:focus-within + li{border-top-color:transparent;}
 .prep-abrir{display:flex;align-items:center;gap:10px;flex:1;min-width:0;width:100%;
   min-height:42px;padding:11px 8px;border:0;border-radius:var(--radius-selector);
   background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;}
