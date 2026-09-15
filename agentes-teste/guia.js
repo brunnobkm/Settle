@@ -2,7 +2,7 @@
   'use strict';
   const etapas = [
     {grupo:0,intro:true,tipo:'Boas-vindas',titulo:'Vamos experimentar juntos',cenario:'Você vai explorar um protótipo da Settle. Estamos avaliando a ferramenta, não o seu desempenho.',nota:'Não precisa se preparar. Algumas partes são simuladas, e não há resposta certa ou errada.',botao:'Continuar'},
-    {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Terminei” para avançar ou “Não consegui / seguir” se não conseguir concluir. Você pode recolher o guia para ter mais espaço e reabri-lo quando precisar.',botao:'Entendi, começar o teste'},
+    {grupo:0,intro:true,tipo:'Como participar',titulo:'Pense em voz alta',cenario:'Leia cada tarefa em voz alta e conte o que está pensando enquanto usa a ferramenta. Quando aparecerem perguntas, responda falando.',nota:'Use “Terminei” para avançar ou “Não consegui / seguir” se não conseguir concluir.',botao:'Entendi, começar o teste'},
     {grupo:1,tipo:'Observe e fale',titulo:'Primeiras impressões',perguntas:['Olhando a tela ao lado, o que você acha que dá para fazer aqui?','O que você acha que é um agente? E uma variável?']},
     {grupo:1,tipo:'Explore e fale',titulo:'Aprovações',cenario:'Explore a área de Aprovações.',perguntas:['O que você imagina que está aqui?','Quem resolveria isso na sua rotina?'],tarefa:true},
     {grupo:2,tipo:'Tarefa',titulo:'Um aviso para suas licitações',cenario:'Você quer que o sistema avise, em toda licitação, se o edital exige atestado de capacidade técnica. Crie isso na ferramenta.',tarefa:true},
@@ -35,13 +35,6 @@
     painel.setAttribute('role',intro ? 'dialog' : 'complementary');
     if (intro) painel.setAttribute('aria-modal','true');
     else painel.removeAttribute('aria-modal');
-    el('recolher').hidden = intro;
-    if (intro) {
-      document.body.classList.remove('guia-recolhido');
-      el('guiaConteudo').hidden = false;
-      el('recolher').textContent = 'Recolher';
-      el('recolher').setAttribute('aria-expanded','true');
-    }
 
     el('contador').textContent = etapa.grupo ? `Etapa ${etapa.grupo} de 9` : 'Introdução';
     el('progresso').value = etapa.final ? 9 : Math.max(0, etapa.grupo - 1);
@@ -75,12 +68,6 @@
   el('avancar').addEventListener('click', () => avancar('terminou'));
   el('pular').addEventListener('click', () => avancar('pulou'));
   el('voltar').addEventListener('click', () => { if (atual > 0) { atual -= 1; render(true); } });
-  el('recolher').addEventListener('click', () => {
-    const recolhido = document.body.classList.toggle('guia-recolhido');
-    el('guiaConteudo').hidden = recolhido;
-    el('recolher').textContent = recolhido ? 'Abrir guia' : 'Recolher';
-    el('recolher').setAttribute('aria-expanded',String(!recolhido));
-  });
   document.querySelector('.teste-painel').addEventListener('keydown', event => {
     if (!etapas[atual].intro || event.key !== 'Tab') return;
     const botoes = [...document.querySelectorAll('.teste-painel button, .teste-painel input')].filter(b => !b.closest('[hidden]') && !b.disabled);

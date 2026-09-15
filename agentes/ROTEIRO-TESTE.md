@@ -5,7 +5,7 @@ Protótipo do teste: https://brunnobkm.github.io/Settle/agentes-teste/
 Guia por etapas para o participante: https://brunnobkm.github.io/Settle/agentes-teste/guia.html
 
 O guia abre o protótipo ao lado, em Agentes, e apresenta tarefas e reflexões separadamente.
-A pessoa pode recolher o painel, voltar e seguir quando não conseguir concluir uma tarefa.
+A sidebar permanece aberta; a pessoa pode voltar e seguir quando não conseguir concluir uma tarefa.
 As perguntas de expectativa sobre exclusão aparecem antes da tentativa; a exclusão deve ser cancelada.
 Habilitação e chat continuam sendo etapas de resposta verbal. O guia não grava áudio nem salva respostas.
 Recarregue a página inteira do guia para iniciar outra sessão; isso também reinicia o protótipo.
@@ -43,7 +43,7 @@ técnica. Evitar consultor que atende várias empresas, porque o uso dele é out
 
 Duas telas em modal apresentam o teste e a orientação para pensar em voz alta.
 A pergunta sobre a rotina atual foi removida. A partir de Primeiras impressões,
-o guia aparece como uma sidebar preta recolhível, separada visualmente da plataforma.
+o guia aparece como uma sidebar preta sempre aberta, separada visualmente da plataforma.
 
 ## Bloco 1: as três áreas (8 min)
 

@@ -6,17 +6,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Settle — Guia do teste de usabilidade</title>
   <link rel="stylesheet" href="../assets/settle.css?v=20260915-card-hover">
-  <link rel="stylesheet" href="guia.css?v=4">
-  <script src="guia.js?v=4" defer></script>
+  <link rel="stylesheet" href="guia.css?v=5">
+  <script src="guia.js?v=5" defer></script>
 </head>
 <body class="teste-guia guia-intro">
   <main class="teste-prototipo" aria-label="Protótipo para explorar">
     <iframe id="prototipo" title="Protótipo da Settle para teste de usabilidade" src="index.html?ir=agentes"></iframe>
   </main>
   <aside class="teste-painel" role="dialog" aria-modal="true" aria-label="Guia do teste">
-    <header class="teste-topo">
-      <button id="recolher" type="button" aria-expanded="true" aria-controls="guiaConteudo">Recolher</button>
-    </header>
     <div id="guiaConteudo" class="teste-conteudo">
       <div class="teste-progresso"><progress id="progresso" max="9" value="0" aria-label="Progresso do teste"></progress><span id="contador">Introdução</span></div>
       <section id="etapa" aria-labelledby="tituloEtapa">
@@ -27,7 +24,6 @@
           <legend>Antes de começar</legend>
           <label><input type="checkbox"> <span>Leia as tarefas com atenção e responda às perguntas falando.</span></label>
           <label><input type="checkbox"> <span>Se algo não fizer sentido ou você não conseguir continuar, conte isso e use “Não consegui / seguir”.</span></label>
-          <label><input type="checkbox"> <span>Você pode recolher o guia para explorar a plataforma e reabri-lo quando precisar.</span></label>
           <label><input type="checkbox"> <span>Não recarregue a página durante o teste: isso reinicia a sessão e apaga o progresso.</span></label>
         </fieldset>
         <ol id="perguntas"></ol>
