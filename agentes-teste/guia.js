@@ -50,6 +50,7 @@
     el('nota').hidden = !etapa.nota;
     el('avancar').hidden = !!etapa.final;
     el('avancar').textContent = etapa.botao || 'Continuar';
+    el('voltar').hidden = atual === 0;
     el('voltar').disabled = atual === 0;
     if (etapa.final) {
       el('nota').textContent = 'Você chegou ao fim do roteiro. Não é necessário preencher respostas por escrito.';
