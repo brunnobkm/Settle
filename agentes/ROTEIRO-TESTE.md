@@ -6,7 +6,7 @@ Guia por etapas para o participante: https://brunnobkm.github.io/Settle/agentes-
 
 O guia abre o protótipo ao lado, em Agentes, e apresenta tarefas e reflexões separadamente.
 A sidebar permanece aberta; a pessoa pode voltar e seguir quando não conseguir concluir uma tarefa.
-Nas tarefas, “Preciso de ajuda” revela uma dica; “Ver passo a passo” revela a orientação completa. Ao final, “Ajuda utilizada nesta sessão” mostra o maior nível de ajuda consultado por tarefa. Esse registro fica apenas na memória da página e é apagado ao recarregar. Avançar não comprova conclusão: o moderador deve observar e anotar se a pessoa concluiu antes ou depois da ajuda.
+Nas tarefas, “Preciso de ajuda” revela uma dica; “Ver passo a passo” revela a orientação completa. O nível de ajuda consultado é preservado ao voltar entre tarefas durante a sessão, mas não aparece na tela final. Recarregar apaga esse estado. Avançar não comprova conclusão: o moderador deve observar e anotar se a pessoa concluiu antes ou depois da ajuda.
 As perguntas de expectativa sobre exclusão aparecem antes da tentativa; a exclusão deve ser cancelada.
 Habilitação e chat continuam sendo etapas de resposta verbal. O guia não grava áudio nem salva respostas.
 Recarregue a página inteira do guia para iniciar outra sessão; isso também reinicia o protótipo.

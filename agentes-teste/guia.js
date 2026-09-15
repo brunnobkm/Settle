@@ -20,7 +20,7 @@
     {grupo:7,tipo:'Só sua expectativa',titulo:'E se você discordar?',perguntas:['O que você faria se discordasse de um resultado?','O que você espera dos botões “Falar com o agente” e “Configurar”?'],nota:'Conte o que faria, sem clicar nesses botões.'},
     {grupo:8,tipo:'Observe e fale',titulo:'Uma conversa com a ferramenta',cenario:'Abra o chat no canto direito do protótipo e observe.',perguntas:['O que você acha que dá para fazer aqui?','O que você pediria?','Olhando a lista de agentes, o que muda ao escolher um deles?'],nota:'Apenas fale: não digite nem envie mensagens. Queremos entender sua expectativa.',tarefa:true},
     {grupo:9,tipo:'Fechamento',titulo:'Para terminar',perguntas:['Se isso existisse amanhã, o que você usaria primeiro?','O que deixaria você com receio de usar?','Há algo que você não entendeu e ficou sem perguntar?'],botao:'Encerrar teste'},
-    {grupo:9,tipo:'Teste encerrado',titulo:'Obrigado pela participação',cenario:'Suas impressões ajudam a melhorar a ferramenta. Avise quem acompanha a sessão que você terminou.',final:true}
+    {grupo:9,tipo:'Teste encerrado',titulo:'Obrigado pela participação',final:true}
   ];
   const ajudas = {
   "Aprovações": {
@@ -87,13 +87,11 @@
   }
 };
   const usoAjuda = new Map();
-  const visitadas = new Set();
   let atual = 0;
   const el = id => document.getElementById(id);
   function render(focar) {
     const etapa = etapas[atual];
     const intro = !!etapa.intro;
-    if (etapa.tarefa) visitadas.add(atual);
     const ajuda = etapa.tarefa && ajudas[etapa.titulo];
     const nivel = usoAjuda.get(atual) || 0;
     el('ajudaRodape').hidden = !ajuda;
@@ -107,15 +105,6 @@
     });
     el('passosAjuda').hidden = nivel < 2;
     el('verPassos').setAttribute('aria-expanded', String(nivel === 2));
-    el('resumoAjuda').hidden = !etapa.final;
-    if (etapa.final) {
-      el('listaAjuda').replaceChildren();
-      visitadas.forEach(indice => {
-        const li = document.createElement('li');
-        li.textContent = etapas[indice].titulo + ': ' + ['Sem ajuda solicitada', 'Dica consultada', 'Passo a passo consultado'][usoAjuda.get(indice) || 0];
-        el('listaAjuda').append(li);
-      });
-    }
     el('checklistInicio').hidden = atual !== 0;
     document.body.classList.toggle('guia-intro',intro);
     document.querySelector('.teste-prototipo').inert = intro;
@@ -141,10 +130,6 @@
     el('avancar').textContent = etapa.botao || 'Continuar';
     el('voltar').hidden = atual === 0;
     el('voltar').disabled = atual === 0;
-    if (etapa.final) {
-      el('nota').textContent = 'Você chegou ao fim do roteiro. Não é necessário preencher respostas por escrito.';
-      el('nota').hidden = false;
-    }
     el('guiaConteudo').scrollTop = 0;
     if (focar) el('tituloEtapa').focus({preventScroll:true});
   }
