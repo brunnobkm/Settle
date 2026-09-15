@@ -17,7 +17,7 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 #perguntas{padding-left:22px;}
 #perguntas li+li{margin-top:12px;}
 .teste-nota{font-size:13px;line-height:20px;background:var(--muted);padding:12px;border-radius:var(--radius-field);}
-.teste-lembrete{font-size:13px;line-height:20px;color:var(--muted-foreground);margin:24px 0;}
+.teste-lembrete{font-size:13px;line-height:20px;font-weight:600;color:var(--primary);background:color-mix(in srgb,gold 45%,var(--background));padding:14px 16px;border-radius:var(--radius-field);margin:24px 0;}
 .teste-acoes{display:flex;flex-direction:column;gap:8px;}
 .teste-acoes .btn{justify-content:center;min-height:42px;width:100%;white-space:normal;}
 .teste-acoes [hidden]{display:none;}
@@ -33,7 +33,7 @@ html,body.teste-guia{margin:0;height:100%;overflow:hidden;}
 /* O guia escuro pertence à sessão de pesquisa, separado da plataforma. */
 .teste-painel{background:var(--primary);color:var(--primary-foreground);}
 .teste-painel #voltar,
-.teste-painel .teste-progresso,.teste-painel .teste-lembrete,.teste-painel .teste-privacidade{
+.teste-painel .teste-progresso,.teste-painel .teste-privacidade{
  color:color-mix(in srgb,var(--primary-foreground) 75%,transparent);}
 .teste-painel .teste-tipo{color:var(--primary-foreground);}
 .teste-painel .teste-nota,.teste-painel #voltar:hover:not(:disabled){
