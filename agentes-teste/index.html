@@ -3624,10 +3624,7 @@
           '<span class="tpl-txt"><b>Criar do zero</b>' +
           '<span>Você escreve a instrução e escolhe onde o resultado aparece.</span></span></button>' +
 
-        '<div class="tpl-sep"><span>Ou comece por um modelo</span></div>' +
-        '<div class="tpl-grade">' +
-          Object.keys(TEMPLATES).map(function (k) { return card(k, TEMPLATES[k]); }).join('') +
-        '</div>';
+        '';
 
       document.querySelectorAll('[data-tpl]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -3789,7 +3786,7 @@
 
     function abrirFx(base) {
       fx = base || fxNovo();
-      etapaFx = (base || fx.template) ? 'form' : 'template';
+      etapaFx = 'form';
       editando = -1;
       modoModal = 'outro';
       analiseAberta = null;
@@ -4221,14 +4218,14 @@
     function salvarVar() {
       var nome = document.getElementById('vNome').value.trim();
       var prompt = document.getElementById('vPrompt').value.trim();
+      var padrao = (document.getElementById('vPadrao').value || '').trim();
       var fontes = fontesMarcadas();
       var faltantes = [];
       if (!nome) faltantes.push('vNome');
       if (!prompt) faltantes.push('vPrompt');
+      if (!padrao) faltantes.push('vPadrao');
       if (!fontes.length && !document.getElementById('vResto').checked) faltantes.push('vOrdem');
       if (faltantes.length) { avisoCamposObrigatorios(faltantes); return; }
-
-      var padrao = (document.getElementById('vPadrao').value || '').trim();
 
       var k = varEditando, novo = !k;
       if (novo) k = 'nv' + Object.keys(VARS).length;
