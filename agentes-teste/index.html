@@ -110,6 +110,7 @@
     .ap-field>label,.ap-flabel{display:block;font-size:14px;font-weight:600;margin-bottom:6px;}
     .ap-fhint{font-size:12px;line-height:17px;color:var(--muted-foreground);margin:-2px 0 8px;}
     .ap-input,.ap-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-field);padding:10px 12px;font-family:inherit;font-size:14px;line-height:21px;color:var(--foreground);}
+    .ap-required{border-color:var(--destructive)!important;box-shadow:0 0 0 1px var(--destructive);}
     .ap-textarea{min-height:96px;resize:vertical;}
     .ap-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--card);border-radius:9999px;padding:6px 12px;font-family:inherit;font-size:13px;color:var(--foreground);cursor:pointer;}
     .ap-chip small{color:var(--muted-foreground);font-size:11px;}
@@ -637,46 +638,46 @@
          cobrem texto, data e número. */
       cnpj:      { nome:'CNPJ do órgão', tipo:'texto', v:'v1', custo:0.01,
                    desc:'Número de CNPJ de quem está contratando.',
-                   prompt:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.',
+                   prompt:'Encontre no edital o número do processo ou da licitação. Retorne o número exatamente como aparece no documento.',
                    fontes:['Minuta do contrato', 'Edital e anexos'], resto:true, padrao:'não encontrado' },
       sessao:    { nome:'Data da sessão pública', tipo:'data', v:'v1', custo:0.01,
                    desc:'Dia e hora da abertura das propostas.',
-                   prompt:'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
+                   prompt:'Encontre a data e o horário da sessão pública de abertura das propostas.',
                    fontes:['Edital e anexos'], resto:true, padrao:'' },
       valorest:  { nome:'Valor estimado', tipo:'número', v:'v1', custo:0.02,
                    desc:'Valor total estimado da contratação.',
-                   prompt:'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum.',
+                   prompt:'Retorne o valor total estimado da contratação conforme o edital ou o termo de referência.',
                    fontes:['Edital e anexos', 'Termo de referência'], resto:true, padrao:'0' },
       esfera:    { nome:'Esfera', tipo:'texto', settle:true, v:'v2', custo:0,
                    desc:'Se o órgão é federal, estadual ou municipal.',
-                   prompt:'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
+                   prompt:'Identifique se o órgão responsável pela licitação é federal, estadual ou municipal.',
                    fontes:['Dados do portal'], resto:false, padrao:'não se aplica' },
       capag:     { nome:'CAPAG', tipo:'texto', settle:true, v:'v3', custo:0.01,
                    desc:'Nota de capacidade de pagamento do ente, de A a D.',
-                   prompt:'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
+                   prompt:'Encontre a nota CAPAG do órgão e retorne a classificação de A a D. Indique a esfera usada na consulta.',
                    fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'não encontrado',
                    depende:'esfera', qualifica:{ estadual:'CAPAG estadual', municipal:'CAPAG municipal', federal:'não existe CAPAG federal' },
                    excecao:'Estatais e Sistema S não têm CAPAG: são empresas, não entes federativos' },
       segmento:  { nome:'Segmento da licitação', tipo:'texto', settle:true, v:'v3', custo:0,
                    desc:'Os segmentos de mercado a que o objeto pertence.',
-                   prompt:'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
+                   prompt:'Identifique os segmentos de mercado relacionados ao objeto da licitação.',
                    fontes:['Dados do portal'], resto:false, padrao:'não encontrado' },
       populacao: { nome:'População', tipo:'número', settle:true, v:'v1', custo:0,
                    desc:'População do ente, usada para estimar porte.',
-                   prompt:'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet consectetur.',
+                   prompt:'Retorne a população do município ou do estado responsável pela contratação, quando essa informação estiver disponível.',
                    fontes:['Dados do portal', 'Bases públicas'], resto:false, padrao:'0',
                    depende:'esfera', qualifica:{ estadual:'população do estado', municipal:'população do município', federal:'população do país' } },
       atestado:  { nome:'Atestado exigido', tipo:'sim ou não', v:'v1', custo:0.04,
                    desc:'Se o edital pede atestado de capacidade técnica na habilitação.',
-                   prompt:'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam.',
+                   prompt:'Verifique se o edital exige atestado de capacidade técnica na habilitação. Retorne sim ou não.',
                    fontes:['Edital e anexos'], resto:true, padrao:'não' },
       subcontr:  { nome:'Permite subcontratação', tipo:'sim ou não', v:'v1', custo:0.03,
                    desc:'Se o edital autoriza subcontratar parte do objeto.',
-                   prompt:'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.',
+                   prompt:'Verifique se o edital ou a minuta do contrato permite a subcontratação de parte do objeto. Retorne sim ou não.',
                    fontes:['Edital e anexos', 'Minuta do contrato'], resto:true, padrao:'nenhum' },
       qtdveic:   { nome:'Total de horas do projeto', tipo:'número', v:'v1', custo:0.05,
                    desc:'Soma da carga horária de todos os itens de serviço de design.',
-                   prompt:'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus.',
+                   prompt:'Some a carga horária dos itens de serviço de design no quadro de quantitativos e retorne o total em horas.',
                    fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'0',
                    /* Variável que não sai de um trecho: sai de uma conta sobre vários.
                       Caso trazido pela Larissa em 31/08 (peso total de polpa somado de N itens). */
@@ -694,15 +695,15 @@
                      faltando:[ { item:'Item 9', desc:'Treinamento da equipe interna', motivo:'a carga horária está em uma imagem, não em texto' } ] } },
       docshab:   { nome:'Documentos de habilitação', tipo:'texto', v:'v1', custo:0.06,
                    desc:'Relação dos documentos exigidos para habilitação.',
-                   prompt:'Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.',
+                   prompt:'Liste os documentos exigidos para habilitação, separados por categoria jurídica, fiscal, técnica e econômico-financeira.',
                    fontes:['Edital e anexos'], resto:true, padrao:'não encontrado' },
       componentes:{ nome:'Componentes do item', tipo:'texto', v:'v2', custo:0.02,
                    desc:'Os componentes que formam cada item do Termo de Referência.',
-                   prompt:'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis.',
+                   prompt:'Liste os componentes exigidos em cada item do Termo de Referência.',
                    fontes:['Termo de referência', 'Edital e anexos'], resto:true, padrao:'não encontrado' },
       especificacao:{ nome:'Especificação exigida', tipo:'texto', v:'v1', custo:0.01,
                    desc:'O texto da especificação técnica de um componente.',
-                   prompt:'Omnis voluptas assumenda est, omnis dolor repellendus in eligendi optio.',
+                   prompt:'Retorne o texto da especificação técnica exigida para o componente indicado.',
                    fontes:['Termo de referência'], resto:true, padrao:'não avaliado' }
     };
 
@@ -1917,6 +1918,15 @@
       /* A conversa em branco também acompanha: as sugestões da tela anterior
          não servem para a nova. */
       if (!cpAgente && document.querySelector('#cpBody .cp-vazio')) cpPintarVazio();
+    }
+
+    function cpDefinirContextoLicitacao(lic) {
+      if (!lic) return;
+      var contexto = { id:'lic', nome:'PE ' + lic.n, tipo:'licitacao', auto:true };
+      var i = cpContextos.map(function (c) { return !!c.auto; }).indexOf(true);
+      if (i >= 0) cpContextos.splice(i, 1, contexto);
+      else cpContextos.unshift(contexto);
+      cpPintarCtx();
     }
 
     /* O chip precisa dizer que tipo de coisa está no contexto, não só o nome
@@ -3802,15 +3812,35 @@
         var prontas = fx.linhas.filter(function (l) { return l.k && l.cond; }).length;
         document.getElementById('fxCusto').textContent = prontas
           ? prontas + ' critério(s) preenchido(s)' : '';
-        document.getElementById('fxAtivar').disabled = !prontas;
+        document.getElementById('fxAtivar').disabled = false;
         return;
       }
       var n = fx.blocos.length;
       var temTexto = !!(fx.texto || '').trim();
       document.getElementById('fxCusto').textContent =
         temTexto && MOSTRAR_CUSTO ? 'Custo: ' + moeda(fxCusto()) + ' por licitação' : '';
-      document.getElementById('fxAtivar').disabled = !(temTexto || n);
+      document.getElementById('fxAtivar').disabled = false;
     }
+
+    function marcarObrigatorios(ids) {
+      document.querySelectorAll('.ap-required').forEach(function (el) { el.classList.remove('ap-required'); });
+      var campos = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      campos.forEach(function (campo) { campo.classList.add('ap-required'); });
+      if (campos[0]) campos[0].focus();
+      return campos.length;
+    }
+
+    function avisoCamposObrigatorios(ids) {
+      marcarObrigatorios(ids);
+      settleToast('Há campos obrigatórios que precisam ser preenchidos.');
+    }
+
+    document.addEventListener('input', function (event) {
+      if (event.target.classList) event.target.classList.remove('ap-required');
+    });
+    document.addEventListener('change', function (event) {
+      if (event.target.classList) event.target.classList.remove('ap-required');
+    });
 
     /* Uma modal pode levar a outra: a variável mostra em que agentes ela está
        em uso, e dali dá para abrir cada um. O caminho de volta fica no
@@ -3876,9 +3906,11 @@
       if (fx && fx.template === 'score') return criarAgenteScore();
 
       var texto = (fx && fx.texto || '').trim();
-      if (!texto) { settleToast('Escreva as instruções do agente'); return; }
-      if (!fx.onde) { settleToast('Escolha onde o resultado aparece'); return; }
-      if (!fx.gatilho) { settleToast('Escolha quando o agente roda'); return; }
+      var faltantes = [];
+      if (!texto) faltantes.push('vfCampo');
+      if (!fx.onde) faltantes.push('fxOnde');
+      if (!fx.gatilho) faltantes.push('fxGat');
+      if (faltantes.length) { avisoCamposObrigatorios(faltantes); return; }
 
       /* Um agente novo é uma análise nova, não uma regra dentro do Score. */
       var an = {
@@ -3903,8 +3935,15 @@
        tabela vira uma regra, e a soma dos pontos é a nota. */
     function criarAgenteScore() {
       var linhas = fx.linhas.filter(function (l) { return l.k && l.cond; });
-      if (!linhas.length) { settleToast('Preencha pelo menos um critério'); return; }
-      if (!fx.gatilho) { settleToast('Escolha quando o agente roda'); return; }
+      var faltantes = [];
+      if (!linhas.length) {
+        document.querySelectorAll('[data-scc]').forEach(function (campo) {
+          if (!campo.value.trim()) campo.classList.add('ap-required');
+        });
+        faltantes.push('fxNome');
+      }
+      if (!fx.gatilho) faltantes.push('fxGat');
+      if (faltantes.length) { avisoCamposObrigatorios(faltantes.filter(function (id) { return document.getElementById(id); })); return; }
 
       var an = {
         id:'nv' + ANALISES.length, nome:fx.nome || 'Score sem nome', formato:'estruturado',
@@ -4181,13 +4220,13 @@
 
     function salvarVar() {
       var nome = document.getElementById('vNome').value.trim();
-      if (!nome) { settleToast('Dê um nome à variável'); return; }
       var prompt = document.getElementById('vPrompt').value.trim();
-      if (!prompt) { settleToast('Escreva as instruções da extração'); return; }
       var fontes = fontesMarcadas();
-      if (!fontes.length && !document.getElementById('vResto').checked) {
-        settleToast('Marque pelo menos um lugar para procurar'); return;
-      }
+      var faltantes = [];
+      if (!nome) faltantes.push('vNome');
+      if (!prompt) faltantes.push('vPrompt');
+      if (!fontes.length && !document.getElementById('vResto').checked) faltantes.push('vOrdem');
+      if (faltantes.length) { avisoCamposObrigatorios(faltantes); return; }
 
       var padrao = (document.getElementById('vPadrao').value || '').trim();
 
@@ -5257,9 +5296,11 @@
       document.getElementById('nvNome').focus();
       document.getElementById('nvCriar').addEventListener('click', function () {
         var nome = document.getElementById('nvNome').value.trim();
-        if (!nome) { settleToast('Dê um nome à variável'); return; }
         var prompt = document.getElementById('nvPrompt').value.trim();
-        if (!prompt) { settleToast('Escreva as instruções da extração'); return; }
+        var miniFaltantes = [];
+        if (!nome) miniFaltantes.push('nvNome');
+        if (!prompt) miniFaltantes.push('nvPrompt');
+        if (miniFaltantes.length) { avisoCamposObrigatorios(miniFaltantes); return; }
         var val = function (g) {
           var b = menu.querySelector('[data-g="' + g + '"] .ap-chip[aria-pressed="true"]');
           return b ? b.dataset.val : '';
@@ -5714,6 +5755,7 @@
     document.getElementById('pnFalar').addEventListener('click', function () {
       var an = agenteDoPainel();
       if (!an) return;
+      cpDefinirContextoLicitacao(licAberta);
       cpAbrirPainel();
       var nota = licAberta ? licAberta.score : 78;
       cpSelecionarAgente(an,
