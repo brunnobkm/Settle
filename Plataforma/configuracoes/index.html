@@ -28,6 +28,7 @@
     .vf-acts .vf-hint{margin:0;flex:1;}
     .sb-back{font-weight:500;}
     .cfg-page .tabs{margin:0 0 14px;}
+    .cfg-page > .cfg-sub:first-child{margin-top:0;}
     .sem-perm{max-width:520px;margin:60px auto;}
     .cfg-page table.dt td{font-size:13px;white-space:normal;}
     .cfg-page table.dt td:first-child{color:var(--foreground);font-weight:500;}
@@ -128,7 +129,7 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
       </button>
       <span class="sep" aria-hidden="true"></span>
-      <span class="hello" id="navTitulo">Configurações</span>
+      <h1 class="hello" id="navTitulo" style="margin:0">Configurações</h1>
       <label class="cfg-papel" for="papel">Ver como
         <select class="cfg-input" id="papel">
           <option value="admin">Administrador</option>
@@ -391,7 +392,7 @@
   /* ======================= VISÃO GERAL ======================= */
   function inicio(m){
     if (!isAdmin()) {
-      m.innerHTML = `<div class="cfg-page"><h1>Configurações</h1>
+      m.innerHTML = `<div class="cfg-page">
         <p class="cfg-sub">Você entrou como ${PAPEIS[S.papel]}.</p>
         <div class="empty-state"><strong>As configurações da organização ficam com os administradores</strong>
         Etapas do funil, abas das listas, motivos, campos do card e modelo de e-mail valem para todo mundo da conta.
@@ -402,7 +403,6 @@
     const ativos = t => S.motivos.filter(x=>x.tipo===t && !x.arq).length + (t==='descarte'?1:0);
     const linha = (href, t, d, v) => `<a class="cfg-row" href="${href}"><span class="cfg-txt"><span class="cfg-t">${t}</span><span class="cfg-d">${d}</span></span><span class="cfg-v">${v}</span>${I.chev}</a>`;
     m.innerHTML = `<div class="cfg-page">
-      <h1>Configurações</h1>
       <p class="cfg-sub">O que a organização personaliza na Settle, num lugar só. Vale para todas as pessoas da conta e só administradores alteram.</p>
 
       <section class="cfg-sec"><h2>Licitações</h2>
@@ -461,7 +461,6 @@
     };
     const g = t => S.etapas.filter(e=>e.tipo===t).map(item).join('');
     m.innerHTML = `<div class="cfg-page">
-      <h1>Etapas do funil</h1>
       <p class="cfg-sub">As colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as pessoas da organização assim que você salva o nome ou solta a etapa no lugar.</p>
       <div class="cfg-aviso">${I.info}<span>A <b>primeira</b> e a <b>última</b> etapas têm posição fixa: os agentes começam a trabalhar quando a licitação entra na primeira e registram o resultado na última. Dá para renomear, mas não mover nem remover.</span></div>
       <div class="cfg-box" id="etBox">
@@ -561,7 +560,6 @@
       </div>`;
     const prev = L.find(a=>a.id===S.abaPrev[tela]);
     m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
-      <h1>Abas das listas</h1>
       <p class="cfg-sub">As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela organização: o administrador cria, define os filtros e ela aparece igual para todas as pessoas.</p>
       <div class="tabs" role="tablist" aria-label="Tela">
         ${Object.keys(TELAS).map(k=>`<button class="tab ${k===tela?'active':''}" type="button" role="tab" aria-selected="${k===tela}" data-tela="${k}">${TELAS[k].n} <span class="cnt">${S.abas[k].length}</span></button>`).join('')}
@@ -716,7 +714,6 @@
         <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${x.id}" aria-label="${x.uso?'Arquivar':'Excluir'} ${esc(x.nome)}" data-tip="${x.uso?'Arquivar':'Excluir'}">${x.uso?I.arq:I.trash}</button></span>
       </div>`;
     m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
-      <h1>Motivos de descarte e perda</h1>
       <p class="cfg-sub">O que a pessoa escolhe ao descartar uma licitação ou registrar que perdeu. Os motivos alimentam o filtro de Descartadas e o dashboard, por isso um motivo já usado é arquivado, nunca apagado.</p>
       <div class="tabs" role="tablist">
         <button class="tab ${t==='descarte'?'active':''}" type="button" role="tab" aria-selected="${t==='descarte'}" data-tab="descarte">Descarte <span class="cnt">${cnt('descarte')}</span></button>
@@ -800,7 +797,6 @@
           <button class="cfg-ib perigo" type="button" data-rm="${c.id}" aria-label="Tirar ${esc(c.nome)} do card">${I.trash}</button></span>` : ''}
       </div>`;
     m.innerHTML = `<div class="cfg-page larga">
-      <h1>Campos do card</h1>
       <p class="cfg-sub">O que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da organização. Os campos escondidos continuam disponíveis em Filtrar e Ordenar.</p>
       <div class="cfg-split">
         <div>
@@ -900,7 +896,6 @@
 
   function email(m){
     m.innerHTML = `<div class="cfg-page larga">
-      <h1>Modelo de e-mail</h1>
       <p class="cfg-sub">O texto de Compartilhar licitação. Vale para Gmail e para Copiar texto, em todas as telas onde o card aparece.</p>
       <div class="cfg-split">
         <div>
@@ -977,7 +972,6 @@
   function equipe(m){
     const P = [['Brunno Krier','Administrador','Ativo'],['Larissa Almeida','Administrador','Ativo'],['Alice Iglesias','Administrador','Ativo'],['Bruno Ortiz','Administrador','Ativo'],['Andre Damiano','Administrador','Ativo'],['Malou Chlapec','Administrador','Convite pendente'],['Mateus Brum','Editor completo','Ativo'],['Trochu Kniha','Editor completo','Convite pendente'],['Eloi Pattaro','Editor completo','Desativado']];
     m.innerHTML = `<div class="cfg-page">
-      <h1>Equipe</h1>
       <p class="cfg-sub">Hoje em Menu do usuário › Gerenciar equipe. Passa a morar aqui, com a mesma tabela e as mesmas ações (convidar, mudar função, resetar senha, remover).</p>
       <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Pessoa</th><th scope="col">Função</th><th scope="col">Status</th></tr></thead>
       <tbody>${P.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</tbody></table></div>
@@ -996,7 +990,6 @@
       ['Agentes e variáveis','Altera','Usa','Usa','Vê resultados']
     ];
     m.innerHTML = `<div class="cfg-page">
-      <h1>Permissões</h1>
       <p class="cfg-sub">As quatro funções que já existem em Gerenciar equipe. Configuração da organização é ação de Administrador; as outras funções usam o que foi configurado.</p>
       <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Configuração</th><th scope="col">Administrador</th><th scope="col">Editor completo</th><th scope="col">Editor restrito</th><th scope="col">Visualizador</th></tr></thead>
       <tbody>${R.map(r=>`<tr>${r.map((c,i)=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
@@ -1012,7 +1005,6 @@
 
   function auditoria(m){
     m.innerHTML = `<div class="cfg-page">
-      <h1>Auditoria</h1>
       <p class="cfg-sub">Hoje em Menu do usuário › Auditoria. Aqui aparecem só as alterações de configuração; as ações feitas nesta sessão entram no topo.</p>
       <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Quando</th><th scope="col">Quem</th><th scope="col">Área</th><th scope="col">Alteração</th></tr></thead>
       <tbody>${S.audit.map(a=>`<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${esc(a[3])}</td></tr>`).join('')}</tbody></table></div>
