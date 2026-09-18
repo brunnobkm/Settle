@@ -1,0 +1,1018 @@
+<!doctype html>
+<!--
+  SETTLE — Configurações da organização
+  Task do Notion "Fluxo para Configurações da Plataforma" (Alice, 12/09/2026).
+  Benchmark: Settings do Linear (sidebar própria, caixas de linhas, categorias
+  fixas com itens editáveis dentro, como os status do time).
+  Regras de negócio e casos-limite em REGRAS.md, nesta pasta.
+-->
+<html lang="pt-BR" data-preview="configuracoes">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle — Configurações</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/settle.css" />
+
+  <style>
+    /* Só o específico desta tela. O layout de configurações está no settle.css (seção 37). */
+    .cfg-prev .card{padding:14px 16px;}
+    .cfg-prev .grid-main{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .cfg-prev .grid-left{width:150px;}
+    .cfg-prev .card-top-right .btn{padding:6px 12px;font-size:13px;}
+    .vf.linha{min-height:0;line-height:24px;padding:7px 12px;}
+    .vf-acts{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+    .vf-acts .vf-hint{margin:0;flex:1;}
+    .sb-back{font-weight:500;}
+    .cfg-page .tabs{margin:0 0 14px;}
+    .cfg-page > .cfg-sub:first-child{margin-top:0;}
+    .sem-perm{max-width:520px;margin:60px auto;}
+    .cfg-page table.dt td{font-size:13px;white-space:normal;}
+    .cfg-page table.dt td:first-child{color:var(--foreground);font-weight:500;}
+    .cfg-ctx{font-size:13px;color:var(--foreground);}
+    .cfg-ctx kbd{font-family:inherit;font-size:12px;background:var(--muted);border:1px solid var(--border);
+      border-radius:5px;padding:1px 6px;}
+    #varMenu{position:fixed;}
+  </style>
+</head>
+
+<body class="sb-open">
+
+  <!-- ====================== SIDEBAR DE CONFIGURAÇÕES ====================== -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação das configurações">
+    <div class="sb-head">
+      <a class="sb-item sb-back" href="../settle-melhoria-deixar-os-filtros-aplicados-mais-visivel/" data-tip="Voltar para a plataforma">
+        <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5 5 8l4.5 4.5"/></svg></span>
+        <span class="sb-label">Voltar para a plataforma</span>
+      </a>
+    </div>
+
+    <nav class="sb-content" id="cfgNav">
+      <div class="sb-group">
+        <a class="sb-item" href="#inicio" data-r="inicio">
+          <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg></span>
+          <span class="sb-label">Visão geral</span>
+        </a>
+      </div>
+
+      <div data-admin>
+        <div class="sb-section">Licitações</div>
+        <div class="sb-group">
+          <a class="sb-item" href="#etapas" data-r="etapas">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span>
+            <span class="sb-label">Etapas do funil</span>
+          </a>
+          <a class="sb-item" href="#abas" data-r="abas">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2 12.5V5.5a1 1 0 0 1 1-1h3.2l1.3 1.6H13a1 1 0 0 1 1 1v5.4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg></span>
+            <span class="sb-label">Abas das listas</span>
+          </a>
+          <a class="sb-item" href="#motivos" data-r="motivos">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4.5h10M3 8h10M3 11.5h6"/></svg></span>
+            <span class="sb-label">Motivos de descarte e perda</span>
+          </a>
+          <a class="sb-item" href="#card" data-r="card">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="11" height="10" rx="1.8"/><path d="M5 6.5h6M5 9.5h3.5" stroke-linecap="round"/></svg></span>
+            <span class="sb-label">Campos do card</span>
+          </a>
+          <a class="sb-item" href="#email" data-r="email">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="m2.5 4.5 5.5 4 5.5-4"/></svg></span>
+            <span class="sb-label">Modelo de e-mail</span>
+          </a>
+        </div>
+
+        <div class="sb-section">Organização</div>
+        <div class="sb-group">
+          <a class="sb-item" href="#equipe" data-r="equipe">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.3"/><path d="M2 13c.5-2.3 2-3.4 4-3.4s3.5 1.1 4 3.4" stroke-linecap="round"/><path d="M10.5 3.8a2.2 2.2 0 0 1 0 4.4M12 9.9c1.1.5 1.8 1.5 2 3.1" stroke-linecap="round"/></svg></span>
+            <span class="sb-label">Equipe</span>
+          </a>
+          <a class="sb-item" href="#permissoes" data-r="permissoes">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 2 3 4v4c0 3 2.2 5 5 6 2.8-1 5-3 5-6V4z"/></svg></span>
+            <span class="sb-label">Permissões</span>
+          </a>
+          <a class="sb-item" href="#auditoria" data-r="auditoria">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.3"/></svg></span>
+            <span class="sb-label">Auditoria</span>
+          </a>
+        </div>
+
+        <div class="sb-section">Inteligência</div>
+        <div class="sb-group">
+          <a class="sb-item" href="#" data-nao-prototipado>
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 2.2 9.4 6.6 13.8 8 9.4 9.4 8 13.8 6.6 9.4 2.2 8l4.4-1.4z"/></svg></span>
+            <span class="sb-label">Agentes</span>
+          </a>
+          <a class="sb-item" href="#" data-nao-prototipado>
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 2.5c-1.5 0-2 .7-2 2v1.6c0 .9-.5 1.4-1.3 1.9.8.5 1.3 1 1.3 1.9v1.6c0 1.3.5 2 2 2M10.5 2.5c1.5 0 2 .7 2 2v1.6c0 .9.5 1.4 1.3 1.9-.8.5-1.3 1-1.3 1.9v1.6c0 1.3-.5 2-2 2M6.5 6l3 4M9.5 6l-3 4"/></svg></span>
+            <span class="sb-label">Variáveis</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-avatar" aria-hidden="true">BK</div>
+      <div class="sb-user">
+        <div class="sb-user-name">Brunno Krier</div>
+        <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====================== SHELL ====================== -->
+  <div class="shell">
+    <header class="navbar">
+      <button class="icon-btn" type="button" data-sb-toggle aria-label="Recolher ou expandir a navegação">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
+      </button>
+      <span class="sep" aria-hidden="true"></span>
+      <h1 class="hello" id="navTitulo" style="margin:0">Configurações</h1>
+      <label class="cfg-papel" for="papel">Ver como
+        <select class="cfg-input" id="papel">
+          <option value="admin">Administrador</option>
+          <option value="editor">Editor completo</option>
+          <option value="restrito">Editor restrito</option>
+          <option value="visual">Visualizador</option>
+        </select>
+      </label>
+    </header>
+
+    <main id="main"></main>
+  </div>
+
+  <!-- Menu de variáveis (e-mail e campos do card) -->
+  <div class="vf-menu" id="varMenu" role="listbox" aria-label="Variáveis" hidden></div>
+
+  <!-- Painel lateral de filtros da aba -->
+  <div class="cfg-drawer-ovl" id="drawerOvl" hidden></div>
+  <aside class="cfg-drawer" id="drawer" role="dialog" aria-modal="true" hidden></aside>
+
+  <!-- Confirmação -->
+  <div class="cfm-ovl" id="cfmOvl" hidden></div>
+  <div class="cfm" id="cfm" role="dialog" aria-modal="true" aria-labelledby="cfmT" hidden></div>
+
+  <div id="toasts"></div>
+
+  <script src="../assets/settle.js" defer></script>
+  <script>
+  (function(){
+  'use strict';
+
+  /* ======================= DADOS ======================= */
+  const ADMINS = ['Brunno Krier','Larissa Almeida','Bruno Ortiz','Andre Damiano','Alice Iglesias','Malou Chlapec'];
+  const PAPEIS = {admin:'Administrador', editor:'Editor completo', restrito:'Editor restrito', visual:'Visualizador'};
+
+  const S = {
+    papel: 'admin',
+    etapas: [
+      {id:'e1', nome:'Análise de Oportunidades', cor:'#3b82f6', qtd:49, tipo:'entrada'},
+      {id:'e2', nome:'Suspensa',                 cor:'#a3a3a3', qtd:13, tipo:'meio'},
+      {id:'e3', nome:'Preparação de Proposta',   cor:'#8b5cf6', qtd:13, tipo:'meio'},
+      {id:'e4', nome:'Disputa de Classificação', cor:'#f59e0b', qtd:2,  tipo:'meio'},
+      {id:'e5', nome:'Processo de Habilitação',  cor:'#06b6d4', qtd:1,  tipo:'meio'},
+      {id:'e6', nome:'Fase de Recursos',         cor:'#ec4899', qtd:0,  tipo:'meio'},
+      {id:'e7', nome:'Resultados Finais',        cor:'#16a34a', qtd:27, tipo:'saida'}
+    ],
+    unificar: true,
+    exigirMotivo: true,
+    motivoTab: 'descarte',
+    motivos: [
+      ['Não atende requisitos técnicos',412,1,1],['Valor abaixo do desejado',388,1,0],
+      ['Prazo inadequado para elaboração proposta',201,0,1],['Falta de capacidade técnica/operacional',164,0,1],
+      ['Conflito de interesse',12,0,1],['Documentação técnica restritiva/direcionado',97,0,1],
+      ['Fora da área que quer atuar',540,1,0],['Minha empresa não atende esse produto / serviço',1033,1,0],
+      ['Órgão indesejado',287,1,0],['Valor indesejado',142,1,0],['Região indesejada',356,1,0],
+      ['Prazo muito próximo',219,1,1],['Duplicado',88,1,1],['Revenda',34,1,0]
+    ].map((m,i)=>({id:'d'+i, nome:m[0], uso:m[1], rec:!!m[2], and:!!m[3], tipo:'descarte', arq:false, desc:i===4}))
+     .concat([
+      ['Preço acima do vencedor',11],['Inabilitação documental',5],['Desclassificação da proposta técnica',3],
+      ['Recurso não provido',2],['Não participou da disputa',4],['Licitação revogada ou fracassada',2]
+     ].map((m,i)=>({id:'p'+i, nome:m[0], uso:m[1], rec:false, and:true, tipo:'perda', arq:false, desc:i===1||i===2}))),
+    maxItens: 5,
+    abaTela: 'recomendadas',
+    abaPrev: {},
+    abas: {
+      recomendadas: [
+        {id:'a0', nome:'Todas', fixa:true, f:[]},
+        {id:'a1', nome:'Ativas', f:[{k:'situacao', v:['Ativas']}]},
+        {id:'a2', nome:'Chegou hoje', f:[{k:'adicao', v:'Últimas 24h'}]},
+        {id:'a3', nome:'Vencendo em breve', f:[{k:'envio', v:'Próximos 7 dias'}]}
+      ],
+      explorar: [
+        {id:'b0', nome:'Todas', fixa:true, f:[]},
+        {id:'b1', nome:'Órgãos favoritos', f:[{k:'orgao', v:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP']}]}
+      ],
+      descartadas: [
+        {id:'c0', nome:'Todas', fixa:true, f:[]},
+        {id:'c1', nome:'Hoje', f:[{k:'descarte', v:'Últimas 24h'}]},
+        {id:'c2', nome:'Últimos 7 dias', f:[{k:'descarte', v:'Últimos 7 dias'}]},
+        {id:'c3', nome:'Últimos 30 dias', f:[{k:'descarte', v:'Últimos 30 dias'}]}
+      ]
+    },
+    campos: [
+      {id:'segmento', nome:'Segmento', g:'destaque', on:true},
+      {id:'orgao', nome:'Órgão', g:'destaque', on:true},
+      {id:'me', nome:'ME/EPP', g:'destaque', on:true},
+      {id:'objeto', nome:'Objeto', g:'destaque', on:true},
+      {id:'valor', nome:'Valor global', g:'destaque', on:true},
+      {id:'adicionada', nome:'Adicionada', g:'datas', on:true},
+      {id:'atualizada', nome:'Atualizada', g:'datas', on:true},
+      {id:'envio', nome:'Envio da proposta', g:'datas', on:true},
+      {id:'id', nome:'ID', g:'meta', on:true},
+      {id:'julgamento', nome:'Julgamento', g:'meta', on:true},
+      {id:'portal', nome:'Portal de Disputa', g:'meta', on:true},
+      {id:'estado', nome:'Estado', g:'meta', on:true},
+      {id:'capagE', nome:'CAPAG Estadual', g:'meta', on:true},
+      {id:'modalidade', nome:'Modalidade', g:'meta', on:true},
+      {id:'uasg', nome:'UASG', g:'meta', on:true},
+      {id:'cidade', nome:'Cidade', g:'meta', on:true},
+      {id:'capagM', nome:'CAPAG Municipal', g:'meta', on:true},
+      {id:'habitantes', nome:'Habitantes', g:'meta', on:true},
+      {id:'substatus', nome:'Substatus', g:'meta', on:true},
+      {id:'descricao', nome:'Descrição', g:'meta', on:true},
+      {id:'itens', nome:'Itens com correspondência', g:'itens', on:true}
+    ],
+    emailVazio: 'texto',
+    emailAssunto: 'Licitação {edital} · {orgao}',
+    emailCorpo: 'Olá,\n\nSegue uma licitação que pode interessar:\n\nEdital {edital} · {modalidade}\nÓrgão: {orgao}\nObjeto: {objeto}\nValor global: {valor}\nEnvio da proposta: {envio}\nPortal de disputa: {portal}\n\nScore Settle: {score}\nResponsável: {responsavel}\n\nVer na Settle: {link}',
+    emailPersonalizado: false,
+    lic: 0,
+    audit: [
+      ['17/09/2026 16:42','Alice Iglesias','Campos do card','Ocultou "UASG"'],
+      ['15/09/2026 09:10','Larissa Almeida','Motivos','Adicionou o motivo de descarte "Revenda"'],
+      ['12/09/2026 11:27','Bruno Ortiz','Etapas do funil','Renomeou "Recurso" para "Fase de Recursos"']
+    ]
+  };
+  const PADRAO = {campos: JSON.parse(JSON.stringify(S.campos)), assunto:S.emailAssunto, corpo:S.emailCorpo};
+
+  /* Catálogo de variáveis: as da Settle (somente leitura) e as criadas pela organização em Agentes. */
+  const VARS = [
+    {k:'edital', n:'Número do edital', o:'settle'}, {k:'orgao', n:'Órgão', o:'settle'},
+    {k:'objeto', n:'Objeto', o:'settle'}, {k:'valor', n:'Valor global', o:'settle'},
+    {k:'envio', n:'Envio da proposta', o:'settle'}, {k:'modalidade', n:'Modalidade', o:'settle'},
+    {k:'portal', n:'Portal de disputa', o:'settle'}, {k:'cidade', n:'Cidade/UF', o:'settle'},
+    {k:'score', n:'Score', o:'settle'}, {k:'responsavel', n:'Responsável', o:'settle'},
+    {k:'link', n:'Link da licitação', o:'settle'},
+    {k:'impugnacao', n:'Prazo de impugnação', o:'settle', tipo:'data'},
+    {k:'local_entrega', n:'Local de entrega', o:'settle', tipo:'texto'},
+    {k:'prazo_entrega', n:'Prazo de entrega', o:'minha', tipo:'número'},
+    {k:'amostra', n:'Exige amostra', o:'minha', tipo:'sim ou não'},
+    {k:'garantia', n:'Garantia contratual', o:'minha', tipo:'número'},
+    {k:'visita', n:'Visita técnica obrigatória', o:'minha', tipo:'sim ou não'}
+  ];
+  const vnome = k => (VARS.find(v=>v.k===k)||{n:k}).n;
+
+  const LICS = [
+    {edital:'00153/2026', orgao:'PREFEITURA MUNICIPAL DE LIMEIRA', objeto:'Contratação de empresa especializada para o desenvolvimento e fornecimento de aplicativo mobile nativo (iOS e Android), modelo SaaS, integrado ao sistema de gestão do Serviço 156.', valor:'R$ 60.000,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'bnc.org.br', cidade:'Limeira · SP', score:'55/100', responsavel:'Mateus Brum', link:'app.settlegov.com/l/1908309', prazo_entrega:'30 dias', amostra:'Não', garantia:'5%', visita:'Não', impugnacao:'30/09/2026', local_entrega:'Secretaria de Tecnologia, Limeira/SP',
+     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908309', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'-', capagM:'C', habitantes:'291.869', itens:[['CONTRATACAO DE EMPRESA ESPECIALIZADA PARA DESENVOLVIMENTO DE APLICATIVO MOBILE NATIVO','Software','R$ 60.000,00']]},
+    {edital:'22/2026', orgao:'SECRETARIA MUNICIPAL DA FAZENDA', objeto:'Registro de preço para licença de software de gestão e controle da arrecadação municipal da Prefeitura de Santo Antônio dos Lopes – MA.', valor:'R$ 0,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'Portal de Compras Públicas', cidade:'Santo Antônio dos Lopes · MA', score:'52/100', responsavel:'', link:'app.settlegov.com/l/1907748', prazo_entrega:'', amostra:'', garantia:'', visita:'Sim', impugnacao:'30/09/2026', local_entrega:'',
+     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1907748', julgamento:'Maior desconto', estado:'MA', capagE:'A', uasg:'-', capagM:'C', habitantes:'14.304', itens:[['Implantação do software, configuração, migração de dados e parametrização','Software','-'],['Suporte técnico e manutenção do sistema integrado de gestão tributária','Software','-'],['Cessão de licença de uso do sistema integrado de Gestão Tributária Municipal (21 módulos)','Software','-'],['Treinamento dos usuários internos (banco de horas)','Software','-']]},
+    {edital:'37/2026', orgao:'ESP-FED-PENIT. ESTADO DE SÃO PAULO', objeto:'Aquisição de material permanente: equipamentos de TI (PEAIPEN, Convênio nº 936.735/2022).', valor:'R$ 67.949,95', envio:'02/10/2026', modalidade:'Pregão - Eletrônico', portal:'compras.gov.br', cidade:'São Paulo · SP', score:'65/100', responsavel:'Larissa Almeida', link:'app.settlegov.com/l/1908424', prazo_entrega:'45 dias', amostra:'Sim', garantia:'', visita:'Não', impugnacao:'26/09/2026', local_entrega:'Almoxarifado central, São Paulo/SP',
+     seg:'Produtos', me:true, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908424', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'990189', capagM:'B', habitantes:'11.451.999', itens:[['Notebook corporativo 14", 16 GB RAM, SSD 512 GB','Produtos','R$ 22.649,97'],['Monitor LED 24", Full HD, ajuste de altura','Produtos','R$ 8.940,00'],['Desktop corporativo, Core i5, 16 GB RAM','Produtos','R$ 18.300,00'],['Nobreak 1.500 VA bivolt','Produtos','R$ 4.380,00'],['Switch gerenciável 24 portas PoE','Produtos','R$ 6.790,00'],['Impressora multifuncional laser monocromática','Produtos','R$ 3.980,00'],['Webcam Full HD com microfone','Produtos','R$ 1.259,98'],['Kit teclado e mouse sem fio','Produtos','R$ 950,00'],['Headset USB com cancelamento de ruído','Produtos','R$ 700,00']]}
+  ];
+
+  /* Filtros que uma aba pode guardar: os mesmos do painel Filtrar da plataforma
+     (mesma ordem e mesmos rótulos), mais as variáveis da organização. */
+  const PASSADO = ['Últimas 24h','Últimos 7 dias','Últimos 30 dias'];
+  const FUTURO = ['Próximos 7 dias','Próximos 15 dias','Próximos 30 dias'];
+  const TODAS_TELAS = ['recomendadas','explorar','descartadas'];
+  const FILTROS = [
+    {k:'situacao', n:'Situação', t:'list', ops:['Ativas','Suspensas','Encerradas']},
+    {k:'segmento', n:'Segmento', t:'list', ops:['Software','Produtos','Serviços','Obras']},
+    {k:'valor', n:'Valor global', t:'range', pre:'R$'},
+    {k:'score', n:'Score', t:'range'},
+    {k:'estado', n:'Estado', t:'list', ops:['SP','RJ','MG','PR','RS','SC','BA','MA','GO','DF']},
+    {k:'cidade', n:'Cidade', t:'list', ops:['São Paulo','Limeira','Campinas','Belo Horizonte','Curitiba','Porto Alegre','Santo Antônio dos Lopes']},
+    {k:'orgao', n:'Órgão ou Unidade', t:'list', ops:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP','Tribunal de Justiça de MG','Universidade Federal de Pelotas','Secretaria Municipal da Fazenda']},
+    {k:'responsavel', n:'Responsável', t:'list', ops:['Eu (quem está vendo)','Sem responsável','Mateus Brum','Larissa Almeida','Alice Iglesias']},
+    {k:'adicao', n:'Data de adição', t:'date', ops:PASSADO},
+    {k:'atualizacao', n:'Data de atualização', t:'date', ops:PASSADO},
+    {k:'envio', n:'Prazo de envio', t:'date', ops:FUTURO, telas:['recomendadas','explorar']},
+    {k:'descartadaPor', n:'Descartada por', t:'list', ops:['Larissa Almeida','Mateus Brum','Alice Iglesias','Bruno Ortiz'], telas:['descartadas']},
+    {k:'descarte', n:'Data do descarte', t:'date', ops:PASSADO, telas:['descartadas']},
+    {k:'motivo', n:'Motivo do descarte', t:'list', ops:['Não atende requisitos técnicos','Valor abaixo do desejado','Fora da área que quer atuar','Minha empresa não atende esse produto / serviço','Órgão indesejado','Região indesejada','Outros'], telas:['descartadas']},
+    {k:'etapa', n:'Etapa na qual ocorreu o descarte', t:'list', ops:['Recomendadas','Em andamento'], telas:['descartadas']},
+    {k:'tipo', n:'Tipo', t:'list', ops:['Produto','Serviço','Obra']},
+    {k:'capagE', n:'CAPAG Estadual', t:'list', ops:['A+','A','B','C','D']},
+    {k:'capagM', n:'CAPAG Municipal', t:'list', ops:['A+','A','B','C','D']},
+    {k:'julgamento', n:'Forma de julgamento', t:'list', ops:['Menor preço','Menor preço global','Maior desconto','Técnica e preço']},
+    {k:'populacao', n:'População', t:'range'},
+    {k:'amostra', n:'Exige amostra', t:'list', ops:['Sim','Não','Não encontrado'], variavel:true},
+    {k:'visita', n:'Visita técnica obrigatória', t:'list', ops:['Sim','Não','Não encontrado'], variavel:true}
+  ];
+  const TELAS = {recomendadas:{n:'Recomendadas'}, explorar:{n:'Explorar licitações'}, descartadas:{n:'Descartadas'}};
+  const fdef = k => FILTROS.find(f=>f.k===k);
+
+  /* ======================= UTIL ======================= */
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt = n => n.toLocaleString('pt-BR');
+  const isAdmin = () => S.papel === 'admin';
+  const agora = () => { const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+  function auditar(area, txt){ S.audit.unshift([agora(),'Brunno Krier',area,txt]); }
+  const toast = (m,o) => window.settleToast && window.settleToast(m,o);
+
+  const I = {
+    grip:'<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="6" cy="4" r="1.2"/><circle cx="10" cy="4" r="1.2"/><circle cx="6" cy="8" r="1.2"/><circle cx="10" cy="8" r="1.2"/><circle cx="6" cy="12" r="1.2"/><circle cx="10" cy="12" r="1.2"/></svg>',
+    lock:'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.3"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>',
+    trash:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>',
+    arq:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3" width="11" height="3" rx=".8"/><path d="M3.5 6v6.5h9V6M6.5 8.5h3" stroke-linecap="round"/></svg>',
+    plus:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
+    info:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" style="flex:none;margin-top:1px"><circle cx="8" cy="8" r="6"/><path d="M8 7.2v3.6M8 5.2v.1" stroke-linecap="round"/></svg>',
+    chev:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>'
+  };
+
+  /* Confirmação genérica. corpo = HTML; ok(recebe o elemento do diálogo). */
+  function confirmar({titulo, corpo, acao, perigo, ok}){
+    const c = $('#cfm'), o = $('#cfmOvl');
+    c.innerHTML = `<h2 id="cfmT">${titulo}</h2>${corpo}
+      <div class="cfm-acts"><button class="btn btn-outline" type="button" data-x>Cancelar</button>
+      <button class="btn ${perigo?'btn-danger':'btn-primary'}" type="button" data-ok>${acao}</button></div>`;
+    c.hidden = o.hidden = false;
+    const fechar = () => { c.hidden = o.hidden = true; };
+    c.querySelector('[data-x]').onclick = fechar; o.onclick = fechar;
+    c.querySelector('[data-ok]').onclick = () => { ok(c); fechar(); };
+    c.querySelector('[data-ok]').focus();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#cfm').hidden = $('#cfmOvl').hidden = true; fecharMenu(); if (drawerFechar) drawerFechar(); } });
+
+  /* Arrastar para reordenar dentro de um grupo. */
+  function arrastavel(root, onMove){
+    let de = null;
+    root.querySelectorAll('[draggable="true"]').forEach(el => {
+      el.addEventListener('dragstart', e => { de = el; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+      el.addEventListener('dragend', () => { el.classList.remove('dragging'); root.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); });
+      el.addEventListener('dragover', e => { if (de && de !== el && de.dataset.g === el.dataset.g) { e.preventDefault(); el.classList.add('over'); } });
+      el.addEventListener('dragleave', () => el.classList.remove('over'));
+      el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('over'); if (de && de !== el) onMove(de.dataset.id, el.dataset.id); });
+    });
+  }
+  function mover(lista, deId, paraId){
+    const a = lista.findIndex(x=>x.id===deId), b = lista.findIndex(x=>x.id===paraId);
+    const [x] = lista.splice(a,1); lista.splice(b,0,x);
+  }
+
+  /* ======================= ROTAS ======================= */
+  const ROTAS = {inicio, etapas, abas, motivos, card, email, equipe, permissoes, auditoria};
+  const ADMIN_ONLY = ['etapas','abas','motivos','card','email','equipe','permissoes','auditoria'];
+
+  const NOMES = {inicio:'Configurações', etapas:'Etapas do funil', abas:'Abas das listas', motivos:'Motivos de descarte e perda',
+    card:'Campos do card', email:'Modelo de e-mail', equipe:'Equipe', permissoes:'Permissões', auditoria:'Auditoria'};
+  function render(){
+    const r = (location.hash.slice(1).split('?')[0]) || 'inicio';
+    const rota = ROTAS[r] ? r : 'inicio';
+    document.querySelectorAll('#cfgNav .sb-item').forEach(a => {
+      const on = a.dataset.r === rota; a.classList.toggle('active', on);
+      on ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current');
+    });
+    document.querySelector('[data-admin]').hidden = !isAdmin();
+    const nome = NOMES[rota]; $('#navTitulo').textContent = nome;
+    document.title = rota === 'inicio' ? 'Settle — Configurações' : `Settle — ${nome} · Configurações`;
+    fecharMenu();
+    const m = $('#main');
+    if (!isAdmin() && ADMIN_ONLY.includes(rota)) { m.innerHTML = semPermissao(); }
+    else { m.innerHTML = ''; ROTAS[rota](m); }
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', render);
+  $('#papel').addEventListener('change', e => { S.papel = e.target.value; render(); });
+
+  function semPermissao(){
+    return `<div class="sem-perm"><div class="empty-state">
+      <strong>Só administradores alteram esta configuração</strong>
+      Você entrou como ${PAPEIS[S.papel]}. Ela vale para toda a organização, por isso fica com quem administra a conta.
+      Peça a um administrador: ${ADMINS.slice(0,4).join(', ')} ou ${ADMINS[4]}.
+      <div style="margin-top:14px"><a class="btn btn-outline" href="#inicio">Ir para a visão geral</a></div>
+    </div></div>`;
+  }
+
+  /* ======================= VISÃO GERAL ======================= */
+  function inicio(m){
+    if (!isAdmin()) {
+      m.innerHTML = `<div class="cfg-page">
+        <p class="cfg-sub">Você entrou como ${PAPEIS[S.papel]}.</p>
+        <div class="empty-state"><strong>As configurações da organização ficam com os administradores</strong>
+        Etapas do funil, abas das listas, motivos, campos do card e modelo de e-mail valem para todo mundo da conta.
+        Se algo precisar mudar, fale com ${ADMINS.slice(0,3).join(', ')} ou outro administrador.</div></div>`;
+      return;
+    }
+    const vis = S.campos.filter(c=>c.on).length;
+    const ativos = t => S.motivos.filter(x=>x.tipo===t && !x.arq).length + (t==='descarte'?1:0);
+    const linha = (href, t, d, v) => `<a class="cfg-row" href="${href}"><span class="cfg-txt"><span class="cfg-t">${t}</span><span class="cfg-d">${d}</span></span><span class="cfg-v">${v}</span>${I.chev}</a>`;
+    m.innerHTML = `<div class="cfg-page">
+      <p class="cfg-sub">O que a organização personaliza na Settle, num lugar só. Vale para todas as pessoas da conta e só administradores alteram.</p>
+
+      <section class="cfg-sec"><h2>Licitações</h2>
+        <div class="cfg-box">
+          ${linha('#etapas','Etapas do funil','Colunas do quadro em Em andamento', S.etapas.length+' etapas')}
+          ${linha('#abas','Abas das listas','Abas de Recomendadas, Explorar licitações e Descartadas, cada uma com seus filtros', Object.values(S.abas).reduce((n,l)=>n+l.length,0)+' abas em 3 telas')}
+          ${linha('#motivos','Motivos de descarte e perda','O que a pessoa escolhe ao descartar ou registrar uma perda', ativos('descarte')+' de descarte · '+ativos('perda')+' de perda')}
+          ${linha('#card','Campos do card','Quais informações aparecem no card de Recomendadas e em que ordem', vis+' de '+S.campos.length+' visíveis')}
+          ${linha('#email','Modelo de e-mail','Texto de Compartilhar licitação, com variáveis', S.emailPersonalizado?'Personalizado':'Padrão da Settle')}
+        </div></section>
+
+      <section class="cfg-sec"><h2>Organização</h2>
+        <div class="cfg-box">
+          ${linha('#equipe','Equipe','Pessoas, convites e função de cada uma','9 pessoas')}
+          ${linha('#permissoes','Permissões','O que cada função pode ver e alterar','4 funções')}
+          ${linha('#auditoria','Auditoria','Quem mudou o quê e quando', S.audit.length+' registros')}
+        </div></section>
+
+      <section class="cfg-sec"><h2>Atalhos no contexto</h2>
+        <p class="cfg-sub">Cada configuração também abre de onde ela é usada. Os atalhos só aparecem para administradores e levam para a mesma página daqui.</p>
+        <div class="cfg-box">
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Em andamento › menu <kbd>⋯</kbd> da coluna › <b>Editar etapas</b></span><a class="cfg-link" href="#etapas">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Recomendadas, Explorar e Descartadas › <kbd>⋯</kbd> ao lado das abas › <b>Editar abas</b> (substitui o + e o menu de cada aba)</span><a class="cfg-link" href="#abas">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Descartar › lista de motivos › <b>Gerenciar motivos</b></span><a class="cfg-link" href="#motivos">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Card de Recomendadas › Ordenar › <b>Personalizar campos do card</b></span><a class="cfg-link" href="#card">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Compartilhar licitação › <b>Editar modelo de e-mail</b></span><a class="cfg-link" href="#email">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Menu do usuário › <b>Configurações</b> (substitui Gerenciar equipe e Auditoria)</span><a class="cfg-link" href="#inicio">Aqui</a></div>
+        </div></section>
+
+      <section class="cfg-sec"><h2>Levantados para as próximas fases</h2>
+        <p class="cfg-sub">Outros pontos que já variam por cliente e cabem nesta área. Fora do escopo desta task.</p>
+        <div class="cfg-box">
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Substatus</span><span class="cfg-d">Hoje o card tem "Selecionar Substatus" (ex.: Encaminhar e-mail, Esperando aprovação). A lista é do cliente.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Campos do card em Em andamento e colunas da Tabela</span><span class="cfg-d">Mesmo mecanismo de Campos do card, outra tela. Decidir se herdam de Recomendadas.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Segmentos</span><span class="cfg-d">Software, Produtos: rótulo que aparece no card e filtra as recomendadas.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Perfil de recomendação</span><span class="cfg-d">Regiões, faixa de valor, órgãos favoritos e palavras que definem o que chega em Recomendadas.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Automações por etapa</span><span class="cfg-d">Criar um conjunto de tarefas quando a licitação entra numa etapa e medir quanto tempo ela fica em cada uma. Pedido da Alice em 18/09, para depois.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Abas e filtros por pessoa</span><span class="cfg-d">Cada pessoa salvar as próprias abas por cima das da organização. Depende de guardar preferência por usuário, que a plataforma ainda não tem.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Notificações</span><span class="cfg-d">O que avisa quem, pela central de notificações e por e-mail.</span></span></div>
+        </div></section>
+    </div>`;
+  }
+
+  /* ======================= ETAPAS ======================= */
+  function etapas(m){
+    const item = e => {
+      const fixa = e.tipo !== 'meio';
+      return `<div class="cfg-item" data-id="${e.id}" data-g="${e.tipo}" ${fixa?'':'draggable="true"'}>
+        <span class="cfg-grip ${fixa?'fixo':''}" ${fixa?'data-tip="Posição fixa"':''}>${fixa?I.lock:I.grip}</span>
+        <span class="cfg-dot" style="background:${e.cor}" aria-hidden="true"></span>
+        <input class="cfg-nm" value="${esc(e.nome)}" aria-label="Nome da etapa" data-ren="${e.id}" />
+        <span class="cfg-uso">${e.qtd ? fmt(e.qtd)+(e.qtd===1?' licitação':' licitações') : 'vazia'}</span>
+        ${fixa ? `<span class="cfg-lock">${I.lock} ${e.tipo==='entrada'?'Agentes começam aqui':'Resultado registrado aqui'}</span>`
+               : `<span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${e.id}" aria-label="Remover etapa ${esc(e.nome)}">${I.trash}</button></span>`}
+      </div>`;
+    };
+    const g = t => S.etapas.filter(e=>e.tipo===t).map(item).join('');
+    m.innerHTML = `<div class="cfg-page">
+      <p class="cfg-sub">As colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as pessoas da organização assim que você salva o nome ou solta a etapa no lugar.</p>
+      <div class="cfg-aviso">${I.info}<span>A <b>primeira</b> e a <b>última</b> etapas têm posição fixa: os agentes começam a trabalhar quando a licitação entra na primeira e registram o resultado na última. Dá para renomear, mas não mover nem remover.</span></div>
+      <div class="cfg-box" id="etBox">
+        <div class="cfg-gh">Entrada <span class="cfg-gh-d">· onde a licitação chega depois de Enviar para análise</span></div>
+        ${g('entrada')}
+        <div class="cfg-gh">Etapas intermediárias <span class="cfg-gh-d">· arraste para reordenar</span></div>
+        ${g('meio')}
+        <button class="cfg-add" type="button" id="etAdd">${I.plus} Adicionar etapa</button>
+        <div class="cfg-gh">Saída</div>
+        ${g('saida')}
+      </div>
+
+      <section class="cfg-sec" style="margin-top:28px"><h2>O que acontece com o que já existe</h2>
+        <div class="cfg-box">
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Renomear</span><span class="cfg-d">As licitações continuam na etapa e o dashboard mantém o histórico: a etapa é acompanhada pelo identificador, não pelo nome.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Reordenar</span><span class="cfg-d">O funil do dashboard passa a seguir a nova ordem. Nenhum número muda.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Remover</span><span class="cfg-d">Se houver licitações na etapa, você escolhe para qual etapa elas vão antes de confirmar. No dashboard, o período em que a etapa existiu continua com o nome dela.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Adicionar</span><span class="cfg-d">A etapa nasce vazia e sem histórico. Aparece no quadro na posição em que você a deixar.</span></span></div>
+        </div></section>
+    </div>`;
+
+    arrastavel($('#etBox'), (a,b) => { mover(S.etapas,a,b); auditar('Etapas do funil','Reordenou as etapas'); etapas(m); toast('Ordem das etapas salva'); });
+    m.querySelectorAll('[data-ren]').forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+      inp.addEventListener('change', () => {
+        const e = S.etapas.find(x=>x.id===inp.dataset.ren); const v = inp.value.trim();
+        if (!v) { inp.value = e.nome; return; }
+        if (S.etapas.some(x=>x!==e && x.nome.toLowerCase()===v.toLowerCase())) { inp.value = e.nome; toast('Já existe uma etapa com esse nome'); return; }
+        auditar('Etapas do funil', `Renomeou "${e.nome}" para "${v}"`); e.nome = v; toast('Nome da etapa salvo');
+      });
+    });
+    m.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => removerEtapa(b.dataset.del, m)));
+    $('#etAdd').addEventListener('click', () => {
+      const cores = ['#0ea5e9','#84cc16','#f97316','#6366f1','#14b8a6'];
+      const n = {id:'e'+Date.now(), nome:'Nova etapa', cor:cores[S.etapas.length%cores.length], qtd:0, tipo:'meio'};
+      const iSaida = S.etapas.findIndex(e=>e.tipo==='saida'); S.etapas.splice(iSaida,0,n);
+      auditar('Etapas do funil','Adicionou a etapa "Nova etapa"'); etapas(m);
+      const inp = m.querySelector(`[data-ren="${n.id}"]`); inp.focus(); inp.select();
+    });
+  }
+
+  function removerEtapa(id, m){
+    const e = S.etapas.find(x=>x.id===id), i = S.etapas.indexOf(e);
+    const aplicar = destinoId => {
+      const snap = JSON.parse(JSON.stringify(S.etapas));
+      const d = S.etapas.find(x=>x.id===destinoId);
+      if (d) d.qtd += e.qtd;
+      S.etapas = S.etapas.filter(x=>x.id!==id);
+      auditar('Etapas do funil', `Removeu "${e.nome}"` + (d && e.qtd ? `, ${e.qtd} licitações movidas para "${d.nome}"` : ''));
+      etapas(m);
+      toast(d && e.qtd ? `Etapa removida. ${fmt(e.qtd)} licitações foram para ${d.nome}` : 'Etapa removida',
+        {undoLabel:'Desfazer', onUndo:()=>{ S.etapas = snap; S.audit.shift(); etapas(m); }});
+    };
+    if (!e.qtd) { aplicar(null); return; }
+    const ops = S.etapas.filter(x=>x.id!==id).map(x =>
+      `<option value="${x.id}" ${x===S.etapas[i-1]?'selected':''}>${esc(x.nome)}${x.tipo==='entrada'?' (primeira)':x.tipo==='saida'?' (última)':''}</option>`).join('');
+    confirmar({
+      titulo:`Remover "${esc(e.nome)}"?`,
+      corpo:`<p>${fmt(e.qtd)} ${e.qtd===1?'licitação está':'licitações estão'} nesta etapa. Escolha para onde ${e.qtd===1?'ela vai':'elas vão'}. Responsável, substatus e descrição continuam iguais.</p>
+        <label class="cfg-lbl" for="etDest" style="margin-top:12px">Mover licitações para</label>
+        <select class="cfg-input" id="etDest">${ops}</select>
+        <p style="margin-top:10px;font-size:12.5px">Mudança de etapa por remoção não dispara agentes: voltar para a primeira não roda a análise de novo, e ir para a última não registra resultado (a licitação fica pendente de registro).</p>`,
+      acao:'Remover e mover', perigo:true,
+      ok: c => aplicar(c.querySelector('#etDest').value)
+    });
+  }
+
+  /* ======================= ABAS DAS LISTAS ======================= */
+  const MAX_ABAS = 10;
+  const CHECK = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>';
+  const temValor = x => { const d = fdef(x.k);
+    if (d.t==='list') return x.v && x.v.length; if (d.t==='date') return !!x.v; return x.v && (x.v.min!=='' || x.v.max!==''); };
+  const numero = n => Number(n).toLocaleString('pt-BR');
+  function resumoFiltro(x){
+    const d = fdef(x.k);
+    if (d.t==='list') return x.v.length===1 ? x.v[0] : `${x.v.length} selecionados`;
+    if (d.t==='date') return x.v;
+    const p = d.pre ? d.pre+' ' : '', {min,max} = x.v;
+    if (min!=='' && max!=='') return `${p}${numero(min)} a ${p}${numero(max)}`;
+    return min!=='' ? `a partir de ${p}${numero(min)}` : `até ${p}${numero(max)}`;
+  }
+  const badges = (a, removivel) => a.f.map(x => `<span class="fbadge" data-abadge="${a.id}"><span class="k">${esc(fdef(x.k).n)}:</span> <span class="v">${esc(resumoFiltro(x))}</span>${removivel?`<button class="x" type="button" data-bx="${a.id}:${x.k}" aria-label="Tirar o filtro ${esc(fdef(x.k).n)}">×</button>`:''}</span>`).join('');
+
+  function abas(m){
+    const tela = S.abaTela, L = S.abas[tela];
+    if (!L.find(a=>a.id===S.abaPrev[tela])) S.abaPrev[tela] = L[0].id;
+    const item = a => `<div class="cfg-item ${a.fixa?'fixo':''}" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
+        <span class="cfg-grip ${a.fixa?'fixo':''}">${a.fixa?I.lock:I.grip}</span>
+        ${a.fixa ? `<span class="cfg-nm" style="flex:none;width:180px">${esc(a.nome)}</span>`
+                 : `<input class="cfg-nm" style="flex:none;width:180px" value="${esc(a.nome)}" aria-label="Nome da aba" data-aren="${a.id}" />`}
+        <span class="cfg-badges">${a.fixa ? `<span class="cfg-fixo-d">Mostra todas as licitações, sem filtro. Sempre a primeira aba.</span>`
+          : (!a.f.length ? `<span class="cfg-sem">Sem filtro: mostra o mesmo que Todas</span>` : badges(a, true))}</span>
+        ${a.fixa ? `<span class="cfg-lock" tabindex="0" data-tip="Aba padrão da plataforma: mostra todas as licitações. Não pode ser renomeada, filtrada, movida nem excluída.">${I.lock} Não editável</span>` : `<span class="cfg-acts">
+          <button class="btn btn-outline" type="button" data-afilt="${a.id}" style="padding:4px 10px;font-size:13px">${I.plus} Adicionar filtro</button>
+          <button class="cfg-ib" type="button" data-adup="${a.id}" aria-label="Duplicar ${esc(a.nome)}" data-tip="Duplicar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M11 5V3.5A1 1 0 0 0 10 2.5H3.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></svg></button>
+          <button class="cfg-ib perigo" type="button" data-adel="${a.id}" aria-label="Excluir ${esc(a.nome)}" data-tip="Excluir">${I.trash}</button></span>`}
+      </div>`;
+    const prev = L.find(a=>a.id===S.abaPrev[tela]);
+    m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
+      <p class="cfg-sub">As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela organização: o administrador cria, define os filtros e ela aparece igual para todas as pessoas.</p>
+      <div class="tabs" role="tablist" aria-label="Tela">
+        ${Object.keys(TELAS).map(k=>`<button class="tab ${k===tela?'active':''}" type="button" role="tab" aria-selected="${k===tela}" data-tela="${k}">${TELAS[k].n} <span class="cnt">${S.abas[k].length}</span></button>`).join('')}
+      </div>
+      <div class="cfg-aviso">${I.info}<span>Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não altera a aba e some ao sair da tela.</span></div>
+      <div class="cfg-box" id="aBox">
+        ${L.map(item).join('')}
+        ${L.length < MAX_ABAS ? `<button class="cfg-add" type="button" id="aAdd">${I.plus} Nova aba</button>`
+          : `<div class="cfg-add" style="cursor:default">Limite de ${MAX_ABAS} abas por tela. Exclua uma para criar outra.</div>`}
+      </div>
+      <section class="cfg-sec" style="margin-top:24px">
+        <div class="cfg-prev-h">Como as pessoas veem em ${TELAS[tela].n}</div>
+        <div class="cfg-box" style="padding:14px 16px">
+          <div class="tabs" role="tablist" aria-label="Pré-visualização das abas" style="margin:0">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)}</button>`).join('')}</div>
+          <div class="filter-badges" style="margin:12px 0 0">${prev.fixa ? '' : badges(prev, false)}</div>
+        </div>
+      </section>
+    </div>`;
+
+    const re = () => abas(m);
+    const acha = id => L.find(a=>a.id===id);
+    const nomeLivre = (nome, fora) => !L.some(a=>a!==fora && a.nome.toLowerCase()===nome.toLowerCase());
+    m.querySelectorAll('[data-tela]').forEach(b => b.onclick = () => { S.abaTela = b.dataset.tela; re(); });
+    m.querySelectorAll('[data-aprev]').forEach(b => b.onclick = () => { S.abaPrev[tela] = b.dataset.aprev; re(); });
+    m.querySelectorAll('[data-afilt]').forEach(b => b.onclick = () => abrirFiltros(acha(b.dataset.afilt), re));
+    m.querySelectorAll('#aBox [data-abadge]').forEach(b => b.onclick = e => { if (!e.target.closest('.x')) abrirFiltros(acha(b.dataset.abadge), re); });
+    m.querySelectorAll('[data-bx]').forEach(b => b.onclick = () => {
+      const [id,k] = b.dataset.bx.split(':'), a = acha(id); a.f = a.f.filter(x=>x.k!==k);
+      auditar('Abas das listas', `${TELAS[tela].n}: tirou o filtro ${fdef(k).n} de "${a.nome}"`); re();
+    });
+    m.querySelectorAll('[data-aren]').forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+      inp.addEventListener('change', () => {
+        const a = acha(inp.dataset.aren), v = inp.value.trim();
+        if (!v) { inp.value = a.nome; return; }
+        if (!nomeLivre(v, a)) { inp.value = a.nome; toast('Já existe uma aba com esse nome nesta tela'); return; }
+        auditar('Abas das listas', `${TELAS[tela].n}: renomeou "${a.nome}" para "${v}"`); a.nome = v; toast('Nome da aba salvo'); re();
+      });
+    });
+    m.querySelectorAll('[data-adup]').forEach(b => b.onclick = () => {
+      if (L.length >= MAX_ABAS) { toast(`Limite de ${MAX_ABAS} abas por tela`); return; }
+      const a = acha(b.dataset.adup); let nome = a.nome + ' (cópia)', n = 2;
+      while (!nomeLivre(nome)) nome = `${a.nome} (cópia ${n++})`;
+      const c = {id:'x'+Date.now(), nome, f:JSON.parse(JSON.stringify(a.f))};
+      L.splice(L.indexOf(a)+1, 0, c); S.abaPrev[tela] = c.id;
+      auditar('Abas das listas', `${TELAS[tela].n}: duplicou "${a.nome}"`); re();
+      const inp = m.querySelector(`[data-aren="${c.id}"]`); inp.focus(); inp.select();
+    });
+    m.querySelectorAll('[data-adel]').forEach(b => b.onclick = () => {
+      const a = acha(b.dataset.adel);
+      confirmar({titulo:`Excluir a aba "${esc(a.nome)}"?`,
+        corpo:`<p>Ela some de ${TELAS[tela].n} para todas as pessoas da organização. Nenhuma licitação muda: todas continuam em Todas e nas outras abas em que se encaixam.</p>`,
+        acao:'Excluir aba', perigo:true,
+        ok:()=>{ const i = L.indexOf(a); L.splice(i,1);
+          auditar('Abas das listas', `${TELAS[tela].n}: excluiu "${a.nome}"`); re();
+          toast('Aba excluída', {undoLabel:'Desfazer', onUndo:()=>{ L.splice(i,0,a); S.audit.shift(); re(); }}); }});
+    });
+    arrastavel($('#aBox'), (de,para) => { mover(L,de,para); auditar('Abas das listas', `${TELAS[tela].n}: reordenou as abas`); re(); toast('Ordem das abas salva'); });
+    const add = $('#aAdd');
+    if (add) add.onclick = () => {
+      let nome = 'Nova aba', n = 2; while (!nomeLivre(nome)) nome = `Nova aba ${n++}`;
+      const a = {id:'x'+Date.now(), nome, f:[]}; L.push(a); S.abaPrev[tela] = a.id;
+      auditar('Abas das listas', `${TELAS[tela].n}: criou "${nome}"`); re();
+      const inp = m.querySelector(`[data-aren="${a.id}"]`); inp.focus(); inp.select();
+    };
+  }
+
+  /* Painel lateral de filtros da aba: mesmo desenho do Filtrar da plataforma.
+     Edita um rascunho; só vale ao clicar em Salvar na aba. */
+  let drawerFechar = null;
+  function abrirFiltros(aba, depois){
+    const tela = S.abaTela;
+    const campos = FILTROS.filter(f => (f.telas || TODAS_TELAS).includes(tela));
+    const rasc = {};
+    aba.f.forEach(x => rasc[x.k] = JSON.parse(JSON.stringify(x.v)));
+    let aberto = null;
+    const d = $('#drawer'), o = $('#drawerOvl');
+
+    const trigger = f => {
+      const v = rasc[f.k]; let txt = 'Nenhuma opção selecionada', vazio = true;
+      if (f.t==='list' && v && v.length) { txt = v.length<=2 ? v.join(', ') : `${v.length} selecionadas`; vazio = false; }
+      if (f.t==='date' && v) { txt = v; vazio = false; }
+      if (f.t==='date' && !v) txt = 'Qualquer data';
+      return `<button class="cfg-trigger ${vazio?'vazio':''}" type="button" data-trig="${f.k}" aria-expanded="${aberto===f.k}" aria-label="${esc(f.n)}: ${esc(txt)}"><span>${esc(txt)}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="${aberto===f.k?'M4 9.5 8 5.5l4 4':'M4 6.5 8 10.5l4-4'}"/></svg></button>`;
+    };
+    const pop = f => {
+      if (aberto !== f.k) return '';
+      if (f.t==='date') return `<div class="fb-pop fb-pop-date">
+          <div class="fb-presets">${['Qualquer data'].concat(f.ops).map(o=>`<button type="button" class="${(rasc[f.k]||'Qualquer data')===o?'on':''}" data-dp="${f.k}" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+          <p class="vf-hint" style="margin:4px 4px 2px">Na aba, a data é sempre relativa ao dia de hoje, para continuar certa com o passar do tempo.</p></div>`;
+      const sel = rasc[f.k] || [];
+      return `<div class="fb-pop fb-pop-list">
+          <div class="fb-list-head"><span>Lista de opções</span><button class="fb-selall" type="button" data-all="${f.k}">${sel.length===f.ops.length?'Limpar seleção':'Selecionar todas'}</button></div>
+          <div class="fb-search"><input type="text" id="busca-${f.k}" aria-label="Buscar em ${esc(f.n)}" placeholder="Buscar" data-busca="${f.k}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg></div>
+          <div class="fb-options" role="listbox" aria-multiselectable="true" aria-label="${esc(f.n)}">${f.ops.map(o=>`<div class="fb-opt ${sel.includes(o)?'on':''}" role="option" tabindex="0" aria-selected="${sel.includes(o)}" data-lo="${f.k}" data-o="${esc(o)}"><span class="box">${CHECK}</span>${esc(o)}</div>`).join('')}</div>
+        </div>`;
+    };
+    const campo = f => {
+      if (f.t==='range') { const v = rasc[f.k] || {min:'', max:''};
+        return `<div class="cfg-ff"><span class="cfg-lbl">${esc(f.n)}</span><div class="cfg-ff-row">
+          <input class="cfg-input" type="number" min="0" id="min-${f.k}" aria-label="${esc(f.n)} mínimo" placeholder="Mínimo" value="${v.min}" data-rg="${f.k}:min">
+          <input class="cfg-input" type="number" min="0" id="max-${f.k}" aria-label="${esc(f.n)} máximo" placeholder="Máximo" value="${v.max}" data-rg="${f.k}:max"></div></div>`; }
+      return `<div class="cfg-ff"><span class="cfg-lbl">${esc(f.n)}</span>${trigger(f)}${pop(f)}</div>`;
+    };
+    const desenhar = () => {
+      const tela_ = campos.filter(f=>!f.variavel), vars = campos.filter(f=>f.variavel);
+      d.innerHTML = `<div class="cfg-drawer-h"><div style="flex:1"><h2 id="drawerT">Filtros da aba "${esc(aba.nome)}"</h2>
+          <p>Os mesmos filtros do botão Filtrar de ${TELAS[tela].n}. Ao salvar, a aba passa a mostrar só o que atende a eles, para todas as pessoas.</p></div>
+          <button class="cfg-ib" type="button" data-dx aria-label="Fechar sem salvar">×</button></div>
+        <div class="cfg-drawer-b">${tela_.map(campo).join('')}
+          ${vars.length ? `<div class="cfg-drawer-sec">Variáveis da organização</div>${vars.map(campo).join('')}` : ''}</div>
+        <div class="cfg-drawer-f"><button class="btn btn-primary" type="button" data-dsave>Salvar na aba</button>
+          <button class="btn btn-outline" type="button" data-dclear>Limpar filtros</button></div>`;
+      d.querySelectorAll('[data-trig]').forEach(b => b.onclick = () => { aberto = aberto===b.dataset.trig ? null : b.dataset.trig; desenhar(); const bu = d.querySelector('[data-busca]'); if (bu) bu.focus(); });
+      d.querySelectorAll('[data-dp]').forEach(b => b.onclick = () => { rasc[b.dataset.dp] = b.dataset.o==='Qualquer data' ? '' : b.dataset.o; aberto = null; desenhar(); });
+      d.querySelectorAll('[data-lo]').forEach(el => { const alternar = () => { const k = el.dataset.lo, o = el.dataset.o; const v = rasc[k] || [];
+          rasc[k] = v.includes(o) ? v.filter(x=>x!==o) : v.concat(o); desenhar(); };
+        el.onclick = alternar; el.onkeydown = e => { if (e.key===' '||e.key==='Enter') { e.preventDefault(); alternar(); } }; });
+      d.querySelectorAll('[data-all]').forEach(b => b.onclick = () => { const f = fdef(b.dataset.all); rasc[f.k] = (rasc[f.k]||[]).length===f.ops.length ? [] : f.ops.slice(); desenhar(); });
+      d.querySelectorAll('[data-busca]').forEach(inp => inp.oninput = () => { const q = inp.value.toLowerCase();
+        d.querySelectorAll(`[data-lo="${inp.dataset.busca}"]`).forEach(el => el.hidden = !el.dataset.o.toLowerCase().includes(q)); });
+      d.querySelectorAll('[data-rg]').forEach(inp => inp.oninput = () => { const [k,lado] = inp.dataset.rg.split(':'); rasc[k] = rasc[k] || {min:'', max:''}; rasc[k][lado] = inp.value; });
+      d.querySelector('[data-dx]').onclick = fechar;
+      d.querySelector('[data-dclear]').onclick = () => { Object.keys(rasc).forEach(k=>delete rasc[k]); aberto = null; desenhar(); };
+      d.querySelector('[data-dsave]').onclick = () => {
+        aba.f = FILTROS.filter(f => rasc[f.k] !== undefined).map(f => ({k:f.k, v:rasc[f.k]})).filter(temValor);
+        auditar('Abas das listas', `${TELAS[tela].n}: salvou os filtros de "${aba.nome}"`);
+        fechar(); depois(); toast(aba.f.length ? `Filtros salvos na aba ${aba.nome}` : `A aba ${aba.nome} ficou sem filtro`);
+      };
+    };
+    function fechar(){ d.hidden = o.hidden = true; drawerFechar = null; }
+    drawerFechar = fechar; o.onclick = fechar;
+    d.setAttribute('aria-labelledby','drawerT');
+    desenhar(); d.hidden = o.hidden = false; d.querySelector('[data-dx]').focus();
+  }
+
+  /* ======================= MOTIVOS ======================= */
+  function motivos(m){
+    const t = S.motivoTab;
+    const lista = S.motivos.filter(x=>x.tipo===t && !x.arq);
+    const arq = S.motivos.filter(x=>x.tipo===t && x.arq);
+    const cnt = k => S.motivos.filter(x=>x.tipo===k && !x.arq).length + (k==='descarte'?1:0);
+    const escopo = x => (t==='descarte' && !S.unificar) ? `<span class="cfg-escopo" role="group" aria-label="Onde aparece">
+        <button type="button" aria-pressed="${x.rec}" data-esc="rec" data-id="${x.id}">Recomendadas</button>
+        <button type="button" aria-pressed="${x.and}" data-esc="and" data-id="${x.id}">Em andamento</button></span>` : '';
+    const item = x => `<div class="cfg-item" data-id="${x.id}" data-g="m" draggable="true">
+        <span class="cfg-grip">${I.grip}</span>
+        <input class="cfg-nm" value="${esc(x.nome)}" aria-label="Nome do motivo" data-ren="${x.id}" />
+        ${escopo(x)}
+        <span class="cfg-escopo"><button type="button" aria-pressed="${!!x.desc}" data-desc="${x.id}" data-tip="Ao escolher este motivo, a pessoa precisa escrever o porquê">Pede descrição</button></span>
+        <span class="cfg-uso">${x.uso ? fmt(x.uso)+(t==='descarte'?' descartes':' perdas') : 'nunca usado'}</span>
+        <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${x.id}" aria-label="${x.uso?'Arquivar':'Excluir'} ${esc(x.nome)}" data-tip="${x.uso?'Arquivar':'Excluir'}">${x.uso?I.arq:I.trash}</button></span>
+      </div>`;
+    m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
+      <p class="cfg-sub">O que a pessoa escolhe ao descartar uma licitação ou registrar que perdeu. Os motivos alimentam o filtro de Descartadas e o dashboard, por isso um motivo já usado é arquivado, nunca apagado.</p>
+      <div class="tabs" role="tablist">
+        <button class="tab ${t==='descarte'?'active':''}" type="button" role="tab" aria-selected="${t==='descarte'}" data-tab="descarte">Descarte <span class="cnt">${cnt('descarte')}</span></button>
+        <button class="tab ${t==='perda'?'active':''}" type="button" role="tab" aria-selected="${t==='perda'}" data-tab="perda">Perda <span class="cnt">${cnt('perda')}</span></button>
+      </div>
+      ${t==='descarte' ? `
+      <section class="cfg-sec"><div class="cfg-box">
+        <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Exigir motivo ao descartar</span><span class="cfg-d">Sem motivo, o botão Descartar fica bloqueado até a pessoa escolher um.</span></span>
+          <label class="sw"><input type="checkbox" id="swExigir" ${S.exigirMotivo?'checked':''} aria-label="Exigir motivo ao descartar"><i></i></label></div>
+        <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Mesma lista em Recomendadas e Em andamento</span><span class="cfg-d">Desligue para escolher, motivo a motivo, em qual das duas telas ele aparece.</span></span>
+          <label class="sw"><input type="checkbox" id="swUnif" ${S.unificar?'checked':''} aria-label="Usar a mesma lista nas duas telas"><i></i></label></div>
+      </div></section>` : `<p class="cfg-sub">Aparece quando a licitação chega em ${esc(S.etapas.find(e=>e.tipo==='saida').nome)} e a pessoa registra que perdeu.</p>`}
+      <p class="cfg-sub" style="margin:0 0 10px">Marque <b>Pede descrição</b> nos motivos em que a pessoa precisa explicar o porquê, como já acontece em Outros.</p>
+      <div class="cfg-box" id="mBox">
+        ${lista.map(item).join('')}
+        ${t==='descarte' ? `<div class="cfg-item fixo"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Outros</span><span class="cfg-fixo-d">Sempre disponível e sempre pede descrição.</span><span class="cfg-lock" tabindex="0" data-tip="Motivo padrão da plataforma. Não pode ser renomeado, arquivado nem excluído.">${I.lock} Não editável</span></div>` : ''}
+        <button class="cfg-add" type="button" id="mAdd">${I.plus} Adicionar motivo</button>
+      </div>
+      ${arq.length ? `<section class="cfg-sec" style="margin-top:24px"><h2>Arquivados</h2>
+        <p class="cfg-sub">Não aparecem para novos ${t==='descarte'?'descartes':'registros'}. Continuam nas licitações que já usaram, no filtro de Descartadas e no dashboard.</p>
+        <div class="cfg-box">${arq.map(x=>`<div class="cfg-item arquivado"><span class="cfg-nm">${esc(x.nome)}</span><span class="cfg-uso">${fmt(x.uso)} ${t==='descarte'?'descartes':'perdas'}</span><button class="btn btn-outline" type="button" data-rest="${x.id}">Restaurar</button></div>`).join('')}</div></section>` : ''}
+    </div>`;
+
+    m.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { S.motivoTab = b.dataset.tab; motivos(m); });
+    const sE = $('#swExigir'); if (sE) sE.onchange = () => { S.exigirMotivo = sE.checked; auditar('Motivos', (sE.checked?'Passou a exigir':'Deixou de exigir')+' motivo ao descartar'); toast('Salvo'); };
+    const sU = $('#swUnif'); if (sU) sU.onchange = () => { S.unificar = sU.checked; auditar('Motivos', sU.checked?'Unificou as listas de descarte':'Separou os motivos por tela'); motivos(m); };
+    m.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => {
+      const x = S.motivos.find(y=>y.id===b.dataset.id), k = b.dataset.esc;
+      if (x[k] && !(k==='rec'?x.and:x.rec)) { toast('O motivo precisa aparecer em pelo menos uma tela'); return; }
+      x[k] = !x[k]; auditar('Motivos', `Alterou onde "${x.nome}" aparece`); motivos(m);
+    });
+    m.querySelectorAll('[data-desc]').forEach(b => b.onclick = () => {
+      const x = S.motivos.find(y=>y.id===b.dataset.desc); x.desc = !x.desc;
+      auditar('Motivos', `"${x.nome}" ${x.desc?'passou a pedir':'deixou de pedir'} descrição`); motivos(m);
+      toast(x.desc ? 'A partir de agora, quem escolher este motivo precisa escrever o porquê' : 'Descrição passou a ser opcional neste motivo');
+    });
+    m.querySelectorAll('[data-ren]').forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+      inp.addEventListener('change', () => {
+        const x = S.motivos.find(y=>y.id===inp.dataset.ren), v = inp.value.trim();
+        if (!v) { inp.value = x.nome; return; }
+        auditar('Motivos', `Renomeou "${x.nome}" para "${v}"`); x.nome = v;
+        toast(x.uso ? `Nome salvo. As ${fmt(x.uso)} licitações com este motivo passam a mostrar o novo nome` : 'Nome salvo');
+      });
+    });
+    m.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+      const x = S.motivos.find(y=>y.id===b.dataset.del);
+      if (!x.uso) {
+        const i = S.motivos.indexOf(x); S.motivos.splice(i,1); auditar('Motivos',`Excluiu "${x.nome}"`); motivos(m);
+        toast('Motivo excluído', {undoLabel:'Desfazer', onUndo:()=>{ S.motivos.splice(i,0,x); S.audit.shift(); motivos(m); }});
+        return;
+      }
+      confirmar({titulo:`Arquivar "${esc(x.nome)}"?`,
+        corpo:`<p>Ele deixa de aparecer para novos ${t==='descarte'?'descartes':'registros de perda'}.</p>
+               <p>As ${fmt(x.uso)} licitações que já usaram este motivo continuam com ele, e o filtro de Descartadas e o dashboard seguem contando. Dá para restaurar depois.</p>`,
+        acao:'Arquivar', perigo:false,
+        ok:()=>{ x.arq = true; auditar('Motivos',`Arquivou "${x.nome}"`); motivos(m); toast('Motivo arquivado'); }});
+    });
+    m.querySelectorAll('[data-rest]').forEach(b => b.onclick = () => { const x = S.motivos.find(y=>y.id===b.dataset.rest); x.arq = false; auditar('Motivos',`Restaurou "${x.nome}"`); motivos(m); toast('Motivo restaurado'); });
+    arrastavel($('#mBox'), (a,b) => { mover(S.motivos,a,b); motivos(m); });
+    $('#mAdd').onclick = () => {
+      const n = {id:'n'+Date.now(), nome:'Novo motivo', uso:0, rec:true, and:true, tipo:t, arq:false, desc:false};
+      const idx = S.motivos.findIndex(x=>x.tipo===t && !x.arq && x===S.motivos.filter(y=>y.tipo===t && !y.arq).pop());
+      S.motivos.splice(idx+1,0,n); auditar('Motivos','Adicionou "Novo motivo"'); motivos(m);
+      const inp = m.querySelector(`[data-ren="${n.id}"]`); inp.focus(); inp.select();
+    };
+  }
+
+  /* ======================= CAMPOS DO CARD ======================= */
+  const GRUPOS = [['destaque','Destaque','· abaixo do número do edital'],['datas','Datas','· coluna da esquerda'],['meta','Metadados','· qualquer variável da organização pode entrar aqui'],['itens','Itens','']];
+
+  function card(m){
+    const item = c => `<div class="cfg-item" data-id="${c.id}" data-g="${c.g}" ${c.g!=='itens'?'draggable="true"':''}>
+        <span class="cfg-grip">${c.g!=='itens'?I.grip:''}</span>
+        <label class="sw"><input type="checkbox" data-on="${c.id}" ${c.on?'checked':''} aria-label="Mostrar ${esc(c.nome)}"><i></i></label>
+        <span class="cfg-nm" style="${c.on?'':'color:var(--muted-foreground)'}">${esc(c.nome)}</span>
+        ${c.id==='itens' ? `<label class="cfg-v" for="cMax">Mostrar até</label>
+          <select class="cfg-input" id="cMax" style="width:auto;padding-top:5px;padding-bottom:5px">${[3,5,10,0].map(n=>`<option value="${n}" ${S.maxItens===n?'selected':''}>${n?n+' itens':'Todos os itens'}</option>`).join('')}</select>` : ''}
+        ${c.var ? `<span class="origem ${c.origem}">${c.origem==='minha'?'Minha variável':'Variável Settle'}</span>
+          <span class="cfg-acts"><a class="cfg-ib" href="#" data-nao-prototipado aria-label="Abrir a variável ${esc(c.nome)}" data-tip="Abrir a variável para consultar ou editar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5"/></svg></a>
+          <button class="cfg-ib perigo" type="button" data-rm="${c.id}" aria-label="Tirar ${esc(c.nome)} do card">${I.trash}</button></span>` : ''}
+      </div>`;
+    m.innerHTML = `<div class="cfg-page larga">
+      <p class="cfg-sub">O que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da organização. Os campos escondidos continuam disponíveis em Filtrar e Ordenar.</p>
+      <div class="cfg-split">
+        <div>
+          <div class="cfg-box" id="cBox">
+            <div class="cfg-gh">Topo <span class="cfg-gh-d">· fixo</span></div>
+            <div class="cfg-item fixo"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Número do edital, ações e Score</span><span class="cfg-lock" tabindex="0" data-tip="O topo do card é igual para todos: não pode ser ocultado nem movido.">${I.lock} Não editável</span></div>
+            ${GRUPOS.map(([g,n,d]) => `<div class="cfg-gh">${n} <span class="cfg-gh-d">${d}</span></div>` + S.campos.filter(c=>c.g===g).map(item).join('')).join('')}
+            <button class="cfg-add" type="button" id="cAdd">${I.plus} Adicionar variável aos metadados</button>
+          </div>
+          <div class="vf-acts"><button class="btn btn-outline" type="button" id="cReset">Restaurar padrão da Settle</button></div>
+        </div>
+        <div class="cfg-prev" aria-live="polite">
+          <div class="cfg-prev-h">Pré-visualização
+            <select class="cfg-input" id="cLic" aria-label="Licitação de exemplo" style="width:auto;margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400">${LICS.map((l,i)=>`<option value="${i}" ${i===S.lic?'selected':''}>Edital ${l.edital}</option>`).join('')}</select></div>
+          <div id="cPrev"></div>
+        </div>
+      </div>
+    </div>`;
+
+    m.querySelectorAll('[data-on]').forEach(i => i.onchange = () => {
+      const c = S.campos.find(x=>x.id===i.dataset.on); c.on = i.checked;
+      auditar('Campos do card', `${c.on?'Mostrou':'Ocultou'} "${c.nome}"`); card(m);
+    });
+    m.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { const c = S.campos.find(x=>x.id===b.dataset.rm); S.campos = S.campos.filter(x=>x!==c); auditar('Campos do card',`Tirou a variável "${c.nome}" do card`); card(m); });
+    arrastavel($('#cBox'), (a,b) => { mover(S.campos,a,b); auditar('Campos do card','Reordenou os campos'); card(m); });
+    $('#cLic').onchange = e => { S.lic = +e.target.value; prevCard(); };
+    $('#cReset').onclick = () => confirmar({titulo:'Restaurar os campos padrão?', corpo:'<p>O card volta a mostrar os campos da Settle na ordem original. Variáveis adicionadas saem do card, mas continuam existindo em Agentes.</p>', acao:'Restaurar', ok:()=>{ S.campos = JSON.parse(JSON.stringify(PADRAO.campos)); auditar('Campos do card','Restaurou o padrão da Settle'); card(m); toast('Campos restaurados'); }});
+    $('#cMax').onchange = e => { S.maxItens = +e.target.value; auditar('Campos do card', `Passou a mostrar ${S.maxItens?'até '+S.maxItens:'todos os'} itens no card`); prevCard(); };
+    $('#cAdd').onclick = e => abrirMenu(e.currentTarget, S.campos.map(c=>c.id).concat(['edital','score']), v => {
+      S.campos.push({id:v.k, nome:v.n, g:'meta', on:true, var:true, origem:v.o});
+      auditar('Campos do card',`Adicionou a variável "${v.n}" ao card`); card(m); toast(`${v.n} entrou no card, no fim dos metadados`);
+    });
+    prevCard();
+  }
+
+  function prevCard(){
+    const L = LICS[S.lic], on = id => { const c = S.campos.find(x=>x.id===id); return c && c.on; };
+    const val = c => { if (c.var) { const v = L[c.id]; return v ? esc(v) : '<span class="cfg-dim">Não encontrado</span>'; }
+      const map = {capagE:L.capagE, capagM:L.capagM, substatus:'Selecionar Substatus', descricao:'Adicionar Descrição'}; return esc(map[c.id] ?? L[c.id] ?? '-'); };
+    const fld = c => `<div class="fld"><div class="k">${esc(c.nome)}</div><div class="v">${val(c)}</div></div>`;
+    const dest = S.campos.filter(c=>c.g==='destaque' && c.on).map(c => {
+      if (c.id==='segmento') return `<div class="segments" style="margin:10px 0 8px"><span class="tag-light">${L.seg}</span></div>`;
+      if (c.id==='me') return L.me ? `<p class="field-line"><span class="tag-light">ME - EPP</span></p>` : '';
+      if (c.id==='valor') return `<p class="valor">Valor global: ${L.valor}</p>`;
+      return `<p class="field-line"><b>${c.nome}:</b> <span class="obj">${esc(L[c.id])}</span></p>`;
+    }).join('');
+    const datas = S.campos.filter(c=>c.g==='datas' && c.on), meta = S.campos.filter(c=>c.g==='meta' && c.on);
+    $('#cPrev').innerHTML = `<div class="card">
+      <div class="card-top"><span class="chk" aria-hidden="true"></span><span class="edital">Edital <b>${L.edital}</b></span>
+        <div class="card-top-right"><span class="btn btn-outline">Descartar</span><span class="btn btn-primary">Enviar para análise</span><span class="btn btn-status">${L.score}</span></div></div>
+      ${dest}
+      ${(datas.length||meta.length) ? `<div class="grid-box" style="margin-top:12px">${datas.length?`<div class="grid-left">${datas.map(fld).join('')}</div>`:''}${meta.length?`<div class="grid-main">${meta.map(fld).join('')}</div>`:''}</div>` : ''}
+      ${on('itens') ? (() => { const vis = S.maxItens ? L.itens.slice(0, S.maxItens) : L.itens, resto = L.itens.length - vis.length;
+        return `<div class="items-head"><span class="items-title">Itens com Correspondência</span><span class="count-chip">${L.itens.length}</span><span class="items-total">Mostrando ${vis.length} de ${L.itens.length}</span></div>
+        <table class="items"><thead><tr><th scope="col">Nome</th><th scope="col">Segmento</th><th scope="col" class="t-right">Valor Total</th></tr></thead>
+        <tbody>${vis.map(it=>`<tr><td>${esc(it[0])}</td><td><span class="tag-light">${it[1]}</span></td><td class="t-right">${it[2]}</td></tr>`).join('')}</tbody></table>
+        ${resto ? `<span class="expand-toggle">Ver mais ${resto} ${resto===1?'item':'itens'}</span>` : ''}`; })() : ''}
+    </div>`;
+  }
+
+  /* ======================= MENU DE VARIÁVEIS ======================= */
+  let menuCb = null;
+  function abrirMenu(ancora, excluir, cb, pos){
+    const menu = $('#varMenu'); menuCb = cb;
+    const grupo = (o, t) => { const vs = VARS.filter(v=>v.o===o && !(excluir||[]).includes(v.k)); return vs.length ? `<div class="h">${t}</div>` + vs.map(v=>`<button class="vf-opt" type="button" role="option" data-k="${v.k}"><b>${v.n}</b><span>${v.o==='minha'?'Minha variável · '+v.tipo:'Settle'}</span></button>`).join('') : ''; };
+    menu.innerHTML = grupo('settle','Da Settle') + grupo('minha','Da organização (Agentes)') + `<a class="vf-opt criar" href="#" data-nao-prototipado>Criar variável em Agentes</a>`;
+    const r = pos || ancora.getBoundingClientRect();
+    menu.style.left = Math.min(r.left, innerWidth-340)+'px';
+    menu.style.top = Math.min(r.bottom+6, innerHeight-290)+'px';
+    menu.hidden = false;
+    menu.querySelectorAll('[data-k]').forEach(b => b.onmousedown = e => { e.preventDefault(); const v = VARS.find(x=>x.k===b.dataset.k); fecharMenu(); cb(v); });
+    const first = menu.querySelector('[data-k]'); if (first) first.classList.add('on');
+  }
+  function fecharMenu(){ const mnu = $('#varMenu'); if (mnu) mnu.hidden = true; menuCb = null; }
+  document.addEventListener('mousedown', e => { if (!e.target.closest('#varMenu') && !e.target.closest('#cAdd') && !e.target.closest('[data-insert]')) fecharMenu(); });
+  document.addEventListener('keydown', e => {
+    const menu = $('#varMenu'); if (menu.hidden) return;
+    const ops = [...menu.querySelectorAll('[data-k]')]; let i = ops.findIndex(o=>o.classList.contains('on'));
+    if (e.key==='ArrowDown'||e.key==='ArrowUp') { e.preventDefault(); ops[i]?.classList.remove('on'); i = (i + (e.key==='ArrowDown'?1:-1) + ops.length) % ops.length; ops[i].classList.add('on'); ops[i].scrollIntoView({block:'nearest'}); }
+    if (e.key==='Enter' && i>=0) { e.preventDefault(); const cb = menuCb; const v = VARS.find(x=>x.k===ops[i].dataset.k); fecharMenu(); cb && cb(v); }
+  });
+
+  /* ======================= MODELO DE E-MAIL ======================= */
+  const chip = k => `<span class="varchip" contenteditable="false" data-var="${k}">${esc(vnome(k))}</span>`;
+  const tplHtml = s => esc(s).replace(/\{(\w+)\}/g, (_,k)=>chip(k)).replace(/\n/g,'<br>');
+  function htmlTpl(el){
+    let out = '';
+    el.childNodes.forEach(n => {
+      if (n.nodeType===3) out += n.textContent;
+      else if (n.dataset && n.dataset.var) out += `{${n.dataset.var}}`;
+      else if (n.nodeName==='BR') out += '\n';
+      else if (n.nodeName==='DIV' || n.nodeName==='P') out += (out && !out.endsWith('\n') ? '\n' : '') + htmlTpl(n);
+      else out += htmlTpl(n);
+    });
+    return out;
+  }
+
+  function email(m){
+    m.innerHTML = `<div class="cfg-page larga">
+      <p class="cfg-sub">O texto de Compartilhar licitação. Vale para Gmail e para Copiar texto, em todas as telas onde o card aparece.</p>
+      <div class="cfg-split">
+        <div>
+          <div class="cfg-field"><label class="cfg-lbl" id="lAss">Assunto</label>
+            <div class="vf linha" id="vAss" contenteditable="true" role="textbox" aria-labelledby="lAss"></div></div>
+          <div class="cfg-field"><label class="cfg-lbl" id="lCor">Corpo</label>
+            <div class="vf" id="vCor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="lCor" style="min-height:300px"></div>
+            <div class="vf-acts"><span class="vf-hint">Digite <kbd>/</kbd> para inserir uma variável</span>
+              <button class="btn btn-outline" type="button" data-insert>Inserir variável</button></div></div>
+          <div class="cfg-field"><label class="cfg-lbl" for="eVazio">Quando a variável estiver vazia</label>
+            <select class="cfg-input" id="eVazio">
+              <option value="texto" ${S.emailVazio==='texto'?'selected':''}>Escrever "não informado"</option>
+              <option value="linha" ${S.emailVazio==='linha'?'selected':''}>Tirar a linha inteira do e-mail</option>
+            </select></div>
+          <div class="vf-acts"><button class="btn btn-primary" type="button" id="eSalvar">Salvar modelo</button>
+            <button class="btn btn-outline" type="button" id="eReset">Restaurar padrão da Settle</button></div>
+        </div>
+        <div class="cfg-prev" aria-live="polite">
+          <div class="cfg-prev-h">Pré-visualização
+            <select class="cfg-input" id="eLic" aria-label="Licitação de exemplo" style="width:auto;margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400">${LICS.map((l,i)=>`<option value="${i}" ${i===S.lic?'selected':''}>Edital ${l.edital}</option>`).join('')}</select></div>
+          <div class="cfg-mail"><div class="cfg-mail-h">Assunto: <b id="pAss"></b></div><div class="cfg-mail-b" id="pCor"></div></div>
+          <p class="vf-hint" id="pAviso"></p>
+        </div>
+      </div>
+    </div>`;
+    const vA = $('#vAss'), vC = $('#vCor');
+    vA.innerHTML = tplHtml(S.emailAssunto); vC.innerHTML = tplHtml(S.emailCorpo);
+    let alvo = vC, faixa = null;
+    const guardar = el => { alvo = el; const s = getSelection(); if (s.rangeCount && el.contains(s.anchorNode)) faixa = s.getRangeAt(0).cloneRange(); };
+    const inserir = v => {
+      alvo.focus(); const s = getSelection(); s.removeAllRanges();
+      if (faixa) s.addRange(faixa); else { const r = document.createRange(); r.selectNodeContents(alvo); r.collapse(false); s.addRange(r); }
+      const r = s.getRangeAt(0); const tmp = document.createElement('span'); tmp.innerHTML = chip(v.k); const node = tmp.firstChild;
+      r.deleteContents(); r.insertNode(node); const esp = document.createTextNode(' '); node.after(esp);
+      r.setStartAfter(esp); r.collapse(true); s.removeAllRanges(); s.addRange(r); prevEmail();
+    };
+    [vA, vC].forEach(el => {
+      el.addEventListener('keyup', () => guardar(el)); el.addEventListener('mouseup', () => guardar(el));
+      el.addEventListener('input', prevEmail);
+      el.addEventListener('keydown', e => {
+        if (el===vA && e.key==='Enter') { e.preventDefault(); return; }
+        if (e.key === '/') {
+          e.preventDefault(); guardar(el);
+          const s = getSelection(); let rect = s.rangeCount ? s.getRangeAt(0).getBoundingClientRect() : null;
+          if (!rect || (!rect.left && !rect.top)) rect = el.getBoundingClientRect();
+          abrirMenu(el, [], inserir, {left:rect.left, bottom:rect.bottom});
+        }
+      });
+    });
+    m.querySelector('[data-insert]').onclick = e => abrirMenu(e.currentTarget, [], inserir);
+    $('#eVazio').onchange = e => { S.emailVazio = e.target.value; prevEmail(); };
+    $('#eLic').onchange = e => { S.lic = +e.target.value; prevEmail(); };
+    $('#eSalvar').onclick = () => { S.emailAssunto = htmlTpl(vA).replace(/ /g,' '); S.emailCorpo = htmlTpl(vC).replace(/ /g,' '); S.emailPersonalizado = true; auditar('Modelo de e-mail','Alterou o modelo de Compartilhar licitação'); toast('Modelo salvo. Vale a partir do próximo compartilhamento'); };
+    $('#eReset').onclick = () => confirmar({titulo:'Restaurar o modelo padrão?', corpo:'<p>Assunto e corpo voltam ao texto da Settle. O que você escreveu se perde.</p>', acao:'Restaurar', perigo:true, ok:()=>{ S.emailAssunto = PADRAO.assunto; S.emailCorpo = PADRAO.corpo; S.emailPersonalizado = false; auditar('Modelo de e-mail','Restaurou o padrão da Settle'); email(m); toast('Modelo restaurado'); }});
+    prevEmail();
+  }
+
+  function prevEmail(){
+    const L = LICS[S.lic]; const vazias = new Set();
+    const preencher = (tpl, html) => {
+      let linhas = tpl.split('\n');
+      if (S.emailVazio === 'linha') linhas = linhas.filter(l => { const ks = [...l.matchAll(/\{(\w+)\}/g)].map(x=>x[1]); const vz = ks.filter(k=>!L[k]); vz.forEach(k=>vazias.add(k)); return !vz.length; });
+      return linhas.map(l => esc(l).replace(/\{(\w+)\}/g, (_,k) => {
+        if (L[k]) return html ? `<b>${esc(L[k])}</b>` : esc(L[k]);
+        vazias.add(k); return html ? '<span class="vazio">não informado</span>' : 'não informado';
+      })).join('\n');
+    };
+    $('#pAss').innerHTML = preencher(htmlTpl($('#vAss')).replace(/ /g,' '), false);
+    $('#pCor').innerHTML = preencher(htmlTpl($('#vCor')).replace(/ /g,' '), true);
+    $('#pAviso').textContent = vazias.size ? `Vazio nesta licitação: ${[...vazias].map(vnome).join(', ')}.` + (S.emailVazio==='linha' ? ' A linha foi tirada do e-mail.' : '') : 'Todas as variáveis têm valor nesta licitação.';
+  }
+
+  /* ======================= ORGANIZAÇÃO ======================= */
+  function equipe(m){
+    const P = [['Brunno Krier','Administrador','Ativo'],['Larissa Almeida','Administrador','Ativo'],['Alice Iglesias','Administrador','Ativo'],['Bruno Ortiz','Administrador','Ativo'],['Andre Damiano','Administrador','Ativo'],['Malou Chlapec','Administrador','Convite pendente'],['Mateus Brum','Editor completo','Ativo'],['Trochu Kniha','Editor completo','Convite pendente'],['Eloi Pattaro','Editor completo','Desativado']];
+    m.innerHTML = `<div class="cfg-page">
+      <p class="cfg-sub">Hoje em Menu do usuário › Gerenciar equipe. Passa a morar aqui, com a mesma tabela e as mesmas ações (convidar, mudar função, resetar senha, remover).</p>
+      <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Pessoa</th><th scope="col">Função</th><th scope="col">Status</th></tr></thead>
+      <tbody>${P.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</tbody></table></div>
+    </div>`;
+  }
+
+  function permissoes(m){
+    const R = [
+      ['Etapas do funil','Altera','Usa','Usa','Vê'],
+      ['Abas das listas','Cria, edita e exclui','Usa','Usa','Usa'],
+      ['Motivos de descarte e perda','Altera','Usa','Usa','Não usa (não descarta)'],
+      ['Campos do card','Altera','Vê','Vê','Vê'],
+      ['Modelo de e-mail','Altera','Usa','Usa','Usa'],
+      ['Equipe','Altera','Não vê','Não vê','Não vê'],
+      ['Auditoria','Vê','Não vê','Não vê','Não vê'],
+      ['Agentes e variáveis','Altera','Usa','Usa','Vê resultados']
+    ];
+    m.innerHTML = `<div class="cfg-page">
+      <p class="cfg-sub">As quatro funções que já existem em Gerenciar equipe. Configuração da organização é ação de Administrador; as outras funções usam o que foi configurado.</p>
+      <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Configuração</th><th scope="col">Administrador</th><th scope="col">Editor completo</th><th scope="col">Editor restrito</th><th scope="col">Visualizador</th></tr></thead>
+      <tbody>${R.map(r=>`<tr>${r.map((c,i)=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <section class="cfg-sec" style="margin-top:24px"><h2>Regras</h2>
+        <div class="cfg-box">
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Negado por padrão</span><span class="cfg-d">Quem não é Administrador não vê a seção nem os atalhos no contexto. Se abrir o link direto, recebe a tela de sem permissão com o nome dos administradores. A regra vale no backend (403), a tela é só a primeira defesa.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Abas são da organização</span><span class="cfg-d">Só o Administrador cria, renomeia, muda filtros, reordena e exclui abas, e a mudança vale para todo mundo. As outras funções usam as abas e podem aplicar Filtrar por cima, sem salvar. "Todas" nunca pode ser excluída.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Tudo vai para a Auditoria</span><span class="cfg-d">Cada alteração registra quem, quando, a área e o antes/depois.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Teste no protótipo</span><span class="cfg-d">Use "Ver como" no topo para ver a área com outra função.</span></span></div>
+        </div></section>
+    </div>`;
+  }
+
+  function auditoria(m){
+    m.innerHTML = `<div class="cfg-page">
+      <p class="cfg-sub">Hoje em Menu do usuário › Auditoria. Aqui aparecem só as alterações de configuração; as ações feitas nesta sessão entram no topo.</p>
+      <div class="cfg-box"><table class="dt"><thead><tr><th scope="col">Quando</th><th scope="col">Quem</th><th scope="col">Área</th><th scope="col">Alteração</th></tr></thead>
+      <tbody>${S.audit.map(a=>`<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${esc(a[3])}</td></tr>`).join('')}</tbody></table></div>
+    </div>`;
+  }
+
+  render();
+  })();
+  </script>
+</body>
+</html>

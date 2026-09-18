@@ -5,7 +5,7 @@
   ----------------------------------------------------------------------------
   COMO USAR
   1. Copie esta pasta/arquivo para o local do novo protótipo.
-     Ex.: Plataforma/nome-da-tela/index.html
+     Ex.: settle-nome-da-tela/index.html
   2. Ajuste o <title> e o data-preview do <html>.
   3. Confira o caminho dos assets (veja o comentário no <head>).
   4. Preencha o <main>. Use as classes de assets/settle.css.
@@ -27,10 +27,10 @@
   <!--
     CAMINHO DOS ASSETS
     Ajuste conforme a profundidade da pasta:
-      Plataforma/minha-tela/index.html  →  ../../assets/settle.css
-      Resumo/index.html                 →  ../assets/settle.css
+      settle-minha-tela/index.html          →  ../assets/settle.css
+      settle-minha-tela/subtela/index.html  →  ../../assets/settle.css
   -->
-  <link rel="stylesheet" href="../../assets/settle.css" />
+  <link rel="stylesheet" href="../assets/settle.css" />
 
   <style>
     /* Só o CSS específico DESTA tela. Se for reutilizável, mova para settle.css. */
@@ -157,7 +157,7 @@
 
   <div id="toasts"></div>
 
-  <script src="../../assets/settle.js" defer></script>
+  <script src="../assets/settle.js" defer></script>
   <script>
     // JS específico desta tela.
   </script>

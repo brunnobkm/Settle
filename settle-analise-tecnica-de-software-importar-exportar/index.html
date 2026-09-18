@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Análise técnica de software · Settle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- SheetJS: leitura/escrita de Excel (.xlsx, .xls, .csv) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo" title="Settle">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M3 14c3-7 9-9 18-11-2 9-5 15-12 18-2-2-4-4-6-7z" fill="#16A394"/>
+          <path d="M5 18c4-5 8-7 13-9" stroke="#0E7C70" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <nav class="sb-nav">
+        <button class="sb-btn" title="Início">⌂</button>
+        <button class="sb-btn" title="Oportunidades">✦</button>
+        <button class="sb-btn" title="Alertas">◔</button>
+        <button class="sb-btn" title="Entrada">⬇</button>
+        <button class="sb-btn sb-active" title="Em andamento">▦</button>
+        <button class="sb-btn" title="Histórico">↺</button>
+        <button class="sb-btn" title="Arquivos">▤</button>
+        <button class="sb-btn" title="Saída">⬆</button>
+        <button class="sb-btn" title="Relatórios">◷</button>
+      </nav>
+      <div class="sb-user">BK</div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="ghost-icon" title="Recolher">▢</button>
+          <nav class="crumbs">
+            <span>Licitações</span><span class="crumb-sep">›</span>
+            <span>Em andamento</span><span class="crumb-sep">›</span>
+            <span class="crumb-current">Identificador</span>
+          </nav>
+        </div>
+        <div class="topbar-right">
+          <span class="stage-chip">Análise de Oportunidades</span>
+          <span class="stage-chip stage-chip--active">Em disputa ou Homologação</span>
+          <div class="avatars">
+            <span class="avatar a1"></span><span class="avatar a2"></span><span class="avatar a3"></span>
+            <button class="avatar-add">+</button>
+          </div>
+          <button class="ghost-icon" title="Link">🔗</button>
+          <button class="ghost-icon" title="Compartilhar">⇲</button>
+          <button class="ghost-icon" title="Documento">▤</button>
+          <button class="ghost-icon" title="Comentários">💬</button>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <nav class="tabs">
+        <button class="tab">Visão geral</button>
+        <button class="tab">Itens</button>
+        <button class="tab tab--active">Análise técnica</button>
+        <button class="tab">Documentos</button>
+        <button class="tab">Habilitação</button>
+        <button class="tab">Jurídico</button>
+        <button class="tab">Comunicação</button>
+        <button class="tab">Time</button>
+        <button class="tab">Risco de pagamento do órgão</button>
+      </nav>
+
+      <div class="content">
+        <!-- Tipo filter -->
+        <div class="tipo-filter" id="tipoFilter">
+          <button class="tipo-chip tipo-chip--active" data-tipo="Software"><span class="dot dot-software"></span>Software</button>
+          <button class="tipo-chip" data-tipo="Produto"><span class="dot dot-produto"></span>Produto</button>
+          <button class="tipo-chip" data-tipo="Serviço"><span class="dot dot-servico"></span>Serviço</button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats" id="stats"></div>
+
+        <!-- Sub toolbar -->
+        <div class="subtoolbar">
+          <div class="seg">
+            <button class="seg-btn seg-btn--active" data-view="requisito">Visão em requisito</button>
+            <button class="seg-btn" data-view="bloco">Visão em bloco</button>
+          </div>
+          <div class="subtoolbar-actions">
+            <button class="btn btn-ghost" id="btnImportar" title="Importar dados de um arquivo Excel">
+              <span class="btn-ic">⬇</span> Importar
+            </button>
+            <button class="btn btn-ghost" id="btnExportar" title="Exportar os dados para Excel">
+              <span class="btn-ic">⬆</span> Exportar
+            </button>
+            <span class="subtoolbar-divider"></span>
+            <button class="btn btn-ghost">Concluir análise</button>
+            <button class="btn btn-ghost"><span class="btn-ic">✦</span> Revisar</button>
+          </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-wrap">
+          <table class="req-table">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="checkAll" /></th>
+                <th class="col-req">Requisito</th>
+                <th class="col-mod">Módulo</th>
+                <th class="col-status">Status</th>
+                <th class="col-conf">Confiança IA</th>
+                <th class="col-just">Justificativa IA</th>
+                <th class="col-resp">Responsável</th>
+                <th class="col-notas">Notas</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <button class="add-req">+ Adicionar requisito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- input de upload (oculto) -->
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.ods" style="display:none" />
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Modal de erro de importação -->
+  <div class="modal-overlay" id="errorModal">
+    <div class="modal">
+      <div class="modal-icon">⚠️</div>
+      <h3 class="modal-title">Não foi possível importar o arquivo</h3>
+      <p class="modal-msg">Releia as instruções e garanta que está alinhado.</p>
+      <button class="btn btn-primary" id="errorModalClose">Entendi</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

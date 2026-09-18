@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR" data-preview="settle-inicio">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle · Protótipos</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/settle.css" />
+  <style>
+    .hub{max-width:960px;margin:0 auto;padding:40px 24px 64px;}
+    .hub-list{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:8px;}
+    .hub-item{display:flex;align-items:flex-start;gap:16px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);}
+    .hub-txt{flex:1;min-width:0;}
+    .hub-t{font-weight:600;}
+    .hub-d{color:var(--muted-foreground);font-size:13px;margin-top:2px;}
+    .hub-links{display:flex;flex-wrap:wrap;gap:6px;flex:none;}
+    .hub-tag{font-size:12px;color:var(--warning);font-weight:500;}
+  </style>
+</head>
+<body>
+  <main class="hub">
+    <p class="eyebrow">B Design · Settle</p>
+    <h1 class="title">Protótipos da Settle</h1>
+    <p class="hub-d">Cada projeto tem uma pasta própria. Clique para abrir.</p>
+
+    <!-- Projeto novo: adicione um <li> aqui, na ordem alfabética da pasta. -->
+    <ul class="hub-list">
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Agentes</div><div class="hub-d">Autonomia do cliente sobre Score e Resumo por meio de variáveis.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-agentes/">Protótipo</a><a class="btn btn-outline" href="settle-agentes/plataforma/">Plataforma</a><a class="btn btn-outline" href="settle-agentes/rotinas/">Rotinas</a><a class="btn btn-outline" href="settle-agentes/teste/">Teste</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Análise técnica de software: importar e exportar</div><div class="hub-d">Análise técnica para editais de software.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-analise-tecnica-de-software-importar-exportar/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Análise técnica: extração</div><div class="hub-d">Seleção de trechos do PDF do edital e tabela de requisitos.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-analise-tecnica-extracao/selecao-pdf/">Seleção de PDF</a><a class="btn btn-outline" href="settle-analise-tecnica-extracao/tabela-requisitos/">Tabela de requisitos</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Análise técnica: futuro</div><div class="hub-d">Visão futura da análise técnica.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-analise-tecnica-futuro/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Análise técnica: melhorias</div><div class="hub-d">Reforma da análise técnica: de informacional para decisão.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-analise-tecnica-melhorias/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Cadastro e primeiro acesso</div><div class="hub-d">Onboarding em etapas com chat. <span class="hub-tag">Em teste com usuários</span></div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-cadastro-e-primeiro-acesso/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">CAPAG: escala de cores</div><div class="hub-d">Cor de cada categoria do CAPAG.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-capag-color-scale/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Card de licitação</div><div class="hub-d">Card da licitação e o detalhe aberto.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-card-licitacao/">Card</a><a class="btn btn-outline" href="settle-card-licitacao/detalhe/prototype.html">Detalhe</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Central de notificações</div><div class="hub-d">Avisos, impugnações e esclarecimentos em um só lugar.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-central-de-notificacoes/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Configurações</div><div class="hub-d">Etapas, motivos, campos do card e e-mail da organização.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-configuracoes/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Explorar licitações</div><div class="hub-d">Busca e filtros no repositório de licitações.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-explorar-licitacoes/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Licitações em andamento</div><div class="hub-d">Kanban das licitações em andamento.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-licitacoes-em-andamento/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Licitações em andamento: card</div><div class="hub-d">Card canônico das licitações em andamento.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-licitacoes-em-andamento-card/prototype.html">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Manifestações</div><div class="hub-d">Avisos, impugnações e esclarecimentos da licitação.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-manifestacoes/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Filtros aplicados mais visíveis</div><div class="hub-d">Licitações recomendadas: selecione quais deseja analisar.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-melhoria-deixar-os-filtros-aplicados-mais-visivel/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Múltiplas sidebars (multitasking)</div><div class="hub-d">Padrão de sidebars acopladas e responsivas.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-multiplas-sidebar-responsive/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Órgãos favoritos</div><div class="hub-d">Favoritar órgãos dentro de Explorar licitações.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-orgaos-favoritos/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Permissionamento e auditoria</div><div class="hub-d">Usuários, papéis por recurso e registro de auditoria.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-permissionamento-e-auditoria/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Resumo e Vivo</div><div class="hub-d">Resumo da licitação.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-resumo-e-vivo/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Score e Resumo/Checklist</div><div class="hub-d">Card de licitação com score de 0 a 100.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-score-e-resumo-checklist/">Abrir</a></div></li>
+      <li class="hub-item"><div class="hub-txt"><div class="hub-t">Tabela modelo padrão</div><div class="hub-d">Modelo de tabela completa para as telas.</div></div>
+        <div class="hub-links"><a class="btn btn-outline" href="settle-tabela-modelo-padrao/">Abrir</a></div></li>
+    </ul>
+  </main>
+</body>
+</html>

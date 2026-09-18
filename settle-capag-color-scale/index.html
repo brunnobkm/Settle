@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR" data-preview="settle-capag-color-scale">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settle · CAPAG: escala de cores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/settle.css" />
+  <style>
+    .capag-page{max-width:720px;margin:0 auto;padding:40px 24px;}
+    .capag-pill{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:24px;padding:0 8px;border-radius:var(--radius-badge);font-weight:600;font-size:13px;}
+    .capag-ok{background:var(--success);color:var(--primary-foreground);}
+    .capag-atencao{background:var(--warning);color:var(--primary-foreground);}
+    .capag-critico{background:var(--destructive);color:var(--primary-foreground);}
+    .capag-neutro{background:var(--muted);color:var(--muted-foreground);}
+  </style>
+</head>
+<body>
+  <main class="capag-page">
+    <p class="eyebrow">Settle</p>
+    <h1 class="title">CAPAG: escala de cores</h1>
+    <p>Decidida na reunião diária de 07/07/2026. A e B ficam com a mesma cor (faixa elegível a garantia da União); a letra diferencia.</p>
+    <table class="items">
+      <thead><tr><th scope="col">Categoria</th><th scope="col">Exemplo</th><th scope="col">Token</th><th scope="col">Leitura</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td><span class="capag-pill capag-ok">A</span></td><td><code>success</code></td><td>Boa capacidade de pagamento</td></tr>
+        <tr><td>B</td><td><span class="capag-pill capag-ok">B</span></td><td><code>success</code></td><td>Capacidade média, ainda elegível</td></tr>
+        <tr><td>C</td><td><span class="capag-pill capag-atencao">C</span></td><td><code>warning</code></td><td>Capacidade baixa, não elegível</td></tr>
+        <tr><td>D</td><td><span class="capag-pill capag-critico">D</span></td><td><code>destructive</code></td><td>Situação crítica</td></tr>
+        <tr><td>NE</td><td><span class="capag-pill capag-neutro">NE</span></td><td>neutro</td><td>Sem classificação (status do produto)</td></tr>
+        <tr><td>ND</td><td><span class="capag-pill capag-neutro">ND</span></td><td>neutro</td><td>Sem classificação (status do produto)</td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

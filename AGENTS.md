@@ -9,14 +9,28 @@ este. Mudou uma regra? Edite aqui.
 
 ---
 
+## Estrutura: uma pasta por projeto
+
+Cada projeto (conversa) da Settle tem uma pasta na raiz, com o **mesmo nome da conversa**,
+em minúsculas, com hífen e o prefixo `settle-`. Ex.: conversa `settle-configuracoes` ↔ pasta
+`settle-configuracoes/`, publicada em `https://brunnobkm.github.io/Settle/settle-configuracoes/`.
+
+- **Projeto novo:** crie a conversa já com o nome `settle-<assunto>` e a pasta com o mesmo nome.
+- **Continuar um projeto:** trabalhe só dentro da pasta dele.
+- Sem prefixo na raiz só a infraestrutura: `assets/`, `react/`, `_template.html`,
+  `check-padrao.mjs`, `index.html` (página inicial com a lista de projetos), `AGENTS.md`, `CLAUDE.md`.
+- Ao criar um projeto novo, adicione o link dele no `index.html` da raiz.
+- `settle-agentes/teste/` e `settle-cadastro-e-primeiro-acesso/` estão em teste com usuários:
+  não converter nem redesenhar até o teste acabar.
+
 ## Continuidade
 
 - Antes de editar: `git status`. Preserve trabalho local; não limpe nem reverta sem pedido explícito.
-- A antiga cópia em `~/Documents/Codex/Clients/Settle` está **arquivada** (18/09/2026). O trabalho que só existia lá está aqui na branch local `codex-wip` (Resumo com multitasking, `Plataforma/index.html`, `prototipo-settle.html`); a branch `multitasking-pattern` está no GitHub. Não crie nem edite nada naquela pasta.
-- `agentes-plataforma/` é o handoff; `agentes-teste/` é o teste de usabilidade. Alterações exclusivas do teste não devem atingir o handoff. Os assets são compartilhados e exigem cuidado.
-- Para Agentes, ler `agentes/ROTEIRO-TESTE.md`, `agentes/NOTION.md` e a conversa correspondente apenas conforme necessário.
+- `archive/` (só local, fora do git) guarda cópias antigas: a cópia que o Codex usava, os clones dos repositórios separados que foram juntados aqui. Não edite nada lá. O trabalho que só existia na cópia do Codex está na branch local `codex-wip`; o estado local anterior à reorganização está na branch `wip-local-antigo`.
+- `settle-agentes/plataforma/` é o handoff; `settle-agentes/teste/` é o teste de usabilidade. Alterações exclusivas do teste não devem atingir o handoff. Os assets são compartilhados e exigem cuidado.
+- Para Agentes, ler `settle-agentes/ROTEIRO-TESTE.md`, `settle-agentes/NOTION.md` e a conversa correspondente apenas conforme necessário.
 - Conversas importadas do Claude (para o Codex): `/Users/brunnobkm/.codex/project-context/claude-conversations.json`. Memórias históricas do Claude: `/Users/brunnobkm/.claude/projects/-Users-brunnobkm/memory/MEMORY.md` (ler só as entradas Settle pertinentes).
-- Vídeos enviados pelo Brunno: verificar frames e áudio; ferramenta local em `/Users/brunnobkm/Documents/Claude/whatsapp-transcricao/run.sh`.
+- Vídeos enviados pelo Brunno: verificar frames e áudio; ferramenta local em `~/Documents/projects/companies/whatsapp-transcricao/run.sh`.
 
 ## Publicação (GitHub Pages)
 
@@ -29,7 +43,7 @@ este. Mudou uma regra? Edite aqui.
 
 ## Stack
 
-Os protótipos usam o **design system** (`~/Documents/Claude/design-system`, repositório
+Os protótipos usam o **design system** (`~/Documents/projects/companies/b-design/design-system`, repositório
 privado `brunnobkm/design-system`): a base de componentes shadcn + a personalização
 da Settle (`registry/clients/settle/`). Ele é a fonte de verdade de cores, raio e fonte.
 
@@ -75,9 +89,9 @@ Ao prototipar, se precisar de um componente que não existe em
    faz ele sair com o visual da Settle (e de qualquer outro cliente) automaticamente.
 4. **Publique e instale:**
    ```bash
-   cd ~/Documents/Claude/design-system && npm run build:registry
+   cd ~/Documents/projects/companies/b-design/design-system && npm run build:registry
    git add -A && git commit -m "..." && git push
-   cd ~/Documents/Claude/Clients/Settle/react && npx shadcn@latest add @settle/<nome> --overwrite --yes
+   cd ~/Documents/projects/companies/b-design/clients/settle/react && npx shadcn@latest add @settle/<nome> --overwrite --yes
    ```
 5. Mudou um componente que já existe? Mesma regra: a mudança vai no design system
    (Base se for melhoria geral, `clients/settle/ui/` se for só da Settle) e depois
@@ -92,7 +106,7 @@ pelo `npm run ds`; o que for feito ali se perde e não chega aos outros clientes
 
 ```bash
 node check-padrao.mjs                       # todo o repositório
-node check-padrao.mjs Plataforma/minha-tela # uma tela só
+node check-padrao.mjs settle-minha-tela     # uma tela só
 node check-padrao.mjs --strict              # avisos também reprovam
 ```
 
@@ -116,7 +130,7 @@ Só quando for preciso criar uma página HTML avulsa (fora do fluxo normal), ela
 de `_template.html`:
 
 ```
-cp _template.html Plataforma/nome-da-tela/index.html
+cp _template.html settle-nome-da-tela/index.html
 ```
 
 Depois: ajuste `<title>` e `data-preview`, confira o caminho relativo dos assets,
