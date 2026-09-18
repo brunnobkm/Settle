@@ -1736,3 +1736,11 @@ select.cfg-input{appearance:none;cursor:pointer;padding-right:32px;
 .cfg-link{flex:none;font-size:13px;font-weight:600;color:var(--accent-600);text-decoration:none;}
 .cfg-link:hover{text-decoration:underline;}
 .cfg-dim{color:var(--muted-foreground);}
+/* Abas das listas: resumo dos filtros na linha e painel de filtros aberto abaixo dela. */
+.cfg-badges{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.cfg-sem{font-size:12px;font-weight:500;color:var(--warning);}
+.cfg-sem::before{content:"⚠ ";}
+.cfg-painel{padding:4px 16px 8px 42px;border-top:1px solid var(--border);background:var(--muted);}
+.cfg-filtro{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.cfg-filtro select.cfg-input{flex:none;width:220px;padding-top:5px;padding-bottom:5px;font-size:13px;}
+.cfg-opcoes{flex:1;min-width:0;flex-wrap:wrap;padding-top:4px;}

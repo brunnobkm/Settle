@@ -64,6 +64,10 @@
             <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span>
             <span class="sb-label">Etapas do funil</span>
           </a>
+          <a class="sb-item" href="#abas" data-r="abas">
+            <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2 12.5V5.5a1 1 0 0 1 1-1h3.2l1.3 1.6H13a1 1 0 0 1 1 1v5.4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg></span>
+            <span class="sb-label">Abas das listas</span>
+          </a>
           <a class="sb-item" href="#motivos" data-r="motivos">
             <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4.5h10M3 8h10M3 11.5h6"/></svg></span>
             <span class="sb-label">Motivos de descarte e perda</span>
@@ -173,11 +177,33 @@
       ['Fora da área que quer atuar',540,1,0],['Minha empresa não atende esse produto / serviço',1033,1,0],
       ['Órgão indesejado',287,1,0],['Valor indesejado',142,1,0],['Região indesejada',356,1,0],
       ['Prazo muito próximo',219,1,1],['Duplicado',88,1,1],['Revenda',34,1,0]
-    ].map((m,i)=>({id:'d'+i, nome:m[0], uso:m[1], rec:!!m[2], and:!!m[3], tipo:'descarte', arq:false}))
+    ].map((m,i)=>({id:'d'+i, nome:m[0], uso:m[1], rec:!!m[2], and:!!m[3], tipo:'descarte', arq:false, desc:i===4}))
      .concat([
       ['Preço acima do vencedor',11],['Inabilitação documental',5],['Desclassificação da proposta técnica',3],
       ['Recurso não provido',2],['Não participou da disputa',4],['Licitação revogada ou fracassada',2]
-     ].map((m,i)=>({id:'p'+i, nome:m[0], uso:m[1], rec:false, and:true, tipo:'perda', arq:false}))),
+     ].map((m,i)=>({id:'p'+i, nome:m[0], uso:m[1], rec:false, and:true, tipo:'perda', arq:false, desc:i===1||i===2}))),
+    maxItens: 5,
+    abaTela: 'recomendadas',
+    abaAberta: null,
+    abaPrev: {},
+    abas: {
+      recomendadas: [
+        {id:'a0', nome:'Todas', fixa:true, f:[]},
+        {id:'a1', nome:'Ativas', f:[{k:'situacao', v:['Ativas']}]},
+        {id:'a2', nome:'Chegou hoje', f:[{k:'adicao', v:['Hoje']}]},
+        {id:'a3', nome:'Vencendo em breve', f:[{k:'envio', v:['Próximos 7 dias']}]}
+      ],
+      explorar: [
+        {id:'b0', nome:'Todas', fixa:true, f:[]},
+        {id:'b1', nome:'Órgãos favoritos', f:[{k:'orgao', v:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP']}]}
+      ],
+      descartadas: [
+        {id:'c0', nome:'Todas', fixa:true, f:[]},
+        {id:'c1', nome:'Hoje', f:[{k:'descarte', v:['Hoje']}]},
+        {id:'c2', nome:'Últimos 7 dias', f:[{k:'descarte', v:['Últimos 7 dias']}]},
+        {id:'c3', nome:'Últimos 30 dias', f:[{k:'descarte', v:['Últimos 30 dias']}]}
+      ]
+    },
     campos: [
       {id:'segmento', nome:'Segmento', g:'destaque', on:true},
       {id:'orgao', nome:'Órgão', g:'destaque', on:true},
@@ -222,6 +248,8 @@
     {k:'portal', n:'Portal de disputa', o:'settle'}, {k:'cidade', n:'Cidade/UF', o:'settle'},
     {k:'score', n:'Score', o:'settle'}, {k:'responsavel', n:'Responsável', o:'settle'},
     {k:'link', n:'Link da licitação', o:'settle'},
+    {k:'impugnacao', n:'Prazo de impugnação', o:'settle', tipo:'data'},
+    {k:'local_entrega', n:'Local de entrega', o:'settle', tipo:'texto'},
     {k:'prazo_entrega', n:'Prazo de entrega', o:'minha', tipo:'número'},
     {k:'amostra', n:'Exige amostra', o:'minha', tipo:'sim ou não'},
     {k:'garantia', n:'Garantia contratual', o:'minha', tipo:'número'},
@@ -230,13 +258,34 @@
   const vnome = k => (VARS.find(v=>v.k===k)||{n:k}).n;
 
   const LICS = [
-    {edital:'00153/2026', orgao:'PREFEITURA MUNICIPAL DE LIMEIRA', objeto:'Contratação de empresa especializada para o desenvolvimento e fornecimento de aplicativo mobile nativo (iOS e Android), modelo SaaS, integrado ao sistema de gestão do Serviço 156.', valor:'R$ 60.000,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'bnc.org.br', cidade:'Limeira · SP', score:'55/100', responsavel:'Mateus Brum', link:'app.settlegov.com/l/1908309', prazo_entrega:'30 dias', amostra:'Não', garantia:'5%', visita:'Não',
-     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908309', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'-', capagM:'C', habitantes:'291.869', item:['CONTRATACAO DE EMPRESA ESPECIALIZADA PARA DESENVOLVIMENTO DE APLICATIVO MOBILE NATIVO','Software','1','R$ 60.000,00']},
-    {edital:'22/2026', orgao:'SECRETARIA MUNICIPAL DA FAZENDA', objeto:'Registro de preço para licença de software de gestão e controle da arrecadação municipal da Prefeitura de Santo Antônio dos Lopes – MA.', valor:'R$ 0,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'Portal de Compras Públicas', cidade:'Santo Antônio dos Lopes · MA', score:'52/100', responsavel:'', link:'app.settlegov.com/l/1907748', prazo_entrega:'', amostra:'', garantia:'', visita:'Sim',
-     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1907748', julgamento:'Maior desconto', estado:'MA', capagE:'A', uasg:'-', capagM:'C', habitantes:'14.304', item:['Cessão de licença de uso do sistema integrado de Gestão Tributária Municipal','Software','12','-']},
-    {edital:'37/2026', orgao:'ESP-FED-PENIT. ESTADO DE SÃO PAULO', objeto:'Aquisição de material permanente: equipamentos de TI (PEAIPEN, Convênio nº 936.735/2022).', valor:'R$ 67.949,95', envio:'02/10/2026', modalidade:'Pregão - Eletrônico', portal:'compras.gov.br', cidade:'São Paulo · SP', score:'65/100', responsavel:'Larissa Almeida', link:'app.settlegov.com/l/1908424', prazo_entrega:'45 dias', amostra:'Sim', garantia:'', visita:'Não',
-     seg:'Produtos', me:true, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908424', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'990189', capagM:'B', habitantes:'11.451.999', item:['Notebook corporativo 14", 16 GB RAM, SSD 512 GB','Produtos','9','R$ 7.549,99']}
+    {edital:'00153/2026', orgao:'PREFEITURA MUNICIPAL DE LIMEIRA', objeto:'Contratação de empresa especializada para o desenvolvimento e fornecimento de aplicativo mobile nativo (iOS e Android), modelo SaaS, integrado ao sistema de gestão do Serviço 156.', valor:'R$ 60.000,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'bnc.org.br', cidade:'Limeira · SP', score:'55/100', responsavel:'Mateus Brum', link:'app.settlegov.com/l/1908309', prazo_entrega:'30 dias', amostra:'Não', garantia:'5%', visita:'Não', impugnacao:'30/09/2026', local_entrega:'Secretaria de Tecnologia, Limeira/SP',
+     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908309', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'-', capagM:'C', habitantes:'291.869', itens:[['CONTRATACAO DE EMPRESA ESPECIALIZADA PARA DESENVOLVIMENTO DE APLICATIVO MOBILE NATIVO','Software','R$ 60.000,00']]},
+    {edital:'22/2026', orgao:'SECRETARIA MUNICIPAL DA FAZENDA', objeto:'Registro de preço para licença de software de gestão e controle da arrecadação municipal da Prefeitura de Santo Antônio dos Lopes – MA.', valor:'R$ 0,00', envio:'05/10/2026', modalidade:'Pregão - Eletrônico', portal:'Portal de Compras Públicas', cidade:'Santo Antônio dos Lopes · MA', score:'52/100', responsavel:'', link:'app.settlegov.com/l/1907748', prazo_entrega:'', amostra:'', garantia:'', visita:'Sim', impugnacao:'30/09/2026', local_entrega:'',
+     seg:'Software', me:false, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1907748', julgamento:'Maior desconto', estado:'MA', capagE:'A', uasg:'-', capagM:'C', habitantes:'14.304', itens:[['Implantação do software, configuração, migração de dados e parametrização','Software','-'],['Suporte técnico e manutenção do sistema integrado de gestão tributária','Software','-'],['Cessão de licença de uso do sistema integrado de Gestão Tributária Municipal (21 módulos)','Software','-'],['Treinamento dos usuários internos (banco de horas)','Software','-']]},
+    {edital:'37/2026', orgao:'ESP-FED-PENIT. ESTADO DE SÃO PAULO', objeto:'Aquisição de material permanente: equipamentos de TI (PEAIPEN, Convênio nº 936.735/2022).', valor:'R$ 67.949,95', envio:'02/10/2026', modalidade:'Pregão - Eletrônico', portal:'compras.gov.br', cidade:'São Paulo · SP', score:'65/100', responsavel:'Larissa Almeida', link:'app.settlegov.com/l/1908424', prazo_entrega:'45 dias', amostra:'Sim', garantia:'', visita:'Não', impugnacao:'26/09/2026', local_entrega:'Almoxarifado central, São Paulo/SP',
+     seg:'Produtos', me:true, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908424', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'990189', capagM:'B', habitantes:'11.451.999', itens:[['Notebook corporativo 14", 16 GB RAM, SSD 512 GB','Produtos','R$ 22.649,97'],['Monitor LED 24", Full HD, ajuste de altura','Produtos','R$ 8.940,00'],['Desktop corporativo, Core i5, 16 GB RAM','Produtos','R$ 18.300,00'],['Nobreak 1.500 VA bivolt','Produtos','R$ 4.380,00'],['Switch gerenciável 24 portas PoE','Produtos','R$ 6.790,00'],['Impressora multifuncional laser monocromática','Produtos','R$ 3.980,00'],['Webcam Full HD com microfone','Produtos','R$ 1.259,98'],['Kit teclado e mouse sem fio','Produtos','R$ 950,00'],['Headset USB com cancelamento de ruído','Produtos','R$ 700,00']]}
   ];
+
+  /* Filtros que uma aba pode guardar: os mesmos do botão Filtrar da tela, mais as variáveis da organização. */
+  const FILTROS = [
+    {k:'situacao', n:'Situação', ops:['Ativas','Suspensas','Encerradas']},
+    {k:'segmento', n:'Segmento', ops:['Software','Produtos','Serviços','Obras']},
+    {k:'responsavel', n:'Responsável', ops:['Eu (quem está vendo)','Sem responsável','Mateus Brum','Larissa Almeida','Alice Iglesias']},
+    {k:'estado', n:'Estado', ops:['SP','RJ','MG','PR','RS','SC','BA','MA','GO','DF']},
+    {k:'orgao', n:'Órgão', ops:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP','Tribunal de Justiça de MG','Universidade Federal de Pelotas']},
+    {k:'modalidade', n:'Modalidade', ops:['Pregão - Eletrônico','Concorrência','Dispensa','Inexigibilidade']},
+    {k:'julgamento', n:'Forma de julgamento', ops:['Menor preço','Maior desconto','Técnica e preço']},
+    {k:'valor', n:'Valor global', ops:['Até R$ 100 mil','R$ 100 mil a 1 mi','R$ 1 mi a 10 mi','Acima de R$ 10 mi']},
+    {k:'adicao', n:'Data de adição', ops:['Hoje','Últimos 7 dias','Últimos 30 dias'], um:true},
+    {k:'envio', n:'Envio da proposta', ops:['Próximos 7 dias','Próximos 15 dias','Próximos 30 dias'], um:true},
+    {k:'descarte', n:'Data do descarte', ops:['Hoje','Últimos 7 dias','Últimos 30 dias'], um:true, so:'descartadas'},
+    {k:'motivo', n:'Motivo do descarte', ops:['Órgão indesejado','Valor abaixo do desejado','Fora da área que quer atuar','Minha empresa não atende esse produto / serviço'], so:'descartadas'},
+    {k:'capagM', n:'CAPAG Municipal', ops:['A','B','C','D']},
+    {k:'amostra', n:'Exige amostra', ops:['Sim','Não','Não encontrado'], variavel:true},
+    {k:'visita', n:'Visita técnica obrigatória', ops:['Sim','Não','Não encontrado'], variavel:true}
+  ];
+  const TELAS = {recomendadas:{n:'Recomendadas', total:918}, explorar:{n:'Explorar licitações', total:14327}, descartadas:{n:'Descartadas', total:3996}};
+  const fdef = k => FILTROS.find(f=>f.k===k);
 
   /* ======================= UTIL ======================= */
   const $ = s => document.querySelector(s);
@@ -288,8 +337,8 @@
   }
 
   /* ======================= ROTAS ======================= */
-  const ROTAS = {inicio, etapas, motivos, card, email, equipe, permissoes, auditoria};
-  const ADMIN_ONLY = ['etapas','motivos','card','email','equipe','permissoes','auditoria'];
+  const ROTAS = {inicio, etapas, abas, motivos, card, email, equipe, permissoes, auditoria};
+  const ADMIN_ONLY = ['etapas','abas','motivos','card','email','equipe','permissoes','auditoria'];
 
   function render(){
     const r = (location.hash.slice(1).split('?')[0]) || 'inicio';
@@ -323,7 +372,7 @@
       m.innerHTML = `<div class="cfg-page"><h1>Configurações</h1>
         <p class="cfg-sub">Você entrou como ${PAPEIS[S.papel]}.</p>
         <div class="empty-state"><strong>As configurações da organização ficam com os administradores</strong>
-        Etapas do funil, motivos, campos do card e modelo de e-mail valem para todo mundo da conta.
+        Etapas do funil, abas das listas, motivos, campos do card e modelo de e-mail valem para todo mundo da conta.
         Se algo precisar mudar, fale com ${ADMINS.slice(0,3).join(', ')} ou outro administrador.</div></div>`;
       return;
     }
@@ -337,6 +386,7 @@
       <section class="cfg-sec"><h2>Licitações</h2>
         <div class="cfg-box">
           ${linha('#etapas','Etapas do funil','Colunas do quadro em Em andamento', S.etapas.length+' etapas')}
+          ${linha('#abas','Abas das listas','Abas de Recomendadas, Explorar licitações e Descartadas, cada uma com seus filtros', Object.values(S.abas).reduce((n,l)=>n+l.length,0)+' abas em 3 telas')}
           ${linha('#motivos','Motivos de descarte e perda','O que a pessoa escolhe ao descartar ou registrar uma perda', ativos('descarte')+' de descarte · '+ativos('perda')+' de perda')}
           ${linha('#card','Campos do card','Quais informações aparecem no card de Recomendadas e em que ordem', vis+' de '+S.campos.length+' visíveis')}
           ${linha('#email','Modelo de e-mail','Texto de Compartilhar licitação, com variáveis', S.emailPersonalizado?'Personalizado':'Padrão da Settle')}
@@ -353,6 +403,7 @@
         <p class="cfg-sub">Cada configuração também abre de onde ela é usada. Os atalhos só aparecem para administradores e levam para a mesma página daqui.</p>
         <div class="cfg-box">
           <div class="cfg-row"><span class="cfg-txt cfg-ctx">Em andamento › menu <kbd>⋯</kbd> da coluna › <b>Editar etapas</b></span><a class="cfg-link" href="#etapas">Abrir</a></div>
+          <div class="cfg-row"><span class="cfg-txt cfg-ctx">Recomendadas, Explorar e Descartadas › <kbd>⋯</kbd> ao lado das abas › <b>Editar abas</b> (substitui o + e o menu de cada aba)</span><a class="cfg-link" href="#abas">Abrir</a></div>
           <div class="cfg-row"><span class="cfg-txt cfg-ctx">Descartar › lista de motivos › <b>Gerenciar motivos</b></span><a class="cfg-link" href="#motivos">Abrir</a></div>
           <div class="cfg-row"><span class="cfg-txt cfg-ctx">Card de Recomendadas › Ordenar › <b>Personalizar campos do card</b></span><a class="cfg-link" href="#card">Abrir</a></div>
           <div class="cfg-row"><span class="cfg-txt cfg-ctx">Compartilhar licitação › <b>Editar modelo de e-mail</b></span><a class="cfg-link" href="#email">Abrir</a></div>
@@ -366,6 +417,8 @@
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Campos do card em Em andamento e colunas da Tabela</span><span class="cfg-d">Mesmo mecanismo de Campos do card, outra tela. Decidir se herdam de Recomendadas.</span></span></div>
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Segmentos</span><span class="cfg-d">Software, Produtos: rótulo que aparece no card e filtra as recomendadas.</span></span></div>
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Perfil de recomendação</span><span class="cfg-d">Regiões, faixa de valor, órgãos favoritos e palavras que definem o que chega em Recomendadas.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Automações por etapa</span><span class="cfg-d">Criar um conjunto de tarefas quando a licitação entra numa etapa e medir quanto tempo ela fica em cada uma. Pedido da Alice em 18/09, para depois.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Abas e filtros por pessoa</span><span class="cfg-d">Cada pessoa salvar as próprias abas por cima das da organização. Depende de guardar preferência por usuário, que a plataforma ainda não tem.</span></span></div>
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Notificações</span><span class="cfg-d">O que avisa quem, pela central de notificações e por e-mail.</span></span></div>
         </div></section>
     </div>`;
@@ -454,6 +507,136 @@
     });
   }
 
+  /* ======================= ABAS DAS LISTAS ======================= */
+  const MAX_ABAS = 10;
+  function estimar(tela, a){
+    let n = TELAS[tela].total;
+    const DATA = {'Hoje':.03,'Últimos 7 dias':.16,'Últimos 30 dias':.44,'Próximos 7 dias':.15,'Próximos 15 dias':.31,'Próximos 30 dias':.52};
+    a.f.forEach(x => {
+      if (!x.v.length) return;
+      if (fdef(x.k).um) n *= DATA[x.v[0]] ?? .3;
+      else if (x.v.includes('Eu (quem está vendo)')) n *= .12;
+      else n *= Math.min(1, .19 * x.v.length + .06);
+    });
+    return Math.max(0, Math.round(n));
+  }
+  const resumoFiltro = x => { const d = fdef(x.k); if (!x.v.length) return 'nenhum valor';
+    return x.v.length === 1 ? x.v[0] : `${x.v.length} selecionados`; };
+  const badges = a => a.f.map(x => `<span class="fbadge"><span class="k">${esc(fdef(x.k).n)}:</span> <span class="v">${esc(resumoFiltro(x))}</span></span>`).join('');
+
+  function abas(m){
+    const tela = S.abaTela, L = S.abas[tela];
+    if (!L.find(a=>a.id===S.abaPrev[tela])) S.abaPrev[tela] = L[0].id;
+    const disp = FILTROS.filter(f => !f.so || f.so === tela);
+    const painel = a => `<div class="cfg-painel" id="pn-${a.id}">
+        ${a.f.map((x,i) => { const d = fdef(x.k); const usados = a.f.map(y=>y.k);
+          return `<div class="cfg-filtro">
+            <select class="cfg-input" data-fk="${a.id}:${i}" aria-label="Campo do filtro">${disp.filter(f=>f.k===x.k||!usados.includes(f.k)).map(f=>`<option value="${f.k}" ${f.k===x.k?'selected':''}>${esc(f.n)}${f.variavel?' (variável)':''}</option>`).join('')}</select>
+            <span class="cfg-escopo cfg-opcoes" role="group" aria-label="Valores de ${esc(d.n)}">${d.ops.map(o=>`<button type="button" aria-pressed="${x.v.includes(o)}" data-fv="${a.id}:${i}" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</span>
+            <button class="cfg-ib perigo" type="button" data-frm="${a.id}:${i}" aria-label="Tirar o filtro ${esc(d.n)}">${I.trash}</button>
+          </div>`; }).join('')}
+        ${a.f.length < disp.length ? `<button class="cfg-add" type="button" data-fadd="${a.id}" style="border-top:0;background:transparent;padding:8px 0">${I.plus} Adicionar filtro</button>` : ''}
+      </div>`;
+    const item = a => {
+      const aberta = S.abaAberta === a.id;
+      const aviso = !a.fixa && (!a.f.length || a.f.some(x=>!x.v.length));
+      return `<div class="cfg-item" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
+        <span class="cfg-grip ${a.fixa?'fixo':''}">${a.fixa?I.lock:I.grip}</span>
+        ${a.fixa ? `<span class="cfg-nm" style="flex:none;width:170px">${esc(a.nome)}</span>`
+                 : `<input class="cfg-nm" style="flex:none;width:170px" value="${esc(a.nome)}" aria-label="Nome da aba" data-aren="${a.id}" />`}
+        <span class="cfg-badges">${a.fixa ? `<span class="cfg-lock">${I.lock} Sempre a primeira · sem filtro</span>`
+          : aviso ? `<span class="cfg-sem">${!a.f.length ? 'Sem filtro: mostra o mesmo que Todas' : 'Filtro sem valor escolhido'}</span>${badges(a)}` : badges(a)}</span>
+        <span class="cfg-uso">≈ ${fmt(estimar(tela,a))}</span>
+        ${a.fixa ? '' : `<span class="cfg-acts">
+          <button class="btn btn-outline" type="button" data-aopen="${a.id}" aria-expanded="${aberta}" aria-controls="pn-${a.id}" style="padding:4px 10px;font-size:13px">${aberta?'Fechar':'Filtros'}</button>
+          <button class="cfg-ib" type="button" data-adup="${a.id}" aria-label="Duplicar ${esc(a.nome)}" title="Duplicar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M11 5V3.5A1 1 0 0 0 10 2.5H3.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></svg></button>
+          <button class="cfg-ib perigo" type="button" data-adel="${a.id}" aria-label="Excluir ${esc(a.nome)}" title="Excluir">${I.trash}</button></span>`}
+      </div>${aberta ? painel(a) : ''}`;
+    };
+    const prev = L.find(a=>a.id===S.abaPrev[tela]);
+    m.innerHTML = `<div class="cfg-page larga">
+      <h1>Abas das listas</h1>
+      <p class="cfg-sub">As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela organização: o administrador cria, define os filtros e ela aparece igual para todas as pessoas.</p>
+      <div class="tabs" role="tablist" aria-label="Tela">
+        ${Object.keys(TELAS).map(k=>`<button class="tab ${k===tela?'active':''}" type="button" role="tab" aria-selected="${k===tela}" data-tela="${k}">${TELAS[k].n} <span class="cnt">${S.abas[k].length}</span></button>`).join('')}
+      </div>
+      <div class="cfg-aviso">${I.info}<span>Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não altera a aba e some ao sair da tela. Salvar filtros por pessoa fica para uma próxima fase.</span></div>
+      <div class="cfg-split" style="grid-template-columns:minmax(0,1fr)">
+        <div class="cfg-box" id="aBox">
+          ${L.map(item).join('')}
+          ${L.length < MAX_ABAS ? `<button class="cfg-add" type="button" id="aAdd">${I.plus} Nova aba</button>`
+            : `<div class="cfg-add" style="cursor:default">Limite de ${MAX_ABAS} abas por tela. Exclua uma para criar outra.</div>`}
+        </div>
+        <div>
+          <div class="cfg-prev-h">Como as pessoas veem em ${TELAS[tela].n}</div>
+          <div class="cfg-box" style="padding:14px 16px">
+            <div class="tabs" role="tablist" aria-label="Pré-visualização das abas">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)} <span class="cnt">${fmt(estimar(tela,a))}</span></button>`).join('')}</div>
+            <div class="filter-badges" style="margin:12px 0 0">${prev.fixa ? '' : badges(prev)}</div>
+            <p class="vf-hint" style="margin-top:12px">Sem o botão + e sem o menu de editar: as abas são da organização. Administradores veem um ⋯ ao lado das abas, que abre esta página.</p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+    const re = () => abas(m);
+    const acha = id => L.find(a=>a.id===id);
+    const nomeLivre = (nome, fora) => !L.some(a=>a!==fora && a.nome.toLowerCase()===nome.toLowerCase());
+    m.querySelectorAll('[data-tela]').forEach(b => b.onclick = () => { S.abaTela = b.dataset.tela; S.abaAberta = null; re(); });
+    m.querySelectorAll('[data-aprev]').forEach(b => b.onclick = () => { S.abaPrev[tela] = b.dataset.aprev; re(); });
+    m.querySelectorAll('[data-aopen]').forEach(b => b.onclick = () => { S.abaAberta = S.abaAberta===b.dataset.aopen ? null : b.dataset.aopen; S.abaPrev[tela] = b.dataset.aopen; re(); });
+    m.querySelectorAll('[data-aren]').forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+      inp.addEventListener('change', () => {
+        const a = acha(inp.dataset.aren), v = inp.value.trim();
+        if (!v) { inp.value = a.nome; return; }
+        if (!nomeLivre(v, a)) { inp.value = a.nome; toast('Já existe uma aba com esse nome nesta tela'); return; }
+        auditar('Abas das listas', `${TELAS[tela].n}: renomeou "${a.nome}" para "${v}"`); a.nome = v; toast('Nome da aba salvo'); re();
+      });
+    });
+    m.querySelectorAll('[data-fv]').forEach(b => b.onclick = () => {
+      const [id,i] = b.dataset.fv.split(':'), a = acha(id), x = a.f[+i], o = b.dataset.o;
+      if (fdef(x.k).um) x.v = x.v[0]===o ? [] : [o];
+      else x.v = x.v.includes(o) ? x.v.filter(y=>y!==o) : x.v.concat(o);
+      auditar('Abas das listas', `${TELAS[tela].n}: alterou o filtro ${fdef(x.k).n} de "${a.nome}"`); re();
+    });
+    m.querySelectorAll('[data-fk]').forEach(sel => sel.onchange = () => {
+      const [id,i] = sel.dataset.fk.split(':'); acha(id).f[+i] = {k:sel.value, v:[]}; re();
+    });
+    m.querySelectorAll('[data-frm]').forEach(b => b.onclick = () => {
+      const [id,i] = b.dataset.frm.split(':'), a = acha(id); const [x] = a.f.splice(+i,1);
+      auditar('Abas das listas', `${TELAS[tela].n}: tirou o filtro ${fdef(x.k).n} de "${a.nome}"`); re();
+    });
+    m.querySelectorAll('[data-fadd]').forEach(b => b.onclick = () => {
+      const a = acha(b.dataset.fadd), usados = a.f.map(x=>x.k); const f = disp.find(x=>!usados.includes(x.k));
+      if (f) { a.f.push({k:f.k, v:[]}); re(); }
+    });
+    m.querySelectorAll('[data-adup]').forEach(b => b.onclick = () => {
+      if (L.length >= MAX_ABAS) { toast(`Limite de ${MAX_ABAS} abas por tela`); return; }
+      const a = acha(b.dataset.adup); let nome = a.nome + ' (cópia)', n = 2;
+      while (!nomeLivre(nome)) nome = `${a.nome} (cópia ${n++})`;
+      const c = {id:'x'+Date.now(), nome, f:JSON.parse(JSON.stringify(a.f))};
+      L.splice(L.indexOf(a)+1, 0, c); S.abaAberta = c.id; S.abaPrev[tela] = c.id;
+      auditar('Abas das listas', `${TELAS[tela].n}: duplicou "${a.nome}"`); re(); toast('Aba duplicada. Ajuste o nome e os filtros');
+    });
+    m.querySelectorAll('[data-adel]').forEach(b => b.onclick = () => {
+      const a = acha(b.dataset.adel);
+      confirmar({titulo:`Excluir a aba "${esc(a.nome)}"?`,
+        corpo:`<p>Ela some de ${TELAS[tela].n} para todas as pessoas da organização. Nenhuma licitação muda: todas continuam em Todas e nas outras abas em que se encaixam.</p>`,
+        acao:'Excluir aba', perigo:true,
+        ok:()=>{ const i = L.indexOf(a); L.splice(i,1); if (S.abaAberta===a.id) S.abaAberta = null;
+          auditar('Abas das listas', `${TELAS[tela].n}: excluiu "${a.nome}"`); re();
+          toast('Aba excluída', {undoLabel:'Desfazer', onUndo:()=>{ L.splice(i,0,a); S.audit.shift(); re(); }}); }});
+    });
+    arrastavel($('#aBox'), (de,para) => { mover(L,de,para); auditar('Abas das listas', `${TELAS[tela].n}: reordenou as abas`); re(); toast('Ordem das abas salva'); });
+    const add = $('#aAdd');
+    if (add) add.onclick = () => {
+      let nome = 'Nova aba', n = 2; while (!nomeLivre(nome)) nome = `Nova aba ${n++}`;
+      const a = {id:'x'+Date.now(), nome, f:[]}; L.push(a); S.abaAberta = a.id; S.abaPrev[tela] = a.id;
+      auditar('Abas das listas', `${TELAS[tela].n}: criou "${nome}"`); re();
+      const inp = m.querySelector(`[data-aren="${a.id}"]`); inp.focus(); inp.select();
+    };
+  }
+
   /* ======================= MOTIVOS ======================= */
   function motivos(m){
     const t = S.motivoTab;
@@ -467,10 +650,11 @@
         <span class="cfg-grip">${I.grip}</span>
         <input class="cfg-nm" value="${esc(x.nome)}" aria-label="Nome do motivo" data-ren="${x.id}" />
         ${escopo(x)}
+        <span class="cfg-escopo"><button type="button" aria-pressed="${!!x.desc}" data-desc="${x.id}" title="Ao escolher este motivo, a pessoa precisa escrever o porquê">Pede descrição</button></span>
         <span class="cfg-uso">${x.uso ? fmt(x.uso)+(t==='descarte'?' descartes':' perdas') : 'nunca usado'}</span>
         <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${x.id}" aria-label="${x.uso?'Arquivar':'Excluir'} ${esc(x.nome)}" title="${x.uso?'Arquivar':'Excluir'}">${x.uso?I.arq:I.trash}</button></span>
       </div>`;
-    m.innerHTML = `<div class="cfg-page">
+    m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
       <h1>Motivos de descarte e perda</h1>
       <p class="cfg-sub">O que a pessoa escolhe ao descartar uma licitação ou registrar que perdeu. Os motivos alimentam o filtro de Descartadas e o dashboard, por isso um motivo já usado é arquivado, nunca apagado.</p>
       <div class="tabs" role="tablist">
@@ -484,9 +668,10 @@
         <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Mesma lista em Recomendadas e Em andamento</span><span class="cfg-d">Desligue para escolher, motivo a motivo, em qual das duas telas ele aparece.</span></span>
           <label class="sw"><input type="checkbox" id="swUnif" ${S.unificar?'checked':''} aria-label="Usar a mesma lista nas duas telas"><i></i></label></div>
       </div></section>` : `<p class="cfg-sub">Aparece quando a licitação chega em ${esc(S.etapas.find(e=>e.tipo==='saida').nome)} e a pessoa registra que perdeu.</p>`}
+      <p class="cfg-sub" style="margin:0 0 10px">Marque <b>Pede descrição</b> nos motivos em que a pessoa precisa explicar o porquê, como já acontece em Outros.</p>
       <div class="cfg-box" id="mBox">
         ${lista.map(item).join('')}
-        ${t==='descarte' ? `<div class="cfg-item"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Outros</span><span class="cfg-lock">${I.lock} Sempre disponível · pede descrição</span></div>` : ''}
+        ${t==='descarte' ? `<div class="cfg-item"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Outros</span><span class="cfg-lock">${I.lock} Sempre disponível · sempre pede descrição</span></div>` : ''}
         <button class="cfg-add" type="button" id="mAdd">${I.plus} Adicionar motivo</button>
       </div>
       ${arq.length ? `<section class="cfg-sec" style="margin-top:24px"><h2>Arquivados</h2>
@@ -501,6 +686,11 @@
       const x = S.motivos.find(y=>y.id===b.dataset.id), k = b.dataset.esc;
       if (x[k] && !(k==='rec'?x.and:x.rec)) { toast('O motivo precisa aparecer em pelo menos uma tela'); return; }
       x[k] = !x[k]; auditar('Motivos', `Alterou onde "${x.nome}" aparece`); motivos(m);
+    });
+    m.querySelectorAll('[data-desc]').forEach(b => b.onclick = () => {
+      const x = S.motivos.find(y=>y.id===b.dataset.desc); x.desc = !x.desc;
+      auditar('Motivos', `"${x.nome}" ${x.desc?'passou a pedir':'deixou de pedir'} descrição`); motivos(m);
+      toast(x.desc ? 'A partir de agora, quem escolher este motivo precisa escrever o porquê' : 'Descrição passou a ser opcional neste motivo');
     });
     m.querySelectorAll('[data-ren]').forEach(inp => {
       inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
@@ -527,7 +717,7 @@
     m.querySelectorAll('[data-rest]').forEach(b => b.onclick = () => { const x = S.motivos.find(y=>y.id===b.dataset.rest); x.arq = false; auditar('Motivos',`Restaurou "${x.nome}"`); motivos(m); toast('Motivo restaurado'); });
     arrastavel($('#mBox'), (a,b) => { mover(S.motivos,a,b); motivos(m); });
     $('#mAdd').onclick = () => {
-      const n = {id:'n'+Date.now(), nome:'Novo motivo', uso:0, rec:true, and:true, tipo:t, arq:false};
+      const n = {id:'n'+Date.now(), nome:'Novo motivo', uso:0, rec:true, and:true, tipo:t, arq:false, desc:false};
       const idx = S.motivos.findIndex(x=>x.tipo===t && !x.arq && x===S.motivos.filter(y=>y.tipo===t && !y.arq).pop());
       S.motivos.splice(idx+1,0,n); auditar('Motivos','Adicionou "Novo motivo"'); motivos(m);
       const inp = m.querySelector(`[data-ren="${n.id}"]`); inp.focus(); inp.select();
@@ -535,15 +725,18 @@
   }
 
   /* ======================= CAMPOS DO CARD ======================= */
-  const GRUPOS = [['destaque','Destaque','· abaixo do número do edital'],['datas','Datas','· coluna da esquerda'],['meta','Metadados','· grade de informações'],['itens','Itens','']];
+  const GRUPOS = [['destaque','Destaque','· abaixo do número do edital'],['datas','Datas','· coluna da esquerda'],['meta','Metadados','· qualquer variável da organização pode entrar aqui'],['itens','Itens','']];
 
   function card(m){
     const item = c => `<div class="cfg-item" data-id="${c.id}" data-g="${c.g}" ${c.g!=='itens'?'draggable="true"':''}>
         <span class="cfg-grip">${c.g!=='itens'?I.grip:''}</span>
         <label class="sw"><input type="checkbox" data-on="${c.id}" ${c.on?'checked':''} aria-label="Mostrar ${esc(c.nome)}"><i></i></label>
         <span class="cfg-nm" style="${c.on?'':'color:var(--muted-foreground)'}">${esc(c.nome)}</span>
-        ${c.var ? `<span class="origem ${c.origem}">${c.origem==='minha'?'Minha variável':'Settle'}</span>
-          <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-rm="${c.id}" aria-label="Tirar ${esc(c.nome)} do card">${I.trash}</button></span>` : ''}
+        ${c.id==='itens' ? `<label class="cfg-v" for="cMax">Mostrar até</label>
+          <select class="cfg-input" id="cMax" style="width:auto;padding-top:5px;padding-bottom:5px">${[3,5,10,0].map(n=>`<option value="${n}" ${S.maxItens===n?'selected':''}>${n?n+' itens':'Todos os itens'}</option>`).join('')}</select>` : ''}
+        ${c.var ? `<span class="origem ${c.origem}">${c.origem==='minha'?'Minha variável':'Variável Settle'}</span>
+          <span class="cfg-acts"><a class="cfg-ib" href="../../agentes-plataforma/" aria-label="Abrir a variável ${esc(c.nome)}" title="Abrir a variável para consultar ou editar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5"/></svg></a>
+          <button class="cfg-ib perigo" type="button" data-rm="${c.id}" aria-label="Tirar ${esc(c.nome)} do card">${I.trash}</button></span>` : ''}
       </div>`;
     m.innerHTML = `<div class="cfg-page larga">
       <h1>Campos do card</h1>
@@ -554,7 +747,7 @@
             <div class="cfg-gh">Topo <span class="cfg-gh-d">· fixo</span></div>
             <div class="cfg-item"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Número do edital, ações e Score</span><span class="cfg-lock">${I.lock} Fixo</span></div>
             ${GRUPOS.map(([g,n,d]) => `<div class="cfg-gh">${n} <span class="cfg-gh-d">${d}</span></div>` + S.campos.filter(c=>c.g===g).map(item).join('')).join('')}
-            <button class="cfg-add" type="button" id="cAdd">${I.plus} Adicionar variável como campo</button>
+            <button class="cfg-add" type="button" id="cAdd">${I.plus} Adicionar variável aos metadados</button>
           </div>
           <div class="vf-acts"><button class="btn btn-outline" type="button" id="cReset">Restaurar padrão da Settle</button></div>
         </div>
@@ -574,7 +767,8 @@
     arrastavel($('#cBox'), (a,b) => { mover(S.campos,a,b); auditar('Campos do card','Reordenou os campos'); card(m); });
     $('#cLic').onchange = e => { S.lic = +e.target.value; prevCard(); };
     $('#cReset').onclick = () => confirmar({titulo:'Restaurar os campos padrão?', corpo:'<p>O card volta a mostrar os campos da Settle na ordem original. Variáveis adicionadas saem do card, mas continuam existindo em Agentes.</p>', acao:'Restaurar', ok:()=>{ S.campos = JSON.parse(JSON.stringify(PADRAO.campos)); auditar('Campos do card','Restaurou o padrão da Settle'); card(m); toast('Campos restaurados'); }});
-    $('#cAdd').onclick = e => abrirMenu(e.currentTarget, S.campos.filter(c=>c.var).map(c=>c.id), v => {
+    $('#cMax').onchange = e => { S.maxItens = +e.target.value; auditar('Campos do card', `Passou a mostrar ${S.maxItens?'até '+S.maxItens:'todos os'} itens no card`); prevCard(); };
+    $('#cAdd').onclick = e => abrirMenu(e.currentTarget, S.campos.map(c=>c.id).concat(['edital','score']), v => {
       S.campos.push({id:v.k, nome:v.n, g:'meta', on:true, var:true, origem:v.o});
       auditar('Campos do card',`Adicionou a variável "${v.n}" ao card`); card(m); toast(`${v.n} entrou no card, no fim dos metadados`);
     });
@@ -598,9 +792,11 @@
         <div class="card-top-right"><span class="btn btn-outline">Descartar</span><span class="btn btn-primary">Enviar para análise</span><span class="btn btn-status">${L.score}</span></div></div>
       ${dest}
       ${(datas.length||meta.length) ? `<div class="grid-box" style="margin-top:12px">${datas.length?`<div class="grid-left">${datas.map(fld).join('')}</div>`:''}${meta.length?`<div class="grid-main">${meta.map(fld).join('')}</div>`:''}</div>` : ''}
-      ${on('itens') ? `<div class="items-head"><span class="items-title">Itens com Correspondência</span><span class="count-chip">1</span></div>
+      ${on('itens') ? (() => { const vis = S.maxItens ? L.itens.slice(0, S.maxItens) : L.itens, resto = L.itens.length - vis.length;
+        return `<div class="items-head"><span class="items-title">Itens com Correspondência</span><span class="count-chip">${L.itens.length}</span><span class="items-total">Mostrando ${vis.length} de ${L.itens.length}</span></div>
         <table class="items"><thead><tr><th scope="col">Nome</th><th scope="col">Segmento</th><th scope="col" class="t-right">Valor Total</th></tr></thead>
-        <tbody><tr><td>${esc(L.item[0])}</td><td><span class="tag-light">${L.item[1]}</span></td><td class="t-right">${L.item[3]}</td></tr></tbody></table>` : ''}
+        <tbody>${vis.map(it=>`<tr><td>${esc(it[0])}</td><td><span class="tag-light">${it[1]}</span></td><td class="t-right">${it[2]}</td></tr>`).join('')}</tbody></table>
+        ${resto ? `<span class="expand-toggle">Ver mais ${resto} ${resto===1?'item':'itens'}</span>` : ''}`; })() : ''}
     </div>`;
   }
 
@@ -730,6 +926,7 @@
   function permissoes(m){
     const R = [
       ['Etapas do funil','Altera','Usa','Usa','Vê'],
+      ['Abas das listas','Cria, edita e exclui','Usa','Usa','Usa'],
       ['Motivos de descarte e perda','Altera','Usa','Usa','Não usa (não descarta)'],
       ['Campos do card','Altera','Vê','Vê','Vê'],
       ['Modelo de e-mail','Altera','Usa','Usa','Usa'],
@@ -745,6 +942,7 @@
       <section class="cfg-sec" style="margin-top:24px"><h2>Regras</h2>
         <div class="cfg-box">
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Negado por padrão</span><span class="cfg-d">Quem não é Administrador não vê a seção nem os atalhos no contexto. Se abrir o link direto, recebe a tela de sem permissão com o nome dos administradores. A regra vale no backend (403), a tela é só a primeira defesa.</span></span></div>
+          <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Abas são da organização</span><span class="cfg-d">Só o Administrador cria, renomeia, muda filtros, reordena e exclui abas, e a mudança vale para todo mundo. As outras funções usam as abas e podem aplicar Filtrar por cima, sem salvar. "Todas" nunca pode ser excluída.</span></span></div>
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Tudo vai para a Auditoria</span><span class="cfg-d">Cada alteração registra quem, quando, a área e o antes/depois.</span></span></div>
           <div class="cfg-row"><span class="cfg-txt"><span class="cfg-t">Teste no protótipo</span><span class="cfg-d">Use "Ver como" no topo para ver a área com outra função.</span></span></div>
         </div></section>
