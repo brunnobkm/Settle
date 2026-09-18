@@ -10,6 +10,13 @@ navegação das configurações ("Voltar para a plataforma" no topo) e cada pág
 caixas com linhas. Entrada principal pelo menu do usuário (rodapé da sidebar), que hoje tem
 Gerenciar equipe, Auditoria e Atalhos do teclado. Equipe e Auditoria migram para dentro.
 
+**Menu do usuário (proposta de 18/09):** um item só, **Configurações**, e não a lista de
+seções. O menu fica com Configurações, Atalhos do teclado e Sair. Configurações só aparece para
+administrador. Motivos: são 8 seções e a lista vai crescer (um menu com 8 ou mais itens fica
+comprido), a área já tem sidebar própria com as seções, e colocar as seções na sidebar da
+plataforma ocuparia espaço de todo mundo com algo de uso raro e só de admin. Protótipo em
+`Plataforma/licitacoes-recomendadas/` (clique no avatar).
+
 Cada configuração também abre **de onde ela é usada** (atalho só para administrador, leva
 para a mesma página):
 
