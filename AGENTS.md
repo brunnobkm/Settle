@@ -279,8 +279,14 @@ de teclado, foco e contraste.
 3. Dados realistas do domínio.
 4. Incluir os estados esquecidos: **vazio, carregando, erro, sem resultado,
    sem permissão, muitos resultados**.
-5. Pensar na ação em lote, não só na individual.
-6. Revisar acessibilidade contra a lista acima.
+5. **Tela que não foi prototipada:** link ou botão que levaria a ela recebe
+   `data-nao-prototipado` (com `href="#"` se for link). O `settle.js` impede a
+   navegação e mostra o toast "Esta página ainda não foi prototipada.". Nunca
+   aponte para outra pasta só para "ter para onde ir": a pessoa perde o contexto
+   e não entende o que aconteceu. Protótipos antigos que não carregam o
+   `settle.js` repetem o mesmo comportamento no próprio script.
+6. Pensar na ação em lote, não só na individual.
+7. Revisar acessibilidade contra a lista acima.
 
 ## Fora de escopo
 

@@ -342,3 +342,16 @@
   document.addEventListener('focusout', esconder);
   window.addEventListener('scroll', esconder, true);
 })();
+
+/* ---------- tela não prototipada ----------
+   Link ou ação que leva a uma tela que ainda não existe no protótipo:
+   marque com data-nao-prototipado (href="#" ou <button>). O clique não sai
+   da tela e avisa pelo toast, para a pessoa entender por que nada aconteceu. */
+(function () {
+  document.addEventListener('click', function (e) {
+    var alvo = e.target.closest ? e.target.closest('[data-nao-prototipado]') : null;
+    if (!alvo) return;
+    e.preventDefault();
+    if (window.settleToast) window.settleToast('Esta página ainda não foi prototipada.');
+  });
+})();
