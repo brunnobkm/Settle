@@ -560,7 +560,7 @@
       <div class="tabs" role="tablist" aria-label="Tela">
         ${Object.keys(TELAS).map(k=>`<button class="tab ${k===tela?'active':''}" type="button" role="tab" aria-selected="${k===tela}" data-tela="${k}">${TELAS[k].n} <span class="cnt">${S.abas[k].length}</span></button>`).join('')}
       </div>
-      <div class="cfg-aviso">${I.info}<span>Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não altera a aba e some ao sair da tela. Salvar filtros por pessoa fica para uma próxima fase.</span></div>
+      <div class="cfg-aviso">${I.info}<span>Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não altera a aba e some ao sair da tela.</span></div>
       <div class="cfg-split" style="grid-template-columns:minmax(0,1fr)">
         <div class="cfg-box" id="aBox">
           ${L.map(item).join('')}
