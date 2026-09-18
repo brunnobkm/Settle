@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tabela de requisitos · Settle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --foreground:#0a0a0a;
+      --muted:#f5f5f5;
+      --muted-foreground:#737373;
+      --border:#e5e5e5;
+      --background:#ffffff;
+      --success:#16a34a;       --success-bg:#16a34a1a;
+      --warning:#d97706;       --warning-bg:#e392191a;
+      --destructive:#dc2626;   --destructive-bg:#e034341a;
+      --brand:#3a9b9e;
+      --secondary:#f5f5f5;
+      --secondary-foreground:#171717;
+      --radius-box:10px;
+      --radius-field:8px;
+      --radius-selector:6px;
+      --radius-badge:4px;
+      --shadow-xs:0 1px 2px 0 #0000000d;
+      --shadow-md:0 2px 4px -2px #0000001a, 0 4px 6px -1px #0000001a;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:"Geist","Inter",system-ui,-apple-system,sans-serif;
+      color:var(--foreground);
+      background:#fafafa;
+      -webkit-font-smoothing:antialiased;
+      padding:48px 32px;
+    }
+
+    /* ---- Card wrapper ---- */
+    .table-card{
+      background:var(--background);
+      border:1px solid var(--border);
+      border-radius:var(--radius-box);
+      box-shadow:var(--shadow-xs);
+      overflow:hidden;
+      width:max-content;
+      max-width:100%;
+      overflow-x:auto;
+    }
+
+    table.req{
+      border-collapse:collapse;
+      width:100%;
+      font-size:14px;
+      line-height:20px;
+    }
+
+    /* ---- Header ---- */
+    thead th{
+      text-align:left;
+      font-weight:500;
+      color:var(--foreground);
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+      vertical-align:middle;
+    }
+    th.add-col{ color:var(--brand); }
+    .add-col-inner{ display:inline-flex; align-items:center; gap:6px; }
+    th.excluir-col{ }
+    .excluir-inner{ display:inline-flex; align-items:center; gap:8px; }
+    .excluir-inner .trunc{ max-width:38px; overflow:hidden; text-overflow:ellipsis; }
+    .trash{ color:var(--destructive); display:inline-flex; }
+
+    /* ---- Cells ---- */
+    tbody td{
+      padding:10px 16px;
+      border-bottom:1px solid var(--border);
+      vertical-align:middle;
+      white-space:nowrap;
+    }
+    tbody tr:last-child td{ border-bottom:none; }
+    tbody tr.selected td{ background:#fafafa; }
+    .placeholder{ color:var(--muted-foreground); }
+    .hyperlink{ color:var(--muted-foreground); }
+
+    /* first column with drag handle + checkbox on selected row */
+    .req-cell{ display:flex; align-items:center; gap:8px; min-width:120px; }
+    .grip{ color:#a3a3a3; cursor:grab; display:none; }
+    .req-cell .chk{ display:none; }
+    tr.selected .grip,
+    tr.selected .req-cell .chk{ display:inline-flex; }
+    tr.selected .req-cell .placeholder{ overflow:hidden; text-overflow:ellipsis; max-width:46px; }
+
+    .chk{
+      width:16px;height:16px;border-radius:4px;border:1.5px solid var(--brand);
+      background:var(--brand);display:inline-flex;align-items:center;justify-content:center;
+      color:#fff;flex-shrink:0;
+    }
+
+    /* ---- Badges ---- */
+    .badge{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:2px 8px;border-radius:var(--radius-badge);
+      font-size:12px;line-height:16px;font-weight:500;white-space:nowrap;
+    }
+    .badge .spark{ flex-shrink:0; }
+    .badge.success{ color:var(--success); background:var(--success-bg); }
+    .badge.warning{ color:var(--warning); background:var(--warning-bg); }
+    .badge.destructive{ color:var(--destructive); background:var(--destructive-bg); }
+    .badge.neutral{ color:var(--foreground); background:var(--muted); }
+    .status-cell{ max-width:150px; }
+    .status-cell .badge{ max-width:100%; }
+    .status-cell .badge .label{ overflow:hidden; text-overflow:ellipsis; }
+
+    /* Confiança = texto colorido simples */
+    .conf{ font-size:12px;line-height:16px;font-weight:500; }
+    .conf.success{ color:var(--success); }
+    .conf.warning{ color:var(--warning); }
+    .conf.destructive{ color:var(--destructive); }
+
+    /* Bloco pill */
+    .pill{
+      display:inline-flex;align-items:center;
+      padding:2px 8px;border-radius:var(--radius-badge);
+      border:1px solid var(--border);background:var(--muted);
+      font-size:12px;line-height:16px;font-weight:500;color:var(--secondary-foreground);
+    }
+
+    /* ---- Toggle switch ---- */
+    .switch{
+      position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0;
+    }
+    .switch input{ display:none; }
+    .switch .track{
+      position:absolute;inset:0;border-radius:9999px;background:#e5e5e5;transition:.15s;
+    }
+    .switch .thumb{
+      position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:9999px;
+      background:#fff;box-shadow:var(--shadow-xs);transition:.15s;
+    }
+    .switch input:checked + .track{ background:var(--brand); }
+    .switch input:checked + .track + .thumb{ transform:translateX(14px); }
+
+    .toggle-cell{ }
+    .toggle-wrap{ display:inline-flex;align-items:center;gap:8px; }
+    .icon-muted{ color:var(--muted-foreground);display:inline-flex; }
+
+    /* ---- Action buttons (coluna Revisar) ---- */
+    .btn{
+      display:inline-flex;align-items:center;gap:6px;
+      height:28px;padding:0 10px;border-radius:var(--radius-selector);
+      font-size:12px;line-height:16px;font-weight:500;border:none;cursor:pointer;
+      max-width:78px;
+    }
+    .btn .label{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .btn-brand{ background:var(--brand);color:#fff; }
+    .btn-rev{ background:#8a8a87;color:#fff; }
+
+    /* ---- Add requisito footer ---- */
+    .add-req{
+      display:block;width:100%;text-align:left;
+      padding:12px 16px;background:transparent;border:none;
+      font-family:inherit;font-size:14px;color:var(--muted-foreground);cursor:pointer;
+    }
+    .add-req:hover{ background:#fafafa; }
+
+    /* ---- Context menu popover (Copiar link) ---- */
+    .popover{
+      position:absolute;margin-top:6px;
+      background:var(--background);border:1px solid var(--border);
+      border-radius:var(--radius-selector);box-shadow:var(--shadow-md);
+      padding:6px;min-width:300px;z-index:10;
+    }
+    .popover-item{
+      display:flex;align-items:center;gap:10px;
+      padding:8px 8px;border-radius:var(--radius-selector);
+      font-size:14px;color:var(--foreground);cursor:pointer;
+    }
+    .popover-item:hover{ background:var(--muted); }
+    .popover-item .ic{ color:var(--muted-foreground);display:inline-flex; }
+    .anchor{ position:relative; }
+  </style>
+</head>
+<body>
+  <div class="table-card">
+    <table class="req">
+      <thead>
+        <tr>
+          <th>Requisito</th>
+          <th>Status</th>
+          <th>Confiança IA</th>
+          <th>Fonte</th>
+          <th>Bloco</th>
+          <th>Notas</th>
+          <th>Questionar</th>
+          <th>Impugnar</th>
+          <th>Revisar</th>
+          <th class="excluir-col">
+            <span class="excluir-inner">
+              <span class="trunc">Excluir</span>
+              <span class="trash" aria-label="Excluir">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </span>
+            </span>
+          </th>
+          <th class="add-col">
+            <span class="add-col-inner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar coluna
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <button class="add-req">+ Adicionar requisito</button>
+  </div>
+
+  <script>
+    /* ---------- ícones inline ---------- */
+    const ICONS = {
+      spark:(c)=>`<svg class="spark" width="13" height="13" viewBox="0 0 24 24" fill="${c}" aria-hidden="true"><path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6L12 2z"/><path d="M19 14l.7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14z"/></svg>`,
+      plus:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+      msg:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+      gear:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+      check:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+      link:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+      grip:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>`
+    };
+    const COLOR = { success:'#16a34a', warning:'#d97706', destructive:'#dc2626', neutral:'#0a0a0a' };
+
+    /* ---------- dados das linhas (fiel ao Figma) ---------- */
+    const rows = [
+      { status:'Atende',                  sColor:'success',     conf:'Alta',  cColor:'success',     q:'off', i:'off', r:{t:'toggle',on:false} },
+      { status:'Atende',                  sColor:'success',     conf:'Média', cColor:'warning',     q:'off', i:'off', r:{t:'toggle',on:false} },
+      { status:'Atende com parcialidade', sColor:'warning',     conf:'Baixa', cColor:'destructive', q:'off', i:'off', r:{t:'toggle',on:false} },
+      { status:'Em revisão',              sColor:'neutral',     conf:'Baixa', cColor:'destructive', q:{on:true,ic:'plus'}, i:{on:true,ic:'plus'}, r:{t:'toggle-gear',on:true} },
+      { status:'Não atende',              sColor:'destructive', conf:'Baixa', cColor:'destructive', q:{on:true,ic:'msg'},  i:{on:true,ic:'msg'},  r:{t:'btn-rev'} },
+      { status:'Atende com parcialidade', sColor:'warning',     conf:'Baixa', cColor:'destructive', q:{on:true,ic:'msg'},  i:{on:true,ic:'msg'},  r:{t:'btn-marcar'} },
+      { status:'Atende com parcialidade', sColor:'warning',     conf:'Baixa', cColor:'destructive', q:{on:true,ic:'msg'},  i:{on:true,ic:'msg'},  r:{t:'btn-marcar'} },
+      { status:'Atende com parcialidade', sColor:'warning',     conf:'Baixa', cColor:'destructive', q:{on:true,ic:'msg'},  i:{on:true,ic:'msg'},  r:{t:'btn-marcar'}, selected:true },
+    ];
+
+    /* ---------- render helpers ---------- */
+    function statusBadge(r){
+      return `<span class="badge ${r.sColor}">${ICONS.spark(COLOR[r.sColor])}<span class="label">${r.status}</span></span>`;
+    }
+    function toggleCell(state){
+      if(state==='off'){
+        return `<label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>`;
+      }
+      const icon = state.ic==='plus' ? ICONS.plus : ICONS.msg;
+      const checked = state.on ? 'checked' : '';
+      return `<span class="toggle-wrap"><label class="switch"><input type="checkbox" ${checked}><span class="track"></span><span class="thumb"></span></label><span class="icon-muted">${icon}</span></span>`;
+    }
+    function revisarCell(r){
+      switch(r.r.t){
+        case 'toggle':
+          return `<label class="switch"><input type="checkbox" ${r.r.on?'checked':''}><span class="track"></span><span class="thumb"></span></label>`;
+        case 'toggle-gear':
+          return `<span class="toggle-wrap"><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label><span class="icon-muted">${ICONS.gear}</span></span>`;
+        case 'btn-rev':
+          return `<button class="btn btn-rev">${ICONS.check}<span class="label">Revisado</span></button>`;
+        case 'btn-marcar':
+          return `<button class="btn btn-brand"><span class="label">Marcar como revisado</span></button>`;
+      }
+    }
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = rows.map((r,idx)=>{
+      const reqCell = r.selected
+        ? `<div class="req-cell"><span class="grip">${ICONS.grip}</span><span class="chk">${ICONS.check}</span><span class="placeholder">Placeholder</span></div>`
+        : `<div class="req-cell"><span class="placeholder">Placeholder</span></div>`;
+      const reqAnchor = r.selected ? `<td class="anchor">${reqCell}${popover()}</td>` : `<td>${reqCell}</td>`;
+      return `<tr class="${r.selected?'selected':''}">
+        ${reqAnchor}
+        <td class="status-cell">${statusBadge(r)}</td>
+        <td><span class="conf ${r.cColor}">${r.conf}</span></td>
+        <td><span class="hyperlink">Hyperlink</span></td>
+        <td><span class="pill">Placeholder</span></td>
+        <td><span class="placeholder">Placeholder</span></td>
+        <td class="toggle-cell">${toggleCell(r.q)}</td>
+        <td class="toggle-cell">${toggleCell(r.i)}</td>
+        <td>${revisarCell(r)}</td>
+        <td></td>
+        <td></td>
+      </tr>`;
+    }).join('');
+
+    function popover(){
+      return `<div class="popover"><div class="popover-item"><span class="ic">${ICONS.link}</span>Copiar link</div></div>`;
+    }
+  </script>
+</body>
+</html>

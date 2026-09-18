@@ -22,7 +22,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const STRICT = process.argv.includes('--strict');
 const ALVOS = process.argv.slice(2).filter(a => !a.startsWith('--'));
 
-const IGNORAR = ['.git', 'node_modules', 'assets', '.claude', 'react'];
+const IGNORAR = ['.git', 'node_modules', 'assets', '.claude', 'react', 'work', 'archive'];
 
 /* ---------- tokens disponíveis no settle.css ------------------------------ */
 

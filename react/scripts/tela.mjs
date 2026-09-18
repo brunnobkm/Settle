@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Protótipos React da Settle, feitos com os componentes do design system (@settle).
 //
-//   npm run nova -- <nome> "Título" [destino]   cria telas/<nome> (destino padrão: Plataforma/<nome>)
+//   npm run nova -- <nome> "Título" [destino]   cria telas/<nome> (destino padrão: settle-<nome> na raiz)
 //   npm run dev -- <nome>                       roda a tela com recarregamento automático
 //   npm run build -- <nome>                     gera <destino>/index.html (arquivo único, pronto para o GitHub Pages)
 //   npm run telas                               lista as telas
@@ -35,7 +35,7 @@ if (cmd === "nova") {
     console.error(`telas/${nome} já existe`)
     process.exit(1)
   }
-  const [titulo = nome, destino = `Plataforma/${nome}`] = resto
+  const [titulo = nome, destino = nome.startsWith("settle-") ? nome : `settle-${nome}`] = resto
   await mkdir(dir, { recursive: true })
   await writeFile(path.join(dir, "tela.json"), JSON.stringify({ titulo: `Settle · ${titulo}`, destino }, null, 2) + "\n")
   await copyFile(path.join(TELAS, "_exemplo", "App.tsx"), path.join(dir, "App.tsx"))

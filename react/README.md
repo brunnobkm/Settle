@@ -18,9 +18,9 @@ O `.env.local` não vai para o git.
 
 | Comando | O que faz |
 |---|---|
-| `npm run nova -- licitacoes-kanban "Kanban de licitações"` | Cria `telas/licitacoes-kanban/` (publica em `Plataforma/licitacoes-kanban/`) |
-| `npm run dev -- licitacoes-kanban` | Abre a tela com recarregamento automático |
-| `npm run build -- licitacoes-kanban` | Gera `Plataforma/licitacoes-kanban/index.html` |
+| `npm run nova -- settle-licitacoes-kanban "Kanban de licitações"` | Cria `telas/settle-licitacoes-kanban/` (publica em `settle-licitacoes-kanban/`) |
+| `npm run dev -- settle-licitacoes-kanban` | Abre a tela com recarregamento automático |
+| `npm run build -- settle-licitacoes-kanban` | Gera `settle-licitacoes-kanban/index.html` |
 | `npm run telas` | Lista as telas e para onde cada uma publica |
 | `npm run ds` | Traz a versão mais nova dos componentes e do tema da Settle |
 
