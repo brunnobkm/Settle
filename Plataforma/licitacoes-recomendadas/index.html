@@ -109,6 +109,23 @@
   .sb-user-email{font-size:12px;font-weight:300;color:var(--sb-fg);line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   body:not(.sb-open) .sb-user{display:none;}
 
+  /* menu do usuário: o avatar do rodapé abre Configurações (só admin), atalhos e sair */
+  button.sb-foot{width:100%;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px;margin:0 0 4px;}
+  button.sb-foot:hover,button.sb-foot[aria-expanded="true"]{background:rgba(0,0,0,.05);}
+  .um{position:fixed;z-index:80;width:260px;background:var(--background);border:1px solid var(--border);border-radius:var(--radius-box);
+    box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;}
+  .um[hidden]{display:none;}
+  .um-head{display:flex;align-items:center;gap:10px;padding:8px 8px 10px;}
+  .um-head b{display:block;font-size:14px;font-weight:600;}
+  .um-head span{display:block;font-size:12px;color:var(--muted-foreground);}
+  .um-sep{height:1px;background:var(--border);margin:4px -6px;}
+  .um-item{display:flex;align-items:flex-start;gap:10px;width:100%;padding:8px;border:0;border-radius:7px;background:transparent;
+    font:inherit;font-size:14px;color:var(--foreground);text-align:left;text-decoration:none;cursor:pointer;}
+  .um-item:hover,.um-item:focus-visible{background:var(--muted);outline:none;}
+  .um-item svg{flex:none;margin-top:2px;color:var(--muted-foreground);}
+  .um-item small{display:block;font-size:12px;color:var(--muted-foreground);margin-top:1px;}
+  .um-item.sair,.um-item.sair svg{color:#dc2626;}
+
   /* ============ SHELL ============ */
   .shell{margin-left:52px;transition:margin-left .2s ease;}
   body.sb-open .shell{margin-left:280px;}
@@ -524,14 +541,14 @@
     </nav>
 
     <!-- footer / user -->
-    <div class="sb-foot">
+    <button class="sb-foot" type="button" id="userBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" aria-label="Menu do usuário: Brunno Krier">
       <div class="sb-avatar">BK</div>
       <div class="sb-user">
         <div class="sb-user-name">Brunno Krier</div>
         <div class="sb-user-email">brunno.krier+demos@settlegov.com</div>
       </div>
-      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
-    </div>
+      <svg class="sb-caret" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.5 8 4.5l2 2M6 9.5 8 11.5l2-2"/></svg>
+    </button>
   </aside>
 
   <div class="shell">
@@ -1270,6 +1287,60 @@ document.addEventListener('keydown', e=>{
 })();
 
 buildMenu();
+</script>
+
+<!-- Menu do usuário. Proposta de 18/09: um item só, Configurações, que abre a área
+     com sidebar própria (padrão Linear). Gerenciar equipe e Auditoria saem daqui e
+     passam a morar dentro de Configurações. O item só aparece para administrador. -->
+<div class="um" id="userMenu" role="menu" aria-label="Menu do usuário" hidden>
+  <div class="um-head" role="presentation">
+    <div class="sb-avatar" aria-hidden="true">BK</div>
+    <div><b>Brunno Krier</b><span>brunno.krier+demos@settlegov.com</span></div>
+  </div>
+  <div class="um-sep" role="separator"></div>
+  <a class="um-item" role="menuitem" href="../configuracoes/#inicio">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1M11.3 4.7l1.1-1.1" stroke-linecap="round"/></svg>
+    <span>Configurações<small>Equipe, auditoria, etapas, abas, motivos e mais</small></span>
+  </a>
+  <button class="um-item" role="menuitem" type="button" data-um="atalhos">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5"/><path d="M4 7h.01M6.5 7h.01M9 7h.01M11.5 7h.01M5 9.8h6" stroke-linecap="round"/></svg>
+    <span>Atalhos do teclado</span>
+  </button>
+  <div class="um-sep" role="separator"></div>
+  <button class="um-item sair" role="menuitem" type="button" data-um="sair">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6M10.5 11 13.5 8l-3-3M13.5 8H6"/></svg>
+    <span>Sair</span>
+  </button>
+</div>
+<script>
+(function(){
+  const btn = document.getElementById('userBtn'), menu = document.getElementById('userMenu');
+  const itens = () => [...menu.querySelectorAll('.um-item')];
+  function abrir(){
+    const sb = document.getElementById('sidebar') || document.querySelector('aside');
+    const r = sb.getBoundingClientRect();
+    menu.style.left = (r.right + 8) + 'px';
+    menu.style.bottom = '12px';
+    menu.hidden = false; btn.setAttribute('aria-expanded','true'); itens()[0].focus();
+  }
+  function fechar(foco){ menu.hidden = true; btn.setAttribute('aria-expanded','false'); if (foco) btn.focus(); }
+  btn.addEventListener('click', () => menu.hidden ? abrir() : fechar());
+  document.addEventListener('mousedown', e => { if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) fechar(); });
+  menu.addEventListener('keydown', e => {
+    const l = itens(), i = l.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); fechar(true); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); l[(i+1)%l.length].focus(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); l[(i-1+l.length)%l.length].focus(); }
+  });
+  menu.querySelectorAll('[data-um]').forEach(b => b.addEventListener('click', () => {
+    fechar(true);
+    const host = document.getElementById('toasts'); if (!host) return;
+    const t = document.createElement('div'); t.className = 'toast';
+    t.innerHTML = '<span class="toast-msg">' + (b.dataset.um === 'sair' ? 'No protótipo, Sair não encerra a sessão.' : 'Atalhos do teclado ficam como estão hoje.') + '</span>';
+    host.appendChild(t); requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); t.classList.add('hide'); setTimeout(() => t.remove(), 260); }, 3000);
+  }));
+})();
 </script>
 </body>
 </html>
