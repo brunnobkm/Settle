@@ -123,7 +123,6 @@
     font:inherit;font-size:14px;color:var(--foreground);text-align:left;text-decoration:none;cursor:pointer;}
   .um-item:hover,.um-item:focus-visible{background:var(--muted);outline:none;}
   .um-item svg{flex:none;margin-top:2px;color:var(--muted-foreground);}
-  .um-item small{display:block;font-size:12px;color:var(--muted-foreground);margin-top:1px;}
   .um-item.sair,.um-item.sair svg{color:#dc2626;}
 
   /* ============ SHELL ============ */
@@ -535,8 +534,8 @@
         <a class="sb-item active" href="#" data-view="recomendadas" aria-current="page" title="Recomendadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M5.3 8.2l1.8 1.8 3.6-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sb-label">Recomendadas</span></a>
         <a class="sb-item" href="#" data-view="salvos" title="Salvos para depois"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5l-4.5-2.6L3.5 13.5V3a.5.5 0 0 1 .5-.5z" stroke-linejoin="round"/></svg></span><span class="sb-label">Salvos para depois</span><span class="sb-count" id="savedCount">1</span></a>
         <a class="sb-item" href="../explorar-licitacoes/" title="Explorar licitações"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 2.5H4.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5H7.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5 12 6v2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><circle cx="10.3" cy="11" r="2.1"/><path d="M11.8 12.5 13.5 14" stroke-linecap="round"/></svg></span><span class="sb-label">Explorar licitações</span></a>
-        <a class="sb-item" href="#" title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
-        <a class="sb-item" href="#" title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
+        <a class="sb-item" href="#" data-nao-prototipado title="Em andamento"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.17 3v10M9.83 3v10"/></svg></span><span class="sb-label">Em andamento</span></a>
+        <a class="sb-item" href="#" data-nao-prototipado title="Descartadas"><span class="sb-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h4.5L12 6v7.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" stroke-linejoin="round"/><path d="M8.5 2.5V6H12"/><path d="M6.6 8.6l2.8 2.8M9.4 8.6l-2.8 2.8" stroke-linecap="round"/></svg></span><span class="sb-label">Descartadas</span></a>
       </div>
     </nav>
 
@@ -1300,14 +1299,14 @@ buildMenu();
   <div class="um-sep" role="separator"></div>
   <a class="um-item" role="menuitem" href="../configuracoes/#inicio">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
-    <span>Configurações<small>Equipe, auditoria, etapas, abas, motivos e mais</small></span>
+    <span>Configurações</span>
   </a>
-  <button class="um-item" role="menuitem" type="button" data-um="atalhos">
+  <button class="um-item" role="menuitem" type="button" data-nao-prototipado>
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5"/><path d="M4 7h.01M6.5 7h.01M9 7h.01M11.5 7h.01M5 9.8h6" stroke-linecap="round"/></svg>
     <span>Atalhos do teclado</span>
   </button>
   <div class="um-sep" role="separator"></div>
-  <button class="um-item sair" role="menuitem" type="button" data-um="sair">
+  <button class="um-item sair" role="menuitem" type="button" data-nao-prototipado>
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6M10.5 11 13.5 8l-3-3M13.5 8H6"/></svg>
     <span>Sair</span>
   </button>
@@ -1332,14 +1331,16 @@ buildMenu();
     if (e.key === 'ArrowDown') { e.preventDefault(); l[(i+1)%l.length].focus(); }
     if (e.key === 'ArrowUp') { e.preventDefault(); l[(i-1+l.length)%l.length].focus(); }
   });
-  menu.querySelectorAll('[data-um]').forEach(b => b.addEventListener('click', () => {
-    fechar(true);
+  /* Padrão dos protótipos: tela ainda não prototipada avisa pelo toast e não sai da tela. */
+  document.addEventListener('click', e => {
+    const alvo = e.target.closest('[data-nao-prototipado]'); if (!alvo) return;
+    e.preventDefault(); if (menu.contains(alvo)) fechar(true);
     const host = document.getElementById('toasts'); if (!host) return;
     const t = document.createElement('div'); t.className = 'toast';
-    t.innerHTML = '<span class="toast-msg">' + (b.dataset.um === 'sair' ? 'No protótipo, Sair não encerra a sessão.' : 'Atalhos do teclado ficam como estão hoje.') + '</span>';
+    t.innerHTML = '<span class="toast-msg">Esta página ainda não foi prototipada.</span>';
     host.appendChild(t); requestAnimationFrame(() => t.classList.add('show'));
     setTimeout(() => { t.classList.remove('show'); t.classList.add('hide'); setTimeout(() => t.remove(), 260); }, 3000);
-  }));
+  });
 })();
 </script>
 </body>
