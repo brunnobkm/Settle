@@ -18,7 +18,10 @@
    ========================================================================== */
 
 :root{
-  /* superfícies e texto */
+  /* Cores, raios e marca vêm do design system (~/Documents/Claude/design-system,
+     registry/clients/settle). Para mudar, edite lá e rode
+     "npm run export:html -- settle". Não edite o trecho abaixo à mão. */
+  /* design-system:inicio (gerado por design-system: npm run export:html -- settle. Não edite aqui, edite registry/clients/settle/) */
   --background:#ffffff;
   --foreground:#0a0a0a;
   --card:#ffffff;
@@ -26,41 +29,20 @@
   --muted-foreground:#737373;
   --border:#e5e5e5;
   --border-strong:#d4d4d4;
-
-  /* primária (quase-preto) — usada em chips, segmentos e seleção */
   --primary:#171717;
   --primary-foreground:#fafafa;
-
-  /* marca (teal) — ação primária, seleção ativa, links de destaque */
-  --accent:#3a9b9e;
-  --accent-600:#2a787b;
+  --accent:#00786f;
+  --accent-600:#005f5a;
   --accent-100:#d4eef0;
-
-  /* ------------------------------------------------------------------
-     ATENÇÃO — contraste
-     O teal atual (#3a9b9e) tem contraste ~3:1 sobre branco: passa em
-     WCAG AA apenas para texto grande e elementos gráficos, não para
-     texto normal.
-
-     O teal oficial do preset shadcn b5cjpD6Rs é #00786f (~4.9:1),
-     que passa em AA para texto normal.
-
-     Para migrar, troque os três valores acima por:
-       --accent:#00786f;  --accent-600:#005f5a;  --accent-100:#d4eef0;
-     Faça isso quando quiser — muda o visual de todas as telas de uma vez.
-     ------------------------------------------------------------------ */
-
-  /* estados */
   --warning:#d97706;
   --warning-bg:#fdf6ec;
   --success:#16a34a;
   --destructive:#dc2626;
-
-  /* raios */
-  --radius-selector:6px;
-  --radius-field:8px;
-  --radius-box:10px;
-  --radius-badge:4px;
+  --radius-selector:calc(0.625rem * 0.6);
+  --radius-field:calc(0.625rem * 0.8);
+  --radius-box:0.625rem;
+  --radius-badge:calc(0.625rem * 0.4);
+  /* design-system:fim */
 
   /* sombras */
   --shadow-xs:0 1px 2px 0 rgba(0,0,0,.05);
