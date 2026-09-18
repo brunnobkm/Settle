@@ -544,13 +544,13 @@
   function abas(m){
     const tela = S.abaTela, L = S.abas[tela];
     if (!L.find(a=>a.id===S.abaPrev[tela])) S.abaPrev[tela] = L[0].id;
-    const item = a => `<div class="cfg-item" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
+    const item = a => `<div class="cfg-item ${a.fixa?'fixo':''}" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
         <span class="cfg-grip ${a.fixa?'fixo':''}">${a.fixa?I.lock:I.grip}</span>
         ${a.fixa ? `<span class="cfg-nm" style="flex:none;width:180px">${esc(a.nome)}</span>`
                  : `<input class="cfg-nm" style="flex:none;width:180px" value="${esc(a.nome)}" aria-label="Nome da aba" data-aren="${a.id}" />`}
-        <span class="cfg-badges">${a.fixa ? `<span class="cfg-lock">${I.lock} Sempre a primeira · sem filtro</span>`
+        <span class="cfg-badges">${a.fixa ? `<span class="cfg-fixo-d">Mostra todas as licitações, sem filtro. Sempre a primeira aba.</span>`
           : (!a.f.length ? `<span class="cfg-sem">Sem filtro: mostra o mesmo que Todas</span>` : badges(a, true))}</span>
-        ${a.fixa ? '' : `<span class="cfg-acts">
+        ${a.fixa ? `<span class="cfg-lock" tabindex="0" data-tip="Aba padrão da plataforma: mostra todas as licitações. Não pode ser renomeada, filtrada, movida nem excluída.">${I.lock} Não editável</span>` : `<span class="cfg-acts">
           <button class="btn btn-outline" type="button" data-afilt="${a.id}" style="padding:4px 10px;font-size:13px">Filtrar${a.f.length?` <span class="cnt">${a.f.length}</span>`:''}</button>
           <button class="cfg-ib" type="button" data-adup="${a.id}" aria-label="Duplicar ${esc(a.nome)}" data-tip="Duplicar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M11 5V3.5A1 1 0 0 0 10 2.5H3.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></svg></button>
           <button class="cfg-ib perigo" type="button" data-adel="${a.id}" aria-label="Excluir ${esc(a.nome)}" data-tip="Excluir">${I.trash}</button></span>`}
@@ -728,7 +728,7 @@
       <p class="cfg-sub" style="margin:0 0 10px">Marque <b>Pede descrição</b> nos motivos em que a pessoa precisa explicar o porquê, como já acontece em Outros.</p>
       <div class="cfg-box" id="mBox">
         ${lista.map(item).join('')}
-        ${t==='descarte' ? `<div class="cfg-item"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Outros</span><span class="cfg-lock">${I.lock} Sempre disponível · sempre pede descrição</span></div>` : ''}
+        ${t==='descarte' ? `<div class="cfg-item fixo"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Outros</span><span class="cfg-fixo-d">Sempre disponível e sempre pede descrição.</span><span class="cfg-lock" tabindex="0" data-tip="Motivo padrão da plataforma. Não pode ser renomeado, arquivado nem excluído.">${I.lock} Não editável</span></div>` : ''}
         <button class="cfg-add" type="button" id="mAdd">${I.plus} Adicionar motivo</button>
       </div>
       ${arq.length ? `<section class="cfg-sec" style="margin-top:24px"><h2>Arquivados</h2>
@@ -802,7 +802,7 @@
         <div>
           <div class="cfg-box" id="cBox">
             <div class="cfg-gh">Topo <span class="cfg-gh-d">· fixo</span></div>
-            <div class="cfg-item"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Número do edital, ações e Score</span><span class="cfg-lock">${I.lock} Fixo</span></div>
+            <div class="cfg-item fixo"><span class="cfg-grip fixo">${I.lock}</span><span class="cfg-nm">Número do edital, ações e Score</span><span class="cfg-lock" tabindex="0" data-tip="O topo do card é igual para todos: não pode ser ocultado nem movido.">${I.lock} Não editável</span></div>
             ${GRUPOS.map(([g,n,d]) => `<div class="cfg-gh">${n} <span class="cfg-gh-d">${d}</span></div>` + S.campos.filter(c=>c.g===g).map(item).join('')).join('')}
             <button class="cfg-add" type="button" id="cAdd">${I.plus} Adicionar variável aos metadados</button>
           </div>
