@@ -16,6 +16,7 @@ para a mesma página):
 | Configuração | Atalho no contexto |
 |---|---|
 | Etapas do funil | Em andamento, menu `⋯` da coluna, Editar etapas |
+| Abas das listas | Recomendadas, Explorar e Descartadas, `⋯` ao lado das abas, Editar abas |
 | Motivos | Modal de Descartar e de registrar perda, Gerenciar motivos |
 | Campos do card | Recomendadas, Ordenar, Personalizar campos do card |
 | Modelo de e-mail | Modal Compartilhar licitação, Editar modelo de e-mail |
@@ -33,6 +34,10 @@ Administrador). **Configuração da organização é só Administrador.**
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
 - A regra vale no backend (403). A tela é só a primeira defesa.
 - Toda alteração vai para a Auditoria: quem, quando, área, antes e depois.
+- **Abas:** só o Administrador cria, renomeia, muda filtros, reordena, duplica e exclui.
+  As outras funções usam as abas e não veem o `+` nem o menu de editar. Isso corrige a
+  ambiguidade do documento de RBAC ("permitido na própria conta"): não existe aba da
+  própria conta nesta fase.
 
 ## 1. Modelo de e-mail
 
@@ -60,7 +65,10 @@ Administrador). **Configuração da organização é só Administrador.**
 - Renomear muda o nome em todas as licitações que já usaram (o vínculo é por ID). Se a
   intenção for outro significado, o certo é arquivar e criar um novo; a tela avisa quantas
   licitações serão afetadas.
-- "Outros" é fixo e pede descrição.
+- "Outros" é fixo e sempre pede descrição.
+- **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
+  escreva o porquê ao escolhê-lo. Vale para descarte e perda. Ligar não afeta os descartes
+  já feitos sem descrição.
 - Interruptor "Exigir motivo ao descartar".
 - Hoje existem 15 motivos de descarte (incluindo Outros). Os de perda no protótipo são exemplo:
   **confirmar a lista atual com o time.**
@@ -74,12 +82,49 @@ Administrador). **Configuração da organização é só Administrador.**
 - Variável da organização pode virar campo. Quando não é encontrada naquela licitação, mostra
   "Não encontrado" (mesmo tratamento FOUND/NOT_FOUND/OTHER do Resumo).
 - Campo oculto continua em Filtrar e Ordenar.
+- **Quantidade de itens** (feedback da Alice, 18/09): hoje o card mostra até 5 itens com
+  correspondência. O admin escolhe 3, 5, 10 ou todos; o que passar do limite fica em
+  "Ver mais N itens". O contador mostra sempre o total.
+- **Variáveis nos metadados** (feedback da Alice, 18/09): qualquer variável da organização
+  ou da Settle pode entrar na grade, inclusive as de checklist (prazo de impugnação, local
+  de entrega). O botão Adicionar lista o catálogo inteiro e tem "Criar variável", que leva
+  à central de Agentes e variáveis; a variável criada volta para esta lista. Cada variável
+  no card tem atalho para abrir e editar a própria variável (pedido que também apareceu no
+  teste com usuários: clicar na variável e editar de onde se está).
 - Vale para a organização toda. **Em aberto:** permitir que cada pessoa tenha a própria
   visão por cima do padrão (o Linear faz isso por view). Recomendo começar só com o padrão
   da organização.
 - **Em aberto:** Em andamento e Descartadas herdam essa configuração ou têm a sua?
 
-## 4. Etapas do funil (colunas do Kanban)
+## 4. Abas das listas
+
+Decisão da reunião de 18/09 com a Alice: o protótipo do Explorar licitações criava a aba
+na própria interface e salvava filtros por pessoa, como no Notion. Isso contraria o
+combinado e depende de guardar preferência por usuário, que a plataforma não tem. Ficou
+assim:
+
+- **A aba é da organização.** O administrador cria em Configurações, define nome e filtros,
+  e ela aparece igual para todo mundo. O card de "tab personalizada" voltou para Design.
+- Telas com abas: Recomendadas, Explorar licitações e Descartadas. Cada tela tem a sua lista.
+- **Aba é um conjunto de filtros salvo.** Os filtros disponíveis são os do botão Filtrar da
+  tela, mais as variáveis da organização. Data é valor relativo ("Próximos 7 dias",
+  "Hoje"), para a aba continuar certa com o passar do tempo.
+- **Aba sem filtro é aviso:** mostra o mesmo que Todas. A tela sinaliza, mas deixa salvar
+  (o admin pode estar no meio da configuração).
+- Filtro "Responsável: Eu (quem está vendo)" permite uma aba "Minhas licitações" que é da
+  organização mas mostra o recorte de cada pessoa. Resolve boa parte do pedido de
+  personalização sem salvar nada por usuário.
+- **"Todas"** é fixa: sempre a primeira, sem filtro, não pode ser excluída nem renomeada.
+- Na tela, **Filtrar continua funcionando por cima da aba**, mas é momentâneo: não altera a
+  aba e some ao sair da tela. Esse era o ponto de confusão no teste da Alice ("como salvo o
+  filtro que apliquei?"): quem salva filtro é o admin, aqui.
+- Excluir aba não muda nenhuma licitação; a aba só some para todos. Tem desfazer.
+- Nome único por tela. Limite de 10 abas por tela (acima disso a barra estoura; o "Mais N"
+  do protótipo antigo segue como fallback em telas estreitas).
+- Contador da aba é calculado com os filtros dela.
+- Próxima fase, se validado: a pessoa salvar as próprias abas por cima das da organização.
+
+## 5. Etapas do funil (colunas do Kanban)
 
 Modelo do Linear: categorias fixas com itens editáveis dentro.
 
@@ -122,6 +167,11 @@ Recomendação da própria task, que sigo: **esta task cobre a experiência; as 
 um card separado para o time de desenvolvimento.**
 
 ## Outros pontos configuráveis levantados
+
+- **Automações por etapa** (Alice, 18/09): criar um conjunto de tarefas quando a licitação
+  entra numa etapa e medir o tempo em cada etapa. Para depois; entra em Etapas do funil.
+- **Equipe dentro de Configurações:** a Alice perguntou; segue em aberto. A tela já está na
+  navegação, mas pode continuar no menu do usuário se Configurações ficar pequena.
 
 - **Substatus**: o card já tem "Selecionar Substatus" com valores do cliente (ex.: Encaminhar
   e-mail, Esperando aprovação do Marcelo). É uma lista configurável que ainda não tem lugar.
