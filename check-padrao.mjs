@@ -22,7 +22,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const STRICT = process.argv.includes('--strict');
 const ALVOS = process.argv.slice(2).filter(a => !a.startsWith('--'));
 
-const IGNORAR = ['.git', 'node_modules', 'assets', '.claude'];
+const IGNORAR = ['.git', 'node_modules', 'assets', '.claude', 'react'];
 
 /* ---------- tokens disponíveis no settle.css ------------------------------ */
 
@@ -79,6 +79,10 @@ if (ALVOS.length) {
 } else {
   arquivos = listarHtml(ROOT);
 }
+
+/* Telas feitas em React com o design system (react/) seguem outras regras:
+   não usam settle.css. O build marca o HTML com <meta name="settle-stack" content="react-ds">. */
+arquivos = arquivos.filter(arq => !/name="settle-stack"\s+content="react-ds"/.test(readFileSync(arq, 'utf8')));
 
 /* ---------- regras --------------------------------------------------------- */
 
