@@ -1654,3 +1654,103 @@ body.cp-lateral .shell{margin-right:424px;transition:margin-right .2s ease;}
 .cp-op.on{color:var(--accent-600);font-weight:600;}
 .cp-op-sub{display:block;font-size:11.5px;line-height:16px;color:var(--muted-foreground);margin-top:1px;}
 .cp-op-vazio{padding:10px 8px;font-size:12.5px;color:var(--muted-foreground);}
+
+/* ==========================================================================
+   37. CONFIGURAÇÕES DA ORGANIZAÇÃO
+   --------------------------------------------------------------------------
+   Área única de configurações, no padrão do Linear: a sidebar da plataforma
+   dá lugar à navegação das configurações ("Voltar para a plataforma" no
+   topo) e cada página é uma coluna estreita de caixas com linhas
+   título + descrição à esquerda e controle à direita. Serve para Equipe,
+   Auditoria e Permissões quando migrarem para cá.
+   ========================================================================== */
+.cfg-page{max-width:780px;margin:0 auto;padding:40px 24px 80px;}
+.cfg-page.larga{max-width:1100px;}
+.cfg-page > h1{margin:0;font-size:24px;line-height:32px;font-weight:600;}
+.cfg-page > .cfg-sub{margin:4px 0 26px;font-size:14px;line-height:21px;color:var(--muted-foreground);}
+.cfg-sec{margin:0 0 28px;}
+.cfg-sec > h2{margin:0 0 4px;font-size:15px;font-weight:600;}
+.cfg-sec > .cfg-sub{margin:0 0 10px;font-size:13px;line-height:19px;color:var(--muted-foreground);}
+.cfg-box{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);overflow:hidden;}
+.cfg-row{display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 16px;border-top:1px solid var(--border);}
+.cfg-row:first-child{border-top:0;}
+a.cfg-row,button.cfg-row{width:100%;text-align:left;font-family:inherit;color:inherit;text-decoration:none;
+  background:transparent;border-left:0;border-right:0;border-bottom:0;cursor:pointer;}
+a.cfg-row:hover,button.cfg-row:hover{background:var(--muted);}
+.cfg-txt{flex:1;min-width:0;}
+.cfg-t{display:block;font-size:14px;font-weight:500;line-height:20px;}
+.cfg-d{display:block;font-size:12.5px;line-height:18px;color:var(--muted-foreground);}
+.cfg-v{flex:none;font-size:13px;color:var(--muted-foreground);}
+/* Faixa de grupo: separa blocos fixos e editáveis dentro de uma lista. */
+.cfg-gh{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--muted);
+  border-top:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--muted-foreground);}
+.cfg-gh:first-child{border-top:0;}
+.cfg-gh .cfg-gh-d{font-weight:400;}
+.cfg-gh .icon-btn{margin-left:auto;}
+
+/* Item de lista configurável (etapa, motivo, campo): alça, nome, uso e ações. */
+.cfg-item{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 10px 6px 12px;
+  border-top:1px solid var(--border);background:var(--card);font-size:14px;}
+.cfg-item:first-child{border-top:0;}
+.cfg-item[draggable="true"]{cursor:grab;}
+.cfg-item.dragging{opacity:.45;}
+.cfg-item.over{box-shadow:inset 0 2px 0 var(--accent);}
+.cfg-item.arquivado{background:var(--muted);color:var(--muted-foreground);}
+.cfg-grip{flex:none;width:16px;color:var(--muted-foreground);display:inline-flex;}
+.cfg-grip.fixo{color:var(--border-strong);}
+.cfg-dot{flex:none;width:10px;height:10px;border-radius:50%;}
+.cfg-nm{flex:1;min-width:0;border:1px solid transparent;border-radius:var(--radius-selector);background:transparent;
+  padding:5px 7px;font-family:inherit;font-size:14px;color:inherit;}
+.cfg-nm:hover{border-color:var(--border);}
+.cfg-nm:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.cfg-nm:focus-visible{outline:none;}
+.cfg-uso{flex:none;font-size:12px;color:var(--muted-foreground);white-space:nowrap;}
+.cfg-lock{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:11.5px;font-weight:500;
+  color:var(--muted-foreground);background:var(--muted);border:1px solid var(--border);border-radius:999px;padding:1px 8px;}
+.cfg-acts{flex:none;display:flex;gap:2px;}
+.cfg-add{display:flex;align-items:center;gap:8px;width:100%;padding:11px 16px;border:0;border-top:1px solid var(--border);
+  background:var(--card);font-family:inherit;font-size:13.5px;color:var(--muted-foreground);cursor:pointer;text-align:left;}
+.cfg-add:hover{background:var(--muted);color:var(--foreground);}
+
+/* Escopo do motivo: em quais momentos ele aparece. */
+.cfg-escopo{display:flex;gap:4px;flex:none;}
+.cfg-escopo button{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:2px 9px;
+  font-family:inherit;font-size:11.5px;color:var(--muted-foreground);cursor:pointer;}
+.cfg-escopo button[aria-pressed="true"]{background:var(--accent-100);border-color:var(--accent);color:var(--accent-600);font-weight:600;}
+
+/* Duas colunas: edição à esquerda, pré-visualização à direita. */
+.cfg-split{display:grid;gap:24px;grid-template-columns:minmax(0,1fr);}
+@media (min-width:1000px){ .cfg-split{grid-template-columns:minmax(0,380px) minmax(0,1fr);} }
+.cfg-prev{position:sticky;top:16px;align-self:start;}
+.cfg-prev-h{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12px;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--muted-foreground);}
+.cfg-mail{border:1px solid var(--border);border-radius:var(--radius-box);background:var(--card);font-size:14px;line-height:22px;}
+.cfg-mail-h{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted-foreground);}
+.cfg-mail-h b{color:var(--foreground);font-weight:600;}
+.cfg-mail-b{padding:16px;white-space:pre-wrap;}
+.cfg-mail-b .vazio{background:var(--warning-bg);color:var(--warning);border-radius:4px;padding:0 4px;}
+
+/* Aviso de consequência (o que acontece com dados existentes). */
+.cfg-aviso{display:flex;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-box);
+  background:var(--muted);font-size:13px;line-height:19px;margin:0 0 14px;}
+.cfg-aviso b{font-weight:600;}
+.cfg-aviso.warn{background:var(--warning-bg);border-color:color-mix(in srgb, var(--warning) 30%, var(--card));}
+
+/* Seletor de papel para simular o RBAC no protótipo. */
+.cfg-papel{display:inline-flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;color:var(--muted-foreground);}
+.cfg-papel select{width:auto;padding:5px 30px 5px 9px;font-size:13px;}
+.cfg-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-field);background:var(--card);
+  padding:8px 11px;font-family:inherit;font-size:14px;line-height:21px;color:var(--foreground);}
+select.cfg-input{appearance:none;cursor:pointer;padding-right:32px;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23737373' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.5 8 10.5l4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;}
+.cfg-lbl{display:block;font-size:13px;font-weight:600;margin:0 0 6px;}
+.cfg-field{margin:0 0 16px;}
+.cfg-ib{width:30px;height:30px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;
+  border-radius:var(--radius-selector);background:transparent;color:var(--muted-foreground);cursor:pointer;}
+.cfg-ib:hover{background:var(--muted);color:var(--foreground);}
+.cfg-ib.perigo:hover{color:var(--destructive);}
+.cfg-ib:disabled{opacity:.35;cursor:default;background:transparent;}
+.cfg-link{flex:none;font-size:13px;font-weight:600;color:var(--accent-600);text-decoration:none;}
+.cfg-link:hover{text-decoration:underline;}
+.cfg-dim{color:var(--muted-foreground);}
