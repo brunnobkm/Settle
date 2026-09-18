@@ -43,7 +43,7 @@
   <!-- ====================== SIDEBAR DE CONFIGURAÇÕES ====================== -->
   <aside class="sidebar" id="sidebar" aria-label="Navegação das configurações">
     <div class="sb-head">
-      <a class="sb-item sb-back" href="../licitacoes-recomendadas/" title="Voltar para a plataforma">
+      <a class="sb-item sb-back" href="../licitacoes-recomendadas/" data-tip="Voltar para a plataforma">
         <span class="sb-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5 5 8l4.5 4.5"/></svg></span>
         <span class="sb-label">Voltar para a plataforma</span>
       </a>
@@ -124,7 +124,7 @@
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M8 4v12"/></svg>
       </button>
       <span class="sep" aria-hidden="true"></span>
-      <span class="hello">Configurações</span>
+      <span class="hello" id="navTitulo">Configurações</span>
       <label class="cfg-papel" for="papel">Ver como
         <select class="cfg-input" id="papel">
           <option value="admin">Administrador</option>
@@ -140,6 +140,10 @@
 
   <!-- Menu de variáveis (e-mail e campos do card) -->
   <div class="vf-menu" id="varMenu" role="listbox" aria-label="Variáveis" hidden></div>
+
+  <!-- Painel lateral de filtros da aba -->
+  <div class="cfg-drawer-ovl" id="drawerOvl" hidden></div>
+  <aside class="cfg-drawer" id="drawer" role="dialog" aria-modal="true" hidden></aside>
 
   <!-- Confirmação -->
   <div class="cfm-ovl" id="cfmOvl" hidden></div>
@@ -184,14 +188,13 @@
      ].map((m,i)=>({id:'p'+i, nome:m[0], uso:m[1], rec:false, and:true, tipo:'perda', arq:false, desc:i===1||i===2}))),
     maxItens: 5,
     abaTela: 'recomendadas',
-    abaAberta: null,
     abaPrev: {},
     abas: {
       recomendadas: [
         {id:'a0', nome:'Todas', fixa:true, f:[]},
         {id:'a1', nome:'Ativas', f:[{k:'situacao', v:['Ativas']}]},
-        {id:'a2', nome:'Chegou hoje', f:[{k:'adicao', v:['Hoje']}]},
-        {id:'a3', nome:'Vencendo em breve', f:[{k:'envio', v:['Próximos 7 dias']}]}
+        {id:'a2', nome:'Chegou hoje', f:[{k:'adicao', v:'Últimas 24h'}]},
+        {id:'a3', nome:'Vencendo em breve', f:[{k:'envio', v:'Próximos 7 dias'}]}
       ],
       explorar: [
         {id:'b0', nome:'Todas', fixa:true, f:[]},
@@ -199,9 +202,9 @@
       ],
       descartadas: [
         {id:'c0', nome:'Todas', fixa:true, f:[]},
-        {id:'c1', nome:'Hoje', f:[{k:'descarte', v:['Hoje']}]},
-        {id:'c2', nome:'Últimos 7 dias', f:[{k:'descarte', v:['Últimos 7 dias']}]},
-        {id:'c3', nome:'Últimos 30 dias', f:[{k:'descarte', v:['Últimos 30 dias']}]}
+        {id:'c1', nome:'Hoje', f:[{k:'descarte', v:'Últimas 24h'}]},
+        {id:'c2', nome:'Últimos 7 dias', f:[{k:'descarte', v:'Últimos 7 dias'}]},
+        {id:'c3', nome:'Últimos 30 dias', f:[{k:'descarte', v:'Últimos 30 dias'}]}
       ]
     },
     campos: [
@@ -266,25 +269,36 @@
      seg:'Produtos', me:true, adicionada:'17/09/2026', atualizada:'17/09/2026', id:'1908424', julgamento:'Menor preço', estado:'SP', capagE:'B', uasg:'990189', capagM:'B', habitantes:'11.451.999', itens:[['Notebook corporativo 14", 16 GB RAM, SSD 512 GB','Produtos','R$ 22.649,97'],['Monitor LED 24", Full HD, ajuste de altura','Produtos','R$ 8.940,00'],['Desktop corporativo, Core i5, 16 GB RAM','Produtos','R$ 18.300,00'],['Nobreak 1.500 VA bivolt','Produtos','R$ 4.380,00'],['Switch gerenciável 24 portas PoE','Produtos','R$ 6.790,00'],['Impressora multifuncional laser monocromática','Produtos','R$ 3.980,00'],['Webcam Full HD com microfone','Produtos','R$ 1.259,98'],['Kit teclado e mouse sem fio','Produtos','R$ 950,00'],['Headset USB com cancelamento de ruído','Produtos','R$ 700,00']]}
   ];
 
-  /* Filtros que uma aba pode guardar: os mesmos do botão Filtrar da tela, mais as variáveis da organização. */
+  /* Filtros que uma aba pode guardar: os mesmos do painel Filtrar da plataforma
+     (mesma ordem e mesmos rótulos), mais as variáveis da organização. */
+  const PASSADO = ['Últimas 24h','Últimos 7 dias','Últimos 30 dias'];
+  const FUTURO = ['Próximos 7 dias','Próximos 15 dias','Próximos 30 dias'];
+  const TODAS_TELAS = ['recomendadas','explorar','descartadas'];
   const FILTROS = [
-    {k:'situacao', n:'Situação', ops:['Ativas','Suspensas','Encerradas']},
-    {k:'segmento', n:'Segmento', ops:['Software','Produtos','Serviços','Obras']},
-    {k:'responsavel', n:'Responsável', ops:['Eu (quem está vendo)','Sem responsável','Mateus Brum','Larissa Almeida','Alice Iglesias']},
-    {k:'estado', n:'Estado', ops:['SP','RJ','MG','PR','RS','SC','BA','MA','GO','DF']},
-    {k:'orgao', n:'Órgão', ops:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP','Tribunal de Justiça de MG','Universidade Federal de Pelotas']},
-    {k:'modalidade', n:'Modalidade', ops:['Pregão - Eletrônico','Concorrência','Dispensa','Inexigibilidade']},
-    {k:'julgamento', n:'Forma de julgamento', ops:['Menor preço','Maior desconto','Técnica e preço']},
-    {k:'valor', n:'Valor global', ops:['Até R$ 100 mil','R$ 100 mil a 1 mi','R$ 1 mi a 10 mi','Acima de R$ 10 mi']},
-    {k:'adicao', n:'Data de adição', ops:['Hoje','Últimos 7 dias','Últimos 30 dias'], um:true},
-    {k:'envio', n:'Envio da proposta', ops:['Próximos 7 dias','Próximos 15 dias','Próximos 30 dias'], um:true},
-    {k:'descarte', n:'Data do descarte', ops:['Hoje','Últimos 7 dias','Últimos 30 dias'], um:true, so:'descartadas'},
-    {k:'motivo', n:'Motivo do descarte', ops:['Órgão indesejado','Valor abaixo do desejado','Fora da área que quer atuar','Minha empresa não atende esse produto / serviço'], so:'descartadas'},
-    {k:'capagM', n:'CAPAG Municipal', ops:['A','B','C','D']},
-    {k:'amostra', n:'Exige amostra', ops:['Sim','Não','Não encontrado'], variavel:true},
-    {k:'visita', n:'Visita técnica obrigatória', ops:['Sim','Não','Não encontrado'], variavel:true}
+    {k:'situacao', n:'Situação', t:'list', ops:['Ativas','Suspensas','Encerradas']},
+    {k:'segmento', n:'Segmento', t:'list', ops:['Software','Produtos','Serviços','Obras']},
+    {k:'valor', n:'Valor global', t:'range', pre:'R$'},
+    {k:'score', n:'Score', t:'range'},
+    {k:'estado', n:'Estado', t:'list', ops:['SP','RJ','MG','PR','RS','SC','BA','MA','GO','DF']},
+    {k:'cidade', n:'Cidade', t:'list', ops:['São Paulo','Limeira','Campinas','Belo Horizonte','Curitiba','Porto Alegre','Santo Antônio dos Lopes']},
+    {k:'orgao', n:'Órgão ou Unidade', t:'list', ops:['Prefeitura Municipal de Limeira','Secretaria de Estado da Saúde de SP','Tribunal de Justiça de MG','Universidade Federal de Pelotas','Secretaria Municipal da Fazenda']},
+    {k:'responsavel', n:'Responsável', t:'list', ops:['Eu (quem está vendo)','Sem responsável','Mateus Brum','Larissa Almeida','Alice Iglesias']},
+    {k:'adicao', n:'Data de adição', t:'date', ops:PASSADO},
+    {k:'atualizacao', n:'Data de atualização', t:'date', ops:PASSADO},
+    {k:'envio', n:'Prazo de envio', t:'date', ops:FUTURO, telas:['recomendadas','explorar']},
+    {k:'descartadaPor', n:'Descartada por', t:'list', ops:['Larissa Almeida','Mateus Brum','Alice Iglesias','Bruno Ortiz'], telas:['descartadas']},
+    {k:'descarte', n:'Data do descarte', t:'date', ops:PASSADO, telas:['descartadas']},
+    {k:'motivo', n:'Motivo do descarte', t:'list', ops:['Não atende requisitos técnicos','Valor abaixo do desejado','Fora da área que quer atuar','Minha empresa não atende esse produto / serviço','Órgão indesejado','Região indesejada','Outros'], telas:['descartadas']},
+    {k:'etapa', n:'Etapa na qual ocorreu o descarte', t:'list', ops:['Recomendadas','Em andamento'], telas:['descartadas']},
+    {k:'tipo', n:'Tipo', t:'list', ops:['Produto','Serviço','Obra']},
+    {k:'capagE', n:'CAPAG Estadual', t:'list', ops:['A+','A','B','C','D']},
+    {k:'capagM', n:'CAPAG Municipal', t:'list', ops:['A+','A','B','C','D']},
+    {k:'julgamento', n:'Forma de julgamento', t:'list', ops:['Menor preço','Menor preço global','Maior desconto','Técnica e preço']},
+    {k:'populacao', n:'População', t:'range'},
+    {k:'amostra', n:'Exige amostra', t:'list', ops:['Sim','Não','Não encontrado'], variavel:true},
+    {k:'visita', n:'Visita técnica obrigatória', t:'list', ops:['Sim','Não','Não encontrado'], variavel:true}
   ];
-  const TELAS = {recomendadas:{n:'Recomendadas', total:918}, explorar:{n:'Explorar licitações', total:14327}, descartadas:{n:'Descartadas', total:3996}};
+  const TELAS = {recomendadas:{n:'Recomendadas'}, explorar:{n:'Explorar licitações'}, descartadas:{n:'Descartadas'}};
   const fdef = k => FILTROS.find(f=>f.k===k);
 
   /* ======================= UTIL ======================= */
@@ -318,7 +332,7 @@
     c.querySelector('[data-ok]').onclick = () => { ok(c); fechar(); };
     c.querySelector('[data-ok]').focus();
   }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#cfm').hidden = $('#cfmOvl').hidden = true; fecharMenu(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#cfm').hidden = $('#cfmOvl').hidden = true; fecharMenu(); if (drawerFechar) drawerFechar(); } });
 
   /* Arrastar para reordenar dentro de um grupo. */
   function arrastavel(root, onMove){
@@ -340,6 +354,8 @@
   const ROTAS = {inicio, etapas, abas, motivos, card, email, equipe, permissoes, auditoria};
   const ADMIN_ONLY = ['etapas','abas','motivos','card','email','equipe','permissoes','auditoria'];
 
+  const NOMES = {inicio:'Configurações', etapas:'Etapas do funil', abas:'Abas das listas', motivos:'Motivos de descarte e perda',
+    card:'Campos do card', email:'Modelo de e-mail', equipe:'Equipe', permissoes:'Permissões', auditoria:'Auditoria'};
   function render(){
     const r = (location.hash.slice(1).split('?')[0]) || 'inicio';
     const rota = ROTAS[r] ? r : 'inicio';
@@ -348,6 +364,8 @@
       on ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current');
     });
     document.querySelector('[data-admin]').hidden = !isAdmin();
+    const nome = NOMES[rota]; $('#navTitulo').textContent = nome;
+    document.title = rota === 'inicio' ? 'Settle — Configurações' : `Settle — ${nome} · Configurações`;
     fecharMenu();
     const m = $('#main');
     if (!isAdmin() && ADMIN_ONLY.includes(rota)) { m.innerHTML = semPermissao(); }
@@ -429,7 +447,7 @@
     const item = e => {
       const fixa = e.tipo !== 'meio';
       return `<div class="cfg-item" data-id="${e.id}" data-g="${e.tipo}" ${fixa?'':'draggable="true"'}>
-        <span class="cfg-grip ${fixa?'fixo':''}" ${fixa?'title="Posição fixa"':''}>${fixa?I.lock:I.grip}</span>
+        <span class="cfg-grip ${fixa?'fixo':''}" ${fixa?'data-tip="Posição fixa"':''}>${fixa?I.lock:I.grip}</span>
         <span class="cfg-dot" style="background:${e.cor}" aria-hidden="true"></span>
         <input class="cfg-nm" value="${esc(e.nome)}" aria-label="Nome da etapa" data-ren="${e.id}" />
         <span class="cfg-uso">${e.qtd ? fmt(e.qtd)+(e.qtd===1?' licitação':' licitações') : 'vazia'}</span>
@@ -509,81 +527,67 @@
 
   /* ======================= ABAS DAS LISTAS ======================= */
   const MAX_ABAS = 10;
-  function estimar(tela, a){
-    let n = TELAS[tela].total;
-    const DATA = {'Hoje':.03,'Últimos 7 dias':.16,'Últimos 30 dias':.44,'Próximos 7 dias':.15,'Próximos 15 dias':.31,'Próximos 30 dias':.52};
-    a.f.forEach(x => {
-      if (!x.v.length) return;
-      if (fdef(x.k).um) n *= DATA[x.v[0]] ?? .3;
-      else if (x.v.includes('Eu (quem está vendo)')) n *= .12;
-      else n *= Math.min(1, .19 * x.v.length + .06);
-    });
-    return Math.max(0, Math.round(n));
+  const CHECK = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>';
+  const temValor = x => { const d = fdef(x.k);
+    if (d.t==='list') return x.v && x.v.length; if (d.t==='date') return !!x.v; return x.v && (x.v.min!=='' || x.v.max!==''); };
+  const numero = n => Number(n).toLocaleString('pt-BR');
+  function resumoFiltro(x){
+    const d = fdef(x.k);
+    if (d.t==='list') return x.v.length===1 ? x.v[0] : `${x.v.length} selecionados`;
+    if (d.t==='date') return x.v;
+    const p = d.pre ? d.pre+' ' : '', {min,max} = x.v;
+    if (min!=='' && max!=='') return `${p}${numero(min)} a ${p}${numero(max)}`;
+    return min!=='' ? `a partir de ${p}${numero(min)}` : `até ${p}${numero(max)}`;
   }
-  const resumoFiltro = x => { const d = fdef(x.k); if (!x.v.length) return 'nenhum valor';
-    return x.v.length === 1 ? x.v[0] : `${x.v.length} selecionados`; };
-  const badges = a => a.f.map(x => `<span class="fbadge"><span class="k">${esc(fdef(x.k).n)}:</span> <span class="v">${esc(resumoFiltro(x))}</span></span>`).join('');
+  const badges = (a, removivel) => a.f.map(x => `<span class="fbadge" data-abadge="${a.id}"><span class="k">${esc(fdef(x.k).n)}:</span> <span class="v">${esc(resumoFiltro(x))}</span>${removivel?`<button class="x" type="button" data-bx="${a.id}:${x.k}" aria-label="Tirar o filtro ${esc(fdef(x.k).n)}">×</button>`:''}</span>`).join('');
 
   function abas(m){
     const tela = S.abaTela, L = S.abas[tela];
     if (!L.find(a=>a.id===S.abaPrev[tela])) S.abaPrev[tela] = L[0].id;
-    const disp = FILTROS.filter(f => !f.so || f.so === tela);
-    const painel = a => `<div class="cfg-painel" id="pn-${a.id}">
-        ${a.f.map((x,i) => { const d = fdef(x.k); const usados = a.f.map(y=>y.k);
-          return `<div class="cfg-filtro">
-            <select class="cfg-input" data-fk="${a.id}:${i}" aria-label="Campo do filtro">${disp.filter(f=>f.k===x.k||!usados.includes(f.k)).map(f=>`<option value="${f.k}" ${f.k===x.k?'selected':''}>${esc(f.n)}${f.variavel?' (variável)':''}</option>`).join('')}</select>
-            <span class="cfg-escopo cfg-opcoes" role="group" aria-label="Valores de ${esc(d.n)}">${d.ops.map(o=>`<button type="button" aria-pressed="${x.v.includes(o)}" data-fv="${a.id}:${i}" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</span>
-            <button class="cfg-ib perigo" type="button" data-frm="${a.id}:${i}" aria-label="Tirar o filtro ${esc(d.n)}">${I.trash}</button>
-          </div>`; }).join('')}
-        ${a.f.length < disp.length ? `<button class="cfg-add" type="button" data-fadd="${a.id}" style="border-top:0;background:transparent;padding:8px 0">${I.plus} Adicionar filtro</button>` : ''}
-      </div>`;
-    const item = a => {
-      const aberta = S.abaAberta === a.id;
-      const aviso = !a.fixa && (!a.f.length || a.f.some(x=>!x.v.length));
-      return `<div class="cfg-item" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
+    const item = a => `<div class="cfg-item" data-id="${a.id}" data-g="${a.fixa?'f':'a'}" ${a.fixa?'':'draggable="true"'}>
         <span class="cfg-grip ${a.fixa?'fixo':''}">${a.fixa?I.lock:I.grip}</span>
-        ${a.fixa ? `<span class="cfg-nm" style="flex:none;width:170px">${esc(a.nome)}</span>`
-                 : `<input class="cfg-nm" style="flex:none;width:170px" value="${esc(a.nome)}" aria-label="Nome da aba" data-aren="${a.id}" />`}
+        ${a.fixa ? `<span class="cfg-nm" style="flex:none;width:180px">${esc(a.nome)}</span>`
+                 : `<input class="cfg-nm" style="flex:none;width:180px" value="${esc(a.nome)}" aria-label="Nome da aba" data-aren="${a.id}" />`}
         <span class="cfg-badges">${a.fixa ? `<span class="cfg-lock">${I.lock} Sempre a primeira · sem filtro</span>`
-          : aviso ? `<span class="cfg-sem">${!a.f.length ? 'Sem filtro: mostra o mesmo que Todas' : 'Filtro sem valor escolhido'}</span>${badges(a)}` : badges(a)}</span>
-        <span class="cfg-uso">≈ ${fmt(estimar(tela,a))}</span>
+          : (!a.f.length ? `<span class="cfg-sem">Sem filtro: mostra o mesmo que Todas</span>` : badges(a, true))}</span>
         ${a.fixa ? '' : `<span class="cfg-acts">
-          <button class="btn btn-outline" type="button" data-aopen="${a.id}" aria-expanded="${aberta}" aria-controls="pn-${a.id}" style="padding:4px 10px;font-size:13px">${aberta?'Fechar':'Filtros'}</button>
-          <button class="cfg-ib" type="button" data-adup="${a.id}" aria-label="Duplicar ${esc(a.nome)}" title="Duplicar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M11 5V3.5A1 1 0 0 0 10 2.5H3.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></svg></button>
-          <button class="cfg-ib perigo" type="button" data-adel="${a.id}" aria-label="Excluir ${esc(a.nome)}" title="Excluir">${I.trash}</button></span>`}
-      </div>${aberta ? painel(a) : ''}`;
-    };
+          <button class="btn btn-outline" type="button" data-afilt="${a.id}" style="padding:4px 10px;font-size:13px">Filtrar${a.f.length?` <span class="cnt">${a.f.length}</span>`:''}</button>
+          <button class="cfg-ib" type="button" data-adup="${a.id}" aria-label="Duplicar ${esc(a.nome)}" data-tip="Duplicar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M11 5V3.5A1 1 0 0 0 10 2.5H3.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></svg></button>
+          <button class="cfg-ib perigo" type="button" data-adel="${a.id}" aria-label="Excluir ${esc(a.nome)}" data-tip="Excluir">${I.trash}</button></span>`}
+      </div>`;
     const prev = L.find(a=>a.id===S.abaPrev[tela]);
-    m.innerHTML = `<div class="cfg-page larga">
+    m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
       <h1>Abas das listas</h1>
       <p class="cfg-sub">As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela organização: o administrador cria, define os filtros e ela aparece igual para todas as pessoas.</p>
       <div class="tabs" role="tablist" aria-label="Tela">
         ${Object.keys(TELAS).map(k=>`<button class="tab ${k===tela?'active':''}" type="button" role="tab" aria-selected="${k===tela}" data-tela="${k}">${TELAS[k].n} <span class="cnt">${S.abas[k].length}</span></button>`).join('')}
       </div>
       <div class="cfg-aviso">${I.info}<span>Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não altera a aba e some ao sair da tela.</span></div>
-      <div class="cfg-split" style="grid-template-columns:minmax(0,1fr)">
-        <div class="cfg-box" id="aBox">
-          ${L.map(item).join('')}
-          ${L.length < MAX_ABAS ? `<button class="cfg-add" type="button" id="aAdd">${I.plus} Nova aba</button>`
-            : `<div class="cfg-add" style="cursor:default">Limite de ${MAX_ABAS} abas por tela. Exclua uma para criar outra.</div>`}
-        </div>
-        <div>
-          <div class="cfg-prev-h">Como as pessoas veem em ${TELAS[tela].n}</div>
-          <div class="cfg-box" style="padding:14px 16px">
-            <div class="tabs" role="tablist" aria-label="Pré-visualização das abas">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)} <span class="cnt">${fmt(estimar(tela,a))}</span></button>`).join('')}</div>
-            <div class="filter-badges" style="margin:12px 0 0">${prev.fixa ? '' : badges(prev)}</div>
-            <p class="vf-hint" style="margin-top:12px">Sem o botão + e sem o menu de editar: as abas são da organização. Administradores veem um ⋯ ao lado das abas, que abre esta página.</p>
-          </div>
-        </div>
+      <div class="cfg-box" id="aBox">
+        ${L.map(item).join('')}
+        ${L.length < MAX_ABAS ? `<button class="cfg-add" type="button" id="aAdd">${I.plus} Nova aba</button>`
+          : `<div class="cfg-add" style="cursor:default">Limite de ${MAX_ABAS} abas por tela. Exclua uma para criar outra.</div>`}
       </div>
+      <section class="cfg-sec" style="margin-top:24px">
+        <div class="cfg-prev-h">Como as pessoas veem em ${TELAS[tela].n}</div>
+        <div class="cfg-box" style="padding:14px 16px">
+          <div class="tabs" role="tablist" aria-label="Pré-visualização das abas">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)}</button>`).join('')}</div>
+          <div class="filter-badges" style="margin:12px 0 0">${prev.fixa ? '' : badges(prev, false)}</div>
+        </div>
+      </section>
     </div>`;
 
     const re = () => abas(m);
     const acha = id => L.find(a=>a.id===id);
     const nomeLivre = (nome, fora) => !L.some(a=>a!==fora && a.nome.toLowerCase()===nome.toLowerCase());
-    m.querySelectorAll('[data-tela]').forEach(b => b.onclick = () => { S.abaTela = b.dataset.tela; S.abaAberta = null; re(); });
+    m.querySelectorAll('[data-tela]').forEach(b => b.onclick = () => { S.abaTela = b.dataset.tela; re(); });
     m.querySelectorAll('[data-aprev]').forEach(b => b.onclick = () => { S.abaPrev[tela] = b.dataset.aprev; re(); });
-    m.querySelectorAll('[data-aopen]').forEach(b => b.onclick = () => { S.abaAberta = S.abaAberta===b.dataset.aopen ? null : b.dataset.aopen; S.abaPrev[tela] = b.dataset.aopen; re(); });
+    m.querySelectorAll('[data-afilt]').forEach(b => b.onclick = () => abrirFiltros(acha(b.dataset.afilt), re));
+    m.querySelectorAll('#aBox [data-abadge]').forEach(b => b.onclick = e => { if (!e.target.closest('.x')) abrirFiltros(acha(b.dataset.abadge), re); });
+    m.querySelectorAll('[data-bx]').forEach(b => b.onclick = () => {
+      const [id,k] = b.dataset.bx.split(':'), a = acha(id); a.f = a.f.filter(x=>x.k!==k);
+      auditar('Abas das listas', `${TELAS[tela].n}: tirou o filtro ${fdef(k).n} de "${a.nome}"`); re();
+    });
     m.querySelectorAll('[data-aren]').forEach(inp => {
       inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
       inp.addEventListener('change', () => {
@@ -593,37 +597,21 @@
         auditar('Abas das listas', `${TELAS[tela].n}: renomeou "${a.nome}" para "${v}"`); a.nome = v; toast('Nome da aba salvo'); re();
       });
     });
-    m.querySelectorAll('[data-fv]').forEach(b => b.onclick = () => {
-      const [id,i] = b.dataset.fv.split(':'), a = acha(id), x = a.f[+i], o = b.dataset.o;
-      if (fdef(x.k).um) x.v = x.v[0]===o ? [] : [o];
-      else x.v = x.v.includes(o) ? x.v.filter(y=>y!==o) : x.v.concat(o);
-      auditar('Abas das listas', `${TELAS[tela].n}: alterou o filtro ${fdef(x.k).n} de "${a.nome}"`); re();
-    });
-    m.querySelectorAll('[data-fk]').forEach(sel => sel.onchange = () => {
-      const [id,i] = sel.dataset.fk.split(':'); acha(id).f[+i] = {k:sel.value, v:[]}; re();
-    });
-    m.querySelectorAll('[data-frm]').forEach(b => b.onclick = () => {
-      const [id,i] = b.dataset.frm.split(':'), a = acha(id); const [x] = a.f.splice(+i,1);
-      auditar('Abas das listas', `${TELAS[tela].n}: tirou o filtro ${fdef(x.k).n} de "${a.nome}"`); re();
-    });
-    m.querySelectorAll('[data-fadd]').forEach(b => b.onclick = () => {
-      const a = acha(b.dataset.fadd), usados = a.f.map(x=>x.k); const f = disp.find(x=>!usados.includes(x.k));
-      if (f) { a.f.push({k:f.k, v:[]}); re(); }
-    });
     m.querySelectorAll('[data-adup]').forEach(b => b.onclick = () => {
       if (L.length >= MAX_ABAS) { toast(`Limite de ${MAX_ABAS} abas por tela`); return; }
       const a = acha(b.dataset.adup); let nome = a.nome + ' (cópia)', n = 2;
       while (!nomeLivre(nome)) nome = `${a.nome} (cópia ${n++})`;
       const c = {id:'x'+Date.now(), nome, f:JSON.parse(JSON.stringify(a.f))};
-      L.splice(L.indexOf(a)+1, 0, c); S.abaAberta = c.id; S.abaPrev[tela] = c.id;
-      auditar('Abas das listas', `${TELAS[tela].n}: duplicou "${a.nome}"`); re(); toast('Aba duplicada. Ajuste o nome e os filtros');
+      L.splice(L.indexOf(a)+1, 0, c); S.abaPrev[tela] = c.id;
+      auditar('Abas das listas', `${TELAS[tela].n}: duplicou "${a.nome}"`); re();
+      const inp = m.querySelector(`[data-aren="${c.id}"]`); inp.focus(); inp.select();
     });
     m.querySelectorAll('[data-adel]').forEach(b => b.onclick = () => {
       const a = acha(b.dataset.adel);
       confirmar({titulo:`Excluir a aba "${esc(a.nome)}"?`,
         corpo:`<p>Ela some de ${TELAS[tela].n} para todas as pessoas da organização. Nenhuma licitação muda: todas continuam em Todas e nas outras abas em que se encaixam.</p>`,
         acao:'Excluir aba', perigo:true,
-        ok:()=>{ const i = L.indexOf(a); L.splice(i,1); if (S.abaAberta===a.id) S.abaAberta = null;
+        ok:()=>{ const i = L.indexOf(a); L.splice(i,1);
           auditar('Abas das listas', `${TELAS[tela].n}: excluiu "${a.nome}"`); re();
           toast('Aba excluída', {undoLabel:'Desfazer', onUndo:()=>{ L.splice(i,0,a); S.audit.shift(); re(); }}); }});
     });
@@ -631,10 +619,79 @@
     const add = $('#aAdd');
     if (add) add.onclick = () => {
       let nome = 'Nova aba', n = 2; while (!nomeLivre(nome)) nome = `Nova aba ${n++}`;
-      const a = {id:'x'+Date.now(), nome, f:[]}; L.push(a); S.abaAberta = a.id; S.abaPrev[tela] = a.id;
+      const a = {id:'x'+Date.now(), nome, f:[]}; L.push(a); S.abaPrev[tela] = a.id;
       auditar('Abas das listas', `${TELAS[tela].n}: criou "${nome}"`); re();
       const inp = m.querySelector(`[data-aren="${a.id}"]`); inp.focus(); inp.select();
     };
+  }
+
+  /* Painel lateral de filtros da aba: mesmo desenho do Filtrar da plataforma.
+     Edita um rascunho; só vale ao clicar em Salvar na aba. */
+  let drawerFechar = null;
+  function abrirFiltros(aba, depois){
+    const tela = S.abaTela;
+    const campos = FILTROS.filter(f => (f.telas || TODAS_TELAS).includes(tela));
+    const rasc = {};
+    aba.f.forEach(x => rasc[x.k] = JSON.parse(JSON.stringify(x.v)));
+    let aberto = null;
+    const d = $('#drawer'), o = $('#drawerOvl');
+
+    const trigger = f => {
+      const v = rasc[f.k]; let txt = 'Nenhuma opção selecionada', vazio = true;
+      if (f.t==='list' && v && v.length) { txt = v.length<=2 ? v.join(', ') : `${v.length} selecionadas`; vazio = false; }
+      if (f.t==='date' && v) { txt = v; vazio = false; }
+      if (f.t==='date' && !v) txt = 'Qualquer data';
+      return `<button class="cfg-trigger ${vazio?'vazio':''}" type="button" data-trig="${f.k}" aria-expanded="${aberto===f.k}" aria-label="${esc(f.n)}: ${esc(txt)}"><span>${esc(txt)}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="${aberto===f.k?'M4 9.5 8 5.5l4 4':'M4 6.5 8 10.5l4-4'}"/></svg></button>`;
+    };
+    const pop = f => {
+      if (aberto !== f.k) return '';
+      if (f.t==='date') return `<div class="fb-pop fb-pop-date">
+          <div class="fb-presets">${['Qualquer data'].concat(f.ops).map(o=>`<button type="button" class="${(rasc[f.k]||'Qualquer data')===o?'on':''}" data-dp="${f.k}" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+          <p class="vf-hint" style="margin:4px 4px 2px">Na aba, a data é sempre relativa ao dia de hoje, para continuar certa com o passar do tempo.</p></div>`;
+      const sel = rasc[f.k] || [];
+      return `<div class="fb-pop fb-pop-list">
+          <div class="fb-list-head"><span>Lista de opções</span><button class="fb-selall" type="button" data-all="${f.k}">${sel.length===f.ops.length?'Limpar seleção':'Selecionar todas'}</button></div>
+          <div class="fb-search"><input type="text" id="busca-${f.k}" aria-label="Buscar em ${esc(f.n)}" placeholder="Buscar" data-busca="${f.k}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg></div>
+          <div class="fb-options" role="listbox" aria-multiselectable="true" aria-label="${esc(f.n)}">${f.ops.map(o=>`<div class="fb-opt ${sel.includes(o)?'on':''}" role="option" tabindex="0" aria-selected="${sel.includes(o)}" data-lo="${f.k}" data-o="${esc(o)}"><span class="box">${CHECK}</span>${esc(o)}</div>`).join('')}</div>
+        </div>`;
+    };
+    const campo = f => {
+      if (f.t==='range') { const v = rasc[f.k] || {min:'', max:''};
+        return `<div class="cfg-ff"><span class="cfg-lbl">${esc(f.n)}</span><div class="cfg-ff-row">
+          <input class="cfg-input" type="number" min="0" id="min-${f.k}" aria-label="${esc(f.n)} mínimo" placeholder="Mínimo" value="${v.min}" data-rg="${f.k}:min">
+          <input class="cfg-input" type="number" min="0" id="max-${f.k}" aria-label="${esc(f.n)} máximo" placeholder="Máximo" value="${v.max}" data-rg="${f.k}:max"></div></div>`; }
+      return `<div class="cfg-ff"><span class="cfg-lbl">${esc(f.n)}</span>${trigger(f)}${pop(f)}</div>`;
+    };
+    const desenhar = () => {
+      const tela_ = campos.filter(f=>!f.variavel), vars = campos.filter(f=>f.variavel);
+      d.innerHTML = `<div class="cfg-drawer-h"><div style="flex:1"><h2 id="drawerT">Filtros da aba "${esc(aba.nome)}"</h2>
+          <p>Os mesmos filtros do botão Filtrar de ${TELAS[tela].n}. Ao salvar, a aba passa a mostrar só o que atende a eles, para todas as pessoas.</p></div>
+          <button class="cfg-ib" type="button" data-dx aria-label="Fechar sem salvar">×</button></div>
+        <div class="cfg-drawer-b">${tela_.map(campo).join('')}
+          ${vars.length ? `<div class="cfg-drawer-sec">Variáveis da organização</div>${vars.map(campo).join('')}` : ''}</div>
+        <div class="cfg-drawer-f"><button class="btn btn-primary" type="button" data-dsave>Salvar na aba</button>
+          <button class="btn btn-outline" type="button" data-dclear>Limpar filtros</button></div>`;
+      d.querySelectorAll('[data-trig]').forEach(b => b.onclick = () => { aberto = aberto===b.dataset.trig ? null : b.dataset.trig; desenhar(); const bu = d.querySelector('[data-busca]'); if (bu) bu.focus(); });
+      d.querySelectorAll('[data-dp]').forEach(b => b.onclick = () => { rasc[b.dataset.dp] = b.dataset.o==='Qualquer data' ? '' : b.dataset.o; aberto = null; desenhar(); });
+      d.querySelectorAll('[data-lo]').forEach(el => { const alternar = () => { const k = el.dataset.lo, o = el.dataset.o; const v = rasc[k] || [];
+          rasc[k] = v.includes(o) ? v.filter(x=>x!==o) : v.concat(o); desenhar(); };
+        el.onclick = alternar; el.onkeydown = e => { if (e.key===' '||e.key==='Enter') { e.preventDefault(); alternar(); } }; });
+      d.querySelectorAll('[data-all]').forEach(b => b.onclick = () => { const f = fdef(b.dataset.all); rasc[f.k] = (rasc[f.k]||[]).length===f.ops.length ? [] : f.ops.slice(); desenhar(); });
+      d.querySelectorAll('[data-busca]').forEach(inp => inp.oninput = () => { const q = inp.value.toLowerCase();
+        d.querySelectorAll(`[data-lo="${inp.dataset.busca}"]`).forEach(el => el.hidden = !el.dataset.o.toLowerCase().includes(q)); });
+      d.querySelectorAll('[data-rg]').forEach(inp => inp.oninput = () => { const [k,lado] = inp.dataset.rg.split(':'); rasc[k] = rasc[k] || {min:'', max:''}; rasc[k][lado] = inp.value; });
+      d.querySelector('[data-dx]').onclick = fechar;
+      d.querySelector('[data-dclear]').onclick = () => { Object.keys(rasc).forEach(k=>delete rasc[k]); aberto = null; desenhar(); };
+      d.querySelector('[data-dsave]').onclick = () => {
+        aba.f = FILTROS.filter(f => rasc[f.k] !== undefined).map(f => ({k:f.k, v:rasc[f.k]})).filter(temValor);
+        auditar('Abas das listas', `${TELAS[tela].n}: salvou os filtros de "${aba.nome}"`);
+        fechar(); depois(); toast(aba.f.length ? `Filtros salvos na aba ${aba.nome}` : `A aba ${aba.nome} ficou sem filtro`);
+      };
+    };
+    function fechar(){ d.hidden = o.hidden = true; drawerFechar = null; }
+    drawerFechar = fechar; o.onclick = fechar;
+    d.setAttribute('aria-labelledby','drawerT');
+    desenhar(); d.hidden = o.hidden = false; d.querySelector('[data-dx]').focus();
   }
 
   /* ======================= MOTIVOS ======================= */
@@ -650,9 +707,9 @@
         <span class="cfg-grip">${I.grip}</span>
         <input class="cfg-nm" value="${esc(x.nome)}" aria-label="Nome do motivo" data-ren="${x.id}" />
         ${escopo(x)}
-        <span class="cfg-escopo"><button type="button" aria-pressed="${!!x.desc}" data-desc="${x.id}" title="Ao escolher este motivo, a pessoa precisa escrever o porquê">Pede descrição</button></span>
+        <span class="cfg-escopo"><button type="button" aria-pressed="${!!x.desc}" data-desc="${x.id}" data-tip="Ao escolher este motivo, a pessoa precisa escrever o porquê">Pede descrição</button></span>
         <span class="cfg-uso">${x.uso ? fmt(x.uso)+(t==='descarte'?' descartes':' perdas') : 'nunca usado'}</span>
-        <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${x.id}" aria-label="${x.uso?'Arquivar':'Excluir'} ${esc(x.nome)}" title="${x.uso?'Arquivar':'Excluir'}">${x.uso?I.arq:I.trash}</button></span>
+        <span class="cfg-acts"><button class="cfg-ib perigo" type="button" data-del="${x.id}" aria-label="${x.uso?'Arquivar':'Excluir'} ${esc(x.nome)}" data-tip="${x.uso?'Arquivar':'Excluir'}">${x.uso?I.arq:I.trash}</button></span>
       </div>`;
     m.innerHTML = `<div class="cfg-page larga" style="max-width:980px">
       <h1>Motivos de descarte e perda</h1>
@@ -735,7 +792,7 @@
         ${c.id==='itens' ? `<label class="cfg-v" for="cMax">Mostrar até</label>
           <select class="cfg-input" id="cMax" style="width:auto;padding-top:5px;padding-bottom:5px">${[3,5,10,0].map(n=>`<option value="${n}" ${S.maxItens===n?'selected':''}>${n?n+' itens':'Todos os itens'}</option>`).join('')}</select>` : ''}
         ${c.var ? `<span class="origem ${c.origem}">${c.origem==='minha'?'Minha variável':'Variável Settle'}</span>
-          <span class="cfg-acts"><a class="cfg-ib" href="../../agentes-plataforma/" aria-label="Abrir a variável ${esc(c.nome)}" title="Abrir a variável para consultar ou editar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5"/></svg></a>
+          <span class="cfg-acts"><a class="cfg-ib" href="../../agentes-plataforma/" aria-label="Abrir a variável ${esc(c.nome)}" data-tip="Abrir a variável para consultar ou editar"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5"/></svg></a>
           <button class="cfg-ib perigo" type="button" data-rm="${c.id}" aria-label="Tirar ${esc(c.nome)} do card">${I.trash}</button></span>` : ''}
       </div>`;
     m.innerHTML = `<div class="cfg-page larga">
