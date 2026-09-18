@@ -571,7 +571,7 @@
       <section class="cfg-sec" style="margin-top:24px">
         <div class="cfg-prev-h">Como as pessoas veem em ${TELAS[tela].n}</div>
         <div class="cfg-box" style="padding:14px 16px">
-          <div class="tabs" role="tablist" aria-label="Pré-visualização das abas">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)}</button>`).join('')}</div>
+          <div class="tabs" role="tablist" aria-label="Pré-visualização das abas" style="margin:0">${L.map(a=>`<button class="tab ${a===prev?'active':''}" type="button" role="tab" aria-selected="${a===prev}" data-aprev="${a.id}">${esc(a.nome)}</button>`).join('')}</div>
           <div class="filter-badges" style="margin:12px 0 0">${prev.fixa ? '' : badges(prev, false)}</div>
         </div>
       </section>
