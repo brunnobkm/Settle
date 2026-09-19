@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 
-import { formatarData, pessoaPorId, statusPorId, UFS, type Licitacao } from "./dados"
+import { categoriaDoSegmento, formatarData, pessoaPorId, statusPorId, UFS, type Licitacao } from "./dados"
 import {
   CalendarioData,
   CampoValor,
@@ -74,7 +74,9 @@ export function PainelDetalhe({
       <SheetContent
         side="right"
         closeLabel="Fechar detalhe"
-        className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-lg data-[side=right]:xl:max-w-[40vw]"
+        size="lg"
+        // a partir de 1280px, 40% da tela
+        className="gap-0 data-[side=right]:xl:w-[40vw]"
       >
         <SheetHeader className="border-b pr-12">
           <SheetTitle className="text-base leading-snug">{l.titulo || "Sem título"}</SheetTitle>
@@ -120,7 +122,9 @@ export function PainelDetalhe({
                 gatilho={
                   <button id="detalhe-segmentos" type="button" className={GATILHO_CAMPO}>
                     {l.segmentos.length ? (
-                      l.segmentos.map((s) => <ChipSegmento key={s} nome={s} />)
+                      l.segmentos.map((s) => (
+                        <ChipSegmento key={s} nome={s} categoria={categoriaDoSegmento(s, segmentosDisponiveis)} />
+                      ))
                     ) : (
                       <span className="text-muted-foreground">Adicionar segmento</span>
                     )}
@@ -167,7 +171,7 @@ export function PainelDetalhe({
                 onChange={(e) => onChange({ objeto: e.target.value })}
                 className="min-h-0 leading-snug"
               />
-              <FieldDescription id="detalhe-objeto-aviso" className="flex items-center gap-1.5 text-xs text-warning">
+              <FieldDescription id="detalhe-objeto-aviso" className="flex items-center gap-1.5 text-xs text-warning-strong">
                 <TriangleAlertIcon aria-hidden className="size-3.5 shrink-0" />
                 Este texto vem do edital: edite com cautela.
               </FieldDescription>

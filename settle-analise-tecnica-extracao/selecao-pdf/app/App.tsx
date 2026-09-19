@@ -643,7 +643,7 @@ export default function App() {
               side="top"
               align="center"
               sideOffset={10}
-              className="w-auto max-w-80 min-w-62"
+              className="max-w-80 min-w-62"
               onMouseDown={(e) => e.preventDefault()}
             >
               <DropdownMenuGroup>

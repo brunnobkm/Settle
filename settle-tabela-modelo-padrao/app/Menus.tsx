@@ -396,7 +396,7 @@ export function RodapeDaColuna({ col, linhas, api }: { col: Coluna; linhas: Linh
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-auto min-w-44">
+      <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuRadioGroup value={agg} onValueChange={(v) => api.agregar(col.id, v as Agregacao)}>
           {agregacoesPara(col).map((k) => (
             <DropdownMenuRadioItem key={k} value={k}>

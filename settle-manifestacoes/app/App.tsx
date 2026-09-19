@@ -70,7 +70,7 @@ import { DialogoDaManifestacao, DialogoDeArquivos, ModalDeArquivo, SidebarDeArqu
 
 // abas no estilo "segmented control" (workspace e categorias)
 const LISTA_DE_ABAS =
-  "max-w-full gap-0.5 overflow-x-auto rounded-[10px] bg-foreground/8 p-0.75 [scrollbar-width:none] group-data-horizontal/tabs:h-auto"
+  "h-auto max-w-full gap-0.5 overflow-x-auto rounded-[10px] bg-foreground/8 p-0.75 [scrollbar-width:none]"
 const ABA = "h-auto flex-none rounded-lg px-3 py-1 text-[15px] leading-6 data-active:shadow-xs"
 
 export default function App() {
@@ -339,7 +339,7 @@ function MenuDeOrdem({ ordem, onOrdem }: { ordem: Ordem; onOrdem: (ordem: Ordem)
           Ordenar
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-auto min-w-70">
+      <DropdownMenuContent align="end" className="min-w-70">
         <DropdownMenuGroup>
           <DropdownMenuRadioGroup value={ordem} onValueChange={(v) => onOrdem(v as Ordem)}>
             {OPCOES_DE_ORDEM.map((o) => (

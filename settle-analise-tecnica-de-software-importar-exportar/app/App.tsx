@@ -75,7 +75,7 @@ const MENSAGEM_SEM_BIBLIOTECA = "Biblioteca de Excel não carregou. Verifique a 
 
 // cor do ponto de cada tipo (o nome vem sempre junto); Software usa o mesmo laranja de "Atende com parceiro"
 const PONTO_DO_TIPO: Record<Tipo, string> = {
-  Software: "bg-[color-mix(in_oklch,var(--warning),var(--destructive)_45%)]",
+  Software: "bg-[color-mix(in_oklab,var(--warning),var(--destructive)_45%)]",
   Produto: "bg-destructive",
   Serviço: "bg-success",
 }
@@ -137,12 +137,12 @@ export default function App() {
         activationMode="manual"
         className="border-b px-4"
       >
-        <TabsList variant="line" aria-label="Seções da licitação" className="h-11 w-full justify-start overflow-x-auto">
+        <TabsList variant="line" tone="primary" aria-label="Seções da licitação" className="h-11 w-full justify-start overflow-x-auto">
           {ABAS_DA_LICITACAO.map((aba) => (
             <TabsTrigger
               key={aba.valor}
               value={aba.valor}
-              className="flex-none px-3 text-[13px] after:bg-primary data-[state=active]:font-semibold"
+              className="flex-none px-3 text-[13px] data-[state=active]:font-semibold"
             >
               {aba.rotulo}
             </TabsTrigger>

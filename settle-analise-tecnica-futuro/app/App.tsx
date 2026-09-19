@@ -162,7 +162,7 @@ export default function App() {
             </Button>
             <Button
               size="sm"
-              className="bg-warning/10 font-semibold text-warning hover:bg-warning/20 max-lg:hidden"
+              className="bg-warning/10 font-semibold text-warning-strong hover:bg-warning/20 max-lg:hidden"
               data-nao-prototipado
             >
               Em disputa ou Homologação

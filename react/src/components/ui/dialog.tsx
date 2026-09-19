@@ -52,19 +52,39 @@ function DialogContent({
   children,
   showCloseButton = true,
   closeLabel = "Fechar",
+  size = "default",
+  autoFocus = true,
+  onOpenAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   /** Texto do botão de fechar para leitores de tela. */
   closeLabel?: string
+  /** full: ocupa a tela inteira (sem raio, sem borda, fundo da página). */
+  size?: "default" | "full"
+  /**
+   * false: ao abrir, o foco vai para a própria janela e não para o primeiro controle
+   * (evita abrir a dica ou o menu desse controle sozinho). Tab continua preso na janela.
+   */
+  autoFocus?: boolean
 }) {
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-size={size}
+        onOpenAutoFocus={(event) => {
+          onOpenAutoFocus?.(event)
+          if (autoFocus || event.defaultPrevented) return
+          event.preventDefault()
+          ;(event.currentTarget as HTMLElement | null)?.focus()
+        }}
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-xl bg-popover p-6 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed z-50 bg-popover text-sm text-popover-foreground duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+          size === "full"
+            ? "inset-0 flex h-svh w-screen flex-col bg-background"
+            : "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-xl p-6 ring-1 ring-foreground/10 sm:max-w-md data-open:zoom-in-95 data-closed:zoom-out-95",
           className
         )}
         {...props}

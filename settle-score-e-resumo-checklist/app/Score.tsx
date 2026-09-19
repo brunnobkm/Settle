@@ -72,7 +72,7 @@ function FaixaDeScore({ s }: { s: ExemploDeScore }) {
       </div>
       {s.revisar > 0 && (
         <div className="flex flex-none flex-col items-end gap-1.5 text-right max-[900px]:items-start max-[900px]:text-left">
-          <span className="text-[13px] font-medium text-warning">{s.revisar} campos a revisar</span>
+          <span className="text-[13px] font-medium text-warning-strong">{s.revisar} campos a revisar</span>
           <LicitacaoCardStatusButton data-nao-prototipado>
             <PencilIcon data-icon="inline-start" />
             Revisar

@@ -111,13 +111,10 @@ export function Analise({
   return (
     <Dialog open={aberta} onOpenChange={(v) => !v && onFechar()}>
       <DialogContent
+        size="full"
         showCloseButton={false}
         // foca a própria janela (e não o primeiro controle), para não abrir a dica dele sozinha
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          ;(e.currentTarget as HTMLElement | null)?.focus()
-        }}
-        className="top-0 left-0 flex h-svh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-background p-0 ring-0 sm:max-w-none data-open:zoom-in-100 data-closed:zoom-out-100"
+        autoFocus={false}
       >
         {aberta && (
           <Conteudo

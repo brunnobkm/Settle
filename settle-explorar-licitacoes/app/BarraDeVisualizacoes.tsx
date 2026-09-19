@@ -53,8 +53,8 @@ type Props = {
 }
 
 // mesmas medidas no gatilho real e na cópia invisível usada para medir
-const CLASSE_ABA = "h-8 flex-none gap-1.5 rounded-lg pl-3 pr-7 hover:bg-background/60 hover:text-foreground"
-const CLASSE_MEDIDA = "inline-flex h-8 items-center gap-1.5 border border-transparent pl-3 pr-7 text-sm font-medium"
+const CLASSE_ABA = "h-7.5 flex-none gap-1.5 rounded-lg pl-3 pr-7 hover:bg-background/60 hover:text-foreground"
+const CLASSE_MEDIDA = "inline-flex h-7.5 items-center gap-1.5 border border-transparent pl-3 pr-7 text-sm font-medium"
 
 function ConteudoAba({ rotulo, contagem }: { rotulo: string; contagem: number }) {
   return (
@@ -224,7 +224,7 @@ export function BarraDeVisualizacoes({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 flex-none px-3 text-foreground/60 hover:bg-foreground/5 hover:text-foreground"
+                  className="h-7.5 flex-none px-3 text-foreground/60 hover:bg-foreground/5 hover:text-foreground"
                 >
                   Mais {ocultas.length}
                 </Button>
@@ -252,7 +252,7 @@ export function BarraDeVisualizacoes({
               variant="ghost"
               size="icon-sm"
               aria-label="Nova visualização"
-              className="flex-none text-muted-foreground hover:bg-foreground/5"
+              className="size-7.5 flex-none text-muted-foreground hover:bg-foreground/5"
               onClick={onCriar}
             >
               <PlusIcon />
@@ -272,7 +272,7 @@ export function BarraDeVisualizacoes({
             <ConteudoAba rotulo={v.rotulo} contagem={contagens[v.chave] ?? 0} />
           </span>
         ))}
-        <span data-medida-mais className="inline-flex h-8 items-center px-3 text-sm font-medium">
+        <span data-medida-mais className="inline-flex h-7.5 items-center px-3 text-sm font-medium">
           Mais 0
         </span>
         <span data-medida-add className="inline-flex size-8" />

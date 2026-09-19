@@ -35,17 +35,17 @@ export const CLASSES_DO_TOM: Record<
     indicador: "*:data-[slot=progress-indicator]:bg-destructive",
   },
   warning: {
-    texto: "text-warning",
+    texto: "text-warning-strong",
     fundo: "bg-warning/10",
     cheio: "bg-warning",
-    hover: "hover:bg-warning/15 hover:text-warning",
+    hover: "hover:bg-warning/15 hover:text-warning-strong",
     indicador: "*:data-[slot=progress-indicator]:bg-warning",
   },
   success: {
-    texto: "text-success",
+    texto: "text-success-strong",
     fundo: "bg-success/10",
     cheio: "bg-success",
-    hover: "hover:bg-success/15 hover:text-success",
+    hover: "hover:bg-success/15 hover:text-success-strong",
     indicador: "*:data-[slot=progress-indicator]:bg-success",
   },
 }

@@ -22,7 +22,8 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
+  // h-9 sem variante (a vertical usa h-fit): assim um h-auto ou h-11 da tela vence
+  "group/tabs-list inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
   {
     variants: {
       variant: {
@@ -39,13 +40,18 @@ const tabsListVariants = cva(
 function TabsList({
   className,
   variant = "default",
+  tone = "default",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
-  VariantProps<typeof tabsListVariants>) {
+  VariantProps<typeof tabsListVariants> & {
+    /** Variante line: primary pinta o sublinhado da aba ativa na cor da marca. */
+    tone?: "default" | "primary"
+  }) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
       data-variant={variant}
+      data-tone={tone}
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
@@ -66,7 +72,7 @@ function TabsTrigger({
         // data-active usa :where() (especificidade baixa): repete o fundo da aba ativa no hover
         // para que um hover:bg-* da tela não vença a aba ativa
         "data-active:hover:bg-background dark:data-active:hover:bg-input/30 group-data-[variant=line]/tabs-list:data-active:hover:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:hover:bg-transparent",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        "after:absolute after:bg-foreground group-data-[tone=primary]/tabs-list:after:bg-primary after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className
       )}
       {...props}

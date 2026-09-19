@@ -13,7 +13,7 @@ import { CATEGORIAS, formatarDataHora, truncar, type Manifestacao } from "./dado
 /** Selo do tipo (Aviso, Questionamento, Impugnação, Recurso). */
 export function SeloDeCategoria({ item }: { item: Pick<Manifestacao, "categoria"> }) {
   return (
-    <Badge variant="secondary" className="h-6 rounded-md bg-foreground/8 px-2.5 text-[11.5px] font-semibold">
+    <Badge variant={CATEGORIAS[item.categoria].cor} className="h-6 rounded-md px-2.5 text-[11.5px] font-semibold">
       {CATEGORIAS[item.categoria].label}
     </Badge>
   )

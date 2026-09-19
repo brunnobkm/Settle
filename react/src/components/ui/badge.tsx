@@ -13,10 +13,28 @@ const badgeVariants = cva(
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+        // texto na versão "strong" do tom: contraste AA em texto pequeno
         success:
-          "bg-success/10 text-success focus-visible:ring-success/20 dark:bg-success/20 [a]:hover:bg-success/20",
+          "bg-success/10 text-success-strong focus-visible:ring-success/20 dark:bg-success/20 [a]:hover:bg-success/20",
         warning:
-          "bg-warning/10 text-warning focus-visible:ring-warning/20 dark:bg-warning/20 [a]:hover:bg-warning/20",
+          "bg-warning/10 text-warning-strong focus-visible:ring-warning/20 dark:bg-warning/20 [a]:hover:bg-warning/20",
+        // cores de categoria (dados sem ordem de valor: tipo, segmento, modalidade)
+        "category-1":
+          "bg-category-1/10 text-category-1 focus-visible:ring-category-1/20 dark:bg-category-1/20 [a]:hover:bg-category-1/20",
+        "category-2":
+          "bg-category-2/10 text-category-2 focus-visible:ring-category-2/20 dark:bg-category-2/20 [a]:hover:bg-category-2/20",
+        "category-3":
+          "bg-category-3/10 text-category-3 focus-visible:ring-category-3/20 dark:bg-category-3/20 [a]:hover:bg-category-3/20",
+        "category-4":
+          "bg-category-4/10 text-category-4 focus-visible:ring-category-4/20 dark:bg-category-4/20 [a]:hover:bg-category-4/20",
+        "category-5":
+          "bg-category-5/10 text-category-5 focus-visible:ring-category-5/20 dark:bg-category-5/20 [a]:hover:bg-category-5/20",
+        "category-6":
+          "bg-category-6/10 text-category-6 focus-visible:ring-category-6/20 dark:bg-category-6/20 [a]:hover:bg-category-6/20",
+        "category-7":
+          "bg-category-7/10 text-category-7 focus-visible:ring-category-7/20 dark:bg-category-7/20 [a]:hover:bg-category-7/20",
+        "category-8":
+          "bg-category-8/10 text-category-8 focus-visible:ring-category-8/20 dark:bg-category-8/20 [a]:hover:bg-category-8/20",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:

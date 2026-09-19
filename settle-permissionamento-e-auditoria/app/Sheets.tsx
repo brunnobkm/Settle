@@ -31,7 +31,7 @@ import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/u
 import { avisar } from "./comum"
 import { CAPACIDADES, FUNCOES, ORDEM_FUNCOES, type Funcao } from "./dados"
 
-const CONTEUDO = "w-full gap-0 p-0 data-[side=right]:sm:max-w-110"
+const CONTEUDO = "gap-0 p-0"
 const CABECALHO = "gap-1.5 border-b px-6 pt-5.5 pb-4"
 const TITULO = "pr-9 text-lg font-bold"
 const DESCRICAO = "text-[13.5px]"
@@ -52,7 +52,7 @@ export function SheetConvite({
 }) {
   return (
     <Sheet open={aberto} onOpenChange={onAbertoChange}>
-      <SheetContent className={CONTEUDO}>
+      <SheetContent size="md" className={CONTEUDO}>
         {/* o formulário monta a cada abertura, então sempre começa limpo */}
         <FormularioConvite onConvidar={onConvidar} />
       </SheetContent>
@@ -203,7 +203,7 @@ export function SheetFuncoes({
 }) {
   return (
     <Sheet open={aberto} onOpenChange={onAbertoChange}>
-      <SheetContent className={CONTEUDO}>
+      <SheetContent size="md" className={CONTEUDO}>
         <SheetHeader className={CABECALHO}>
           <SheetTitle className={TITULO}>O que cada função faz</SheetTitle>
           <SheetDescription className={DESCRICAO}>

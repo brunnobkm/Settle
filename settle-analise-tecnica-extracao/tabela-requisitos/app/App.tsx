@@ -33,9 +33,10 @@ const TOM_BADGE: Record<Tom, "success" | "warning" | "destructive" | "secondary"
   destructive: "destructive",
   neutral: "secondary",
 }
+// texto pequeno: âmbar e verde na versão "strong" (contraste AA)
 const TOM_TEXTO: Record<Tom, string> = {
-  success: "text-success",
-  warning: "text-warning",
+  success: "text-success-strong",
+  warning: "text-warning-strong",
   destructive: "text-destructive",
   neutral: "text-foreground",
 }
@@ -263,6 +264,8 @@ export default function App() {
             </ActionBarButton>
           </>
         }
+        // como no Figma: a linha selecionada mostra a alça junto com a caixa marcada
+        showHandleOnSelected
         rowMenu={(r) => (
           <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => copiarLink(r)}>
@@ -286,11 +289,7 @@ export default function App() {
             return copia
           })
         }
-        addColumn={{
-          open: false,
-          onOpenChange: (aberto) => aberto && toast(MENSAGEM_NAO_PROTOTIPADO),
-          content: null,
-        }}
+        addColumn={{ onClick: () => toast(MENSAGEM_NAO_PROTOTIPADO) }}
         onAddRow={() => setLinhas((ls) => [...ls, novoRequisito()])}
         labels={{ addRow: "Adicionar requisito", empty: "Nenhum requisito ainda." }}
       />

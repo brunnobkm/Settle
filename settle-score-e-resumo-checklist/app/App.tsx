@@ -34,7 +34,7 @@ export default function App() {
                 <TabsTrigger
                   key={a.chave}
                   value={a.chave}
-                  className="h-auto flex-none rounded-lg px-3 py-1.5 data-active:shadow-none"
+                  className="h-auto flex-none rounded-lg px-3 py-1 data-active:shadow-none"
                 >
                   {a.rotulo}
                 </TabsTrigger>

@@ -25,14 +25,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  LicitacaoCardHoverActions,
   LicitacaoCardIconAction,
   LicitacaoCardRoot,
+  LicitacaoCardSegments,
   LicitacaoCardSelect,
+  LicitacaoCardStatusButton,
   LicitacaoCardTitle,
 } from "@/components/ui/licitacao-card"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import {
+  categoriaDoSegmento,
   DICAS,
   formatarData,
   formatarMoeda,
@@ -47,12 +51,11 @@ import {
 import {
   CalendarioData,
   CampoValor,
+  CHIP_SEGMENTO,
   ChipPessoa,
-  ChipSegmento,
   EditorStatus,
   ListaPessoas,
   ListaSegmentos,
-  PillStatus,
   PopoverEditor,
 } from "./editores"
 import { ConteudoDemo, editorDaDemo } from "./PropriedadesDemo"
@@ -63,9 +66,6 @@ const EASING = "cubic-bezier(.2, .9, .3, 1)"
 /** Alvo de edição: fundo cinza sutil no hover (textos e dicas de vazio). */
 export const ALVO_TEXTO =
   "rounded-sm outline-none hover:bg-foreground/6 focus-visible:ring-3 focus-visible:ring-ring/50"
-/** Alvo de edição colorido (chips, pills): escurece levemente no hover. */
-export const ALVO_CHIP =
-  "rounded-[5px] outline-none transition-[filter] duration-120 hover:brightness-[.92] focus-visible:ring-3 focus-visible:ring-ring/50"
 /** Dica de propriedade vazia. */
 export const DICA_VAZIA = "text-muted-foreground"
 
@@ -263,28 +263,39 @@ export function CardLicitacao(props: Props) {
           </>
         )
 
-      case "segmentos":
+      case "segmentos": {
+        const abrirSegmentos = () => setEditando("segmentos")
         return (
           <PopoverEditor
+            ancora
             open={editando === "segmentos"}
             onOpenChange={abrir("segmentos")}
             gatilho={
-              <button
-                type="button"
-                aria-label={l.segmentos.length ? `Segmentos: ${l.segmentos.join(", ")}. Editar` : "Adicionar segmento"}
-                className={cn(
-                  "inline-flex min-h-5.5 max-w-full flex-wrap items-center gap-1.5 text-left",
-                  l.segmentos.length ? "rounded-[5px] outline-none focus-visible:ring-3 focus-visible:ring-ring/50" : ALVO_TEXTO
-                )}
-              >
-                {l.segmentos.length ? (
-                  l.segmentos.map((s) => (
-                    <ChipSegmento key={s} nome={s} className="transition-[filter] duration-120 hover:brightness-[.92]" />
-                  ))
-                ) : (
+              l.segmentos.length ? (
+                <LicitacaoCardSegments
+                  aria-label="Segmentos"
+                  className="min-h-5.5 items-center"
+                  segments={l.segmentos.map((s) => ({
+                    label: s,
+                    category: categoriaDoSegmento(s, props.segmentosDisponiveis),
+                    className: CHIP_SEGMENTO,
+                    "aria-label": `Segmento ${s}. Editar segmentos`,
+                    "aria-haspopup": "dialog",
+                    "aria-expanded": editando === "segmentos",
+                    onClick: abrirSegmentos,
+                  }))}
+                />
+              ) : (
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-expanded={editando === "segmentos"}
+                  onClick={abrirSegmentos}
+                  className={cn("inline-flex min-h-5.5 items-center text-left", ALVO_TEXTO)}
+                >
                   <span className={cn("text-xs", DICA_VAZIA)}>Adicionar segmento</span>
-                )}
-              </button>
+                </button>
+              )
             }
           >
             <ListaSegmentos
@@ -302,6 +313,7 @@ export function CardLicitacao(props: Props) {
             />
           </PopoverEditor>
         )
+      }
 
       case "orgao":
         return l.orgao ? (
@@ -341,13 +353,21 @@ export function CardLicitacao(props: Props) {
                 setEditando(null)
               }}
             >
-              <button
-                type="button"
-                aria-label={status ? `Status: ${status.rotulo}. Alterar` : "Definir status"}
-                className={status ? ALVO_CHIP : ALVO_TEXTO}
-              >
-                {status ? <PillStatus status={status} /> : <span className={cn("text-xs", DICA_VAZIA)}>Definir status</span>}
-              </button>
+              {status ? (
+                <LicitacaoCardStatusButton
+                  tone={status.tom}
+                  size="xs"
+                  aria-label={`Status: ${status.rotulo}. Alterar`}
+                  // medidas da pill do original (2px 8px, raio 4px)
+                  className="h-auto rounded-sm px-2 py-0.5 leading-[1.4]"
+                >
+                  {status.rotulo}
+                </LicitacaoCardStatusButton>
+              ) : (
+                <button type="button" aria-label="Definir status" className={ALVO_TEXTO}>
+                  <span className={cn("text-xs", DICA_VAZIA)}>Definir status</span>
+                </button>
+              )}
             </EditorStatus>
           </div>
         )
@@ -418,7 +438,7 @@ export function CardLicitacao(props: Props) {
                   ALVO_TEXTO,
                   "inline-flex items-center gap-1 tabular-nums [&>svg]:size-3.5",
                   urgencia?.tom === "hoje" && "font-medium text-destructive",
-                  urgencia?.tom === "semana" && "font-medium text-warning"
+                  urgencia?.tom === "semana" && "font-medium text-warning-strong"
                 )}
               >
                 {urgencia?.tom === "hoje" && <CircleAlertIcon aria-hidden />}
@@ -558,23 +578,18 @@ export function CardLicitacao(props: Props) {
           chave="titulo"
           dica={DICAS.titulo}
           semDica={semDicas}
-          className="group/titulo"
+          // o hover da linha do título revela a caixa de seleção
+          className="group/licitacao-card-select"
         >
           <div className="flex items-start">
             <LicitacaoCardSelect
+              reveal="hover"
               label="Selecionar card"
               checked={selecionado}
               onCheckedChange={(v) => onSelecionado(v === true)}
-              className={cn(
-                "pointer-events-none mt-px mr-0 size-4 w-0 border-transparent bg-card opacity-0 shadow-none",
-                "transition-[width,margin,opacity,background-color,border-color] duration-180 ease-[cubic-bezier(.2,.9,.3,1)]",
-                "group-hover/titulo:pointer-events-auto group-hover/titulo:mr-1.5 group-hover/titulo:w-4 group-hover/titulo:border-foreground/25 group-hover/titulo:opacity-100 hover:border-foreground/45",
-                "focus-visible:mr-1.5 focus-visible:w-4 focus-visible:opacity-100",
-                "data-checked:pointer-events-auto data-checked:mr-1.5 data-checked:w-4 data-checked:opacity-100",
-                arrastando && "hidden"
-              )}
+              className={cn("mt-px size-4", arrastando && "hidden")}
             />
-            <LicitacaoCardTitle className="line-clamp-2 min-w-0 text-[13px] leading-[1.4] font-semibold whitespace-normal">
+            <LicitacaoCardTitle size="sm" lines={2}>
               {l.titulo || <span className={DICA_VAZIA}>Sem título</span>}
             </LicitacaoCardTitle>
           </div>
@@ -583,35 +598,13 @@ export function CardLicitacao(props: Props) {
         {ordem.map(linha)}
 
         {/* Ações flutuantes: aparecem no hover do card (§7). Vêm depois das linhas para ficar por cima delas */}
-        <div
-          data-sem-detalhe
-          className={cn(
-            "absolute top-1.5 right-1.5 flex items-center gap-0.5 rounded-lg border bg-card p-0.5 shadow-sm",
-            "-translate-y-0.5 opacity-0 transition duration-120 ease-out",
-            "group-hover/card:translate-y-0 group-hover/card:opacity-100 focus-within:translate-y-0 focus-within:opacity-100",
-            "has-aria-expanded:translate-y-0 has-aria-expanded:opacity-100",
-            arrastando && "hidden"
-          )}
-        >
-          <LicitacaoCardIconAction
-            label="Copiar link"
-            icon={<LinkIcon />}
-            variant="soft"
-            size="icon-xs"
-            className={ACAO_FLUTUANTE}
-            onClick={props.onCopiarLink}
-          />
+        <LicitacaoCardHoverActions data-sem-detalhe className={cn(arrastando && "hidden")}>
+          <LicitacaoCardIconAction label="Copiar link" icon={<LinkIcon />} variant="ghost" onClick={props.onCopiarLink} />
           <DropdownMenu open={editando === "menu"} onOpenChange={abrir("menu")} modal={false}>
             <DropdownMenuTrigger asChild>
-              <LicitacaoCardIconAction
-                label="Mais opções"
-                icon={<EllipsisIcon />}
-                variant="soft"
-                size="icon-xs"
-                className={ACAO_FLUTUANTE}
-              />
+              <LicitacaoCardIconAction label="Mais opções" icon={<EllipsisIcon />} variant="ghost" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" collisionPadding={8} className="w-auto min-w-40 rounded-[10px] p-1.5">
+            <DropdownMenuContent align="start" collisionPadding={8} className="min-w-40 rounded-[10px] p-1.5">
               <DropdownMenuGroup>
                 <DropdownMenuItem variant="destructive" onSelect={props.onDescartar}>
                   <Trash2Icon />
@@ -620,7 +613,7 @@ export function CardLicitacao(props: Props) {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+        </LicitacaoCardHoverActions>
       </LicitacaoCardRoot>
 
       {/* Fantasma que segue o cursor durante o arraste */}
@@ -640,8 +633,6 @@ export function CardLicitacao(props: Props) {
     </>
   )
 }
-
-const ACAO_FLUTUANTE = "size-6 bg-transparent text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
 
 /* ------------------------------------------------------------------ */
 /* Linha de propriedade                                                */

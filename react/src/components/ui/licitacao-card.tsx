@@ -76,40 +76,89 @@ function LicitacaoCardHeader({
     <CardHeader
       data-slot="licitacao-card-header"
       // quebra linha em telas estreitas (título em cima, ações embaixo) em vez de rolar
-      className={cn("flex min-w-0 flex-wrap items-center gap-2.5", className)}
-      {...props}
-    />
-  )
-}
-
-function LicitacaoCardSelect({
-  label,
-  className,
-  ...props
-}: React.ComponentProps<typeof Checkbox> & { label: string }) {
-  return (
-    <Checkbox
-      data-slot="licitacao-card-select"
-      aria-label={label}
-      className={cn("size-4.5 rounded-[5px]", className)}
-      {...props}
-    />
-  )
-}
-
-function LicitacaoCardTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof CardTitle>) {
-  return (
-    <CardTitle
-      data-slot="licitacao-card-title"
+      // group/licitacao-card-select: o LicitacaoCardSelect reveal="hover" aparece no hover daqui
       className={cn(
-        "max-w-full text-[15px] leading-5 font-semibold whitespace-nowrap [&_b]:font-bold",
+        "group/licitacao-card-select flex min-w-0 flex-wrap items-center gap-2.5",
         className
       )}
       {...props}
     />
+  )
+}
+
+/**
+ * Caixa de seleção do card (ações em lote).
+ * reveal="hover": fica recolhida (largura zero) e aparece, animando a largura, no hover
+ * do LicitacaoCardHeader ou de qualquer ancestral com a classe
+ * "group/licitacao-card-select"; continua visível quando marcada ou com foco de teclado.
+ * Use num contêiner sem gap (o espaço até o título vem da margem da própria caixa).
+ */
+function LicitacaoCardSelect({
+  label,
+  reveal = "always",
+  className,
+  ...props
+}: React.ComponentProps<typeof Checkbox> & {
+  label: string
+  reveal?: "always" | "hover"
+}) {
+  return (
+    <Checkbox
+      data-slot="licitacao-card-select"
+      data-reveal={reveal}
+      aria-label={label}
+      className={cn(
+        "size-4.5 rounded-[5px]",
+        reveal === "hover" && [
+          "pointer-events-none mr-0 max-w-0 border-transparent opacity-0 shadow-none",
+          "transition-[max-width,margin,opacity,background-color,border-color] duration-180 ease-[cubic-bezier(.2,.9,.3,1)]",
+          "group-hover/licitacao-card-select:pointer-events-auto group-hover/licitacao-card-select:mr-1.5 group-hover/licitacao-card-select:max-w-5 group-hover/licitacao-card-select:border-foreground/25 group-hover/licitacao-card-select:opacity-100 hover:border-foreground/45",
+          "focus-visible:mr-1.5 focus-visible:max-w-5 focus-visible:opacity-100",
+          "data-checked:pointer-events-auto data-checked:mr-1.5 data-checked:max-w-5 data-checked:opacity-100",
+        ],
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * Título do card. prefix: texto antes do título (ex.: "Edital"), separado por espaço.
+ * size="sm": 13px, para cards estreitos. lines: corta em 1 linha (reticências) ou 2 linhas;
+ * sem lines, o título fica numa linha só, sem corte.
+ */
+function LicitacaoCardTitle({
+  prefix,
+  size = "default",
+  lines,
+  className,
+  children,
+  ...props
+}: Omit<React.ComponentProps<typeof CardTitle>, "prefix"> & {
+  prefix?: React.ReactNode
+  size?: "default" | "sm"
+  lines?: 1 | 2
+}) {
+  return (
+    <CardTitle
+      data-slot="licitacao-card-title"
+      data-size={size}
+      className={cn(
+        "max-w-full font-semibold [&_b]:font-bold",
+        size === "sm" ? "text-[13px] leading-[1.4]" : "text-[15px] leading-5",
+        lines === 1
+          ? "min-w-0 truncate"
+          : lines === 2
+            ? "line-clamp-2 min-w-0 break-words whitespace-normal"
+            : "whitespace-nowrap",
+        className
+      )}
+      {...props}
+    >
+      {prefix != null && prefix !== "" && <>{prefix} </>}
+      {children}
+    </CardTitle>
   )
 }
 
@@ -129,19 +178,28 @@ function LicitacaoCardActions({
   )
 }
 
-/** Botão da etapa atual (ex.: "Em disputa ou Homologação"). */
+/**
+ * Botão da etapa atual (ex.: "Em disputa ou Homologação").
+ * tone: warning (em andamento, atenção), success (aberta, homologada),
+ * destructive (anulada, revogada, deserta) ou neutral (contorno cinza).
+ */
 function LicitacaoCardStatusButton({
   tone = "warning",
   className,
   ...props
-}: React.ComponentProps<typeof Button> & { tone?: "warning" | "neutral" }) {
+}: React.ComponentProps<typeof Button> & {
+  tone?: "warning" | "success" | "destructive" | "neutral"
+}) {
   return (
     <Button
       data-slot="licitacao-card-status"
       data-tone={tone}
       variant="outline"
       className={cn(
-        "px-3.5 shadow-none data-[tone=warning]:border-warning/25 data-[tone=warning]:bg-warning/10 data-[tone=warning]:text-warning data-[tone=warning]:hover:bg-warning/15 data-[tone=warning]:hover:text-warning",
+        "px-3.5 shadow-none",
+        "data-[tone=warning]:border-warning/25 data-[tone=warning]:bg-warning/10 data-[tone=warning]:text-warning-strong data-[tone=warning]:hover:bg-warning/15 data-[tone=warning]:hover:text-warning-strong",
+        "data-[tone=success]:border-success/25 data-[tone=success]:bg-success/10 data-[tone=success]:text-success-strong data-[tone=success]:hover:bg-success/15 data-[tone=success]:hover:text-success-strong",
+        "data-[tone=destructive]:border-destructive/25 data-[tone=destructive]:bg-destructive/10 data-[tone=destructive]:text-destructive data-[tone=destructive]:hover:bg-destructive/15 data-[tone=destructive]:hover:text-destructive",
         className
       )}
       {...props}
@@ -230,8 +288,11 @@ type LicitacaoCardIconActionProps = Omit<
     /** Ação liga/desliga (ex.: salvar). Define aria-pressed. */
     pressed?: boolean
     tone?: "default" | "warning"
-    /** outline: com borda (padrão). soft: fundo cinza, sem borda, 32px. */
-    variant?: "outline" | "soft"
+    /**
+     * outline: com borda (padrão). soft: fundo cinza, sem borda, 32px.
+     * ghost: pequeno (24px), sem fundo; para LicitacaoCardHoverActions.
+     */
+    variant?: "outline" | "soft" | "ghost"
     /** Contador sobre o ícone (ex.: arquivos anexados). */
     count?: number
   }
@@ -253,14 +314,16 @@ function LicitacaoCardIconAction({
           data-slot="licitacao-card-icon-action"
           data-tone={tone}
           data-variant={variant}
-          variant={variant === "soft" ? "ghost" : "outline"}
-          size="icon"
+          variant={variant === "outline" ? "outline" : "ghost"}
+          size={variant === "ghost" ? "icon-xs" : "icon"}
           aria-label={label}
           aria-pressed={pressed}
           className={cn(
             "relative size-8.5 overflow-visible text-muted-foreground shadow-none hover:text-foreground",
             variant === "soft" &&
               "size-8 bg-foreground/8 text-foreground hover:bg-foreground/14 dark:hover:bg-foreground/14",
+            variant === "ghost" &&
+              "size-6 bg-transparent hover:bg-foreground/5 aria-expanded:bg-foreground/5 dark:hover:bg-foreground/10",
             "aria-pressed:border-primary/30 aria-pressed:bg-primary/10 aria-pressed:text-primary",
             "data-[tone=warning]:border-warning/30 data-[tone=warning]:text-warning data-[tone=warning]:hover:bg-warning/10 data-[tone=warning]:hover:text-warning",
             className
@@ -296,6 +359,30 @@ function LicitacaoCardIconActions({
   )
 }
 
+/**
+ * Grupo de ações que aparece no hover do card (ou com foco, ou com um menu aberto),
+ * no canto superior direito, por cima do conteúdo. Use com LicitacaoCardIconAction
+ * variant="ghost". O LicitacaoCardRoot precisa de "relative" (padrão).
+ */
+function LicitacaoCardHoverActions({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="licitacao-card-hover-actions"
+      className={cn(
+        "absolute top-1.5 right-1.5 flex items-center gap-0.5 rounded-lg border bg-card p-0.5 shadow-sm",
+        "-translate-y-0.5 opacity-0 transition duration-120 ease-out",
+        "group-hover/card:translate-y-0 group-hover/card:opacity-100 focus-within:translate-y-0 focus-within:opacity-100",
+        "has-aria-expanded:translate-y-0 has-aria-expanded:opacity-100",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 function LicitacaoCardContent({
   className,
   ...props
@@ -309,14 +396,107 @@ function LicitacaoCardContent({
   )
 }
 
-/** Chips de segmento (fundo escuro). */
+type LicitacaoCardSegmentCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+
+// cor sólida da categoria (tokens category-N do tema); sem categoria, fundo escuro
+const SEGMENT_CATEGORY: Record<LicitacaoCardSegmentCategory, string> = {
+  1: "bg-category-1 text-category-1-foreground",
+  2: "bg-category-2 text-category-2-foreground",
+  3: "bg-category-3 text-category-3-foreground",
+  4: "bg-category-4 text-category-4-foreground",
+  5: "bg-category-5 text-category-5-foreground",
+  6: "bg-category-6 text-category-6-foreground",
+  7: "bg-category-7 text-category-7-foreground",
+  8: "bg-category-8 text-category-8-foreground",
+}
+
+type LicitacaoCardSegmentProps = Omit<
+  React.ComponentProps<typeof Badge>,
+  "variant" | "onClick"
+> &
+  LicitacaoCardDataAttributes & {
+    /** Cor de categoria (1 a 8, tokens category-N). Sem ela, o chip é escuro. */
+    category?: LicitacaoCardSegmentCategory
+    size?: "default" | "sm"
+    /** Torna o chip um botão (ex.: abrir o editor de segmentos). */
+    onClick?: React.MouseEventHandler<HTMLElement>
+  }
+
+/** Um chip de segmento. Clicável com onClick (vira botão) ou asChild (link, gatilho). */
+function LicitacaoCardSegment({
+  category,
+  size = "default",
+  onClick,
+  asChild = false,
+  className,
+  children,
+  ...props
+}: LicitacaoCardSegmentProps) {
+  const clickable = asChild || !!onClick
+  const classes = cn(
+    "h-auto rounded-md font-semibold",
+    category ? SEGMENT_CATEGORY[category] : "bg-foreground text-background",
+    size === "sm" ? "px-1.75 py-0.5 text-[11px]" : "px-2 py-0.75 text-xs",
+    clickable &&
+      "cursor-pointer outline-none transition-[filter] duration-120 hover:brightness-[.92] focus-visible:ring-3 focus-visible:ring-ring/50",
+    className
+  )
+  if (onClick && !asChild) {
+    return (
+      <Badge
+        asChild
+        data-slot="licitacao-card-segment"
+        data-category={category}
+        className={classes}
+        {...props}
+      >
+        <button type="button" onClick={onClick}>
+          {children}
+        </button>
+      </Badge>
+    )
+  }
+  return (
+    <Badge
+      asChild={asChild}
+      data-slot="licitacao-card-segment"
+      data-category={category}
+      className={classes}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </Badge>
+  )
+}
+
+type LicitacaoCardSegmentItem =
+  | React.ReactNode
+  | (Omit<LicitacaoCardSegmentProps, "children" | "size"> & {
+      label: React.ReactNode
+      /** Chave da lista (padrão: o label, se for texto). */
+      id?: string
+    })
+
+const isSegmentObject = (
+  item: LicitacaoCardSegmentItem
+): item is Exclude<LicitacaoCardSegmentItem, React.ReactNode> =>
+  typeof item === "object" &&
+  item !== null &&
+  !React.isValidElement(item) &&
+  "label" in item
+
+/**
+ * Chips de segmento. Cada item pode ser só o texto (chip escuro) ou um objeto
+ * { label, category?, onClick?, asChild? } para cor de categoria e chip clicável.
+ */
 function LicitacaoCardSegments({
   segments,
   size = "default",
   className,
   ...props
 }: React.ComponentProps<"ul"> & {
-  segments: React.ReactNode[]
+  segments: LicitacaoCardSegmentItem[]
   size?: "default" | "sm"
 }) {
   return (
@@ -325,18 +505,23 @@ function LicitacaoCardSegments({
       className={cn("flex flex-wrap gap-1.5", className)}
       {...props}
     >
-      {segments.map((segment, index) => (
-        <li key={index}>
-          <Badge
-            className={cn(
-              "h-auto rounded-md bg-foreground font-semibold text-background",
-              size === "sm" ? "px-1.75 py-0.5 text-[11px]" : "px-2 py-0.75 text-xs"
-            )}
-          >
-            {segment}
-          </Badge>
-        </li>
-      ))}
+      {segments.map((segment, index) => {
+        if (isSegmentObject(segment)) {
+          const { label, id, ...rest } = segment
+          return (
+            <li key={id ?? (typeof label === "string" ? label : index)}>
+              <LicitacaoCardSegment size={size} {...rest}>
+                {label}
+              </LicitacaoCardSegment>
+            </li>
+          )
+        }
+        return (
+          <li key={index}>
+            <LicitacaoCardSegment size={size}>{segment}</LicitacaoCardSegment>
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -433,7 +618,7 @@ function LicitacaoCardMetaItem({
       <dd
         data-tone={field.tone ?? "default"}
         title={field.title ?? (typeof field.value === "string" ? field.value : undefined)}
-        className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground group-data-[variant=boxed]/licitacao-card-meta:leading-5 data-[tone=warning]:font-medium data-[tone=warning]:text-warning [&>svg]:size-3.5 [&>svg]:shrink-0"
+        className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground group-data-[variant=boxed]/licitacao-card-meta:leading-5 data-[tone=warning]:font-medium data-[tone=warning]:text-warning-strong [&>svg]:size-3.5 [&>svg]:shrink-0"
       >
         {field.icon}
         <span className="truncate">{field.value}</span>
@@ -735,7 +920,7 @@ type LicitacaoCardProps = Omit<React.ComponentProps<typeof Card>, "title"> & {
   iconActions?: (LicitacaoCardIconActionProps & { id?: string })[]
   /** Linha logo abaixo do topo (ex.: aderência e motivo). */
   highlight?: React.ReactNode
-  segments?: React.ReactNode[]
+  segments?: LicitacaoCardSegmentItem[]
   orgao?: React.ReactNode
   orgaoLabel?: React.ReactNode
   /** Selo ao lado do órgão (ex.: "ME - EPP"). */
@@ -795,8 +980,8 @@ function LicitacaoCard({
             onCheckedChange={(value) => onSelectedChange?.(value === true)}
           />
         )}
-        <LicitacaoCardTitle>
-          {editalLabel} <b>{edital}</b>
+        <LicitacaoCardTitle prefix={editalLabel}>
+          <b>{edital}</b>
         </LicitacaoCardTitle>
         {badges}
         {hasRight && (
@@ -857,11 +1042,13 @@ export {
   LicitacaoCardDescription,
   LicitacaoCardField,
   LicitacaoCardHeader,
+  LicitacaoCardHoverActions,
   LicitacaoCardIconAction,
   LicitacaoCardIconActions,
   LicitacaoCardItems,
   LicitacaoCardMeta,
   LicitacaoCardRoot,
+  LicitacaoCardSegment,
   LicitacaoCardSegments,
   LicitacaoCardSelect,
   LicitacaoCardStatusButton,
@@ -873,4 +1060,7 @@ export {
   type LicitacaoCardItemsProps,
   type LicitacaoCardMetaField,
   type LicitacaoCardProps,
+  type LicitacaoCardSegmentCategory,
+  type LicitacaoCardSegmentItem,
+  type LicitacaoCardSegmentProps,
 }

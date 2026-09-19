@@ -93,7 +93,7 @@ function ValorDemo({ demo, onChange }: { demo: PropriedadeDemo; onChange: (valor
       return tags.length ? (
         <span className="flex flex-wrap gap-1">
           {tags.map((t) => (
-            <ChipSegmento key={t} nome={t} />
+            <ChipSegmento key={t} nome={t} categoria={1} />
           ))}
         </span>
       ) : (
