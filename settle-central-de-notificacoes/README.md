@@ -1,5 +1,9 @@
 # Notificações da licitação
 
+> **Tela em React (desde 19/09/2026).** O código fica em `app/` (e nas subpáginas, em `<subpágina>/app/`);
+> o `index.html` é gerado pelo build (`cd react && npm run build -- <pasta>`). Veja a seção "Stack" do `AGENTS.md` da raiz.
+> O que este README descreve sobre arquivos HTML/JS/CSS se refere à versão anterior, que está no histórico do git.
+
 Componente **reutilizável** que centraliza **Avisos, Impugnações e Esclarecimentos** (e, no modelo, Recursos) de uma licitação.
 
 ## Escopo do protótipo

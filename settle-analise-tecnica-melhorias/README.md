@@ -9,4 +9,4 @@ transforma a tela de informacional em orientada à decisão.
 - Resumo do Termo de Referência, origem da extração, confiança da IA, edição inline,
   congelar/redimensionar coluna, compartilhar/exportar
 
-Protótipo estático (HTML/CSS/JS), sem build. Abra o `index.html`.
+Tela em React com os componentes do design system: o código fica em `app/` e o build gera o `index.html`. A documentação para desenvolvimento fica em `documentacao/` (código em `documentacao/app/`).
