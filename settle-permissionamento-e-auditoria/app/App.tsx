@@ -2,11 +2,21 @@
 // (Gerenciar equipe e Auditoria) e o painel "O que cada função faz".
 
 import { useState, type MouseEvent } from "react"
-import { DownloadIcon, FileCheckIcon, PlusIcon, SearchIcon, ShieldIcon, UsersIcon } from "lucide-react"
+import {
+  DownloadIcon,
+  FileCheckIcon,
+  KeyboardIcon,
+  LogOutIcon,
+  PlusIcon,
+  SearchIcon,
+  ShieldIcon,
+  UsersIcon,
+} from "lucide-react"
+import { toast } from "sonner"
 
-import { AppShell, type AppShellGroup } from "@/components/ui/app-shell"
+import { AppShell, type AppShellGroup, type AppShellUserMenuGroup } from "@/components/ui/app-shell"
 import { Button } from "@/components/ui/button"
-import { useNaoPrototipado } from "@/settle/nao-prototipado"
+import { MENSAGEM_NAO_PROTOTIPADO, useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
 import { Auditoria, type ColunaAuditoria } from "./Auditoria"
@@ -85,6 +95,19 @@ export default function App() {
     },
   ]
 
+  // menu do avatar (rodapé da sidebar): atalhos para as duas visões, atalhos do teclado e sair
+  const naoPrototipado = () => toast(MENSAGEM_NAO_PROTOTIPADO)
+  const menuDoUsuario: AppShellUserMenuGroup[] = [
+    {
+      items: [
+        { label: TITULOS.auditoria, icon: FileCheckIcon, onSelect: () => setTela("auditoria") },
+        { label: TITULOS.equipe, icon: UsersIcon, onSelect: () => setTela("equipe") },
+        { label: "Atalhos do teclado", icon: KeyboardIcon, onSelect: naoPrototipado },
+      ],
+    },
+    { items: [{ label: "Sair", icon: LogOutIcon, variant: "destructive", onSelect: naoPrototipado }] },
+  ]
+
   function alternarBuscaAuditoria() {
     if (buscaAuditoriaAberta) setConsultaAuditoria("")
     setBuscaAuditoriaAberta(!buscaAuditoriaAberta)
@@ -100,6 +123,7 @@ export default function App() {
       workspace={WORKSPACE}
       groups={grupos}
       user={USUARIO}
+      userMenu={menuDoUsuario}
       header={
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <h1 className="min-w-0 truncate text-[15px] font-semibold">{TITULOS[tela]}</h1>

@@ -9,6 +9,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import {
   Sidebar,
@@ -81,16 +90,37 @@ type AppShellUser = {
   image?: string
 }
 
+/** Item do menu do usuário (rodapé da sidebar). */
+type AppShellUserMenuItem = AppShellDataAttributes & {
+  label: string
+  icon?: AppShellIcon
+  /** Vira link. */
+  href?: string
+  onSelect?: (event: Event) => void
+  /** destructive: ação de risco (ex.: Sair). */
+  variant?: "default" | "destructive"
+  disabled?: boolean
+}
+
+type AppShellUserMenuGroup = {
+  label?: string
+  items: AppShellUserMenuItem[]
+}
+
 type AppShellLabels = {
   expand?: string
   collapse?: string
   navigation?: string
+  /** Nome do botão do usuário quando há menu (seguido do nome da pessoa). */
+  userMenu?: string
 }
 
 type AppShellProps = Omit<React.ComponentProps<"div">, "children"> & {
   workspace?: AppShellWorkspace
   groups: AppShellGroup[]
   user?: AppShellUser
+  /** Grupos do menu que abre ao clicar no usuário (rodapé). Sem isso, o rodapé é só informativo. */
+  userMenu?: AppShellUserMenuGroup[]
   /** Conteúdo da barra superior, à direita do botão de abrir/fechar a sidebar. */
   header?: React.ReactNode
   children?: React.ReactNode
@@ -107,6 +137,7 @@ const DEFAULT_LABELS: Required<AppShellLabels> = {
   expand: "Expandir sidebar",
   collapse: "Recolher sidebar",
   navigation: "Navegação principal",
+  userMenu: "Menu do usuário",
 }
 
 const AppShellContext = React.createContext<{ headerHidden: boolean }>({
@@ -155,6 +186,7 @@ function AppShell({
   workspace,
   groups,
   user,
+  userMenu,
   header,
   children,
   defaultOpen = false,
@@ -192,7 +224,9 @@ function AppShell({
           workspace={workspace}
           groups={groups}
           user={user}
+          userMenu={userMenu}
           navigationLabel={text.navigation}
+          userMenuLabel={text.userMenu}
         />
         <div
           data-slot="app-shell-main"
@@ -219,12 +253,16 @@ function AppShellSidebar({
   workspace,
   groups,
   user,
+  userMenu,
   navigationLabel,
+  userMenuLabel,
 }: {
   workspace?: AppShellWorkspace
   groups: AppShellGroup[]
   user?: AppShellUser
+  userMenu?: AppShellUserMenuGroup[]
   navigationLabel: string
+  userMenuLabel: string
 }) {
   return (
     <Sidebar collapsible="icon">
@@ -274,27 +312,130 @@ function AppShellSidebar({
         </nav>
       </SidebarContent>
 
-      {user && (
-        <SidebarFooter className="flex-row items-center gap-2 px-2 py-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <Avatar>
-            {user.image && <AvatarImage src={user.image} alt="" />}
-            <AvatarFallback className="bg-foreground/10 text-foreground">
-              {user.initials ?? user.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-medium">{user.name}</span>
-            {user.email && (
-              <span className="truncate text-xs font-light">{user.email}</span>
-            )}
-          </div>
-          <ChevronsUpDownIcon
-            aria-hidden
-            className="size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden"
-          />
-        </SidebarFooter>
-      )}
+      {user &&
+        (userMenu?.length ? (
+          <SidebarFooter className="px-0.5 py-2.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
+            <AppShellUserMenu user={user} groups={userMenu} label={userMenuLabel} />
+          </SidebarFooter>
+        ) : (
+          <SidebarFooter className="flex-row items-center gap-2 px-2 py-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <AppShellUserSummary user={user} />
+          </SidebarFooter>
+        ))}
     </Sidebar>
+  )
+}
+
+function AppShellUserAvatar({ user }: { user: AppShellUser }) {
+  return (
+    <Avatar>
+      {user.image && <AvatarImage src={user.image} alt="" />}
+      <AvatarFallback className="bg-foreground/10 text-foreground">
+        {user.initials ?? user.name.slice(0, 2).toUpperCase()}
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+/** Avatar + nome + e-mail + seta (o conteúdo do rodapé). */
+function AppShellUserSummary({ user }: { user: AppShellUser }) {
+  return (
+    <>
+      <AppShellUserAvatar user={user} />
+      <div className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+        <span className="truncate text-sm font-medium">{user.name}</span>
+        {user.email && (
+          <span className="truncate text-xs font-light">{user.email}</span>
+        )}
+      </div>
+      <ChevronsUpDownIcon
+        aria-hidden
+        className="size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden"
+      />
+    </>
+  )
+}
+
+function AppShellUserMenu({
+  user,
+  groups,
+  label,
+}: {
+  user: AppShellUser
+  groups: AppShellUserMenuGroup[]
+  label: string
+}) {
+  const { isMobile } = useSidebar()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          data-slot="app-shell-user-menu-trigger"
+          aria-label={`${label}: ${user.name}`}
+          className="flex w-full min-w-0 items-center gap-2 rounded-md p-1.5 text-left text-sidebar-foreground outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring aria-expanded:bg-sidebar-accent group-data-[collapsible=icon]:w-auto"
+        >
+          <AppShellUserSummary user={user} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side={isMobile ? "top" : "right"}
+        align="end"
+        sideOffset={8}
+        className="w-65"
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex items-center gap-2.5 p-2 font-normal text-foreground">
+            <AppShellUserAvatar user={user} />
+            <span className="grid min-w-0 flex-1 leading-tight">
+              <span className="truncate text-sm font-semibold">{user.name}</span>
+              {user.email && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+              )}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+        {groups.map((group, groupIndex) => (
+          <React.Fragment key={group.label ?? groupIndex}>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {group.label && <DropdownMenuLabel>{group.label}</DropdownMenuLabel>}
+              {group.items.map(
+                ({ label: itemLabel, icon: Icon, href, onSelect, variant, disabled, ...dataProps }) =>
+                  href ? (
+                    <DropdownMenuItem
+                      key={itemLabel}
+                      asChild
+                      variant={variant}
+                      disabled={disabled}
+                      onSelect={onSelect}
+                    >
+                      <a href={href} {...dataProps}>
+                        {Icon && <Icon />}
+                        {itemLabel}
+                      </a>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      key={itemLabel}
+                      variant={variant}
+                      disabled={disabled}
+                      onSelect={onSelect}
+                      {...dataProps}
+                    >
+                      {Icon && <Icon />}
+                      {itemLabel}
+                    </DropdownMenuItem>
+                  )
+              )}
+            </DropdownMenuGroup>
+          </React.Fragment>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -306,7 +447,7 @@ function AppShellItemExtras({ badge, count }: { badge?: React.ReactNode; count?:
   return (
     <>
       {badge != null && (
-        <span className="ml-auto shrink-0 rounded-md bg-destructive px-1.5 text-xs leading-4 font-medium text-background group-data-[collapsible=icon]:sr-only">
+        <span className="ml-auto shrink-0 rounded-md bg-destructive px-1.5 text-xs leading-4 font-medium text-destructive-foreground group-data-[collapsible=icon]:sr-only">
           {badge}
         </span>
       )}
@@ -470,5 +611,7 @@ export {
   type AppShellProps,
   type AppShellSubItem,
   type AppShellUser,
+  type AppShellUserMenuGroup,
+  type AppShellUserMenuItem,
   type AppShellWorkspace,
 }

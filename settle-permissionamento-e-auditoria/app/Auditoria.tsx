@@ -107,7 +107,6 @@ export function Auditoria({
                 <Checkbox
                   aria-label="Selecionar todos os registros"
                   checked={todos ? true : n > 0 ? "indeterminate" : false}
-                  className="data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
                   onCheckedChange={(c) => setSelecionados(c === true ? chaves : [])}
                 />
               </TableHead>

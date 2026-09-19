@@ -18,16 +18,17 @@ import {
   LicitacaoCardHeader,
   LicitacaoCardIconAction,
   LicitacaoCardIconActions,
+  LicitacaoCardItems,
   LicitacaoCardMeta,
   LicitacaoCardRoot,
   LicitacaoCardSegments,
   LicitacaoCardSelect,
   LicitacaoCardTitle,
   LicitacaoCardValue,
+  type LicitacaoCardItemsColumn,
   type LicitacaoCardMetaField,
 } from "@/components/ui/licitacao-card"
 import { Separator } from "@/components/ui/separator"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import {
   DATAS,
@@ -42,10 +43,6 @@ import {
 /* ------------------------------------------------------------------ */
 /* Barra de ações                                                      */
 /* ------------------------------------------------------------------ */
-
-// botão de ícone suave (fundo cinza, sem borda), como no Figma
-const ICONE_SUAVE =
-  "size-8 border-0 bg-foreground/8 text-foreground hover:bg-foreground/14 hover:text-foreground"
 
 export function SeparadorDaBarra() {
   return <Separator orientation="vertical" className="data-vertical:h-8 data-vertical:self-center" />
@@ -72,15 +69,17 @@ function BarraDeAcoes({ edital, acaoExtra }: { edital: string; acaoExtra?: React
         />
         <SeparadorDaBarra />
         <LicitacaoCardIconActions className="ml-0 gap-2">
-          <LicitacaoCardIconAction label="Salvar" icon={<BookmarkIcon />} className={ICONE_SUAVE} data-nao-prototipado />
+          {/* botões de ícone suaves (fundo cinza, sem borda), como no Figma */}
+          <LicitacaoCardIconAction variant="soft" label="Salvar" icon={<BookmarkIcon />} data-nao-prototipado />
           <LicitacaoCardIconAction
+            variant="soft"
             label="Copiar link"
             icon={<LinkIcon />}
-            className={cn(ICONE_SUAVE, "text-primary hover:text-primary")}
+            className="text-primary hover:text-primary"
             data-nao-prototipado
           />
-          <LicitacaoCardIconAction label="Compartilhar" icon={<Share2Icon />} className={ICONE_SUAVE} data-nao-prototipado />
-          <LicitacaoCardIconAction label="Arquivos" icon={<FolderIcon />} className={ICONE_SUAVE} data-nao-prototipado />
+          <LicitacaoCardIconAction variant="soft" label="Compartilhar" icon={<Share2Icon />} data-nao-prototipado />
+          <LicitacaoCardIconAction variant="soft" label="Arquivos" icon={<FolderIcon />} data-nao-prototipado />
         </LicitacaoCardIconActions>
         {acaoExtra && (
           <>
@@ -118,10 +117,6 @@ function Cabecalho({ edital, className }: { edital: Edital; className?: string }
 /* Metadados                                                           */
 /* ------------------------------------------------------------------ */
 
-// medidas do Figma: rótulo 14px, caixa com raio de 14px
-const CAIXA_DE_METADADOS =
-  "rounded-xl [&_dt]:text-sm [&_dt]:leading-5 [&_dd]:leading-5 [&>dl]:gap-x-6 [&>dl]:gap-y-4 [&>dl]:px-3.5 [&>dl]:py-3"
-
 function paraCampo(c: CampoDeMetadado): LicitacaoCardMetaField {
   if (c.capag) {
     return {
@@ -149,26 +144,25 @@ function paraCampo(c: CampoDeMetadado): LicitacaoCardMetaField {
   return { label: c.rotulo, value: c.valor }
 }
 
-/** Duas caixas: datas à esquerda e a grade de 5 colunas à direita. */
+// datas em duas colunas (Adicionada | Atualizada, depois Envio da proposta)
+const DATAS_EM_LINHAS = [DATAS.slice(0, 2), DATAS.slice(2)].map((linha) => linha.map(paraCampo))
+
+/** Duas caixas (medidas do Figma): datas à esquerda e a grade de 5 colunas à direita. */
 function Metadados() {
   return (
-    <div className="flex gap-2 max-[1200px]:flex-col">
-      <LicitacaoCardMeta
-        fields={DATAS.map(paraCampo)}
-        className={cn(CAIXA_DE_METADADOS, "flex-none [&>dl]:grid-cols-[max-content_max-content] [&>dl]:gap-x-8")}
-      />
-      <LicitacaoCardMeta fields={METADADOS.map(paraCampo)} className={cn(CAIXA_DE_METADADOS, "min-w-0 flex-1")} />
-    </div>
+    <LicitacaoCardMeta
+      variant="boxed"
+      aside={DATAS_EM_LINHAS}
+      fields={METADADOS.map(paraCampo)}
+      className="max-[1200px]:flex-col"
+    />
   )
 }
 
 /** Grade única com datas + metadados (usada quando o score ocupa o lugar das datas). */
 export function GradeDeMetadadosCompleta() {
   return (
-    <LicitacaoCardMeta
-      fields={[...DATAS, ...METADADOS].map(paraCampo)}
-      className={cn(CAIXA_DE_METADADOS, "min-w-0 flex-1")}
-    />
+    <LicitacaoCardMeta variant="boxed" fields={[...DATAS, ...METADADOS].map(paraCampo)} className="min-w-0 flex-1" />
   )
 }
 
@@ -176,60 +170,28 @@ export function GradeDeMetadadosCompleta() {
 /* Itens                                                               */
 /* ------------------------------------------------------------------ */
 
-const CELULA = "h-9 border-r px-2 py-2 text-xs leading-4 text-muted-foreground last:border-r-0"
-const TITULO_DA_COLUNA = "h-auto border-r px-2 py-2 text-sm font-medium last:border-r-0"
+const COLUNAS_DOS_ITENS: LicitacaoCardItemsColumn[] = [
+  { key: "lote", label: "Lote", width: "3.5rem" },
+  { key: "nome", label: "Nome", width: "100%" },
+  { key: "segmento", label: "Segmento" },
+  { key: "unidades", label: "Unidades", width: "5.625rem", className: "tabular-nums" },
+  { key: "unitario", label: "Valor Unitário", width: "9.375rem", className: "tabular-nums" },
+  { key: "total", label: "Valor Total", width: "10.625rem", className: "tabular-nums" },
+]
 
 function TabelaDeItens({ segmentos }: { segmentos: string[] }) {
   return (
-    <section aria-label="Itens com Correspondência" className="overflow-hidden rounded-lg border bg-card">
-      <div className="flex items-center justify-between gap-3 border-b p-2">
-        <div className="flex items-center gap-1.5">
-          <h3 className="text-base leading-6 font-semibold">Itens com Correspondência</h3>
-          <Badge variant="secondary" className="rounded-md bg-foreground/10 px-1.5 text-foreground tabular-nums">
-            {ITENS_COM_CORRESPONDENCIA}
-          </Badge>
-        </div>
-        <span className="text-sm text-muted-foreground">Total de itens: {TOTAL_DE_ITENS}</span>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead scope="col" className={cn(TITULO_DA_COLUNA, "w-14")}>
-              Lote
-            </TableHead>
-            <TableHead scope="col" className={cn(TITULO_DA_COLUNA, "w-full")}>
-              Nome
-            </TableHead>
-            <TableHead scope="col" className={TITULO_DA_COLUNA}>
-              Segmento
-            </TableHead>
-            <TableHead scope="col" className={cn(TITULO_DA_COLUNA, "w-22.5")}>
-              Unidades
-            </TableHead>
-            <TableHead scope="col" className={cn(TITULO_DA_COLUNA, "w-37.5")}>
-              Valor Unitário
-            </TableHead>
-            <TableHead scope="col" className={cn(TITULO_DA_COLUNA, "w-42.5")}>
-              Valor Total
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {ITENS.map((item, i) => (
-            <TableRow key={i}>
-              <TableCell className={CELULA}>{item.lote}</TableCell>
-              <TableCell className={CELULA}>{item.nome}</TableCell>
-              <TableCell className={CELULA}>
-                <LicitacaoCardSegments segments={segmentos} className="flex-nowrap gap-2" />
-              </TableCell>
-              <TableCell className={cn(CELULA, "tabular-nums")}>{item.unidades}</TableCell>
-              <TableCell className={cn(CELULA, "tabular-nums")}>{item.unitario}</TableCell>
-              <TableCell className={cn(CELULA, "tabular-nums")}>{item.total}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </section>
+    <LicitacaoCardItems
+      variant="boxed"
+      title="Itens com Correspondência"
+      count={ITENS_COM_CORRESPONDENCIA}
+      summary={`Total de itens: ${TOTAL_DE_ITENS}`}
+      columns={COLUNAS_DOS_ITENS}
+      rows={ITENS.map((item) => ({
+        ...item,
+        segmento: <LicitacaoCardSegments segments={segmentos} className="flex-nowrap gap-2" />,
+      }))}
+    />
   )
 }
 

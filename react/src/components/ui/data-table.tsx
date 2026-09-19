@@ -606,8 +606,11 @@ function DataTable<TRow>({
       )}
       {...props}
     >
-      <div className="min-h-0 flex-1 *:data-[slot=table-container]:h-full *:data-[slot=table-container]:overflow-auto">
-        <Table className="w-max min-w-full border-separate border-spacing-0">
+      <div className="min-h-0 flex-1">
+        <Table
+          containerClassName="h-full overflow-auto"
+          className="w-max min-w-full border-separate border-spacing-0"
+        >
           <colgroup>
             {columns.map((column) => (
               <col

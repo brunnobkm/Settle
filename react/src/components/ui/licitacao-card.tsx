@@ -75,7 +75,8 @@ function LicitacaoCardHeader({
   return (
     <CardHeader
       data-slot="licitacao-card-header"
-      className={cn("flex flex-wrap items-center gap-2.5", className)}
+      // quebra linha em telas estreitas (título em cima, ações embaixo) em vez de rolar
+      className={cn("flex min-w-0 flex-wrap items-center gap-2.5", className)}
       {...props}
     />
   )
@@ -104,7 +105,7 @@ function LicitacaoCardTitle({
     <CardTitle
       data-slot="licitacao-card-title"
       className={cn(
-        "text-[15px] leading-5 font-semibold whitespace-nowrap [&_b]:font-bold",
+        "max-w-full text-[15px] leading-5 font-semibold whitespace-nowrap [&_b]:font-bold",
         className
       )}
       {...props}
@@ -119,7 +120,10 @@ function LicitacaoCardActions({
   return (
     <CardAction
       data-slot="licitacao-card-actions"
-      className={cn("ml-auto flex flex-wrap items-center gap-2", className)}
+      className={cn(
+        "ml-auto flex max-w-full min-w-0 flex-wrap items-center gap-2",
+        className
+      )}
       {...props}
     />
   )
@@ -217,7 +221,7 @@ function LicitacaoCardAvatars({
 
 type LicitacaoCardIconActionProps = Omit<
   React.ComponentProps<typeof Button>,
-  "children"
+  "children" | "variant"
 > &
   LicitacaoCardDataAttributes & {
     /** Nome da ação: vira aria-label e tooltip. */
@@ -226,6 +230,8 @@ type LicitacaoCardIconActionProps = Omit<
     /** Ação liga/desliga (ex.: salvar). Define aria-pressed. */
     pressed?: boolean
     tone?: "default" | "warning"
+    /** outline: com borda (padrão). soft: fundo cinza, sem borda, 32px. */
+    variant?: "outline" | "soft"
     /** Contador sobre o ícone (ex.: arquivos anexados). */
     count?: number
   }
@@ -235,6 +241,7 @@ function LicitacaoCardIconAction({
   icon,
   pressed,
   tone = "default",
+  variant = "outline",
   count,
   className,
   ...props
@@ -245,12 +252,15 @@ function LicitacaoCardIconAction({
         <Button
           data-slot="licitacao-card-icon-action"
           data-tone={tone}
-          variant="outline"
+          data-variant={variant}
+          variant={variant === "soft" ? "ghost" : "outline"}
           size="icon"
           aria-label={label}
           aria-pressed={pressed}
           className={cn(
             "relative size-8.5 overflow-visible text-muted-foreground shadow-none hover:text-foreground",
+            variant === "soft" &&
+              "size-8 bg-foreground/8 text-foreground hover:bg-foreground/14 dark:hover:bg-foreground/14",
             "aria-pressed:border-primary/30 aria-pressed:bg-primary/10 aria-pressed:text-primary",
             "data-[tone=warning]:border-warning/30 data-[tone=warning]:text-warning data-[tone=warning]:hover:bg-warning/10 data-[tone=warning]:hover:text-warning",
             className
@@ -280,7 +290,7 @@ function LicitacaoCardIconActions({
   return (
     <div
       data-slot="licitacao-card-icon-actions"
-      className={cn("ml-1 flex items-center gap-1.5", className)}
+      className={cn("ml-1 flex flex-wrap items-center gap-1.5", className)}
       {...props}
     />
   )
@@ -405,14 +415,25 @@ type LicitacaoCardMetaField = {
   title?: string
 }
 
-function LicitacaoCardMetaItem({ field }: { field: LicitacaoCardMetaField }) {
+function LicitacaoCardMetaItem({
+  field,
+  className,
+}: {
+  field: LicitacaoCardMetaField
+  className?: string
+}) {
   return (
-    <div data-slot="licitacao-card-meta-item" className="flex min-w-0 flex-col gap-0.75">
-      <dt className="text-[13px] font-semibold text-foreground">{field.label}</dt>
+    <div
+      data-slot="licitacao-card-meta-item"
+      className={cn("flex min-w-0 flex-col gap-0.75", className)}
+    >
+      <dt className="text-[13px] font-semibold text-foreground group-data-[variant=boxed]/licitacao-card-meta:text-sm group-data-[variant=boxed]/licitacao-card-meta:leading-5">
+        {field.label}
+      </dt>
       <dd
         data-tone={field.tone ?? "default"}
         title={field.title ?? (typeof field.value === "string" ? field.value : undefined)}
-        className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground data-[tone=warning]:font-medium data-[tone=warning]:text-warning [&>svg]:size-3.5 [&>svg]:shrink-0"
+        className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground group-data-[variant=boxed]/licitacao-card-meta:leading-5 data-[tone=warning]:font-medium data-[tone=warning]:text-warning [&>svg]:size-3.5 [&>svg]:shrink-0"
       >
         {field.icon}
         <span className="truncate">{field.value}</span>
@@ -424,37 +445,73 @@ function LicitacaoCardMetaItem({ field }: { field: LicitacaoCardMetaField }) {
 /**
  * Caixa de metadados: coluna lateral (datas, prazos) + grade principal.
  * `aside` é uma lista de linhas; cada linha pode ter mais de um campo lado a lado.
+ * variant="boxed": a coluna lateral e a grade viram duas caixas separadas (raio maior,
+ * medidas do Figma). Para empilhar mais cedo, passe um breakpoint no className
+ * (ex.: "max-[1200px]:flex-col").
  */
 function LicitacaoCardMeta({
   aside,
   fields,
+  variant = "default",
   className,
   ...props
 }: React.ComponentProps<"div"> & {
   aside?: LicitacaoCardMetaField[][]
   fields: LicitacaoCardMetaField[]
+  variant?: "default" | "boxed"
 }) {
+  const boxed = variant === "boxed"
+  // boxed: a coluna lateral vira uma grade com as colunas alinhadas entre as linhas
+  const asideColumns = Math.max(1, ...(aside ?? []).map((row) => row.length))
+
   return (
     <div
       data-slot="licitacao-card-meta"
+      data-variant={variant}
       className={cn(
-        "flex overflow-hidden rounded-md border max-sm:flex-col",
+        "group/licitacao-card-meta flex max-sm:flex-col",
+        boxed ? "gap-2" : "overflow-hidden rounded-md border",
         className
       )}
       {...props}
     >
       {aside?.length ? (
-        <dl className="flex w-57.5 flex-none flex-col gap-3.5 border-r px-4 py-3.5 max-sm:w-auto max-sm:border-r-0 max-sm:border-b">
-          {aside.map((row, index) => (
-            <div key={index} className="flex gap-6">
-              {row.map((field) => (
-                <LicitacaoCardMetaItem key={field.label} field={field} />
-              ))}
-            </div>
-          ))}
-        </dl>
+        boxed ? (
+          <dl
+            className="grid flex-none gap-x-8 gap-y-4 rounded-xl border px-3.5 py-3"
+            style={{ gridTemplateColumns: `repeat(${asideColumns}, max-content)` }}
+          >
+            {aside.map((row) =>
+              row.map((field, column) => (
+                <LicitacaoCardMetaItem
+                  key={field.label}
+                  field={field}
+                  // cada linha começa na primeira coluna
+                  className={column === 0 ? "col-start-1" : undefined}
+                />
+              ))
+            )}
+          </dl>
+        ) : (
+          <dl className="flex w-57.5 flex-none flex-col gap-3.5 border-r px-4 py-3.5 max-sm:w-auto max-sm:border-r-0 max-sm:border-b">
+            {aside.map((row, index) => (
+              <div key={index} className="flex gap-6">
+                {row.map((field) => (
+                  <LicitacaoCardMetaItem key={field.label} field={field} />
+                ))}
+              </div>
+            ))}
+          </dl>
+        )
       ) : null}
-      <dl className="grid min-w-0 flex-1 grid-cols-2 gap-x-4.5 gap-y-3.5 px-4.5 py-3.5 min-[640px]:grid-cols-3 min-[1100px]:grid-cols-5">
+      <dl
+        className={cn(
+          "grid min-w-0 flex-1 grid-cols-2 min-[640px]:grid-cols-3 min-[1100px]:grid-cols-5",
+          boxed
+            ? "gap-x-6 gap-y-4 rounded-xl border px-3.5 py-3"
+            : "gap-x-4.5 gap-y-3.5 px-4.5 py-3.5"
+        )}
+      >
         {fields.map((field) => (
           <LicitacaoCardMetaItem key={field.label} field={field} />
         ))}
@@ -473,6 +530,10 @@ type LicitacaoCardItemsColumn = {
   align?: "left" | "right"
   /** Coluna secundária (ex.: lote, quantidade): texto em tom apagado. */
   muted?: boolean
+  /** Largura da coluna (ex.: 56, "9rem", "100%" para ocupar o que sobra). */
+  width?: number | string
+  /** Classes do título e das células da coluna (ex.: "tabular-nums"). */
+  className?: string
 }
 
 type LicitacaoCardItemsProps = {
@@ -483,11 +544,75 @@ type LicitacaoCardItemsProps = {
   summary?: React.ReactNode
   columns: LicitacaoCardItemsColumn[]
   rows: Record<string, React.ReactNode>[]
+  /**
+   * default: tabela recolhível no rodapé do card ("Mostrar/Ocultar itens").
+   * boxed: sempre aberta, numa caixa com borda e divisórias entre as colunas
+   * (pode ficar em qualquer lugar do card, ex.: dentro de LicitacaoCardContent).
+   */
+  variant?: "default" | "boxed"
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
   showLabel?: string
   hideLabel?: string
+  className?: string
+}
+
+function LicitacaoCardItemsTable({
+  columns,
+  rows,
+  boxed,
+}: {
+  columns: LicitacaoCardItemsColumn[]
+  rows: Record<string, React.ReactNode>[]
+  boxed: boolean
+}) {
+  return (
+    // contain: a tabela larga rola dentro do card em vez de alargar o card (e a página)
+    <Table containerClassName="[contain:inline-size]">
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          {columns.map((column) => (
+            <TableHead
+              key={column.key}
+              scope="col"
+              style={column.width != null ? { width: column.width } : undefined}
+              className={cn(
+                boxed
+                  ? "h-auto border-r px-2 py-2 text-sm font-medium last:border-r-0"
+                  : "h-auto px-3 py-2.5 font-semibold",
+                column.align === "right" && "text-right",
+                column.className
+              )}
+            >
+              {column.label}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row, index) => (
+          <TableRow key={index}>
+            {columns.map((column) => (
+              <TableCell
+                key={column.key}
+                className={cn(
+                  boxed
+                    ? "h-9 border-r px-2 py-2 text-xs leading-4 text-muted-foreground last:border-r-0"
+                    : "px-3 py-2.75",
+                  column.align === "right" && "text-right tabular-nums",
+                  column.muted && "text-muted-foreground",
+                  column.className
+                )}
+              >
+                {row[column.key]}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
 }
 
 function LicitacaoCardItems({
@@ -496,11 +621,13 @@ function LicitacaoCardItems({
   summary,
   columns,
   rows,
+  variant = "default",
   open: openProp,
   defaultOpen = true,
   onOpenChange,
   showLabel = "Mostrar itens",
   hideLabel = "Ocultar itens",
+  className,
 }: LicitacaoCardItemsProps) {
   const [openState, setOpenState] = React.useState(defaultOpen)
   const open = openProp ?? openState
@@ -509,10 +636,39 @@ function LicitacaoCardItems({
     onOpenChange?.(value)
   }
 
+  if (variant === "boxed") {
+    return (
+      <section
+        data-slot="licitacao-card-items"
+        data-variant="boxed"
+        aria-label={typeof title === "string" ? title : undefined}
+        className={cn("min-w-0 overflow-hidden rounded-lg border bg-card", className)}
+      >
+        <div className="flex items-center justify-between gap-3 border-b p-2">
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-base leading-6 font-semibold">{title}</h3>
+            {count != null && (
+              <Badge
+                variant="secondary"
+                className="rounded-md bg-foreground/10 px-1.5 text-foreground tabular-nums"
+              >
+                {count}
+              </Badge>
+            )}
+          </div>
+          {summary != null && (
+            <span className="text-sm text-muted-foreground">{summary}</span>
+          )}
+        </div>
+        <LicitacaoCardItemsTable columns={columns} rows={rows} boxed />
+      </section>
+    )
+  }
+
   return (
     <CardFooter
       data-slot="licitacao-card-items"
-      className="block pt-0"
+      className={cn("block pt-0", className)}
     >
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleContent>
@@ -532,42 +688,7 @@ function LicitacaoCardItems({
               </span>
             )}
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {columns.map((column) => (
-                  <TableHead
-                    key={column.key}
-                    scope="col"
-                    className={cn(
-                      "h-auto px-3 py-2.5 font-semibold",
-                      column.align === "right" && "text-right"
-                    )}
-                  >
-                    {column.label}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row, index) => (
-                <TableRow key={index}>
-                  {columns.map((column) => (
-                    <TableCell
-                      key={column.key}
-                      className={cn(
-                        "px-3 py-2.75",
-                        column.align === "right" && "text-right tabular-nums",
-                        column.muted && "text-muted-foreground"
-                      )}
-                    >
-                      {row[column.key]}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <LicitacaoCardItemsTable columns={columns} rows={rows} boxed={false} />
         </CollapsibleContent>
         <CollapsibleTrigger asChild>
           <Button

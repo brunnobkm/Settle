@@ -22,21 +22,24 @@ import {
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import { AppShell } from "@/components/ui/app-shell"
+import { AppShell, useAppShell } from "@/components/ui/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { FilterChip, FilterChipGroup } from "@/components/ui/filter-chip"
 import { LicitacaoCard, LicitacaoCardStatusButton, type LicitacaoCardIconActionProps } from "@/components/ui/licitacao-card"
+import { SearchField, useSearchShortcut } from "@/components/ui/search-field"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
 import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
-import { CampoDeBusca } from "./CampoDeBusca"
 import {
   ESCOPOS,
+  HOJE,
   LICITACOES,
+  PRESETS_DATA,
   RESPONSAVEIS,
   ROTULO_ADERENCIA,
   SEGMENTOS_DO_CARD,
@@ -44,6 +47,8 @@ import {
   VISUALIZACAO_OBRIGATORIA,
   VISUALIZACAO_ORGAOS,
   VISUALIZACOES_INICIAIS,
+  formatarData,
+  lerData,
   normalizar,
   textoPadraoDeBusca,
   type Aderencia,
@@ -51,10 +56,10 @@ import {
   type Licitacao,
   type Visualizacao,
 } from "./dados"
-import { FiltrosDaVisualizacao } from "./FiltrosDaVisualizacao"
 
 const DURACAO_SAIDA = 330 // ms: animação do card saindo da lista
 const ATRASO_BUSCA = 450 // ms: simula a busca no servidor (mostra o esqueleto)
+const OPCOES_DE_ESCOPO = ESCOPOS.map((e) => ({ value: e.chave, label: e.rotulo }))
 
 function pertenceAVisualizacao(l: Licitacao, v: Visualizacao | undefined) {
   if (!v) return true
@@ -85,7 +90,6 @@ export default function App() {
   const [escopos, setEscopos] = useState<string[]>([])
   const [carregando, setCarregando] = useState(false)
   const timerBusca = useRef<number | undefined>(undefined)
-  const inputBuscaRef = useRef<HTMLInputElement>(null)
 
   const barraRef = useRef<HTMLDivElement>(null)
   const abasRef = useRef<HTMLDivElement>(null)
@@ -245,29 +249,13 @@ export default function App() {
     setAplicada("")
   }
 
-  function alternarEscopo(chave: string) {
-    setEscopos((atuais) => (atuais.includes(chave) ? atuais.filter((k) => k !== chave) : [...atuais, chave]))
+  function alterarEscopos(novos: string[]) {
+    setEscopos(novos)
     agendarBusca(consulta)
-    inputBuscaRef.current?.focus()
   }
 
-  useEffect(() => {
-    if (buscaAberta) inputBuscaRef.current?.focus()
-  }, [buscaAberta])
-
   // atalho "/" abre a busca
-  useEffect(() => {
-    const aoTeclar = (e: KeyboardEvent) => {
-      const alvo = e.target as HTMLElement | null
-      const digitando = alvo?.closest("input, textarea, [contenteditable=true]")
-      if (e.key === "/" && !buscaAberta && !digitando) {
-        e.preventDefault()
-        setBuscaAberta(true)
-      }
-    }
-    document.addEventListener("keydown", aoTeclar)
-    return () => document.removeEventListener("keydown", aoTeclar)
-  }, [buscaAberta])
+  useSearchShortcut(abrirBusca, { enabled: !buscaAberta })
 
   /* ---------------- salvar para depois ---------------- */
 
@@ -379,20 +367,19 @@ export default function App() {
                 )}
               </Button>
               {buscaAberta ? (
-                <CampoDeBusca
-                  inputRef={inputBuscaRef}
-                  consulta={consulta}
-                  onConsulta={(texto) => {
+                <SearchField
+                  autoFocus
+                  value={consulta}
+                  onValueChange={(texto) => {
                     setConsulta(texto)
                     agendarBusca(texto)
                   }}
-                  escopos={escopos}
-                  onAlternarEscopo={alternarEscopo}
-                  onLimparEscopos={() => {
-                    setEscopos([])
-                    agendarBusca(consulta)
-                  }}
-                  onFechar={fecharBusca}
+                  scopes={OPCOES_DE_ESCOPO}
+                  selectedScopes={escopos}
+                  onSelectedScopesChange={alterarEscopos}
+                  onClose={fecharBusca}
+                  labels={{ input: "Buscar licitações" }}
+                  className="w-auto min-w-75 flex-1 rounded-lg border-0 bg-transparent shadow-none dark:bg-transparent"
                 />
               ) : (
                 <Button
@@ -408,7 +395,7 @@ export default function App() {
             </div>
           </div>
 
-          <FiltrosDaVisualizacao key={ativa} filtros={filtrosAtivos} onAlterar={alterarFiltro} />
+          <SelosDeFiltro key={ativa} filtros={filtrosAtivos} onAlterar={alterarFiltro} />
         </div>
 
         <section aria-label="Licitações" aria-busy={carregando}>
@@ -605,6 +592,51 @@ function CardDaLicitacao({
         { label: "Portal de disputa", value: l.portal },
       ]}
     />
+  )
+}
+
+/** Filtros salvos na visualização, como selos ("Órgão: 2 selecionadas ▾"). */
+function SelosDeFiltro({ filtros, onAlterar }: { filtros: Filtro[]; onAlterar: (indice: number, filtro: Filtro) => void }) {
+  const { headerHidden } = useAppShell()
+  if (!filtros.length) return null
+
+  return (
+    <FilterChipGroup
+      aria-label="Filtros da visualização"
+      className={cn(
+        "mt-3 max-h-15 transition-[max-height,opacity,margin] duration-250 ease-out",
+        // rolando para baixo (navbar escondida): os selos recolhem
+        headerHidden && "pointer-events-none mt-0 max-h-0 overflow-hidden opacity-0"
+      )}
+    >
+      {filtros.map((f, i) =>
+        f.tipo === "data" ? (
+          <FilterChip
+            key={f.rotulo}
+            type="date"
+            closeOnScroll
+            label={f.rotulo}
+            presets={PRESETS_DATA[f.modo].map((p) => ({ value: p.chave, label: p.rotulo }))}
+            today={HOJE}
+            disabled={f.modo === "passado" ? { after: HOJE } : { before: HOJE }}
+            formatDate={formatarData}
+            value={{ preset: f.valor.preset, date: f.valor.data ? lerData(f.valor.data) : undefined }}
+            onValueChange={(v) =>
+              onAlterar(i, { ...f, valor: v.preset ? { preset: v.preset } : { data: v.date && formatarData(v.date) } })
+            }
+          />
+        ) : (
+          <FilterChip
+            key={f.rotulo}
+            closeOnScroll
+            label={f.rotulo}
+            options={f.opcoes}
+            value={f.valor}
+            onValueChange={(valor) => onAlterar(i, { ...f, valor })}
+          />
+        )
+      )}
+    </FilterChipGroup>
   )
 }
 

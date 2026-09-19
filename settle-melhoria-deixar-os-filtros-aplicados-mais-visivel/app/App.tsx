@@ -12,20 +12,30 @@ import {
   FileTextIcon,
   FolderIcon,
   FolderXIcon,
+  KeyboardIcon,
   LinkIcon,
+  LogOutIcon,
   PencilIcon,
   RefreshCwIcon,
   SearchIcon,
+  SettingsIcon,
   Share2Icon,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import { AppShell, type AppShellGroup, type AppShellItem } from "@/components/ui/app-shell"
+import {
+  AppShell,
+  useAppShell,
+  type AppShellGroup,
+  type AppShellItem,
+  type AppShellUserMenuGroup,
+} from "@/components/ui/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { FilterChip, FilterChipGroup } from "@/components/ui/filter-chip"
 import {
   LicitacaoCard,
   LicitacaoCardSegments,
@@ -33,31 +43,35 @@ import {
   type LicitacaoCardIconActionProps,
   type LicitacaoCardItemsColumn,
 } from "@/components/ui/licitacao-card"
+import { SearchField, useSearchShortcut } from "@/components/ui/search-field"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useNaoPrototipado } from "@/settle/nao-prototipado"
+import { MENSAGEM_NAO_PROTOTIPADO, useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
-import { CampoDeBusca } from "./CampoDeBusca"
 import {
   ABA_TODAS,
   ABAS,
   ESCOPOS,
   FILTROS_INICIAIS,
+  HOJE,
   ITENS,
   LICITACOES,
   RESPONSAVEIS,
   SEGMENTOS_DO_CARD,
+  PRESETS_DATA,
   TOTAL_RECOMENDADAS,
+  formatarData,
+  lerData,
   normalizar,
   textoPadraoDeBusca,
   type Filtro,
   type Licitacao,
 } from "./dados"
-import { FiltrosAplicados } from "./FiltrosAplicados"
 
 const DURACAO_SAIDA = 330 // ms: animação do card saindo da lista
 const ATRASO_BUSCA = 450 // ms: simula a busca no servidor (mostra o esqueleto)
+const OPCOES_DE_ESCOPO = ESCOPOS.map((e) => ({ value: e.chave, label: e.rotulo }))
 
 type Fila = "recomendadas" | "salvos"
 
@@ -65,6 +79,18 @@ const ROTULO_DA_FILA: Record<Fila, string> = {
   recomendadas: "Recomendadas",
   salvos: "Salvos para depois",
 }
+
+// menu do usuário (avatar do rodapé): Configurações abre a área própria (padrão Linear)
+const naoPrototipado = () => toast(MENSAGEM_NAO_PROTOTIPADO)
+const MENU_DO_USUARIO: AppShellUserMenuGroup[] = [
+  {
+    items: [
+      { label: "Configurações", icon: SettingsIcon, href: "../settle-configuracoes/#inicio" },
+      { label: "Atalhos do teclado", icon: KeyboardIcon, onSelect: naoPrototipado },
+    ],
+  },
+  { items: [{ label: "Sair", icon: LogOutIcon, variant: "destructive", onSelect: naoPrototipado }] },
+]
 
 const quantidade = (n: number) => `${n} ${n === 1 ? "licitação" : "licitações"}`
 
@@ -89,7 +115,6 @@ export default function App() {
   const [escopos, setEscopos] = useState<string[]>([])
   const [carregando, setCarregando] = useState(false)
   const timerBusca = useRef<number | undefined>(undefined)
-  const inputBuscaRef = useRef<HTMLInputElement>(null)
 
   /* ---------------- filtragem ---------------- */
 
@@ -175,29 +200,13 @@ export default function App() {
     setAplicada("")
   }
 
-  function alternarEscopo(chave: string) {
-    setEscopos((atuais) => (atuais.includes(chave) ? atuais.filter((k) => k !== chave) : [...atuais, chave]))
+  function alterarEscopos(novos: string[]) {
+    setEscopos(novos)
     agendarBusca(consulta)
-    inputBuscaRef.current?.focus()
   }
 
-  useEffect(() => {
-    if (buscaAberta) inputBuscaRef.current?.focus()
-  }, [buscaAberta])
-
   // atalho "/" abre a busca
-  useEffect(() => {
-    const aoTeclar = (e: KeyboardEvent) => {
-      const alvo = e.target as HTMLElement | null
-      const digitando = alvo?.closest("input, textarea, [contenteditable=true]")
-      if (e.key === "/" && !buscaAberta && !digitando) {
-        e.preventDefault()
-        setBuscaAberta(true)
-      }
-    }
-    document.addEventListener("keydown", aoTeclar)
-    return () => document.removeEventListener("keydown", aoTeclar)
-  }, [buscaAberta])
+  useSearchShortcut(() => setBuscaAberta(true), { enabled: !buscaAberta })
 
   /* ---------------- salvar para depois ---------------- */
 
@@ -246,6 +255,7 @@ export default function App() {
       workspace={WORKSPACE}
       groups={grupos}
       user={USUARIO}
+      userMenu={MENU_DO_USUARIO}
       header={<span className="text-[15px] font-semibold">{SAUDACAO}</span>}
       hideHeaderOnScroll
     >
@@ -328,20 +338,19 @@ export default function App() {
                 Exportar
               </Button>
               {buscaAberta ? (
-                <CampoDeBusca
-                  inputRef={inputBuscaRef}
-                  consulta={consulta}
-                  onConsulta={(texto) => {
+                <SearchField
+                  autoFocus
+                  value={consulta}
+                  onValueChange={(texto) => {
                     setConsulta(texto)
                     agendarBusca(texto)
                   }}
-                  escopos={escopos}
-                  onAlternarEscopo={alternarEscopo}
-                  onLimparEscopos={() => {
-                    setEscopos([])
-                    agendarBusca(consulta)
-                  }}
-                  onFechar={fecharBusca}
+                  scopes={OPCOES_DE_ESCOPO}
+                  selectedScopes={escopos}
+                  onSelectedScopesChange={alterarEscopos}
+                  onClose={fecharBusca}
+                  labels={{ input: "Buscar licitações" }}
+                  className="w-auto min-w-75 flex-1 rounded-lg border-0 bg-transparent shadow-none dark:bg-transparent"
                 />
               ) : (
                 <Button
@@ -586,6 +595,54 @@ function CardDaLicitacao({
         hideLabel: "Ocultar itens",
       }}
     />
+  )
+}
+
+/**
+ * Filtros aplicados na aba, como selos ("Situação: Ativas ▾") logo abaixo da barra,
+ * para ficarem sempre visíveis. Sem filtros, nada aparece.
+ */
+function FiltrosAplicados({ filtros, onAlterar }: { filtros: Filtro[]; onAlterar: (indice: number, filtro: Filtro) => void }) {
+  const { headerHidden } = useAppShell()
+  if (!filtros.length) return null
+
+  return (
+    <FilterChipGroup
+      aria-label="Filtros aplicados"
+      className={cn(
+        "mt-3 max-h-15 transition-[max-height,opacity,margin] duration-250 ease-out",
+        // rolando para baixo (navbar escondida): os selos recolhem
+        headerHidden && "pointer-events-none mt-0 max-h-0 overflow-hidden opacity-0"
+      )}
+    >
+      {filtros.map((f, i) =>
+        f.tipo === "data" ? (
+          <FilterChip
+            key={f.rotulo}
+            type="date"
+            closeOnScroll
+            label={f.rotulo}
+            presets={PRESETS_DATA[f.modo].map((p) => ({ value: p.chave, label: p.rotulo }))}
+            today={HOJE}
+            disabled={f.modo === "passado" ? { after: HOJE } : { before: HOJE }}
+            formatDate={formatarData}
+            value={{ preset: f.valor.preset, date: f.valor.data ? lerData(f.valor.data) : undefined }}
+            onValueChange={(v) =>
+              onAlterar(i, { ...f, valor: v.preset ? { preset: v.preset } : { data: v.date && formatarData(v.date) } })
+            }
+          />
+        ) : (
+          <FilterChip
+            key={f.rotulo}
+            closeOnScroll
+            label={f.rotulo}
+            options={f.opcoes}
+            value={f.valor}
+            onValueChange={(valor) => onAlterar(i, { ...f, valor })}
+          />
+        )
+      )}
+    </FilterChipGroup>
   )
 }
 
