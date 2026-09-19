@@ -1,5 +1,9 @@
 # Explorar licitações — Órgãos favoritos
 
+> **Tela em React (desde 19/09/2026).** O código fica em `app/` (e nas subpáginas, em `<subpágina>/app/`);
+> o `index.html` é gerado pelo build (`cd react && npm run build -- <pasta>`). Veja a seção "Stack" do `AGENTS.md` da raiz.
+> O que este README descreve sobre arquivos HTML/JS/CSS se refere à versão anterior, que está no histórico do git.
+
 Duplicata da página de [Recomendadas](../settle-melhoria-deixar-os-filtros-aplicados-mais-visivel/), colocada na navegação **Explorar licitações**, com a diferença de ter apenas **duas tabs**: `Todas` e `Órgãos favoritos`. Arquivo único e autossuficiente: [`index.html`](index.html).
 
 ## Demo
