@@ -6,8 +6,8 @@
 @import "@fontsource-variable/geist-mono";
 
 /* as páginas moram fora de react/: <pasta>/app/ */
-@source "../../settle-*/app";
-@source "../../settle-*/*/app";
+@source "../../settle-*/app/**/*.{ts,tsx}";
+@source "../../settle-*/*/app/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
