@@ -1,14 +1,19 @@
 # Multitasking — protótipo
 
+> **Tela em React (desde 19/09/2026).** O código fica em `app/` (e nas subpáginas, em `<subpágina>/app/`);
+> o `index.html` é gerado pelo build (`cd react && npm run build -- <pasta>`). Veja a seção "Stack" do `AGENTS.md` da raiz.
+> O que este README descreve sobre arquivos HTML/JS/CSS se refere à versão anterior, que está no histórico do git.
+
 Protótipo do padrão **Multitasking**: duas sidebars acopladas (uma **primária** + uma **auxiliar**)
 que dividem a tela com o menu e o conteúdo principal, de forma responsiva.
 
 **Demo:** https://brunnobkm.github.io/Settle/settle-multiplas-sidebar-responsive/
 
 ## Arquivos
-- `index.html` — a tela do protótipo (a lógica do Multitasking — espaço útil, modos, resize, header,
-  fechar — está embutida no próprio HTML; a simulação do menu também).
-- `styles.css`, `sheet.js` — estilos e interações de base reaproveitados do protótipo Settle.
+- `app/`: a tela em React com os componentes do design system (`App.tsx` tem as regras de largura
+  do espaço útil; `Workspace.tsx`, o workspace com Resumo, Arquivos, divisória, modo abas e cabeçalho
+  responsivo; `painel.ts`, o estado; `dados.ts` e `documentos.ts`, o conteúdo de exemplo).
+- `index.html`: gerado pelo build (não editar à mão).
 
 ## O que dá para testar
 - **Abrir sidebar** → abre o workspace (Resumo).
@@ -26,8 +31,9 @@ que dividem a tela com o menu e o conteúdo principal, de forma responsiva.
 
 ## Rodar localmente
 ```bash
-python3 -m http.server 4610
-# abra http://localhost:4610/index.html
+cd ../react
+npm run dev -- settle-multiplas-sidebar-responsive     # recarregamento automático
+npm run build -- settle-multiplas-sidebar-responsive   # gera o index.html desta pasta
 ```
 
 *Protótipo — o conteúdo (Resumo/Arquivos) é de exemplo, não dados reais.*

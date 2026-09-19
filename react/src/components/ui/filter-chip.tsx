@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { ChevronDownIcon, SearchIcon } from "lucide-react"
 import type { Matcher } from "react-day-picker"

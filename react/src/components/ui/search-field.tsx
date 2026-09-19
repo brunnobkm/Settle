@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { FunnelIcon, SearchIcon, XIcon } from "lucide-react"
 

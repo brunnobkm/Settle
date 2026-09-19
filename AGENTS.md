@@ -68,9 +68,17 @@ npm run build -- settle-meu-projeto           # gera settle-meu-projeto/index.ht
 npm run ds                                    # traz a versão mais nova do design system
 ```
 
-Exceção temporária: telas em teste com usuários continuam como estão até o teste acabar
-(`settle-agentes/teste/`, `settle-cadastro-e-primeiro-acesso/`). Telas ainda não convertidas
-seguem em HTML + `assets/settle.css` enquanto a conversão não chega nelas.
+Todas as telas estão em React desde 19/09/2026, exceto as que estão em teste com usuários, que
+continuam em HTML + `assets/settle.css` até o teste acabar: `settle-agentes/teste/` e
+`settle-cadastro-e-primeiro-acesso/`. Quando o teste acabar, converta-as no mesmo padrão.
+
+**Antes de montar qualquer coisa, veja o que já existe:** `ls react/src/components/ui`. Além dos
+componentes do shadcn, a Base já tem peças feitas para a Settle e reaproveitáveis: `app-shell`
+(casca), `licitacao-card`, `filter-chip`, `search-field`, `data-table`, `action-bar`, `score-meter`,
+`notifications-center`, `timeline`, `docked-panel`, `document-viewer`, `citation-list`,
+`property-list`, `kanban`, `event-calendar`, `settings-page`, `settings-list`, `ai-widget`,
+`background-tasks`, `priority-list`, `token-field`. Telas convertidas servem de exemplo de uso
+(veja as pastas `app/`).
 
 Não use Tailwind por CDN, React por CDN nem Babel no navegador. React só pelo workspace `react/`.
 
