@@ -208,7 +208,7 @@ export function PainelDoFiltro({ f }: { f: Filtro }) {
     <>
       {f.ordem === "menor" && f.pendentes > 0 && (
         // aviso contextual enquanto "Menor score" está ativo
-        <Alert className="mb-4 border-transparent bg-warning/10 text-warning">
+        <Alert variant="warning" className="mb-4 border-transparent bg-warning/10">
           <CircleAlertIcon />
           <AlertTitle className="leading-tight tracking-[-.01em]">
             {f.pendentes} {f.pendentes > 1 ? "editais ainda precisam" : "edital ainda precisa"} de revisão
