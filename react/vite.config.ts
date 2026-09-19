@@ -5,30 +5,35 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import { viteSingleFile } from "vite-plugin-singlefile"
 
-// A tela vem de TELA (definida por scripts/tela.mjs). Cada tela é telas/<nome>/App.tsx.
-const tela = process.env.TELA ?? "_exemplo"
-const telaDir = path.resolve(__dirname, "telas", tela)
-const config = JSON.parse(fs.readFileSync(path.join(telaDir, "tela.json"), "utf8"))
+// PAGINA vem de scripts/tela.mjs: caminho da página a partir da raiz da Settle,
+// ex. "settle-capag-color-scale" ou "settle-agentes/rotinas".
+// O código da página fica em <PAGINA>/app/App.tsx e o build gera <PAGINA>/index.html.
+const SETTLE = path.resolve(import.meta.dirname, "..")
+const pagina = process.env.PAGINA ?? "react/modelo-preview"
+const appDir = pagina === "react/modelo-preview" ? path.resolve(import.meta.dirname, "modelo") : path.join(SETTLE, pagina, "app")
+const configFile = path.join(appDir, "pagina.json")
+const config = fs.existsSync(configFile) ? JSON.parse(fs.readFileSync(configFile, "utf8")) : { titulo: "Settle" }
 
 export default defineConfig({
-  // viteSingleFile junta JS, CSS e fontes num index.html só, igual aos protótipos HTML
   plugins: [
     react(),
     tailwindcss(),
+    // viteSingleFile junta JS, CSS e fontes num index.html só, como os protótipos HTML
     viteSingleFile(),
     {
-      name: "titulo-da-tela",
+      name: "titulo-da-pagina",
       transformIndexHtml: (html) => html.replace("%TELA_TITULO%", config.titulo),
     },
   ],
   resolve: {
     alias: {
-      "@tela": path.join(telaDir, "App.tsx"),
-      "@": path.resolve(__dirname, "./src"),
+      "@tela": path.join(appDir, "App.tsx"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
+  server: { fs: { allow: [SETTLE] } },
   build: {
-    outDir: path.resolve(__dirname, "dist", tela),
+    outDir: path.resolve(import.meta.dirname, "dist", pagina),
     emptyOutDir: true,
     assetsInlineLimit: Number.MAX_SAFE_INTEGER,
   },

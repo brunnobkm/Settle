@@ -1,8 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+
+/* as páginas moram fora de react/: <pasta>/app/ */
+@source "../../settle-*/app";
+@source "../../settle-*/*/app";
 
 @custom-variant dark (&:is(.dark *));
 

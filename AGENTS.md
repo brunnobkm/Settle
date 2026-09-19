@@ -43,62 +43,64 @@ em minúsculas, com hífen e o prefixo `settle-`. Ex.: conversa `settle-configur
 
 ## Stack
 
-Os protótipos usam o **design system** (`~/Documents/projects/companies/b-design/design-system`, repositório
-privado `brunnobkm/design-system`): a base de componentes shadcn + a personalização
-da Settle (`registry/clients/settle/`). Ele é a fonte de verdade de cores, raio e fonte.
+As telas usam o **design system** (`~/Documents/projects/companies/b-design/design-system`,
+repositório privado `brunnobkm/design-system`): a base de componentes shadcn + a personalização
+da Settle (`registry/clients/settle/`). Ele é a fonte de verdade de cores, raio, fonte e componentes.
 
-Há dois tipos de tela:
+**Todas as telas são React** com os componentes do design system. O código de cada página fica
+dentro da pasta dela, em `app/`; o build gera o `index.html` ao lado, que é o que o GitHub Pages publica:
 
-| | Telas **novas** | Telas HTML **existentes** |
-|---|---|---|
-| Onde | `react/telas/<nome>/App.tsx` | `index.html` na pasta da tela |
-| Tecnologia | React + componentes do design system (`@/components/ui`) | HTML/CSS/JS puro + `assets/settle.css` |
-| Publicação | `npm run build -- <nome>` gera `<destino>/index.html` (arquivo único) | o próprio `index.html` |
-| Verificação | `npm run typecheck` em `react/` | `node check-padrao.mjs` |
+```
+settle-configuracoes/
+├─ app/
+│  ├─ App.tsx        a tela (é aqui que se trabalha)
+│  └─ pagina.json    título da página
+└─ index.html        gerado pelo build (não editar à mão)
+```
 
-**Toda tela nova é React**, criada com `cd react && npm run nova -- <nome> "Título"`.
-Veja `react/README.md`. Telas HTML existentes continuam em HTML: ajustes pequenos
-seguem as regras abaixo; reescrever uma delas em React só quando for pedido.
+Subpáginas seguem o mesmo padrão: `settle-agentes/rotinas/app/` gera `settle-agentes/rotinas/index.html`.
 
-Não use Tailwind por CDN, React por CDN nem Babel no navegador (como o
-`settle-onboarding` antigo). React só no workspace `react/`.
+```bash
+cd react
+npm run nova -- settle-meu-projeto "Título"   # cria settle-meu-projeto/app/
+npm run dev -- settle-meu-projeto             # abre com recarregamento automático
+npm run build -- settle-meu-projeto           # gera settle-meu-projeto/index.html
+npm run ds                                    # traz a versão mais nova do design system
+```
 
-**Exceção existente a resolver:** quatro protótipos carregam Tailwind por CDN
-(`card-licitacao-detalhe/prototype.html`, `prototype-editavel.html`,
-`licitacoes-em-andamento/card.html`, `licitacoes-em-andamento-card/prototype.html`).
-São anteriores a este padrão.
+Exceção temporária: telas em teste com usuários continuam como estão até o teste acabar
+(`settle-agentes/teste/`, `settle-cadastro-e-primeiro-acesso/`). Telas ainda não convertidas
+seguem em HTML + `assets/settle.css` enquanto a conversão não chega nelas.
+
+Não use Tailwind por CDN, React por CDN nem Babel no navegador. React só pelo workspace `react/`.
 
 ---
 
 ## Componentes novos (alimentar o design system)
 
-Ao prototipar, se precisar de um componente que não existe em
-`react/src/components/ui/`:
+**Todo componente novo vai para a Base do design system** (`registry/base/ui/`). Na Settle ele
+aparece com a marca da Settle automaticamente, porque os componentes usam só tokens do tema.
 
-1. **Procure antes.** `ls react/src/components/ui` e a lista do shadcn. Compor
-   componentes existentes (Card + Table + Badge...) resolve a maioria dos casos.
-2. **Decida onde ele mora**, no repositório do design system:
-   - **Base** (`registry/base/ui/`): genérico, serviria a qualquer cliente, sem
-     vocabulário de licitação. Ex.: stepper, dropzone de arquivo, tabela com filtros,
-     barra de ações em lote.
-   - **Settle** (`registry/clients/settle/ui/`): específico do domínio ou da marca.
-     Ex.: card de licitação, score do edital, linha do tempo da sessão.
-   - Na dúvida, Base com nomes neutros; o que for de licitação fica na tela ou na Settle.
-3. **Escreva o componente no design system**, não na tela. Use só tokens semânticos
-   (`bg-primary`, `text-muted-foreground`, `rounded-lg`), nunca cor fixa: é isso que
-   faz ele sair com o visual da Settle (e de qualquer outro cliente) automaticamente.
-4. **Publique e instale:**
+1. **Procure antes** em `react/src/components/ui/`. Compor componentes existentes
+   (Card + Table + Badge...) resolve a maioria dos casos.
+2. **Crie na Base**, não na tela: `registry/base/ui/<nome>.tsx` no design system, com nome
+   neutro e dados por props (nada de conteúdo da Settle dentro do componente).
+3. **Só tokens semânticos** (`bg-primary`, `text-muted-foreground`, `bg-success`, `rounded-lg`),
+   nunca cor fixa. É isso que dá a cara de cada cliente.
+4. **Pasta da Settle no design system** (`registry/clients/settle/ui/`) só quando a Settle precisar
+   de uma *estrutura* diferente da Base, não só de cores diferentes. Cores ficam no `theme.json`.
+5. **Publique e instale:**
    ```bash
    cd ~/Documents/projects/companies/b-design/design-system && npm run build:registry
    git add -A && git commit -m "..." && git push
-   cd ~/Documents/projects/companies/b-design/clients/settle/react && npx shadcn@latest add @settle/<nome> --overwrite --yes
+   cd ~/Documents/projects/companies/b-design/clients/settle/react && npm run ds
    ```
-5. Mudou um componente que já existe? Mesma regra: a mudança vai no design system
-   (Base se for melhoria geral, `clients/settle/ui/` se for só da Settle) e depois
-   `npm run ds` em `react/` traz a versão nova.
 
-**Nunca edite `react/src/components/ui/` direto.** Esses arquivos são sobrescritos
-pelo `npm run ds`; o que for feito ali se perde e não chega aos outros clientes.
+**Nunca edite `react/src/components/ui/` direto.** Esses arquivos são sobrescritos pelo
+`npm run ds`; o que for feito ali se perde e não chega aos outros clientes.
+
+Dados e configurações compartilhados entre telas da Settle (menu da sidebar, listas de exemplo)
+ficam em `react/src/settle/`. Não são componentes: não vão para o design system.
 
 ---
 
@@ -124,17 +126,10 @@ input com label; `outline:none` sem `:focus-visible`.
 
 ## Regra principal
 
-**Tela nova parte de `react/`:** `cd react && npm run nova -- <nome> "Título"`.
+**Tela nova:** `cd react && npm run nova -- settle-<nome> "Título"`, com o mesmo nome da conversa.
+Depois adicione o projeto no `index.html` da raiz.
 
-Só quando for preciso criar uma página HTML avulsa (fora do fluxo normal), ela parte
-de `_template.html`:
-
-```
-cp _template.html settle-nome-da-tela/index.html
-```
-
-Depois: ajuste `<title>` e `data-preview`, confira o caminho relativo dos assets,
-e preencha o `<main>`.
+`_template.html` só serve para uma página HTML avulsa, fora do fluxo normal.
 
 ---
 
