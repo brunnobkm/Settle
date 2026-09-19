@@ -211,7 +211,7 @@ export function Matriz({
                 >
                   {recomendado ? (
                     <Dica texto="Produto com maior aderência">
-                      <div className="mb-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold tracking-wide text-success uppercase">
+                      <div className="mb-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold tracking-wide text-success-strong uppercase">
                         <StarIcon aria-hidden className="size-3 fill-current" /> Recomendado
                       </div>
                     </Dica>
@@ -427,8 +427,8 @@ function CelulaSku({
           <div
             className={cn(
               "mt-1.25 inline-flex items-center gap-1 text-[11px] font-semibold",
-              cell.c === "alta" && "text-success",
-              cell.c === "media" && "text-warning",
+              cell.c === "alta" && "text-success-strong",
+              cell.c === "media" && "text-warning-strong",
               cell.c === "baixa" && "text-destructive"
             )}
           >

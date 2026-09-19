@@ -13,7 +13,7 @@ export function PainelDeOrigem({ aberta, onFechar }: { aberta: OrigemAberta | nu
   const o = aberta?.origem
   return (
     <Sheet open={!!aberta} onOpenChange={(v) => !v && onFechar()}>
-      <SheetContent side="right" className="w-110 max-w-[92vw] gap-0 sm:max-w-110">
+      <SheetContent side="right" size="md" className="gap-0">
         <SheetHeader className="border-b px-4.5 py-4">
           <SheetTitle className="text-[15px] font-semibold">Origem da extração</SheetTitle>
           <SheetDescription className="sr-only">Página e trecho do edital de onde a IA extraiu o requisito.</SheetDescription>

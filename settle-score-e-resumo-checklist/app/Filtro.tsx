@@ -179,7 +179,7 @@ function ScoreDoEdital({ d, onConcluir }: { d: EditalDoFiltro; onConcluir: () =>
     return (
       <Button
         variant="ghost"
-        className={cn(CHIP, "h-auto bg-warning/10 text-warning hover:bg-warning/15 hover:text-warning")}
+        className={cn(CHIP, "h-auto bg-warning/10 text-warning-strong hover:bg-warning/15 hover:text-warning-strong")}
         title={`Simulação: clique para concluir a revisão dos ${d.revisar} itens`}
         aria-label={`${d.score}/100 · Revisar ${d.revisar} ${itens}: concluir a revisão (simulação)`}
         onClick={onConcluir}
@@ -213,7 +213,7 @@ export function PainelDoFiltro({ f }: { f: Filtro }) {
           <AlertTitle className="leading-tight tracking-[-.01em]">
             {f.pendentes} {f.pendentes > 1 ? "editais ainda precisam" : "edital ainda precisa"} de revisão
           </AlertTitle>
-          <AlertDescription className="grid justify-items-start gap-2.5 text-[13px] text-warning [&_p:not(:last-child)]:mb-0">
+          <AlertDescription className="grid justify-items-start gap-2.5 text-[13px] text-warning-strong [&_p:not(:last-child)]:mb-0">
             <p className="leading-normal">
               O score deles ainda é parcial, porque há itens a revisar, e pode se confundir com score baixo no
               "Menor score". Resolva as revisões para o score consolidar e a ordem ficar confiável.
@@ -255,7 +255,7 @@ export function PainelDoFiltro({ f }: { f: Filtro }) {
 
       {/* painel Filtros */}
       <Sheet open={f.filtrosAbertos} onOpenChange={(aberto) => (aberto ? f.abrirFiltros() : f.fecharFiltros())}>
-        <SheetContent showCloseButton={false} className="w-95 gap-4 p-5 sm:max-w-95">
+        <SheetContent size="sm" showCloseButton={false} className="gap-4 p-5">
           <SheetHeader className="gap-4 p-0">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-lg font-bold">Filtros</SheetTitle>
@@ -298,7 +298,7 @@ export function PainelDoFiltro({ f }: { f: Filtro }) {
 
       {/* painel lateral do edital revisado: abre sem tirar a pessoa da lista */}
       <Sheet open={!!editalDoDetalhe} onOpenChange={(aberto) => !aberto && f.fecharDetalhe()}>
-        <SheetContent showCloseButton={false} className="w-95 gap-4 p-5 sm:max-w-95">
+        <SheetContent size="sm" showCloseButton={false} className="gap-4 p-5">
           <SheetHeader className="gap-4 p-0">
             <div className="flex items-center justify-between gap-2">
               <SheetTitle className="text-lg font-bold">Score</SheetTitle>
@@ -349,7 +349,7 @@ export function PainelDoFiltro({ f }: { f: Filtro }) {
         >
           <div className="flex items-center justify-between border-b px-3 py-2.5">
             <p className="text-[13px] text-muted-foreground">
-              <b className="text-sm text-success">{f.revisados.length}</b>{" "}
+              <b className="text-sm text-success-strong">{f.revisados.length}</b>{" "}
               {f.revisados.length > 1 ? "editais revisados" : "edital revisado"}
             </p>
             <Button variant="ghost" size="icon-xs" aria-label="Dispensar revisados" onClick={f.dispensarRevisados}>

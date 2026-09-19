@@ -276,7 +276,7 @@ export default function App() {
                   <TabsTrigger
                     key={a.chave}
                     value={a.chave}
-                    className="h-8 flex-none gap-1.5 rounded-lg px-3 hover:bg-background/60 hover:text-foreground"
+                    className="h-7.5 flex-none gap-1.5 rounded-lg px-3 hover:bg-background/60 hover:text-foreground"
                   >
                     <span>{a.chave}</span>
                     <span className="rounded-md bg-foreground/10 px-1.5 py-px text-xs leading-4 font-medium text-foreground tabular-nums">

@@ -139,6 +139,8 @@ type DataTableProps<TRow> = Omit<React.ComponentProps<"div">, "children"> & {
   bulkActions?: React.ReactNode
   /** Itens do menu da alça da linha (DropdownMenuGroup...). */
   rowMenu?: (row: TRow) => React.ReactNode
+  /** Mantém a alça da linha visível nas linhas selecionadas (padrão: só no hover). */
+  showHandleOnSelected?: boolean
   /** Ativa arrastar linhas pela alça. */
   onRowMove?: (fromId: string, toId: string) => void
   /** Botão "Abrir" na primeira coluna. */
@@ -148,9 +150,13 @@ type DataTableProps<TRow> = Omit<React.ComponentProps<"div">, "children"> & {
   /** Ativa redimensionar colunas pela borda do cabeçalho. */
   onColumnResize?: (columnId: string, width: number) => void
   minColumnWidth?: number
-  /** Última coluna "Adicionar coluna": conteúdo do popover que ela abre. */
+  /**
+   * Última coluna "Adicionar coluna". Com content, o botão abre um popover com ele;
+   * só com onClick, é um botão simples (sem popover).
+   */
   addColumn?: {
-    content: React.ReactNode
+    content?: React.ReactNode
+    onClick?: () => void
     open?: boolean
     onOpenChange?: (open: boolean) => void
     width?: number
@@ -160,6 +166,9 @@ type DataTableProps<TRow> = Omit<React.ComponentProps<"div">, "children"> & {
   onAddRow?: () => void
   labels?: Partial<DataTableLabels>
 }
+
+const ADD_COLUMN_CLASS =
+  "flex h-11 w-full items-center gap-1.5 px-4 font-medium text-primary outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset [&_svg]:size-4"
 
 const ROW_TYPE = "application/x-data-table-row"
 const COLUMN_TYPE = "application/x-data-table-column"
@@ -256,6 +265,7 @@ function DataTable<TRow>({
   onSelectedIdsChange,
   bulkActions,
   rowMenu,
+  showHandleOnSelected = false,
   onRowMove,
   onOpenRow,
   onColumnMove,
@@ -528,7 +538,10 @@ function DataTable<TRow>({
                 setTimeout(() => setDraggingRow(id), 0)
               }}
               onDragEnd={() => setDraggingRow(null)}
-              className="-ml-1 flex shrink-0 cursor-grab rounded-sm text-muted-foreground/70 opacity-0 outline-none group-hover/row:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/50 [&_svg]:size-3.5"
+              className={cn(
+                "-ml-1 flex shrink-0 cursor-grab rounded-sm text-muted-foreground/70 opacity-0 outline-none group-hover/row:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/50 [&_svg]:size-3.5",
+                showHandleOnSelected && isSelected && "opacity-100"
+              )}
             >
               <GripVerticalIcon aria-hidden />
             </button>
@@ -628,26 +641,38 @@ function DataTable<TRow>({
                   scope="col"
                   className="sticky top-0 z-10 h-11 border-b bg-background p-0"
                 >
-                  <Popover
-                    open={addColumn.open}
-                    onOpenChange={addColumn.onOpenChange}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex h-11 w-full items-center gap-1.5 px-4 font-medium text-primary outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset [&_svg]:size-4"
-                      >
-                        <PlusIcon aria-hidden />
-                        {labels.addColumn}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      align="start"
-                      className={cn("w-72 gap-1 p-1.5", addColumn.contentClassName)}
+                  {addColumn.content == null ? (
+                    <button
+                      type="button"
+                      onClick={addColumn.onClick}
+                      className={ADD_COLUMN_CLASS}
                     >
-                      {addColumn.content}
-                    </PopoverContent>
-                  </Popover>
+                      <PlusIcon aria-hidden />
+                      {labels.addColumn}
+                    </button>
+                  ) : (
+                    <Popover
+                      open={addColumn.open}
+                      onOpenChange={addColumn.onOpenChange}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={addColumn.onClick}
+                          className={ADD_COLUMN_CLASS}
+                        >
+                          <PlusIcon aria-hidden />
+                          {labels.addColumn}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        className={cn("w-72 gap-1 p-1.5", addColumn.contentClassName)}
+                      >
+                        {addColumn.content}
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </TableHead>
               )}
             </TableRow>

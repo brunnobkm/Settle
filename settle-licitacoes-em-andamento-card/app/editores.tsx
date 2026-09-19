@@ -1,7 +1,7 @@
 // Editores das propriedades (popovers ancorados no componente clicado, §11).
 // Salvam ao fechar: não há botão "Salvar" nem "Cancelar"; Esc fecha mantendo as mudanças.
 
-import { useState, type ReactElement, type ReactNode } from "react"
+import { useRef, useState, type ReactElement, type ReactNode } from "react"
 import { ptBR } from "react-day-picker/locale"
 import { FileIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
 
@@ -28,17 +28,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
+import { LicitacaoCardSegment } from "@/components/ui/licitacao-card"
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 import {
   MESES,
   PESSOAS,
   STATUS,
+  categoriaDoSegmento,
   dataParaIso,
   isoParaData,
   lerValor,
   limparValor,
   valorParaInput,
+  type CategoriaDeCor,
   type Status,
   type StatusId,
 } from "./dados"
@@ -47,17 +50,23 @@ import {
 /* Peças visuais compartilhadas                                        */
 /* ------------------------------------------------------------------ */
 
-/** Chip de segmento: fundo escuro, texto claro, uma linha só (não trunca, §5.3). */
-export function ChipSegmento({ nome, className }: { nome: string; className?: string }) {
+/** Medidas do chip do original (tag-pill): 2px 8px, raio 5px, peso 500, altura de linha 1.4. */
+export const CHIP_SEGMENTO = "rounded-[5px] border-0 py-0.5 leading-[1.4] font-medium"
+
+/** Chip de segmento na cor de categoria do segmento; uma linha só (não trunca, §5.3). */
+export function ChipSegmento({
+  nome,
+  categoria,
+  className,
+}: {
+  nome: string
+  categoria: CategoriaDeCor
+  className?: string
+}) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-[5px] bg-foreground px-2 py-0.5 text-xs leading-[1.4] font-medium whitespace-nowrap text-background",
-        className
-      )}
-    >
+    <LicitacaoCardSegment category={categoria} className={cn(CHIP_SEGMENTO, className)}>
       {nome}
-    </span>
+    </LicitacaoCardSegment>
   )
 }
 
@@ -105,12 +114,22 @@ type PopoverEditorProps = {
 }
 
 export function PopoverEditor({ open, onOpenChange, gatilho, ancora, className, children }: PopoverEditorProps) {
+  // só âncora (sem gatilho): ao fechar, o foco volta para o controle que abriu o popover
+  const retorno = useRef<HTMLElement | null>(null)
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       {ancora ? <PopoverAnchor asChild>{gatilho}</PopoverAnchor> : <PopoverTrigger asChild>{gatilho}</PopoverTrigger>}
       <PopoverContent
         align="start"
         collisionPadding={8}
+        onOpenAutoFocus={() => {
+          if (ancora) retorno.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+        }}
+        onCloseAutoFocus={(e) => {
+          if (!ancora || !retorno.current?.isConnected) return
+          e.preventDefault()
+          retorno.current.focus()
+        }}
         className={cn("w-auto min-w-70 gap-0 rounded-[10px] p-1.5", className)}
       >
         {children}
@@ -158,7 +177,7 @@ export function ListaSegmentos({
           <CommandGroup heading="Selecionados">
             {selecionados.map((s) => (
               <CommandItem key={s} value={`sel:${s}`} data-checked="true" onSelect={() => onAlternar(s)}>
-                <ChipSegmento nome={s} />
+                <ChipSegmento nome={s} categoria={categoriaDoSegmento(s, disponiveis)} />
               </CommandItem>
             ))}
           </CommandGroup>
@@ -167,7 +186,7 @@ export function ListaSegmentos({
           <CommandGroup heading="Disponíveis">
             {livres.map((s) => (
               <CommandItem key={s} value={`disp:${s}`} onSelect={() => onAlternar(s)}>
-                <ChipSegmento nome={s} />
+                <ChipSegmento nome={s} categoria={categoriaDoSegmento(s, disponiveis)} />
               </CommandItem>
             ))}
           </CommandGroup>
@@ -249,7 +268,8 @@ export function ListaOpcoes({
               onSelect={() => onEscolher(o)}
             >
               {multi ? (
-                <ChipSegmento nome={o} />
+                // tags do multi-select: azul, como o tag-pill padrão do original
+                <ChipSegmento nome={o} categoria={1} />
               ) : (
                 <span className={cn(badgeVariants({ variant: "secondary" }), "h-auto rounded-sm py-0.5")}>{o}</span>
               )}
@@ -281,7 +301,7 @@ export function EditorStatus({
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange} modal={false}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="start" collisionPadding={8} className="w-auto min-w-70 rounded-[10px] p-1.5">
+      <DropdownMenuContent align="start" collisionPadding={8} className="min-w-70 rounded-[10px] p-1.5">
         <DropdownMenuRadioGroup value={valor ?? ""} onValueChange={(v) => onChange(v as StatusId)}>
           {STATUS.map((s) => (
             <DropdownMenuRadioItem key={s.id} value={s.id}>

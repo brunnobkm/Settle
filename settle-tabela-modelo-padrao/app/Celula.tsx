@@ -76,15 +76,15 @@ function useAcoes() {
 const TOM_BADGE: Record<Tom, string> = {
   neutral: "bg-muted text-foreground",
   primary: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
+  success: "bg-success/10 text-success-strong",
+  warning: "bg-warning/10 text-warning-strong",
   destructive: "bg-destructive/10 text-destructive",
 }
 const TOM_TEXTO: Record<Tom, string> = {
   neutral: "text-foreground",
   primary: "text-primary",
-  success: "text-success",
-  warning: "text-warning",
+  success: "text-success-strong",
+  warning: "text-warning-strong",
   destructive: "text-destructive",
 }
 const TOM_PONTO: Record<Tom, string> = {
@@ -391,7 +391,7 @@ function MenuRevisao({ valor, aoEscolher, children }: { valor: EstadoRevisao; ao
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-auto min-w-52">
+      <DropdownMenuContent align="start" className="min-w-52">
         <DropdownMenuGroup>
           {(Object.keys(REV_ESTADOS) as EstadoRevisao[]).map((k) => (
             <DropdownMenuItem key={k} onSelect={() => aoEscolher(k)}>
@@ -554,7 +554,7 @@ export function Celula({ col, linha, className }: { col: Coluna; linha: Linha; c
               <button type="button">{v ? <Pessoa id={v} /> : <span className="sr-only">Vazio</span>}</button>
             </DataTableCellFrame>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-auto min-w-52">
+          <DropdownMenuContent align="start" className="min-w-52">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Pessoa</DropdownMenuLabel>
               {PESSOAS.map((p) => (

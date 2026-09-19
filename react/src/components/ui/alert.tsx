@@ -12,9 +12,9 @@ const alertVariants = cva(
           "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
         // título e ícone na cor do estado; a descrição fica no tom neutro para ler bem
         warning:
-          "border-warning/30 bg-warning/5 text-warning *:data-[slot=alert-description]:text-foreground/80 *:[svg]:text-current",
+          "border-warning/30 bg-warning/5 text-warning-strong *:data-[slot=alert-description]:text-foreground/80 *:[svg]:text-current",
         success:
-          "border-success/30 bg-success/5 text-success *:data-[slot=alert-description]:text-foreground/80 *:[svg]:text-current",
+          "border-success/30 bg-success/5 text-success-strong *:data-[slot=alert-description]:text-foreground/80 *:[svg]:text-current",
       },
     },
     defaultVariants: {
@@ -23,15 +23,20 @@ const alertVariants = cva(
   }
 )
 
+/**
+ * role padrão: "alert" (anúncio imediato) só na variante destructive; nas demais,
+ * "status" (anúncio educado, sem interromper o leitor de tela). Passe role para trocar.
+ */
 function Alert({
   className,
   variant,
+  role,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
   return (
     <div
       data-slot="alert"
-      role="alert"
+      role={role ?? (variant === "destructive" ? "alert" : "status")}
       className={cn(alertVariants({ variant }), className)}
       {...props}
     />

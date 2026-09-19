@@ -36,15 +36,15 @@ function SeloARevisar({ n }: { n: number }) {
 /** Valor do campo; sem valor extraído vira "Revisar" (texto, não só cor). */
 function ValorDoCampo({ valor, className }: { valor: string | null; className?: string }) {
   return valor === null ? (
-    <span className={cn("font-semibold text-warning", className)}>Revisar</span>
+    <span className={cn("font-semibold text-warning-strong", className)}>Revisar</span>
   ) : (
     <span className={cn("text-muted-foreground", className)}>{valor}</span>
   )
 }
 
 // botão da barra no tom do estado: âmbar com pendências, verde quando completo
-const TOM_REVISAR = "border-warning bg-warning/10 text-warning hover:bg-warning/15 hover:text-warning aria-expanded:bg-warning/15 aria-expanded:text-warning"
-const TOM_OK = "border-success bg-success/10 text-success hover:bg-success/15 hover:text-success aria-expanded:bg-success/15 aria-expanded:text-success"
+const TOM_REVISAR = "border-warning bg-warning/10 text-warning-strong hover:bg-warning/15 hover:text-warning-strong aria-expanded:bg-warning/15 aria-expanded:text-warning-strong"
+const TOM_OK = "border-success bg-success/10 text-success-strong hover:bg-success/15 hover:text-success-strong aria-expanded:bg-success/15 aria-expanded:text-success-strong"
 
 /* B1: botão de acesso (texto quando há revisão; só ícone quando completo) */
 function BotaoDeAcesso({ lista }: { lista: Lista }) {

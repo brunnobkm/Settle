@@ -12,11 +12,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { STATUS, type Confianca, type Requisito, type Status } from "./dados"
 
 // "Atende com parceiro" fica entre o âmbar de "parcialmente" e o vermelho de "não atende"
-const COR_LARANJA = "text-[color-mix(in_oklch,var(--warning),var(--destructive)_45%)]"
+const COR_LARANJA = "text-[color-mix(in_oklab,var(--warning-strong),var(--destructive)_45%)]"
 
+// texto pequeno: âmbar e verde na versão "strong" (contraste AA)
 const COR_DO_STATUS: Record<Status, string> = {
-  [STATUS.ATENDE]: "text-success",
-  [STATUS.PARCIAL]: "text-warning",
+  [STATUS.ATENDE]: "text-success-strong",
+  [STATUS.PARCIAL]: "text-warning-strong",
   [STATUS.PARCEIRO]: COR_LARANJA,
   [STATUS.NAO]: "text-destructive",
 }

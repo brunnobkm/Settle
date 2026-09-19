@@ -59,6 +59,33 @@ export const SEGMENTOS_INICIAIS = [
   "Equipamentos e Suprimentos Médico-Hospitalares",
 ]
 
+/** Cor de categoria do tema (1 a 8); ver o "$comentario" do theme.json da Settle. */
+export type CategoriaDeCor = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+
+// cor de cada segmento, como no protótipo original (category-blue, -amber, -green...)
+const COR_DO_SEGMENTO: Record<string, CategoriaDeCor> = {
+  Tecnologia: 1, // azul
+  Materiais: 5, // âmbar
+  Saúde: 2, // verde
+  Educação: 6, // índigo
+  Engenharia: 3, // vermelho
+  Serviços: 4, // roxo
+  Construção: 7, // oliva
+  Alimentação: 8, // rosa
+  "Tecnologia da Informação e Comunicação": 1,
+  "Materiais de Construção e Engenharia Civil": 7,
+  "Equipamentos e Suprimentos Médico-Hospitalares": 2,
+}
+// paleta cíclica para segmentos criados pelo usuário (mesma ordem do original)
+const PALETA_DE_SEGMENTOS: CategoriaDeCor[] = [1, 6, 4, 8, 3, 5, 2, 7]
+
+export function categoriaDoSegmento(nome: string, disponiveis: string[] = SEGMENTOS_INICIAIS): CategoriaDeCor {
+  const fixa = COR_DO_SEGMENTO[nome]
+  if (fixa) return fixa
+  const i = disponiveis.indexOf(nome)
+  return PALETA_DE_SEGMENTOS[(i >= 0 ? i : 0) % PALETA_DE_SEGMENTOS.length]
+}
+
 export const UFS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
   "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",

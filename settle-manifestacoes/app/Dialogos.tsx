@@ -173,7 +173,7 @@ function Secao({
         <span className="flex min-w-0 flex-1 items-center">{cabecalho}</span>
         <Contador n={total} />
       </AccordionTrigger>
-      <AccordionContent className={cn("h-auto", sub ? "px-0.5 pb-2" : "px-1 pb-3")}>{children}</AccordionContent>
+      <AccordionContent className={sub ? "px-0.5 pb-2" : "px-1 pb-3"}>{children}</AccordionContent>
     </AccordionItem>
   )
 }
@@ -335,7 +335,8 @@ export function SidebarDeArquivos({
         aria-describedby={undefined}
         // fica aberta ao clicar na página: fecha só pelo X ou Esc
         onInteractOutside={(e) => e.preventDefault()}
-        className="gap-0 p-0 shadow-none data-[side=right]:w-110 data-[side=right]:max-w-[92vw] data-[side=right]:sm:max-w-110"
+        size="md"
+        className="gap-0 p-0 shadow-none"
       >
         <SheetTitle className="sr-only">Arquivos da licitação</SheetTitle>
         {visualizacao && (

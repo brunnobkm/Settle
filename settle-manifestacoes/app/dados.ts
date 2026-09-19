@@ -10,12 +10,16 @@
 export type Categoria = "aviso" | "impugnacao" | "esclarecimento" | "recurso"
 
 // MVP exibe 3 (Avisos, Impugnações, Questionamentos). O modelo acomoda Recursos.
-export const CATEGORIAS: Record<Categoria, { label: string; plural: string }> = {
-  aviso: { label: "Aviso", plural: "Avisos" },
-  impugnacao: { label: "Impugnação", plural: "Impugnações" },
+/** cor: variante de categoria do Badge (category-N do tema; ver o "$comentario" do theme.json da Settle). */
+export const CATEGORIAS: Record<
+  Categoria,
+  { label: string; plural: string; cor: "category-1" | "category-2" | "category-3" | "category-4" }
+> = {
+  aviso: { label: "Aviso", plural: "Avisos", cor: "category-1" }, // azul
+  impugnacao: { label: "Impugnação", plural: "Impugnações", cor: "category-3" }, // vermelho
   // CLARIFICATION_* (termo de UI: Questionamento)
-  esclarecimento: { label: "Questionamento", plural: "Questionamentos" },
-  recurso: { label: "Recurso", plural: "Recursos" },
+  esclarecimento: { label: "Questionamento", plural: "Questionamentos", cor: "category-2" }, // verde
+  recurso: { label: "Recurso", plural: "Recursos", cor: "category-4" }, // roxo
 }
 
 /* MVP: sem aba "Recursos" dedicada. O modelo suporta a categoria 'recurso' desde já;
