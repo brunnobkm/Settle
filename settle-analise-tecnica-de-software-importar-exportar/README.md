@@ -20,16 +20,17 @@ Protótipo da tela de **Análise técnica de software** do Settle, com as funcio
 
 ## Stack
 
-HTML estático + CSS + JS vanilla. Sem build. Excel via [SheetJS](https://sheetjs.com)
-(CDN) e Inter via Google Fonts.
+React com os componentes do design system (workspace `react/`). O código fica em `app/`
+(`App.tsx`, `TabelaDeRequisitos.tsx`, `dados.ts`, `planilha.ts`) e o build gera o `index.html`.
+Excel via [SheetJS](https://sheetjs.com), carregada sob demanda da CDN oficial.
 
 ## Rodar local
 
 ```bash
-python3 -m http.server 8765
+cd ../react
+npm run dev -- settle-analise-tecnica-de-software-importar-exportar
+npm run build -- settle-analise-tecnica-de-software-importar-exportar
 ```
-
-Abrir `http://localhost:8765/`.
 
 ## Decisões em aberto
 
