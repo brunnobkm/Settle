@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/settings-list"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+import { AbasComMais } from "./AbasComMais"
 import { Aviso, avisarComDesfazer, BotaoIcone, SeloDeFiltro } from "./comum"
 import { defFiltro, mover, novoId, resumoFiltro, TELAS, type Aba, type TelaAba } from "./dados"
 import { useConfig } from "./estado"
@@ -196,15 +197,7 @@ export function PaginaAbas() {
       <SettingsSection className="mt-6">
         <SettingsPreviewHeader label={`Como as pessoas veem em ${nomeTela}`} />
         <SettingsBox className="px-4 py-3.5">
-          <Tabs value={prev.id} onValueChange={preVisualizar}>
-            <TabsList aria-label="Pré-visualização das abas" className="h-auto max-w-full flex-wrap justify-start">
-              {L.map((a) => (
-                <TabsTrigger key={a.id} value={a.id} className="flex-none px-3">
-                  {a.nome}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <AbasComMais itens={L} ativo={prev.id} onSelecionar={preVisualizar} rotulo="Pré-visualização das abas" />
           {!prev.fixa && prev.f.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{selos(prev, false)}</div>}
         </SettingsBox>
       </SettingsSection>
