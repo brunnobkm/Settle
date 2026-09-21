@@ -144,8 +144,9 @@ assim:
   - Não altera o padrão da aba nem o que as outras pessoas veem. Quem muda o padrão é o
     admin, em Configurações.
 - Excluir aba não muda nenhuma licitação; a aba só some para todos. Tem desfazer.
-- Nome único por tela. Limite de 10 abas por tela (acima disso a barra estoura; o "Mais N"
-  do protótipo antigo segue como fallback em telas estreitas).
+- Nome único por tela. **Sem limite de abas** (decidido em 21/09): quando não cabem na
+  barra, as excedentes vão para o "Mais N". Se o desenvolvimento identificar um limite
+  técnico, ele entra aqui com o número indicado.
 - Contador da aba é calculado com os filtros dela.
 - Próxima fase, se validado: a pessoa salvar as próprias abas por cima das da organização.
 

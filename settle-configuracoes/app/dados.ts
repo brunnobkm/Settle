@@ -141,8 +141,6 @@ export const TELAS: Record<TelaAba, string> = {
   descartadas: "Descartadas",
 }
 
-export const MAX_ABAS = 10
-
 export type Faixa = { min: string; max: string }
 export type ValorFiltro = string[] | string | Faixa
 export type FiltroAba = { k: string; v: ValorFiltro }

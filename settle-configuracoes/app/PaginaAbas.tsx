@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { Aviso, avisarComDesfazer, BotaoIcone, SeloDeFiltro } from "./comum"
-import { defFiltro, MAX_ABAS, mover, novoId, resumoFiltro, TELAS, type Aba, type TelaAba } from "./dados"
+import { defFiltro, mover, novoId, resumoFiltro, TELAS, type Aba, type TelaAba } from "./dados"
 import { useConfig } from "./estado"
 import { FiltrosDaAba } from "./FiltrosDaAba"
 import { useFocoNoNome } from "./PaginaEtapas"
@@ -55,10 +55,6 @@ export function PaginaAbas() {
   }
 
   function duplicar(a: Aba) {
-    if (L.length >= MAX_ABAS) {
-      toast(`Limite de ${MAX_ABAS} abas por tela`)
-      return
-    }
     let nome = `${a.nome} (cópia)`
     let n = 2
     while (!nomeLivre(nome)) nome = `${a.nome} (cópia ${n++})`
@@ -193,11 +189,7 @@ export function PaginaAbas() {
               </SettingsListItem>
             )
           )}
-          {L.length < MAX_ABAS ? (
-            <SettingsListAdd onClick={nova}>Nova aba</SettingsListAdd>
-          ) : (
-            <SettingsListAdd disabled>Limite de {MAX_ABAS} abas por tela. Exclua uma para criar outra.</SettingsListAdd>
-          )}
+          <SettingsListAdd onClick={nova}>Nova aba</SettingsListAdd>
         </SettingsList>
       </SettingsBox>
 
