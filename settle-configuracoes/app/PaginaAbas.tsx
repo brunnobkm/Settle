@@ -1,5 +1,5 @@
 // Abas das listas (Recomendadas, Explorar licitações, Descartadas). A aba é da
-// organização: o administrador cria, define os filtros e ela aparece igual para todos.
+// organização: o administrador cria, define os filtros padrão e ela aparece igual para todos.
 
 import { useState } from "react"
 import { toast } from "sonner"
@@ -123,7 +123,7 @@ export function PaginaAbas() {
     <SettingsPage className="max-w-245">
       <SettingsPageDescription>
         As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela
-        organização: o administrador cria, define os filtros e ela aparece igual para todas as pessoas.
+        organização: o administrador cria, define os filtros padrão e ela aparece igual para todas as pessoas.
       </SettingsPageDescription>
 
       <Tabs value={tela} onValueChange={(v) => setAbaTela(v as TelaAba)} className="mb-3.5">
@@ -137,8 +137,8 @@ export function PaginaAbas() {
       </Tabs>
 
       <Aviso>
-        Na tela, qualquer pessoa ainda pode usar <b>Filtrar</b> por cima de uma aba. Esse filtro é momentâneo: não
-        altera a aba e some ao sair da tela.
+        Na tela, qualquer pessoa pode usar <b>Filtrar</b> para adicionar filtros extras ou mudar os da aba, como já
+        acontece hoje. Isso vale só para ela: não altera o padrão definido aqui nem o que as outras pessoas veem.
       </Aviso>
 
       <SettingsBox>

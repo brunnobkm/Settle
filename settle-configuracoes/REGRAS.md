@@ -41,10 +41,22 @@ Administrador). **Configuração da organização é só Administrador.**
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
 - A regra vale no backend (403). A tela é só a primeira defesa.
 - Toda alteração vai para a Auditoria: quem, quando, área, antes e depois.
-- **Abas:** só o Administrador cria, renomeia, muda filtros, reordena, duplica e exclui.
-  As outras funções usam as abas e não veem o `+` nem o menu de editar. Isso corrige a
-  ambiguidade do documento de RBAC ("permitido na própria conta"): não existe aba da
-  própria conta nesta fase.
+- **Abas:** só o Administrador cria, renomeia, muda os filtros padrão, reordena, duplica e
+  exclui. As outras funções usam as abas, podem adicionar filtros extras só para si e não
+  veem o `+` nem o menu de editar. Isso corrige a ambiguidade do documento de RBAC
+  ("permitido na própria conta"): não existe aba da própria conta nesta fase.
+
+**Dependência do RBAC (decidida em 21/09):** na versão vigente do documento
+"[Vanta - Tecnologia] Permissionamento APP" (V2.1, ABAC em YAML) só existem três papéis reais
+(somente-ver, editar-o-seu, editar-geral); o Administrador está lá só como marcação para o
+futuro, não há permissão `org.*` e não há admin dentro do app. Para Configurações existir:
+
+1. criar no RBAC uma permissão nova para gerenciar as abas das listas (por exemplo
+   `org.tabs.manage`), concedida só ao Administrador;
+2. o Administrador passar a ser um papel real no RBAC.
+
+As outras configurações da task "Fluxo para Configurações da Plataforma" seguem o mesmo
+caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 
 ## 1. Modelo de e-mail
 
@@ -110,8 +122,9 @@ na própria interface e salvava filtros por pessoa, como no Notion. Isso contrar
 combinado e depende de guardar preferência por usuário, que a plataforma não tem. Ficou
 assim:
 
-- **A aba é da organização.** O administrador cria em Configurações, define nome e filtros,
-  e ela aparece igual para todo mundo. O card de "tab personalizada" voltou para Design.
+- **A aba é da organização, como já é hoje** (o usuário não cria abas). A novidade é o
+  administrador criar em Configurações e definir nome e filtros padrão; a aba aparece igual
+  para todo mundo. O card de "tab personalizada" voltou para Design.
 - Telas com abas: Recomendadas, Explorar licitações e Descartadas. Cada tela tem a sua lista.
 - **Aba é um conjunto de filtros salvo.** Os filtros disponíveis são os do botão Filtrar da
   tela, mais as variáveis da organização. Data é valor relativo ("Próximos 7 dias",
@@ -122,9 +135,14 @@ assim:
   organização mas mostra o recorte de cada pessoa. Resolve boa parte do pedido de
   personalização sem salvar nada por usuário.
 - **"Todas"** é fixa: sempre a primeira, sem filtro, não pode ser excluída nem renomeada.
-- Na tela, **Filtrar continua funcionando por cima da aba**, mas é momentâneo: não altera a
-  aba e some ao sair da tela. Esse era o ponto de confusão no teste da Alice ("como salvo o
-  filtro que apliquei?"): quem salva filtro é o admin, aqui.
+- Na tela, **Filtrar continua funcionando por cima da aba, como hoje** (testado no app em
+  21/09): a pessoa adiciona filtros extras ou muda os da aba, e isso vale só para ela.
+  - Os filtros extras ficam no navegador da pessoa (`localStorage`, chaves `home-filters` e
+    `discarded-filters`): acompanham a troca de aba e continuam ao sair e voltar para a tela.
+  - Remover o filtro padrão da aba leva a lista para "Todas"; clicar de novo na aba reaplica
+    o padrão.
+  - Não altera o padrão da aba nem o que as outras pessoas veem. Quem muda o padrão é o
+    admin, em Configurações.
 - Excluir aba não muda nenhuma licitação; a aba só some para todos. Tem desfazer.
 - Nome único por tela. Limite de 10 abas por tela (acima disso a barra estoura; o "Mais N"
   do protótipo antigo segue como fallback em telas estreitas).
