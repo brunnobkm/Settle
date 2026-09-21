@@ -230,6 +230,50 @@ Casos que podem dar problema, e a regra proposta:
 Recomendação da própria task, que sigo: **esta task cobre a experiência; as regras acima viram
 um card separado para o time de desenvolvimento.**
 
+## 6. Agentes, Aprovações e Variáveis (grupo Inteligência)
+
+Versão final da área, com as melhorias do teste de usabilidade de 21/09 (cinco sessões).
+O handoff (`settle-agentes/plataforma`, seção Handoff da sidebar) continua como está, para os
+devs; a Nova versão da plataforma aponta para cá.
+
+- **Onde fica.** Agentes e Variáveis no grupo Inteligência. **Aprovações é uma seção de
+  Agentes**: a fila existe por causa da aprovação configurada em cada agente, e separadas
+  ninguém ligava uma coisa à outra. O contador do item Agentes é o de Aprovações pendentes.
+- **Quem pode.** Configurar agentes e variáveis é de administrador. Aprovações abre para
+  qualquer função, porque quem aprova nem sempre é quem configura: para quem não é admin, o
+  item vira "Aprovações" e mostra só a fila.
+- **Como funciona** no topo das duas páginas: variável (o dado) → agente (a tarefa) →
+  resultado (onde aparece), com um exemplo que atravessa os três. Quem fecha não vê de novo.
+  No teste, ninguém separou agente de variável sem explicação.
+- **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
+  Habilitação", no card da lista e no topo do agente.
+- **Formulário do agente:**
+  - O que o agente faz (antes "Instruções"), com a lista das variáveis usadas embaixo.
+    Instrução só com a variável não passa: o agente precisa saber o que fazer com o dado.
+  - Onde o resultado aparece, Quando o agente trabalha e Aprovação das ações viraram
+    opções com a explicação à vista. Antes eram listas suspensas cujo texto só aparecia
+    depois da escolha, e três pessoas não o viram. "AI Widget" saiu do texto.
+  - "Nenhum lugar" diz no nome para que serve: "o agente só faz ações".
+  - Repetição virou pergunta: "Trabalhar de novo quando o edital mudar?", com o que conta
+    como mudança (retificação, impugnação, esclarecimento, nova data).
+  - Aprovação diz que vale para o que o agente faz na licitação; ler o edital nunca precisa
+    de aprovação. No teste, uma pessoa achou que era pedir licença para ler, como o Claude.
+  - Nada vem marcado ao criar do zero, nem a aprovação.
+- **Erros de preenchimento** ficam embaixo do próprio campo, a janela rola até o primeiro e o
+  botão nunca fica desativado. No teste, faltou a instrução, o aviso era um toast e os
+  botões pareceram quebrados.
+- **Variável:** "Tipo" virou "Formato da resposta", com exemplo em cada opção; "Instruções"
+  virou "O que procurar no edital"; cada fonte de "Onde procurar" diz o que tem dentro
+  (Manifestações e Arquivos de resultado não eram conhecidos). A tabela troca "Agentes
+  usando" por "Usada por", com os nomes; excluir fica à vista na linha.
+- **Excluir variável** continua livre. Os agentes que dependiam dela aparecem **parados**,
+  sem o botão de executar, até alguém revisar. No teste, o agente quebrado parecia ativo.
+- **Aprovações:** cada pedido diz o agente que pediu, a aprovação configurada nele e, na
+  mudança de etapa, de onde para onde. Responder por linha ou em lote.
+- **Em aberto:** um catálogo só de variáveis. Card, e-mail e filtros ainda usam a lista
+  antiga de `dados.ts`; o "Criar variável" deles já leva para cá. Escolher mais de um lugar
+  para o resultado (pedido da Isadora) também ficou para depois.
+
 ## Outros pontos configuráveis levantados
 
 - **Automações por etapa** (Alice, 18/09): criar um conjunto de tarefas quando a licitação
@@ -243,4 +287,4 @@ um card separado para o time de desenvolvimento.**
 - **Segmentos** (Software, Produtos).
 - **Perfil de recomendação**: regiões, faixa de valor, órgãos favoritos, termos.
 - **Notificações**: o que avisa quem.
-- **Agentes e variáveis** já têm área própria; entram na navegação de Configurações como link.
+- **Agentes e variáveis**: agora moram aqui, na seção 6.

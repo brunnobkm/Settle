@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/settings-page"
 
 import { ADMINS, PAPEIS, type TipoMotivo } from "./dados"
+import { useAgentes } from "./agentes/estado"
 import { useConfig } from "./estado"
 
 function Linha({ href, titulo, descricao, valor }: { href: string; titulo: string; descricao: string; valor: string }) {
@@ -64,6 +65,7 @@ const tecla = <Kbd className="border bg-muted text-foreground">⋯</Kbd>
 
 export function PaginaInicio() {
   const { isAdmin, papel, etapas, abas, motivos, campos, email, audit } = useConfig()
+  const { cfg, aprovacoes } = useAgentes()
 
   if (!isAdmin) {
     return (
@@ -79,6 +81,14 @@ export function PaginaInicio() {
               conta. Se algo precisar mudar, fale com {ADMINS.slice(0, 3).join(", ")} ou outro administrador.
             </EmptyDescription>
           </EmptyHeader>
+          {/* A fila de Aprovações é a exceção: quem aprova nem sempre é administrador. */}
+          <EmptyContent>
+            <Button variant="outline" asChild>
+              <a href="#agentes">
+                Responder Aprovações{aprovacoes.length ? ` (${aprovacoes.length})` : ""}
+              </a>
+            </Button>
+          </EmptyContent>
         </Empty>
       </SettingsPage>
     )
@@ -136,6 +146,30 @@ export function PaginaInicio() {
       </SettingsSection>
 
       <SettingsSection>
+        <SettingsSectionTitle>Inteligência</SettingsSectionTitle>
+        <SettingsBox>
+          <Linha
+            href="#agentes"
+            titulo="Agentes"
+            descricao="Tarefas que a Settle faz sozinha em cada licitação"
+            valor={`${cfg.agentes.length} agentes · ${cfg.agentes.filter((a) => a.ativo !== false).length} ligados`}
+          />
+          <Linha
+            href="#agentes?aba=aprovacoes"
+            titulo="Aprovações"
+            descricao="Ações dos agentes que esperam alguém aprovar"
+            valor={aprovacoes.length ? `${aprovacoes.length} esperando` : "Nada esperando"}
+          />
+          <Linha
+            href="#variaveis"
+            titulo="Variáveis"
+            descricao="Dados que a Settle tira de todo edital, usados pelos agentes, pelo card e pelo e-mail"
+            valor={`${Object.keys(cfg.vars).length} variáveis`}
+          />
+        </SettingsBox>
+      </SettingsSection>
+
+      <SettingsSection>
         <SettingsSectionTitle>Atalhos no contexto</SettingsSectionTitle>
         <SettingsSectionDescription>
           Cada configuração também abre de onde ela é usada. Os atalhos só aparecem para administradores e levam para a
@@ -157,6 +191,9 @@ export function PaginaInicio() {
           </Atalho>
           <Atalho href="#email">
             Compartilhar licitação › <b>Editar modelo de e-mail</b>
+          </Atalho>
+          <Atalho href="#agentes">
+            Licitação › resultado de um agente › <b>Editar agente</b>
           </Atalho>
           <Atalho href="#inicio" rotulo="Aqui">
             Menu do usuário › <b>Configurações</b> (substitui Gerenciar equipe e Auditoria)

@@ -39,6 +39,16 @@ import { configInicial, momentoDe, regrasDa, textoLegivel, usosDaVar, type Confi
 /* ------------------------------------------------------------------ */
 
 export type Area = "agentes" | "lics" | "workspace"
+/*
+  Duas versões na mesma página. O Handoff é o que os devs estão construindo e não muda.
+  A Nova versão leva as melhorias do teste de usabilidade de 21/09: Agentes e Variáveis
+  saem daqui e vão para Configurações, o card de acompanhamento diz o que está rodando e
+  onde o resultado vai aparecer, e o resultado mostra de onde saiu cada exigência.
+*/
+export type Versao = "handoff" | "nova"
+
+/** Onde Agentes e Variáveis moram na Nova versão. */
+export const CONFIG_AGENTES = "../../settle-configuracoes/#agentes"
 export type Aba = "agentes" | "variaveis" | "aprovacoes"
 export type AbaWk = "itens" | "tecnica" | "habil" | "manif"
 
@@ -102,6 +112,10 @@ export const momentoDaFn = (lic: Licitacao, k: ChaveFn): Momento => lic.mom?.[k]
 let sequencia = 0
 const novoId = () => ++sequencia
 
+function versaoInicial(): Versao {
+  return new URLSearchParams(window.location.search).get("versao") === "nova" ? "nova" : "handoff"
+}
+
 function paginaInicial(): Area {
   const ir = new URLSearchParams(window.location.search).get("ir")
   return ir === "agentes" ? "agentes" : "lics"
@@ -115,6 +129,7 @@ function useSimuladorInterno() {
   const [cfg, setCfg] = useState<Config>(configInicial)
   const [aprovacoes, setAprovacoes] = useState<Aprovacao[]>(APROVACOES_INICIAIS)
   const [area, setArea] = useState<Area>(paginaInicial)
+  const [versao, setVersao] = useState<Versao>(versaoInicial)
   const [aba, setAba] = useState<Aba>("agentes")
   const [lics, setLics] = useState<Licitacao[]>(() => structuredClone(LICITACOES_INICIAIS))
   const [aberta, setAberta] = useState<number | null>(null)
@@ -135,9 +150,9 @@ function useSimuladorInterno() {
   })
 
   // o que as ações leem: sempre o estado mais novo, mesmo chamadas de um toast antigo
-  const atual = useRef({ cfg, lics, aberta, area, aba, chat, aprovacoes })
+  const atual = useRef({ cfg, lics, aberta, area, aba, chat, aprovacoes, versao })
   useLayoutEffect(() => {
-    atual.current = { cfg, lics, aberta, area, aba, chat, aprovacoes }
+    atual.current = { cfg, lics, aberta, area, aba, chat, aprovacoes, versao }
   })
 
   const licFoco = lics[aberta ?? 0]
@@ -255,7 +270,12 @@ function useSimuladorInterno() {
         correrPreparacao(i, alvos)
         return
       }
-      toast("Licitação enviada para a área Em andamento.", {
+      /* Na Nova versão o aviso diz quem começou a trabalhar: no teste, a Isadora achou que
+         a análise seria da equipe dela. */
+      const nova = atual.current.versao === "nova"
+      const quem = alvos.map((k) => FUNCS[k].nome)
+      toast(nova ? "Licitação enviada para Em andamento." : "Licitação enviada para a área Em andamento.", {
+        description: nova && quem.length ? `Os agentes começaram a preparar: ${quem.join(", ")}.` : undefined,
         id: "aviso-envio",
         /* preso na base até a pessoa dispensar: é o único caminho para a licitação que
            acabou de sair da lista */
@@ -321,6 +341,17 @@ function useSimuladorInterno() {
   const fecharModal = useCallback(() => setModal(null), [])
 
   const confirmar = useCallback((c: Confirmacao) => setConfirmacao(c), [])
+
+  /* Configurar um agente a partir da licitação: no Handoff abre a janela aqui; na Nova
+     versão leva para Configurações, onde a área mora agora. */
+  const configurarAgente = useCallback((id: string | null) => {
+    if (atual.current.versao === "nova") {
+      window.location.href = CONFIG_AGENTES
+      return
+    }
+    setAba("agentes")
+    setModal({ tela: id ? { tipo: "agente", id } : { tipo: "modelos" }, pilha: [] })
+  }, [])
 
   /* ---------------- agentes ---------------- */
 
@@ -875,7 +906,7 @@ function useSimuladorInterno() {
   const setContextos = useCallback((f: (c: Contexto[]) => Contexto[]) => setChat((c) => ({ ...c, contextos: f(c.contextos) })), [])
 
   return {
-    cfg, setCfg, aprovacoes, area, aba, lics, aberta, licFoco, abaWk, prepItens, painel, modal, confirmacao,
+    cfg, setCfg, aprovacoes, area, aba, versao, setVersao, configurarAgente, lics, aberta, licFoco, abaWk, prepItens, painel, modal, confirmacao,
     ordemWidgets, chat, pagina, fontesIA, setFontesIA, conexoes, setConexoes, rascunhoChat, setRascunhoChat,
     setAberta, setAbaWk, setOrdemWidgets, setConfirmacao,
     irPara, abaAtiva, abrirLicitacao, enviarParaAnalise, mudarEstadoFn, abrirFuncionalidade, tentarDeNovo,

@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/command"
 import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { MENSAGEM_NAO_PROTOTIPADO } from "@/settle/nao-prototipado"
 
 import { VARS, type OrigemVar, type Variavel } from "./dados"
 
@@ -149,7 +148,7 @@ export function SeloDeOrigem({ origem }: { origem: OrigemVar }) {
 
 /**
  * Lista de variáveis (e-mail e campos do card): as da Settle e as da organização,
- * com busca e o atalho para criar uma nova em Agentes. Vai dentro de um PopoverContent.
+ * com busca e o atalho para criar uma nova em Variáveis. Vai dentro de um PopoverContent.
  */
 export function ListaDeVariaveis({
   excluir = [],
@@ -186,16 +185,16 @@ export function ListaDeVariaveis({
       <CommandList className="max-h-70">
         <CommandEmpty>Nenhuma variável encontrada</CommandEmpty>
         {grupo("settle", "Da Settle")}
-        {grupo("minha", "Da organização (Agentes)")}
+        {grupo("minha", "Da organização")}
         <CommandSeparator />
         <CommandGroup>
           <CommandItem
             forceMount
-            value="Criar variável em Agentes"
-            onSelect={() => toast(MENSAGEM_NAO_PROTOTIPADO)}
+            value="Criar variável"
+            onSelect={() => (window.location.hash = "variaveis?nova=1")}
             className="font-semibold text-primary data-selected:text-primary"
           >
-            Criar variável em Agentes
+            Criar variável
           </CommandItem>
         </CommandGroup>
       </CommandList>

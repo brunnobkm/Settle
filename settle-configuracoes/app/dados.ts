@@ -15,7 +15,7 @@ export const ADMINS = ["Brunno Krier", "Larissa Almeida", "Bruno Ortiz", "Andre 
 
 /* ======================= ROTAS ======================= */
 
-export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "equipe" | "permissoes" | "auditoria"
+export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "equipe" | "permissoes" | "auditoria" | "agentes" | "variaveis"
 
 export const NOMES: Record<Rota, string> = {
   inicio: "Configurações",
@@ -27,9 +27,12 @@ export const NOMES: Record<Rota, string> = {
   equipe: "Equipe",
   permissoes: "Permissões",
   auditoria: "Auditoria",
+  agentes: "Agentes",
+  variaveis: "Variáveis",
 }
 
-export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria"]
+/* Agentes fica de fora: quem não é administrador entra para responder Aprovações. */
+export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria", "variaveis"]
 
 /* ======================= ETAPAS ======================= */
 
@@ -338,7 +341,7 @@ export const OPCOES_MAX_ITENS = [3, 5, 10, 0]
 
 export type OrigemVar = "settle" | "minha"
 
-/** Catálogo de variáveis: as da Settle (somente leitura) e as criadas pela organização em Agentes. */
+/** Catálogo de variáveis: as da Settle (somente leitura) e as criadas pela organização em Variáveis. */
 export type Variavel = { k: string; n: string; o: OrigemVar; tipo?: string }
 
 export const VARS: Variavel[] = [

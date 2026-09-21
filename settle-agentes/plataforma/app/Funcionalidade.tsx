@@ -4,7 +4,7 @@
 // (AI Widget). A funcionalidade existe mesmo sem agente; o agente produz o resultado.
 
 import { useState, type ComponentProps, type ReactNode } from "react"
-import { BotIcon, CheckIcon, ChevronDownIcon, GaugeIcon, ListIcon, WrenchIcon } from "lucide-react"
+import { BotIcon, CheckIcon, ChevronDownIcon, FileTextIcon, GaugeIcon, ListIcon, WrenchIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -227,7 +227,7 @@ const TextoVazio = ({ children }: { children: ReactNode }) => (
  * na configuração no meio de uma execução muda o que está sendo preparado.
  */
 export function EstadoSemResultado({ k }: { k: ChaveFn }) {
-  const { licFoco: lic, aberta, abaAtiva, abrirModal, mudarEstadoFn, tentarDeNovo } = useSim()
+  const { licFoco: lic, aberta, mudarEstadoFn, tentarDeNovo, configurarAgente } = useSim()
   const f = FUNCS[k]
   const st = lic.fx[k]
   if (st === "sem-agente") {
@@ -236,11 +236,9 @@ export function EstadoSemResultado({ k }: { k: ChaveFn }) {
         acao={
           <Button
             size="sm"
-            onClick={() => {
-              /* Configurar abre por cima de onde a pessoa está: a licitação deu o motivo do clique. */
-              abaAtiva("agentes")
-              abrirModal({ tipo: "modelos" })
-            }}
+            /* Configurar abre por cima de onde a pessoa está: a licitação deu o motivo do
+               clique. Na Nova versão, leva para Configurações. */
+            onClick={() => configurarAgente(null)}
           >
             Configurar Agente
           </Button>
@@ -306,9 +304,13 @@ function WidgetDoAgente({
     props: Pick<ComponentProps<"div">, "draggable" | "onDragStart" | "onDragEnd" | "onDragOver" | "onDragLeave" | "onDrop">
   }
 }) {
-  const { cfg, licFoco, conversarCom, abrirModal } = useSim()
+  const { cfg, licFoco, conversarCom, versao, configurarAgente } = useSim()
   const an = cfg.agentes.find((a) => a.id === id)
   const r = RESULTADOS[id]
+  /* Nova versão (teste de 21/09): a Eliane esperava que "Falar com o agente" renovasse a
+     certidão, e não reconheceu a tela de Configurar. Os botões dizem o que fazem, e cada
+     exigência mostra de onde saiu, para conferir no edital (pedido da Isadora). */
+  const nova = versao === "nova"
   return (
     <AiWidget data-dragging={arrasto?.arrastando} data-drop-target={arrasto?.alvo} {...arrasto?.props}>
       <AiWidgetHeader>
@@ -327,10 +329,10 @@ function WidgetDoAgente({
               )
             }
           >
-            Falar com o agente
+            {nova ? "Perguntar sobre este resultado" : "Falar com o agente"}
           </Button>
-          <Button size="xs" onClick={() => an && abrirModal({ tipo: "agente", id: an.id })}>
-            Configurar
+          <Button size="xs" onClick={() => an && configurarAgente(an.id)}>
+            {nova ? "Editar agente" : "Configurar"}
           </Button>
         </AiWidgetActions>
       </AiWidgetHeader>
@@ -345,6 +347,12 @@ function WidgetDoAgente({
                     <b className="font-semibold">{x.doc}</b>
                     <br />
                     <span className="text-muted-foreground">{x.nosso}</span>
+                    {nova && x.fonte && (
+                      <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                        <FileTextIcon aria-hidden className="size-3" />
+                        {x.fonte}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -528,7 +536,7 @@ function ResultadoDoChecklist() {
  * agente não aparecem no cabeçalho; durante a preparação, configurar não aparece.
  */
 export function PainelDeResultado({ k, cabecalho }: { k: "score" | "checklist"; cabecalho: (acoes: ReactNode) => ReactNode }) {
-  const { cfg, licFoco: lic, conversarCom, abrirModal } = useSim()
+  const { cfg, licFoco: lic, conversarCom, configurarAgente } = useSim()
   const st = lic.fx[k]
   const an = cfg.agentes.find((a) => a.id === k)
   const mostrarAcoes = st !== "pronto" && st !== "preparando"
@@ -558,7 +566,7 @@ export function PainelDeResultado({ k, cabecalho }: { k: "score" | "checklist"; 
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label="Configurar o agente" onClick={() => an && abrirModal({ tipo: "agente", id: an.id })}>
+          <Button variant="ghost" size="icon-sm" aria-label="Configurar o agente" onClick={() => an && configurarAgente(an.id)}>
             <WrenchIcon />
           </Button>
         </TooltipTrigger>
