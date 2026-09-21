@@ -184,9 +184,9 @@ export function PaginaInicio() {
             Criar um conjunto de tarefas quando a licitação entra numa etapa e medir quanto tempo ela fica em cada uma.
             Pedido da Alice em 18/09, para depois.
           </Levantado>
-          <Levantado titulo="Abas e filtros por pessoa">
-            Cada pessoa salvar as próprias abas por cima das da organização. Depende de guardar preferência por usuário,
-            que a plataforma ainda não tem.
+          <Levantado titulo="Abas por pessoa">
+            Cada pessoa criar as próprias abas por cima das da organização. Hoje os filtros extras de cada pessoa ficam
+            só no navegador dela; aba pessoal precisaria ser salva na conta.
           </Levantado>
           <Levantado titulo="Notificações">O que avisa quem, pela central de notificações e por e-mail.</Levantado>
         </SettingsBox>

@@ -89,8 +89,9 @@ export function PaginaPermissoes() {
             sem permissão com o nome dos administradores. A regra vale no backend (403), a tela é só a primeira defesa.
           </Regra>
           <Regra titulo="Abas são da organização">
-            Só o Administrador cria, renomeia, muda filtros, reordena e exclui abas, e a mudança vale para todo mundo. As
-            outras funções usam as abas e podem aplicar Filtrar por cima, sem salvar. "Todas" nunca pode ser excluída.
+            Só o Administrador cria, renomeia, muda os filtros padrão, reordena e exclui abas, e a mudança vale para todo
+            mundo. As outras funções usam as abas e podem adicionar filtros extras só para si. "Todas" nunca pode ser
+            excluída.
           </Regra>
           <Regra titulo="Tudo vai para a Auditoria">Cada alteração registra quem, quando, a área e o antes/depois.</Regra>
           <Regra titulo="Teste no protótipo">Use "Ver como" no topo para ver a área com outra função.</Regra>
