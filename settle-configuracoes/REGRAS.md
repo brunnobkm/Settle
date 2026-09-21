@@ -41,6 +41,10 @@ Administrador). **Configuração da organização é só Administrador.**
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
 - A regra vale no backend (403). A tela é só a primeira defesa.
 - Toda alteração vai para a Auditoria: quem, quando, área, antes e depois.
+- **Edição simultânea (vale para todas as seções):** se dois administradores mexem na mesma
+  configuração ao mesmo tempo, a última gravação vence, e quem está com a página aberta
+  recebe o aviso de que a configuração mudou, com a opção de recarregar. **Pergunta em
+  aberto:** a organização pode ter mais de um administrador? Se não puder, esta regra sai.
 - **Abas:** só o Administrador cria, renomeia, muda os filtros padrão, reordena, duplica e
   exclui. As outras funções usam as abas, podem adicionar filtros extras só para si e não
   veem o `+` nem o menu de editar. Isso corrige a ambiguidade do documento de RBAC
@@ -155,7 +159,34 @@ assim:
   - o menu serve só para navegar (sem criar nem editar abas) e recalcula quando a largura da
     tela muda.
 - Contador da aba é calculado com os filtros dela.
+- **Nova aba entra no fim da lista.** Como ela pode nascer escondida no "Mais N", a tela
+  avisa "Aba criada no fim da lista. Arraste para mudar a posição."
+- **Filtro padrão com valor que deixou de existir** (responsável que saiu da equipe, motivo
+  arquivado, variável excluída, segmento removido): a aba continua funcionando com os demais
+  filtros, o valor removido sai do filtro, e em Configurações a aba mostra o aviso "filtro
+  com valor que não existe mais" para o admin revisar.
+- **Aba excluída ou renomeada:** cada aba tem um identificador fixo no endereço, que não muda
+  ao renomear. Se a aba for excluída, quem estava nela, quem tem ela salva no navegador ou
+  quem abrir um link antigo cai em "Todas".
 - Próxima fase, se validado: a pessoa salvar as próprias abas por cima das da organização.
+
+### Mantém como hoje (verificado no código da plataforma em 21/09)
+
+Para não aumentar a complexidade da task, estes comportamentos não mudam. Descrição do que
+o app faz hoje em Recomendadas (código do frontend, `home.shared`):
+
+- **Cada aba controla só os campos do próprio filtro padrão** (ex.: "Vencendo em breve"
+  controla o prazo de envio). Ao trocar de aba, esses campos assumem o padrão da nova aba e
+  os outros filtros da pessoa continuam. Se a pessoa mudar um campo da aba para outro valor,
+  nenhuma aba fica selecionada.
+- **Filtros da pessoa ficam no navegador** (`home-filters`, `discarded-filters`). O Sair
+  limpa só os dados de usuário e organização; os filtros continuam no navegador.
+- **Contador de cada aba** já considera os filtros extras da pessoa.
+- **Lista vazia:** título "Não encontramos nenhuma licitação com seus filtros" e o aviso
+  "Nenhum resultado encontrado".
+- **Para o desenvolvimento:** hoje as abas e os filtros padrão são fixos no código do frontend
+  (lista `all/active/today/upcoming` e os presets de cada uma). Para o admin configurar, eles
+  passam a vir do backend.
 
 ## 5. Etapas do funil (colunas do Kanban)
 
