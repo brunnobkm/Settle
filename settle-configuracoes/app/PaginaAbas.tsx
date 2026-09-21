@@ -100,6 +100,7 @@ export function PaginaAbas() {
     setLista((l) => [...l, a])
     preVisualizar(a.id)
     auditar("Abas das listas", `${nomeTela}: criou "${nome}"`)
+    toast("Aba criada no fim da lista. Arraste para mudar a posição.")
     focar(a.id)
   }
 
