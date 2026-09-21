@@ -88,7 +88,7 @@ export function PaginaCard() {
       corpo: (
         <p>
           O card volta a mostrar os campos da Settle na ordem original. Variáveis adicionadas saem do card, mas continuam
-          existindo em Agentes.
+          existindo em Variáveis.
         </p>
       ),
       acao: "Restaurar",
@@ -137,7 +137,7 @@ export function PaginaCard() {
             <SeloDeOrigem origem={c.origem} />
             <SettingsListItemActions>
               <BotaoIcone rotulo={`Abrir a variável ${c.nome}`} dica="Abrir a variável para consultar ou editar" asChild>
-                <a href="#" data-nao-prototipado>
+                <a href="#variaveis">
                   <ExternalLinkIcon />
                 </a>
               </BotaoIcone>

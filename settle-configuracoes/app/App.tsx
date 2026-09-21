@@ -24,6 +24,10 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { USUARIO } from "@/settle/navegacao"
 
+import { AgentesProvider, useAgentes } from "./agentes/estado"
+import { Janela } from "./agentes/Janela"
+import { PaginaAgentes } from "./agentes/PaginaAgentes"
+import { PaginaVariaveis } from "./agentes/PaginaVariaveis"
 import { NOMES, PAPEIS, SO_ADMIN, type Papel, type Rota } from "./dados"
 import { EstadoProvider, useConfig } from "./estado"
 import { PaginaAbas } from "./PaginaAbas"
@@ -47,6 +51,8 @@ const PAGINAS: Record<Rota, ComponentType> = {
   equipe: PaginaEquipe,
   permissoes: PaginaPermissoes,
   auditoria: PaginaAuditoria,
+  agentes: PaginaAgentes,
+  variaveis: PaginaVariaveis,
 }
 
 function lerRota(): Rota {
@@ -57,7 +63,10 @@ function lerRota(): Rota {
 export default function App() {
   return (
     <EstadoProvider>
-      <Configuracoes />
+      <AgentesProvider>
+        <Configuracoes />
+        <Janela />
+      </AgentesProvider>
     </EstadoProvider>
   )
 }
@@ -65,6 +74,7 @@ export default function App() {
 function Configuracoes() {
   useNaoPrototipado()
   const { papel, setPapel, isAdmin } = useConfig()
+  const { aprovacoes } = useAgentes()
   const [rota, setRota] = useState<Rota>(lerRota)
 
   useEffect(() => {
@@ -76,7 +86,7 @@ function Configuracoes() {
     return () => window.removeEventListener("hashchange", aoMudar)
   }, [])
 
-  const nome = NOMES[rota]
+  const nome = !isAdmin && rota === "agentes" ? "Aprovações" : NOMES[rota]
   useEffect(() => {
     document.title = rota === "inicio" ? "Settle · Configurações" : `Settle · ${nome} · Configurações`
   }, [rota, nome])
@@ -110,12 +120,19 @@ function Configuracoes() {
           {
             label: "Inteligência",
             items: [
-              { label: "Agentes", icon: SparkleIcon, href: "#", "data-nao-prototipado": true },
-              { label: "Variáveis", icon: VariableIcon, href: "#", "data-nao-prototipado": true },
+              /* o contador é da fila de Aprovações, que mora dentro de Agentes */
+              { ...item("agentes", SparkleIcon), count: aprovacoes.length },
+              item("variaveis", VariableIcon),
             ],
           },
         ]
-      : []),
+      : [
+          /* Quem não é administrador só responde Aprovações: o item leva direto para a fila. */
+          {
+            label: "Inteligência",
+            items: [{ ...item("agentes", SparkleIcon), label: "Aprovações", count: aprovacoes.length }],
+          },
+        ]),
   ]
 
   const Pagina = !isAdmin && SO_ADMIN.includes(rota) ? SemPermissao : PAGINAS[rota]

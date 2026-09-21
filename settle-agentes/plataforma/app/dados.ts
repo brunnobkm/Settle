@@ -614,35 +614,36 @@ export const CHECKLIST: { s: string; itens: { q: string; v: string }[] }[] = [
     { q: "Amostra e vistoria", v: "Não exige" } ] },
 ]
 
-export type LinhaDeResultado = { st: StatusItem; doc: string; nosso: string }
+/** fonte: de onde o agente tirou a exigência. Só a Nova versão mostra (teste de 21/09: sem ela, ninguém sabia se podia confiar). */
+export type LinhaDeResultado = { st: StatusItem; doc: string; nosso: string; fonte?: string }
 
 /* O corpo de cada widget depende do agente: o resultado é montado conforme o que ele produz (Alice, 09/09, 14:08). */
 export const RESULTADOS: Record<string, { itens: LinhaDeResultado[]; por: string }> = {
   /* Caso 2 do teste: habilitação por atestados, na aba que o agente escolheu. */
   habil: {
     itens: [
-      { st: "ok", doc: "Atestado de capacidade técnica em design de produto digital", nosso: "3 atestados somam 2.100 h, acima do mínimo de 1.500 h" },
-      { st: "ok", doc: "Certidão negativa de débitos federais", nosso: "válida até 14/10/2026" },
-      { st: "ok", doc: "Balanço patrimonial do último exercício", nosso: "2025, com índice de liquidez 1,8" },
-      { st: "no", doc: "Atestado com equipe alocada presencialmente", nosso: "nossos atestados são de trabalho remoto" },
-      { st: "na", doc: "Registro em conselho profissional", nosso: "o edital não diz qual conselho, e design não tem registro obrigatório" },
+      { st: "ok", doc: "Atestado de capacidade técnica em design de produto digital", nosso: "3 atestados somam 2.100 h, acima do mínimo de 1.500 h", fonte: "Edital, item 9.4.1 · p. 21" },
+      { st: "ok", doc: "Certidão negativa de débitos federais", nosso: "válida até 14/10/2026", fonte: "Edital, item 9.2.3 · p. 19" },
+      { st: "ok", doc: "Balanço patrimonial do último exercício", nosso: "2025, com índice de liquidez 1,8", fonte: "Edital, item 9.5.1 · p. 22" },
+      { st: "no", doc: "Atestado com equipe alocada presencialmente", nosso: "nossos atestados são de trabalho remoto", fonte: "Termo de Referência, item 4.3 · p. 7" },
+      { st: "na", doc: "Registro em conselho profissional", nosso: "o edital não diz qual conselho, e design não tem registro obrigatório", fonte: "Edital, item 9.4.3 · p. 21" },
     ],
     por: "3 de 5 exigências atendidas. 1 não atende e 1 não foi avaliada, porque o edital não diz qual conselho profissional.",
   },
   certidoes: {
     itens: [
-      { st: "no", doc: "Regularidade do FGTS", nosso: "vence em 12/09, seis dias antes da sessão" },
-      { st: "ok", doc: "Débitos federais e dívida ativa", nosso: "válida até 14/10/2026" },
-      { st: "ok", doc: "Débitos trabalhistas (CNDT)", nosso: "válida até 03/11/2026" },
-      { st: "ok", doc: "Regularidade municipal", nosso: "válida até 28/09/2026" },
+      { st: "no", doc: "Regularidade do FGTS", nosso: "vence em 12/09, seis dias antes da sessão", fonte: "Edital, item 9.2.5 · p. 19" },
+      { st: "ok", doc: "Débitos federais e dívida ativa", nosso: "válida até 14/10/2026", fonte: "Edital, item 9.2.3 · p. 19" },
+      { st: "ok", doc: "Débitos trabalhistas (CNDT)", nosso: "válida até 03/11/2026", fonte: "Edital, item 9.2.6 · p. 20" },
+      { st: "ok", doc: "Regularidade municipal", nosso: "válida até 28/09/2026", fonte: "Edital, item 9.2.4 · p. 19" },
     ],
     por: "A sessão é em 18/09. A certidão de regularidade do FGTS vence em 12/09, seis dias antes.",
   },
   tecnica: {
     itens: [
-      { st: "ok", doc: "Item 1 · Design de interface", nosso: "8 de 8 componentes atendidos" },
-      { st: "no", doc: "Item 2 · Pesquisa com usuários", nosso: "4 de 5: falta laboratório de testes presencial" },
-      { st: "ok", doc: "Item 3 · Design system", nosso: "2 de 2 componentes atendidos" },
+      { st: "ok", doc: "Item 1 · Design de interface", nosso: "8 de 8 componentes atendidos", fonte: "Termo de Referência, item 2.1 · p. 3" },
+      { st: "no", doc: "Item 2 · Pesquisa com usuários", nosso: "4 de 5: falta laboratório de testes presencial", fonte: "Termo de Referência, item 2.2 · p. 4" },
+      { st: "ok", doc: "Item 3 · Design system", nosso: "2 de 2 componentes atendidos", fonte: "Termo de Referência, item 2.3 · p. 5" },
     ],
     por: "A comparação por componente está na tabela abaixo. O item 2 é o único que não fecha: o edital exige laboratório presencial e o nosso catálogo é remoto.",
   },

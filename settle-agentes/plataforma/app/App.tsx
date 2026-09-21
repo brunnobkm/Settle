@@ -11,7 +11,7 @@
 //
 // Tudo em memória: recarregar volta o cenário ao início. ?ir=agentes abre em Agentes.
 
-import { BotIcon, SproutIcon, SquareCheckIcon } from "lucide-react"
+import { BotIcon, SettingsIcon, SproutIcon, SquareCheckIcon } from "lucide-react"
 import type { MouseEvent } from "react"
 
 import { AppShell, type AppShellGroup } from "@/components/ui/app-shell"
@@ -21,7 +21,7 @@ import { USUARIO } from "@/settle/navegacao"
 import { AreaAgentes } from "./AreaAgentes"
 import { Cabecalho } from "./Cabecalho"
 import { EMPRESA } from "./dados"
-import { SimuladorProvider, useSim } from "./estado"
+import { CONFIG_AGENTES, SimuladorProvider, useSim, type Versao } from "./estado"
 import { Janela } from "./Janela"
 import { Licitacoes } from "./Licitacoes"
 import { ChatLateral, SettleAI } from "./SettleAI"
@@ -38,10 +38,11 @@ export default function App() {
 
 function Tela() {
   useNaoPrototipado()
-  const { area, irPara } = useSim()
+  const { area, irPara, versao, setVersao } = useSim()
 
-  const ir = (destino: "agentes" | "lics") => (e: MouseEvent) => {
+  const ir = (v: Versao, destino: "agentes" | "lics") => (e: MouseEvent) => {
     e.preventDefault()
+    setVersao(v)
     irPara(destino)
   }
 
@@ -49,10 +50,19 @@ function Tela() {
      para onde a trilha do topo devolve. */
   const grupos: AppShellGroup[] = [
     {
+      /* O Handoff fica como está: é o que os devs estão construindo. */
       label: "Handoff",
       items: [
-        { label: "Agentes e Variáveis", icon: BotIcon, href: "#", active: area === "agentes", onClick: ir("agentes") },
-        { label: "Licitações Recomendadas", icon: SquareCheckIcon, href: "#", active: area !== "agentes", onClick: ir("lics") },
+        { label: "Agentes e Variáveis", icon: BotIcon, href: "#", active: versao === "handoff" && area === "agentes", onClick: ir("handoff", "agentes") },
+        { label: "Licitações Recomendadas", icon: SquareCheckIcon, href: "#", active: versao === "handoff" && area !== "agentes", onClick: ir("handoff", "lics") },
+      ],
+    },
+    {
+      /* A versão final: Agentes e Variáveis passam a morar em Configurações. */
+      label: "Nova versão",
+      items: [
+        { label: "Licitações Recomendadas", icon: SquareCheckIcon, href: "#", active: versao === "nova", onClick: ir("nova", "lics") },
+        { label: "Agentes e Variáveis", icon: SettingsIcon, href: CONFIG_AGENTES },
       ],
     },
     {
@@ -78,7 +88,7 @@ function Tela() {
             header={<Cabecalho />}
           >
             <div className="mx-auto max-w-[1388px] px-6 pt-6 pb-16 max-sm:px-4">
-              {area === "agentes" && <AreaAgentes />}
+              {area === "agentes" && versao === "handoff" && <AreaAgentes />}
               {area === "lics" && <Licitacoes />}
               {area === "workspace" && <Workspace />}
             </div>

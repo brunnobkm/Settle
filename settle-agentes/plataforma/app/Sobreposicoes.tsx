@@ -35,13 +35,25 @@ import { PainelDeResultado } from "./Funcionalidade"
   na borda, cobria o avatar do rodapé dela). Não fecha enquanto houver item ativo, e o
   fechamento vale para quem fechou, não para o time. Fora da licitação não aparece.
 */
+/* Onde cada resultado aparece, para o card dizer aonde ir (Nova versão). */
+const LUGAR: Record<string, string> = {
+  score: "botão no topo",
+  checklist: "botão no topo",
+  tecnica: "aba abaixo",
+  habil: "aba abaixo",
+}
+
 export function Acompanhamento() {
-  const { area, prepItens, licFoco: lic, abrirFuncionalidade, tentarDeNovo, fecharPrep } = useSim()
+  const { area, versao, prepItens, licFoco: lic, abrirFuncionalidade, tentarDeNovo, fecharPrep } = useSim()
   const { open, isMobile } = useSidebar()
   if (area !== "workspace" || !prepItens.length) return null
 
   const ativos = prepItens.filter((k) => lic.fx[k] === "preparando").length
   const falhas = prepItens.filter((k) => lic.fx[k] === "falhou").length
+  /* No teste de 21/09, a Eliane não soube onde os resultados apareceriam, e a Graziela
+     procurou um "card" para clicar. A Nova versão diz quem está trabalhando e onde cada
+     resultado vai aparecer, e cada linha leva até ele. */
+  const nova = versao === "nova"
 
   return (
     <BackgroundTasks
@@ -50,17 +62,33 @@ export function Acompanhamento() {
         "fixed bottom-6 transition-[left] duration-200",
         isMobile ? "right-4 left-4 w-auto" : open ? "left-[calc(var(--sidebar-width)+1rem)]" : "left-[calc(var(--sidebar-width-icon)+1rem)]"
       )}
-      title={ativos ? "Preparando resultados" : falhas ? "Nem todos os resultados carregaram" : "Resultados disponíveis"}
-      description={
+      title={
         ativos
-          ? "Estamos preparando os resultados abaixo. Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível."
-          : falhas
-            ? "O que ficou pronto já está na licitação. Tente de novo o que faltou."
-            : "Todos os itens estão prontos para consulta."
+          ? nova ? "Os agentes estão preparando resultados" : "Preparando resultados"
+          : falhas ? "Nem todos os resultados carregaram" : "Resultados disponíveis"
+      }
+      description={
+        nova
+          ? ativos
+            ? "O envio para análise acionou os agentes abaixo. Pode sair desta tela: o trabalho continua, e cada item ganha um ✓ quando o resultado estiver na licitação."
+            : falhas
+              ? "O que ficou pronto já está na licitação. Tente de novo o que faltou."
+              : "Tudo pronto. Clique em um item para ir até o resultado."
+          : ativos
+            ? "Estamos preparando os resultados abaixo. Você pode continuar navegando; um ✓ aparecerá quando cada item estiver disponível."
+            : falhas
+              ? "O que ficou pronto já está na licitação. Tente de novo o que faltou."
+              : "Todos os itens estão prontos para consulta."
       }
       items={prepItens.map((k) => ({
         id: k,
-        label: FUNCS[k].nome,
+        label: nova ? (
+          <>
+            {FUNCS[k].nome} <span className="text-muted-foreground">· {LUGAR[k]}</span>
+          </>
+        ) : (
+          FUNCS[k].nome
+        ),
         status: lic.fx[k] === "preparando" ? "running" : lic.fx[k] === "falhou" ? "failed" : "done",
         onSelect: () => {
           abrirFuncionalidade(k)
