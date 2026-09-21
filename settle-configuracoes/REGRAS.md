@@ -144,9 +144,16 @@ assim:
   - Não altera o padrão da aba nem o que as outras pessoas veem. Quem muda o padrão é o
     admin, em Configurações.
 - Excluir aba não muda nenhuma licitação; a aba só some para todos. Tem desfazer.
-- Nome único por tela. **Sem limite de abas** (decidido em 21/09): quando não cabem na
-  barra, as excedentes vão para o "Mais N". Se o desenvolvimento identificar um limite
-  técnico, ele entra aqui com o número indicado.
+- Nome único por tela. **Sem limite de abas** (decidido em 21/09). Se o desenvolvimento
+  identificar um limite técnico, ele entra aqui com o número indicado.
+- **"Mais N" é novo nesta task** (decidido em 21/09). Hoje a barra de abas da plataforma usa
+  rolagem horizontal e as abas do fim ficam cortadas. Com abas sem limite, passa a ser assim:
+  - as abas ficam numa linha só; as que não cabem vão para um menu **Mais N** no fim da barra,
+    com N = quantidade de abas escondidas;
+  - a **aba ativa fica sempre visível**: escolher uma aba no menu coloca ela na barra, no
+    lugar da última que cabia;
+  - o menu serve só para navegar (sem criar nem editar abas) e recalcula quando a largura da
+    tela muda.
 - Contador da aba é calculado com os filtros dela.
 - Próxima fase, se validado: a pessoa salvar as próprias abas por cima das da organização.
 
