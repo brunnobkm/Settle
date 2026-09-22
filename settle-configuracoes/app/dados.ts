@@ -136,11 +136,10 @@ export const MOTIVOS: Motivo[] = [
 
 /* ======================= ABAS DAS LISTAS ======================= */
 
-export type TelaAba = "recomendadas" | "explorar" | "descartadas"
+export type TelaAba = "recomendadas" | "descartadas"
 
 export const TELAS: Record<TelaAba, string> = {
   recomendadas: "Recomendadas",
-  explorar: "Explorar licitações",
   descartadas: "Descartadas",
 }
 
@@ -155,14 +154,6 @@ export const ABAS: Record<TelaAba, Aba[]> = {
     { id: "a1", nome: "Ativas", f: [{ k: "situacao", v: ["Ativas"] }] },
     { id: "a2", nome: "Chegou hoje", f: [{ k: "adicao", v: "Últimas 24h" }] },
     { id: "a3", nome: "Vencendo em breve", f: [{ k: "envio", v: "Próximos 7 dias" }] },
-  ],
-  explorar: [
-    { id: "b0", nome: "Todas", fixa: true, f: [] },
-    {
-      id: "b1",
-      nome: "Órgãos favoritos",
-      f: [{ k: "orgao", v: ["Prefeitura Municipal de Limeira", "Secretaria de Estado da Saúde de SP"] }],
-    },
   ],
   descartadas: [
     { id: "c0", nome: "Todas", fixa: true, f: [] },
@@ -219,7 +210,7 @@ export const FILTROS: DefFiltro[] = [
   },
   { k: "adicao", n: "Data de adição", t: "date", ops: PASSADO },
   { k: "atualizacao", n: "Data de atualização", t: "date", ops: PASSADO },
-  { k: "envio", n: "Prazo de envio", t: "date", ops: FUTURO, telas: ["recomendadas", "explorar"] },
+  { k: "envio", n: "Prazo de envio", t: "date", ops: FUTURO, telas: ["recomendadas"] },
   {
     k: "descartadaPor",
     n: "Descartada por",

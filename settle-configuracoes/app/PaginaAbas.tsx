@@ -1,4 +1,4 @@
-// Abas das listas (Recomendadas, Explorar licitações, Descartadas). A aba é da
+// Abas das listas (Recomendadas e Descartadas, as telas que já têm abas). A aba é da
 // organização: o administrador cria, define os filtros padrão e ela aparece igual para todos.
 
 import { useState } from "react"
