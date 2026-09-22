@@ -272,7 +272,8 @@ devs; a Nova versão da plataforma aponta para cá.
   agora, pausar ou retomar e excluir. O estado continua legível nos selos ao lado do nome
   (Pausado, Parado). O agente **pausa e retoma**, não liga e desliga.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
-  Habilitação", no card da lista e no topo do agente.
+  Habilitação", no topo do agente. No card da lista fica só o selo do momento: o resto
+  polui a lista.
 - **Formulário do agente:**
   - O que o agente faz (antes "Instruções"), com a lista das variáveis usadas embaixo.
     Instrução só com a variável não passa: o agente precisa saber o que fazer com o dado.

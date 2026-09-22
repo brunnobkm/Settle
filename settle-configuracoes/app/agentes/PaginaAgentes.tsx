@@ -30,7 +30,7 @@ import { useConfig } from "../estado"
 import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagGatilho } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
 import { useAgentes } from "./estado"
-import { dicaQuebra, ehAtivo, quandoTxt, resumoDoAgente, textoLegivel, varsQuebradas } from "./regras"
+import { dicaQuebra, ehAtivo, quandoTxt, textoLegivel, varsQuebradas } from "./regras"
 
 type Aba = "agentes" | "aprovacoes"
 
@@ -203,16 +203,10 @@ function ListaDeAgentes() {
                 <p className="line-clamp-2 text-[13px] leading-[19px] text-muted-foreground">
                   {instr.length > 160 ? `${instr.slice(0, 158)}…` : instr}
                 </p>
-                {/* Quando, com o quê e onde: a frase que ninguém conseguiu montar no teste. */}
-                {/* O selo colorido do momento, como no handoff, seguido do resto da frase. */}
+                {/* Só o momento no card: o que ele usa e onde mostra fica ao abrir o agente. */}
                 <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[12.5px] leading-[18px] text-muted-foreground">
                   <TagGatilho agente={an} />
-                  <span>
-                    {[
-                      ...(an.repete === "sempre" ? ["também quando o edital mudar"] : []),
-                      ...resumoDoAgente(an, cfg).slice(1),
-                    ].join(" · ")}
-                  </span>
+                  {an.repete === "sempre" && <span>também quando o edital mudar</span>}
                 </div>
               </div>
               {/* Todas as ações num menu só: o card fica limpo, e o estado (Pausado, Parado)
