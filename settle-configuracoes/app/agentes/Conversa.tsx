@@ -58,6 +58,8 @@ type Passo = {
   opcoes: Opcao[]
   /** Texto do campo "Outra opção". */
   outra?: string
+  /** Sem "Pular": o formulário exige esta resposta, e pular só adiaria o erro. */
+  obrigatorio?: boolean
 }
 
 type Fala = { quem: "settle" | "voce"; texto: ReactNode }
@@ -198,9 +200,11 @@ function CartaoDaPergunta({
         </li>
       </ul>
       <div className="flex shrink-0 items-center justify-end gap-2 border-t px-3 py-2.5">
-        <Button variant="ghost" size="sm" onClick={onPular}>
-          Pular
-        </Button>
+        {!passo.obrigatorio && (
+          <Button variant="ghost" size="sm" onClick={onPular}>
+            Pular
+          </Button>
+        )}
         <Button size="icon-sm" aria-label="Responder" disabled={!pode} onClick={enviar}>
           <ArrowUpIcon />
         </Button>
@@ -441,6 +445,7 @@ export function ConversaAgente() {
   const PASSOS: Record<string, Passo> = {
     nome: {
       id: "nome",
+      obrigatorio: true,
       explica: (
         <>
           Primeiro, um nome. Ele aparece na lista de agentes e no topo do resultado dentro da licitação, então vale um
@@ -457,6 +462,7 @@ export function ConversaAgente() {
     },
     pedido: {
       id: "pedido",
+      obrigatorio: true,
       explica: <>Agora, o trabalho em si. Escreva como pediria para alguém do time: o que ele deve verificar ou fazer em cada licitação.</>,
       pergunta: "O que você quer que o agente faça em cada licitação?",
       ajuda: "Escreva como pediria para uma pessoa do time, ou escolha um exemplo.",
@@ -491,6 +497,7 @@ export function ConversaAgente() {
     },
     quando: {
       id: "quando",
+      obrigatorio: true,
       explica: (
         <>
           Agora, <b>quando</b> o agente trabalha. Na Settle, uma licitação passa por momentos: é <b>capturada</b> no
@@ -525,6 +532,7 @@ export function ConversaAgente() {
     },
     onde: {
       id: "onde",
+      obrigatorio: true,
       explica: (
         <>
           Onde você vai ver o resultado. O que o agente produz aparece <b>dentro da licitação</b>, num bloco com o nome
@@ -542,6 +550,7 @@ export function ConversaAgente() {
     },
     aprovacao: {
       id: "aprovacao",
+      obrigatorio: true,
       explica: (
         <>
           Por último, segurança. Ler o edital e mostrar um resultado não mudam nada na licitação, por isso nunca pedem
@@ -739,6 +748,7 @@ export function ConversaVariavel() {
   const PASSOS: Record<string, Passo> = {
     nome: {
       id: "nome",
+      obrigatorio: true,
       explica: (
         <>
           Primeiro, um nome curto. É por ele que você vai achar a variável quando escrever o que um agente faz, e é ele
@@ -755,6 +765,7 @@ export function ConversaVariavel() {
     },
     pergunta: {
       id: "pergunta",
+      obrigatorio: true,
       explica: (
         <>
           Agora, a pergunta que a Settle vai fazer a todo edital. Escreva como alguém perguntaria ao ler o edital:
@@ -786,6 +797,7 @@ export function ConversaVariavel() {
     },
     fonte: {
       id: "fonte",
+      obrigatorio: true,
       explica: (
         <>
           Onde a Settle procura primeiro. Cada licitação tem vários documentos, e a resposta costuma estar num deles.
@@ -802,6 +814,7 @@ export function ConversaVariavel() {
     },
     vazio: {
       id: "vazio",
+      obrigatorio: true,
       explica: (
         <>
           Às vezes o edital não fala do assunto. Diga o que a variável responde nesse caso, para os agentes não ficarem
@@ -816,15 +829,14 @@ export function ConversaVariavel() {
           ? comRecomendada(
               [
                 { v: "não", t: "Responder não", d: "Se o edital não fala nisso, conta como não." },
-                { v: "sim", t: "Responder sim" },
-                { v: "", t: "Deixar sem resposta", d: "Os agentes recebem o campo vazio." },
+                { v: "sim", t: "Responder sim", d: "Se o silêncio do edital deve contar como sim." },
               ],
               "não"
             )
           : comRecomendada(
               [
                 { v: d.tipo === "número" ? "0" : "não encontrado", t: d.tipo === "número" ? "Responder 0" : "Responder não encontrado" },
-                { v: "", t: "Deixar sem resposta", d: "Os agentes recebem o campo vazio." },
+                { v: d.tipo === "número" ? "-1" : "não se aplica", t: d.tipo === "número" ? "Responder -1" : "Responder não se aplica", d: "Para diferenciar de um valor que existe." },
               ],
               d.tipo === "número" ? "0" : "não encontrado"
             ),

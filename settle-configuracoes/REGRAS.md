@@ -273,7 +273,8 @@ devs; a Nova versão da plataforma aponta para cá.
   ação), e cada resposta é confirmada com o efeito dela ("o agente vai trabalhar quando a
   licitação chegar em Recomendadas").
   A primeira pergunta é o nome; depois vêm o que faz (ou a pergunta ao edital, na
-  variável) e o resto. No protótipo a conversa é roteirizada.
+  variável) e o resto. Pergunta que o formulário exige não tem "Pular": pular só adiaria
+  o erro. Sobra o Pular no que é mesmo opcional (a variável do agente e a repetição). No protótipo a conversa é roteirizada.
 - **Ações do card num menu só** (ícone de mais opções, à direita): abrir e editar, executar
   agora, pausar ou retomar e excluir. O estado continua legível nos selos ao lado do nome
   (Pausado, Parado). O agente **pausa e retoma**, não liga e desliga.
