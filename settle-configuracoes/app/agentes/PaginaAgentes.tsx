@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 import { Aviso } from "../comum"
 import { useConfig } from "../estado"
-import { ComoFunciona, TagGatilho } from "./comum"
+import { ComoFunciona, InfoDaColuna, TagGatilho } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
 import { useAgentes } from "./estado"
 import { rascunhoNovo } from "./Janela"
@@ -274,8 +274,8 @@ function FilaDeAprovacoes() {
   const colunas: DataTableColumn<Aprovacao>[] = [
     {
       id: "lic",
-      header: "Licitação",
-      width: 200,
+      header: "Licitação", headerAddon: <InfoDaColuna focavel texto="A licitação em que o agente quer fazer a ação." />,
+      width: 186,
       wrap: true,
       cell: (a) => (
         <span className="flex flex-col">
@@ -286,8 +286,8 @@ function FilaDeAprovacoes() {
     },
     {
       id: "acao",
-      header: "O que o agente quer fazer",
-      width: 196,
+      header: "O que o agente quer fazer", headerAddon: <InfoDaColuna focavel texto="A ação que espera resposta. Nada acontece na licitação antes disso." />,
+      width: 190,
       wrap: true,
       cell: (a) =>
         a.de && a.para ? (
@@ -303,15 +303,15 @@ function FilaDeAprovacoes() {
     },
     {
       id: "por",
-      header: "Por quê",
-      width: 200,
+      header: "Por quê", headerAddon: <InfoDaColuna focavel texto="O motivo que o agente deu, a partir do que encontrou no edital." />,
+      width: 184,
       wrap: true,
       cell: (a) => <span className="text-[13px] text-muted-foreground">{a.por}</span>,
     },
     {
       id: "agente",
-      header: "Pedido por",
-      width: 170,
+      header: "Pedido por", headerAddon: <InfoDaColuna focavel texto="O agente que pediu e a aprovação configurada nele. Para ele parar de pedir, mude a aprovação no agente." />,
+      width: 160,
       wrap: true,
       cell: (a) => {
         const an = cfg.agentes.find((x) => x.id === a.agente)
@@ -334,10 +334,10 @@ function FilaDeAprovacoes() {
         )
       },
     },
-    { id: "quando", header: "Pedido em", width: 96, cell: (a) => <span className="text-[13px] text-muted-foreground">{a.quando}</span> },
+    { id: "quando", header: "Pedido em", headerAddon: <InfoDaColuna focavel texto="Quando o pedido chegou." />, width: 96, cell: (a) => <span className="text-[13px] text-muted-foreground">{a.quando}</span> },
     {
       id: "responder",
-      header: "Responder",
+      header: "Responder", headerAddon: <InfoDaColuna focavel texto="Aprovar faz a ação na hora. Recusar descarta o pedido, e a licitação continua como está." />,
       width: 160,
       cell: (a) => (
         <span className="flex items-center gap-1.5">

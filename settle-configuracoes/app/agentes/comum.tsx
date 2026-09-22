@@ -2,7 +2,7 @@
 // de origem, o texto de apoio e a explicação de como a área funciona.
 
 import { useState, type ReactNode } from "react"
-import { ArrowRightIcon, LockIcon, XIcon } from "lucide-react"
+import { ArrowRightIcon, InfoIcon, LockIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -152,6 +152,29 @@ export function TagOrigem({ settle, empresa }: { settle?: boolean; empresa: stri
     <Badge variant="outline" className="rounded-full border-primary/30 bg-primary/10 font-normal text-primary">
       {empresa}
     </Badge>
+  )
+}
+
+/*
+  O "i" do cabeçalho de uma coluna, com a explicação ao passar o mouse. Dentro de um
+  cabeçalho que já é botão (o menu de ordenar e filtrar), ele não pode receber foco: o
+  mesmo texto vai para o topo do menu, que é por onde o teclado chega.
+*/
+export function InfoDaColuna({ texto, focavel }: { texto: ReactNode; focavel?: boolean }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          tabIndex={focavel ? 0 : undefined}
+          aria-label={focavel ? "O que é esta coluna" : undefined}
+          aria-hidden={focavel ? undefined : true}
+          className="ml-1 flex shrink-0 cursor-help rounded-full text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <InfoIcon className="size-3.5" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-64 font-normal normal-case">{texto}</TooltipContent>
+    </Tooltip>
   )
 }
 
