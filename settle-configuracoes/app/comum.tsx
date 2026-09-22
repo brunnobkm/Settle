@@ -26,10 +26,16 @@ export function avisarComDesfazer(mensagem: string, desfazer: () => void) {
   toast(mensagem, { action: { label: "Desfazer", onClick: desfazer } })
 }
 
-/** Aviso de consequência (o que acontece com o que já existe). */
-export function Aviso({ children, className }: { children: ReactNode; className?: string }) {
+/** Aviso de consequência (o que acontece com o que já existe). tom "marca": no verde da Settle, para explicar uma seção. */
+export function Aviso({ children, className, tom = "neutro" }: { children: ReactNode; className?: string; tom?: "neutro" | "marca" }) {
   return (
-    <Alert className={cn("mb-3.5 bg-muted px-3.5 py-2.75", className)}>
+    <Alert
+      className={cn(
+        "mb-3.5 px-3.5 py-2.75",
+        tom === "marca" ? "border-primary/25 bg-primary/8 [&>svg]:text-primary" : "bg-muted",
+        className
+      )}
+    >
       <InfoIcon />
       <AlertDescription className="text-[13px] leading-[19px] text-foreground [&_b]:font-semibold">
         {children}
