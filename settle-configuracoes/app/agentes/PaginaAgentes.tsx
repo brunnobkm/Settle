@@ -82,8 +82,8 @@ export function PaginaAgentes() {
         </div>
         <TabsContent value="agentes">
           <Aviso tom="marca">
-            <b>Agentes</b> são tarefas que a Settle faz sozinha em cada licitação, como uma pessoa do time. Cada um usa
-            variáveis, trabalha no momento que você escolher e mostra o resultado dentro da licitação.
+            <b>Agentes</b> são tarefas que a Settle faz sozinha em cada licitação, como uma pessoa do time. Eles usam as
+            variáveis (os dados do edital) para decidir e mostram o resultado dentro da licitação.
           </Aviso>
           <ListaDeAgentes />
         </TabsContent>
