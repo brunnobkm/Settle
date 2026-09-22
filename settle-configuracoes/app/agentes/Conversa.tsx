@@ -827,7 +827,7 @@ export function ConversaVariavel() {
           linhas={[
             { id: "pergunta", rotulo: "O que procurar no edital", valor: d.prompt || null },
             { id: "nome", rotulo: "Nome", valor: d.nome || null },
-            { id: "formato", rotulo: "Formato da resposta", valor: tipoDefinido || d.prompt ? FORMATO_VAR[d.tipo].t : null },
+            { id: "formato", rotulo: "Formato da resposta", valor: tipoDefinido ? FORMATO_VAR[d.tipo].t : null },
             { id: "fonte", rotulo: "Onde procurar primeiro", valor: d.fontes[0] ?? null },
             {
               id: "vazio",
