@@ -61,17 +61,8 @@ export function VarChip({ k, aoAbrir }: { k: string; aoAbrir?: (k: string) => vo
           {token.label}
         </TokenChip>
       </TooltipTrigger>
-      <TooltipContent className="max-w-72">
-        {v ? (
-          <span className="flex flex-col gap-0.5">
-            <b className="font-semibold">{v.nome}</b>
-            <span>{v.prompt}</span>
-            <span className="opacity-80">{token.title}</span>
-          </span>
-        ) : (
-          token.title
-        )}
-      </TooltipContent>
+      {/* Só a instrução: o nome já está no chip, e formato e fontes tornavam a prévia longa demais. */}
+      <TooltipContent className="max-w-72">{v ? v.prompt : token.title}</TooltipContent>
     </Tooltip>
   )
 }

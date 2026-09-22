@@ -280,22 +280,22 @@ devs; a Nova versão da plataforma aponta para cá.
   de uma aba (pedido da Isadora no teste), então o campo aceita vários. "Nenhum lugar" anda
   sozinho: marcar ele desmarca os outros, porque é a ausência de bloco. Na conversa a pessoa
   escolhe um lugar, e a revisão permite acrescentar os demais.
-- **Criação conversando:** o cartão da pergunta tem teto de altura, com a explicação e o
-  rodapé fixos e as opções rolando dentro. Assim a conversa acima continua visível mesmo
+- **Criação conversando:** o cartão da pergunta tem teto baixo (34svh, no máximo 268px),
+  com a explicação e o rodapé fixos e as opções rolando dentro: o cartão é a pergunta, não
+  a tela, e a conversa acima é que precisa de espaço. O rodapé tem **Voltar**, que desfaz a
+  última resposta e devolve a pergunta anterior com o que havia antes dela. Assim a conversa acima continua visível mesmo
   quando a pergunta tem muitas opções. **Não existe "Pular":** toda pergunta tem uma opção
   que cobre o "não quero isso" ("Não usar variável", "Não, só uma vez"), e um Pular ao lado
   dela seria uma segunda forma de dizer a mesma coisa. Toda variável citada na conversa é um
-  chip: o mouse em cima mostra o que ela procura e o clique abre a variável por cima, com
-  volta para a conversa. Se ela tiver sido excluída, o clique abre o formulário em branco com
+  chip: o mouse em cima mostra a instrução dela (só a instrução, para a prévia não virar uma
+  ficha) e o clique abre a variável por cima, com volta para a conversa. Se ela tiver sido excluída, o clique abre o formulário em branco com
   o nome, para recriar.
-- **Resultado na licitação (página de apresentação).** Terceira página do grupo
-  Inteligência, abaixo de Variáveis. Reúne os formatos do bloco que um agente produz dentro
-  da licitação, com dados de licitação de verdade: resposta curta, lista com situação, nota,
-  tabela de comparação, parecer com trechos, prazo em destaque, ação esperando aprovação, e
-  os três estados (trabalhando, não encontrou, não deu certo). Termina na anatomia do bloco.
-  É só para o time escolher o formato ao criar um agente: **nada ali é configurável**. O
-  componente se chama **AI Widget** no design system, e esse nome fica entre nós: no teste
-  ele precisou de analogia para ser entendido, então na interface é "o resultado do agente".
+- **Artefato (página de apresentação).** Terceira página do grupo Inteligência, abaixo de
+  Variáveis. Mostra **um** modelo do bloco que um agente produz dentro da licitação, com um
+  texto de exemplo em linguagem de conversa: o formato importa mais que o layout, e um
+  modelo só evita prender o time a uma forma. **Nada ali é configurável.** O nome
+  **Artefato** é sugestão da Alice e é provisório; no design system o componente se chama
+  AI Widget.
 - **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro, com as mesmas
   ferramentas:
   - **Três tamanhos para a mesma conversa**, como no Notion: flutuante (ancorada no botão),
