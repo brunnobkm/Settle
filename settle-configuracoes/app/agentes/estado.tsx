@@ -310,7 +310,9 @@ function useAgentesInterno() {
     const e: Erros = {}
     if (!d.nome.trim()) e.nome = "Dê um nome à variável. Ex.: Atestado exigido."
     if (!d.prompt.trim()) e.prompt = "Diga o que procurar no edital. Ex.: diga se o edital exige atestado de capacidade técnica."
-    if (!d.fontes.length && !d.resto) e.fontes = "Marque pelo menos um lugar para procurar."
+    /* Procurar "nos outros arquivos" sozinho não basta: sem um documento marcado, a
+       Settle não sabe por onde começar. */
+    if (!d.fontes.length) e.fontes = "Marque pelo menos um documento para a Settle procurar."
     /* Sem resposta padrão, o agente fica sem saber o que dizer quando o edital não fala do assunto. */
     if (!d.padrao.trim()) e.padrao = "Diga o que responder quando o edital não falar disso. Ex.: não, ou não encontrado."
     return e
