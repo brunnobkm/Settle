@@ -276,13 +276,28 @@ devs; a Nova versão da plataforma aponta para cá.
   No protótipo isso já acontece: responder escreve uma linha por decisão em Auditoria, com a
   licitação, o agente e a ação. O que falta no produto é a persistência de verdade (sobrevive
   a recarregar, com retenção longa) e os filtros.
-- **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro: botão flutuante no
-  canto inferior direito, com a janela ancorada nele (não é gaveta, não empurra a página).
-  A conversa abre dizendo em que área a pessoa está, responde sobre aquela área e sobre
-  agentes e variáveis, e leva direto para a criação conversacional de um ou de outro. O canto
-  inferior direito é dela: o card "Como funciona" fica acima do botão e sai da frente enquanto
-  a conversa está aberta. No protótipo as respostas são roteirizadas; o que não está no
-  roteiro ela diz que ainda não sabe, em vez de inventar.
+- **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro, com as mesmas
+  ferramentas:
+  - **Três tamanhos para a mesma conversa**, como no Notion: flutuante (ancorada no botão),
+    lateral (coluna que empurra a tela, com alça de redimensionar) e tela cheia. Nos dois
+    últimos o botão flutuante some, porque a conversa já está à vista.
+  - **Escolher com quem falar:** o título abre a lista de agentes, com os da área em que a
+    pessoa está primeiro. Escolhido um, a conversa passa a ser com ele, o nome vira o título
+    e a chave no cabeçalho abre a configuração dele. As respostas saem dos dados do próprio
+    agente: quando trabalha, quais variáveis usa, se pede aprovação.
+  - **Nova conversa** a qualquer momento.
+  - **Contexto da pergunta:** a área em que a pessoa está entra sozinha, marcada em verde, e
+    dá para tirar. O agente escolhido e o arquivo anexado entram como chips do mesmo jeito.
+  - **Campo com chip de variável:** é campo de tokens, não input. O "+" insere uma variável
+    ou anexa um arquivo, e a mensagem enviada mantém o chip, para quem ler depois saber de
+    qual variável a pergunta falava.
+  - A conversa abre dizendo em que área a pessoa está e leva direto para a criação
+    conversacional de agente ou variável.
+  O canto inferior direito é dela: o card "Como funciona" fica acima do botão e sai da frente
+  enquanto a conversa está aberta. No protótipo as respostas são roteirizadas; o que não está
+  no roteiro ela diz que ainda não sabe, em vez de inventar. Fica de fora, por enquanto, o
+  menu de fontes da IA (as conexões do handoff), que depende de dados que Configurações não
+  tem.
 - **Como funciona:** card flutuante no canto inferior direito das duas páginas (imagem,
   título, descrição, "Ver como funciona" e fechar), que volta a cada refresh. O botão abre
   um passo a passo com um exemplo do começo ao fim (saber se o edital exige atestado):
