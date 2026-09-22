@@ -146,7 +146,7 @@ export function rascunhoNovo(formato: "texto" | "score", comModelo: boolean): Ra
     /* Do zero, nada vem escolhido: um momento pré-marcado é uma decisão que a pessoa não tomou. */
     gatilho: comModelo ? f.gatilho : "",
     repete: "primeira",
-    onde: comModelo ? f.onde : "",
+    onde: comModelo ? f.onde : [],
     agenda: { ...AGENDA_PADRAO },
     aprovacao: comModelo ? "manual" : "",
   }
@@ -416,7 +416,7 @@ function EditarAgente({ id }: { id: string }) {
           linhas: [],
           gatilho: momentoDe(an.gatilho),
           repete: an.repete ?? "primeira",
-          onde: an.onde ?? "",
+          onde: an.onde ?? [],
           agenda: an.agenda ?? AGENDA_PADRAO,
           aprovacao: an.aprovacao ?? "manual",
         }
@@ -460,7 +460,7 @@ function EditarAgente({ id }: { id: string }) {
                 }
                 alterarAgente(id, {
                   nome: r.nome.trim() || an.nome,
-                  ...(estruturado ? {} : { texto: r.texto, onde: r.onde || undefined }),
+                  ...(estruturado ? {} : { texto: r.texto, onde: r.onde.length ? r.onde : undefined }),
                   gatilho: GATILHOS[r.gatilho as Momento],
                   repete: r.repete,
                   agenda: r.agenda,
@@ -631,8 +631,16 @@ function DetalheDoAgente({ id }: { id: string }) {
             )}
           </Secao>
           <Secao titulo="Onde o resultado aparece">
-            <p className="text-sm leading-[22px]">{an.onde ? ONDE[an.onde].t : "Não definido"}</p>
-            {an.onde && <Dica>{ONDE[an.onde].d}</Dica>}
+            {an.onde?.length ? (
+              an.onde.map((k) => (
+                <div key={k} className="mb-2 last:mb-0">
+                  <p className="text-sm leading-[22px]">{ONDE[k].t}</p>
+                  <Dica>{ONDE[k].d}</Dica>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm leading-[22px]">Não definido</p>
+            )}
           </Secao>
           <Secao titulo="Quando o agente trabalha">
             <TagGatilho agente={an} />

@@ -5,12 +5,18 @@
 // próprio campo.
 
 import { useRef, useState, type ReactNode } from "react"
-import { CircleAlertIcon } from "lucide-react"
+import { ChevronDownIcon, CircleAlertIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
@@ -150,18 +156,56 @@ function Escolha<T extends string>({
 /* Onde o resultado aparece                                            */
 /* ------------------------------------------------------------------ */
 
-export function CampoOnde({ valor, onChange, erro }: { valor: Onde | ""; onChange: (v: Onde) => void; erro?: string }) {
+/*
+  O mesmo resultado pode fazer falta em mais de uma aba (pedido da Isadora no teste): o
+  campo aceita vários lugares. "Nenhum lugar" anda sozinho, porque é a ausência de bloco.
+*/
+export function CampoOnde({ valor, onChange, erro }: { valor: Onde[]; onChange: (v: Onde[]) => void; erro?: string }) {
   const ordem: Onde[] = ["habilitacao", "tecnica", "juridica", "checklist", "score", "nenhum"]
+  const marcar = (k: Onde) => {
+    if (k === "nenhum") return onChange(valor.includes("nenhum") ? [] : ["nenhum"])
+    const sem = valor.filter((x) => x !== "nenhum")
+    onChange(sem.includes(k) ? sem.filter((x) => x !== k) : [...sem, k])
+  }
+  const resumo = valor.map((k) => ONDE[k].t).join(", ")
   return (
-    <Campo rotulo="Onde o resultado aparece" id="campo-onde" dica="O lugar da licitação onde o que o agente produzir vai aparecer." erro={erro}>
-      <Escolha
-        rotuloId="campo-onde"
-        valor={valor}
-        invalido={!!erro}
-        onChange={onChange}
-        placeholder="Escolha onde o resultado aparece"
-        opcoes={ordem.map((k) => ({ v: k, t: ONDE[k].t, d: ONDE[k].d }))}
-      />
+    <Campo
+      rotulo="Onde o resultado aparece"
+      id="campo-onde"
+      dica="O lugar da licitação onde o que o agente produzir vai aparecer. Dá para marcar mais de um."
+      erro={erro}
+    >
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-labelledby="campo-onde"
+            aria-invalid={erro ? true : undefined}
+            className="flex h-9 w-full items-center gap-2 rounded-md border bg-transparent px-3 py-2 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
+          >
+            <span className={cn("min-w-0 flex-1 truncate", !valor.length && "text-muted-foreground")}>
+              {resumo || "Escolha onde o resultado aparece"}
+            </span>
+            <ChevronDownIcon aria-hidden className="size-4 shrink-0 opacity-50" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="max-h-96 w-(--radix-dropdown-menu-trigger-width) overflow-y-auto">
+          {ordem.map((k) => (
+            <DropdownMenuCheckboxItem
+              key={k}
+              checked={valor.includes(k)}
+              onCheckedChange={() => marcar(k)}
+              onSelect={(e) => e.preventDefault()}
+              className="items-start py-2"
+            >
+              <span className="flex flex-col items-start gap-0.5 whitespace-normal">
+                <span className="text-[13.5px] leading-5 font-medium">{ONDE[k].t}</span>
+                <span className="text-[12.5px] leading-[17px] text-muted-foreground">{ONDE[k].d}</span>
+              </span>
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </Campo>
   )
 }

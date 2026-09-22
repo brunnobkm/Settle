@@ -302,7 +302,8 @@ export type Agente = {
   repete?: Repeticao
   agenda?: Agenda
   /** Onde o resultado aparece na licitação. */
-  onde?: Onde
+  /** Onde o resultado aparece. Pode ser mais de um lugar; "nenhum" anda sozinho. */
+  onde?: Onde[]
   destino?: "score" | "checklist"
   /** Score criado pelo cliente: as regras são só as dele. */
   propria?: boolean
@@ -320,7 +321,7 @@ const JURIDICA_TEXTO =
   "Sinalize cláusula que restrinja a competitividade, como exigência de marca ou de atestado desproporcional ao objeto."
 
 export const AGENTES_SEM_TEXTO: AgenteSemTexto[] = [
-  { id: "score", nome: "Score", formato: "estruturado", onde: "score",
+  { id: "score", nome: "Score", formato: "estruturado", onde: ["score"],
     desc: "Nota de 0 a 100 que ordena a sua lista de licitações.",
     gatilho: GATILHOS.recomendadas, destino: "score", aprovacao: "manual",
     execs: [
@@ -328,19 +329,19 @@ export const AGENTES_SEM_TEXTO: AgenteSemTexto[] = [
       { quando: "hoje, 14:22", lic: "PE 00023/2026 · Prefeitura de Itapevi/SP", o: "Calculou 34 de 100 · pediu para mover para Descartadas", st: "aguardando" },
       { quando: "ontem, 17:40", lic: "PE 00088/2026 · Secretaria de Educação do RS", o: "Calculou 81 de 100", st: "ok" },
     ] },
-  { id: "checklist", nome: "Checklist", formato: "estruturado", onde: "checklist",
+  { id: "checklist", nome: "Checklist", formato: "estruturado", onde: ["checklist"],
     desc: "Responde as perguntas fixas sobre o edital, agrupadas por seção.",
     gatilho: GATILHOS.recomendadas, destino: "checklist",
     execs: [
       { quando: "hoje, 14:20", lic: "PE 90014/2026 · Secretaria de Estado de Saúde de MG", o: "Respondeu 21 de 23 perguntas · 2 marcadas para revisar", st: "ok" },
     ] },
-  { id: "tecnica", nome: "Análise técnica", formato: "composicao", onde: "tecnica",
+  { id: "tecnica", nome: "Análise técnica", formato: "composicao", onde: ["tecnica"],
     desc: "Compara componente a componente do Termo de Referência com o catálogo da empresa.",
     gatilho: GATILHOS.analise, texto: AGENTE_TEC.instr, aprovacao: "manual",
     execs: [
       { quando: "hoje, 14:22", lic: "PE 90014/2026 · Secretaria de Saúde de MG", o: "Avaliou 15 componentes em 3 itens · pediu para mover para Em análise", st: "aguardando" },
     ] },
-  { id: "habil", nome: "Tenho todos os documentos de habilitação?", formato: "texto", onde: "habilitacao",
+  { id: "habil", nome: "Tenho todos os documentos de habilitação?", formato: "texto", onde: ["habilitacao"],
     desc: "Compara a lista de documentos e atestados da B Design com as exigências do edital.",
     gatilho: GATILHOS.analise, aprovacao: "manual",
     texto: "Compare os documentos e atestados cadastrados da B Design com as exigências de " +
@@ -349,7 +350,7 @@ export const AGENTES_SEM_TEXTO: AgenteSemTexto[] = [
     execs: [
       { quando: "hoje, 14:20", lic: "PE 90014/2026 · Secretaria de Estado de Saúde de MG", o: "3 de 5 exigências atendidas · 1 não atende · 1 não avaliada", st: "ok" },
     ] },
-  { id: "certidoes", nome: "Alguma certidão vence antes da sessão?", formato: "texto", onde: "habilitacao",
+  { id: "certidoes", nome: "Alguma certidão vence antes da sessão?", formato: "texto", onde: ["habilitacao"],
     desc: "Compara a validade das certidões da B Design com a data da sessão pública.",
     gatilho: GATILHOS.agendado,
     agenda: { freq: "semana", dia: "seg", hora: "08:00", inicio: "2026-09-14" }, aprovacao: "auto",
@@ -358,7 +359,7 @@ export const AGENTES_SEM_TEXTO: AgenteSemTexto[] = [
     execs: [
       { quando: "hoje, 14:21", lic: "PE 90014/2026 · Secretaria de Estado de Saúde de MG", o: "1 de 4 certidões vence antes da sessão", st: "ok" },
     ] },
-  { id: "juridica", nome: "Análise jurídica", formato: "texto", ativo: false, onde: "juridica",
+  { id: "juridica", nome: "Análise jurídica", formato: "texto", ativo: false, onde: ["juridica"],
     desc: "Aponta risco jurídico para a participação.",
     gatilho: GATILHOS.analise, texto: JURIDICA_TEXTO, execs: [] },
 ]
@@ -408,8 +409,8 @@ export const APROVACOES_INICIAIS: Aprovacao[] = [
   real em cada card é o formato de preenchimento.
 */
 export const FORMATOS = {
-  score: { t: "Lista de variáveis e pontos", gatilho: "recomendadas" as Momento, onde: "score" as Onde },
-  texto: { t: "Instrução em texto", gatilho: "analise" as Momento, onde: "tecnica" as Onde },
+  score: { t: "Lista de variáveis e pontos", gatilho: "recomendadas" as Momento, onde: ["score"] as Onde[] },
+  texto: { t: "Instrução em texto", gatilho: "analise" as Momento, onde: ["tecnica"] as Onde[] },
 }
 export type FormatoModelo = keyof typeof FORMATOS
 

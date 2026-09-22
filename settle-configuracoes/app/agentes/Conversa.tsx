@@ -1,5 +1,5 @@
 // Criar conversando: o agente (ou a variável) é montado por perguntas, uma de cada vez,
-// no formato das perguntas do Claude (opções, "Outra opção", Pular e o contador). Ao
+// no formato das perguntas do Claude (opções, "Outra opção" e o contador). Ao
 // lado, o que está sendo construído aparece ao vivo, campo por campo: a regra fica
 // materializada durante a conversa, como a Alice pediu ("a conversa é uma coisa, o que
 // ele construiu é outra"). No fim, "Revisar e criar" abre o formulário de sempre, já
@@ -20,10 +20,9 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { TokenChip } from "@/components/ui/token-field"
 import { USUARIO } from "@/settle/navegacao"
 
-import { TagGatilho } from "./comum"
+import { TagGatilho, VarChip } from "./comum"
 import {
   APROVACAO,
   DESC_FONTE,
@@ -59,7 +58,7 @@ type Passo = {
   opcoes: Opcao[]
   /** Texto do campo "Outra opção". */
   outra?: string
-  /** Sem "Pular": o formulário exige esta resposta, e pular só adiaria o erro. */
+  /** Toda pergunta exige resposta: quem não quer aquilo escolhe a opção que diz isso. */
   obrigatorio?: boolean
 }
 
@@ -95,13 +94,11 @@ function CartaoDaPergunta({
   n,
   total,
   onResponder,
-  onPular,
 }: {
   passo: Passo
   n: number
   total: number
   onResponder: (valor: string, rotulo: string) => void
-  onPular: () => void
 }) {
   const [sel, setSel] = useState<string | null>(null)
   const [outra, setOutra] = useState("")
@@ -112,10 +109,10 @@ function CartaoDaPergunta({
   }
   const pode = sel === "__outra" ? !!outra.trim() : !!escolhida
   return (
-    <section aria-labelledby={`pergunta-${passo.id}`} className="flex max-h-[62svh] flex-col rounded-xl border bg-card shadow-xs">
+    <section aria-labelledby={`pergunta-${passo.id}`} className="flex max-h-[min(56svh,460px)] shrink-0 flex-col rounded-xl border bg-card shadow-xs">
       {/* o que é isso que está sendo perguntado: fica sempre à vista, junto da pergunta */}
       {passo.explica && (
-        <div className="flex shrink-0 items-start gap-2.5 rounded-t-xl border-b bg-primary/5 px-4 py-3 text-[13px] leading-[19px]">
+        <div className="flex max-h-38 shrink-0 items-start gap-2.5 overflow-y-auto rounded-t-xl border-b bg-primary/5 px-4 py-3 text-[13px] leading-[19px]">
           <SparklesIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-primary" />
           <p>{passo.explica}</p>
         </div>
@@ -132,7 +129,7 @@ function CartaoDaPergunta({
           {n} de {total}
         </span>
       </div>
-      <ul role="radiogroup" aria-labelledby={`pergunta-${passo.id}`} className="flex min-h-0 flex-col overflow-y-auto px-2">
+      <ul role="radiogroup" aria-labelledby={`pergunta-${passo.id}`} className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2">
         {passo.opcoes.map((o) => (
           <li key={o.v} className="border-b last:border-b-0">
             <button
@@ -201,11 +198,6 @@ function CartaoDaPergunta({
         </li>
       </ul>
       <div className="flex shrink-0 items-center justify-end gap-2 border-t px-3 py-2.5">
-        {!passo.obrigatorio && (
-          <Button variant="ghost" size="sm" onClick={onPular}>
-            Pular
-          </Button>
-        )}
         <Button size="icon-sm" aria-label="Responder" disabled={!pode} onClick={enviar}>
           <ArrowUpIcon />
         </Button>
@@ -246,7 +238,6 @@ function Conversa({
   fim,
   previa,
   onResponder,
-  onPular,
   aoConfigurarManualmente,
   respondeu,
   oque,
@@ -259,7 +250,6 @@ function Conversa({
   fim: ReactNode
   previa: ReactNode
   onResponder: (valor: string, rotulo: string) => void
-  onPular: () => void
   aoConfigurarManualmente: () => void
   /** Já há resposta a perder. */
   respondeu: boolean
@@ -315,7 +305,7 @@ function Conversa({
           </div>
           {passo ? (
             <>
-              <CartaoDaPergunta key={passo.id} passo={passo} n={n} total={total} onResponder={onResponder} onPular={onPular} />
+              <CartaoDaPergunta key={passo.id} passo={passo} n={n} total={total} onResponder={onResponder} />
               <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-1.5">
                 <Input
                   aria-label="Responder com suas palavras"
@@ -457,7 +447,20 @@ function variavelProvavel(pedido: string, vars: Record<string, { nome: string }>
 }
 
 export function ConversaAgente({ varInicial }: { varInicial?: string }) {
-  const { cfg, irParaTela, criarVarRapida } = useAgentes()
+  const { cfg, irParaTela, criarVarRapida, abrirComVolta } = useAgentes()
+  /* Clicar numa variável citada na conversa abre a variável por cima; fechar volta para
+     a conversa no ponto em que estava. Se ela foi excluída, abre em branco com o nome,
+     para recriar. */
+  const abrirVar = (k: string) =>
+    abrirComVolta(
+      cfg.vars[k]
+        ? { tipo: "variavel", k }
+        : {
+            tipo: "variavel",
+            k: null,
+            inicial: { nome: cfg.varsEx[k] ?? k, tipo: "sim ou não", prompt: "", fontes: [], resto: true, padrao: "" },
+          }
+    )
   const [r, setR] = useState<Rascunho>(() => rascunhoNovo("texto", false))
   const [pedido, setPedido] = useState("")
   const [varK, setVarK] = useState<string | null>(null)
@@ -503,6 +506,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
     },
     variavel: {
       id: "variavel",
+      obrigatorio: true,
       explica: (
         <>
           Para fazer isso, o agente precisa de uma resposta que está no edital, e quem traz essa resposta é uma{" "}
@@ -543,6 +547,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
     },
     repete: {
       id: "repete",
+      obrigatorio: true,
       explica: (
         <>
           Depois de publicada, uma licitação pode mudar: retificação, impugnação aceita, esclarecimento, nova data. Se o
@@ -591,7 +596,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       outra: "Descreva como aprovar",
       opcoes: comRecomendada(
         (Object.keys(APROVACAO) as ModoAprovacao[]).map((k) => ({ v: k, t: APROVACAO[k].t, d: APROVACAO[k].d })),
-        r.onde === "nenhum" ? "manual" : "auto"
+        r.onde.includes("nenhum") ? "manual" : "auto"
       ),
     },
   }
@@ -631,9 +636,9 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       if (valor === "nova" || livre) {
         const nome = livre ? cap(semPonto(livre)).slice(0, 48) : nomeNova
         k = criarVarRapida({ nome, tipo: "sim ou não", prompt: livre ?? cap(semPonto(pedido)), fonte: "Edital e anexos" })
-        if (k) eco = <>Criei a variável <b>{nome}</b>. Ela também fica em Variáveis, para outros agentes.</>
+        if (k) eco = <>Criei a variável <VarChip k={k} aoAbrir={abrirVar} />. Ela também fica em Variáveis, para outros agentes. Clique nela para ajustar o que ela procura.</>
       }
-      if (k && valor.startsWith("usar:")) eco = <>Certo. Em cada licitação, o agente vai ler a resposta de <b>{cfg.vars[k].nome}</b> para decidir.</>
+      if (k && valor.startsWith("usar:")) eco = <>Certo. Em cada licitação, o agente vai ler a resposta de <VarChip k={k} aoAbrir={abrirVar} /> para decidir. Clique nela para ver ou ajustar.</>
       if (valor === "nenhuma") eco = <>Sem variável, o agente se baseia só no que está escrito na instrução, e o resultado pode variar mais de uma licitação para outra.</>
       setVarK(k)
       setR((x) => ({ ...x, texto: `${cap(semPonto(pedido))}.${k ? ` Use {{${k}}}.` : ""}` }))
@@ -659,8 +664,8 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       const o = (livre ? ondeProvavel(livre) ?? "habilitacao" : valor) as Onde
       eco = o === "nenhum"
         ? <>Sem bloco na licitação: o que o agente fizer fica no histórico dele.</>
-        : <>O resultado vai aparecer na licitação, em <b>{ONDE[o].t}</b>{livre ? ". Você pode trocar na revisão" : ""}.</>
-      setR((x) => ({ ...x, onde: o }))
+        : <>O resultado vai aparecer na licitação, em <b>{ONDE[o].t}</b>. Na revisão dá para marcar outras abas também.</>
+      setR((x) => ({ ...x, onde: [o] }))
     }
     if (id === "aprovacao") {
       const a = (livre ? "manual" : valor) as ModoAprovacao
@@ -672,12 +677,6 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       setR((x) => ({ ...x, aprovacao: a }))
     }
     registrar(passo, rotulo, eco)
-    proximo(id)
-  }
-
-  const pular = () => {
-    if (!passo) return
-    registrar(passo, <span className="text-muted-foreground">Pulei</span>, <>Tudo bem, você preenche isso na revisão.</>)
     proximo(id)
   }
 
@@ -693,7 +692,6 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       n={n}
       total={ids.length}
       onResponder={responder}
-      onPular={pular}
       respondeu={respondeu}
       oque="o agente"
       aoConfigurarManualmente={() => irParaTela({ tipo: "modelos" })}
@@ -722,13 +720,13 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
                   {cap(semPonto(pedido))}.
                   {varK && cfg.vars[varK] && (
                     <>
-                      {" "}Use <TokenChip>{cfg.vars[varK].nome}</TokenChip>.
+                      {" "}Use <VarChip k={varK} aoAbrir={abrirVar} />.
                     </>
                   )}
                 </>
               ) : null,
             },
-            { id: "variavel", rotulo: "Variável usada", valor: varK && cfg.vars[varK] ? <TokenChip>{cfg.vars[varK].nome}</TokenChip> : null },
+            { id: "variavel", rotulo: "Variável usada", valor: varK && cfg.vars[varK] ? <VarChip k={varK} aoAbrir={abrirVar} /> : null },
             {
               id: "quando",
               rotulo: "Quando trabalha",
@@ -739,7 +737,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
                 </span>
               ) : null,
             },
-            { id: "onde", rotulo: "Onde o resultado aparece", valor: r.onde ? ONDE[r.onde].t : null },
+            { id: "onde", rotulo: "Onde o resultado aparece", valor: r.onde.length ? r.onde.map((k) => ONDE[k].t).join(", ") : null },
             { id: "aprovacao", rotulo: "Aprovação das ações", valor: r.aprovacao ? APROVACAO[r.aprovacao].t : null },
           ]}
         />
@@ -909,18 +907,6 @@ export function ConversaVariavel() {
     proximo()
   }
 
-  const pular = () => {
-    if (!passo) return
-    setFalas((f) => [
-      ...f,
-      ...(passo.explica ? [{ quem: "settle" as const, texto: passo.explica }] : []),
-      { quem: "settle", texto: <b className="font-semibold">{passo.pergunta}</b> },
-      { quem: "voce", texto: <span className="text-muted-foreground">Pulei</span> },
-      { quem: "settle", texto: <>Tudo bem, você preenche isso na revisão.</> },
-    ])
-    proximo()
-  }
-
   const dados = () => ({ ...d, fontes: d.fontes.length ? d.fontes : ["Edital e anexos"] })
   const revisar = () => irParaTela({ tipo: "variavel", k: null, inicial: dados() })
   /* Criar e emendar no agente: a variável sozinha não faz nada, e esse é o passo seguinte. */
@@ -943,7 +929,6 @@ export function ConversaVariavel() {
       n={n}
       total={ids.length}
       onResponder={responder}
-      onPular={pular}
       respondeu={respondeu}
       oque="a variável"
       aoConfigurarManualmente={() => irParaTela({ tipo: "variavel", k: null })}
