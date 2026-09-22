@@ -251,11 +251,12 @@ devs; a Nova versão da plataforma aponta para cá.
   qualquer função, porque quem aprova nem sempre é quem configura: para quem não é admin, o
   item vira "Aprovações" e mostra só a fila.
 - **Banner verde de cada seção:** logo abaixo das abas, explica em duas linhas o que é
-  Agentes, Aprovações e Variáveis. Tem botão de fechar: quem fecha não vê mais aquele banner
-  (fica guardado no navegador, chave `settle-configuracoes:aviso-fechado:<secao>`). Cada
-  seção é independente: fechar o de Variáveis não fecha o de Agentes. É uma explicação de
-  quem está chegando, e quem já entendeu não precisa dela ocupando o topo todo dia. Quem
-  fechou ainda reencontra a explicação pelo card "Como funciona", que volta a cada refresh.
+  Agentes, Aprovações e Variáveis. Tem botão de fechar. **Uma vez que a pessoa fecha, aquele
+  banner não volta mais** (guardar por pessoa e por seção: fechar o de Variáveis não fecha o
+  de Agentes). É uma explicação para quem está chegando, e quem já entendeu não precisa dela
+  ocupando o topo todo dia. Quem fechou ainda reencontra a explicação pelo card "Como
+  funciona". No protótipo, fechar vale só até recarregar a página, igual ao card, para dar
+  para demonstrar de novo.
 - **Como funciona:** card flutuante no canto inferior direito das duas páginas (imagem,
   título, descrição, "Ver como funciona" e fechar), que volta a cada refresh. O botão abre
   um passo a passo com um exemplo do começo ao fim (saber se o edital exige atestado):

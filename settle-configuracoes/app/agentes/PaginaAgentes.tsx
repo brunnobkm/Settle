@@ -94,7 +94,7 @@ export function PaginaAgentes() {
           )}
         </div>
         <TabsContent value="agentes">
-          <Aviso tom="marca" id="agentes">
+          <Aviso tom="marca" fechavel>
             <b>Agentes</b> são tarefas que a Settle faz sozinha em cada licitação, como uma pessoa do time. Eles usam as
             variáveis (as perguntas que a Settle faz ao edital) para decidir e mostram o resultado dentro da licitação.
           </Aviso>
@@ -382,7 +382,7 @@ function FilaDeAprovacoes() {
 
   return (
     <div className="flex flex-col">
-      <Aviso tom="marca" id="aprovacoes">
+      <Aviso tom="marca" fechavel>
         <b>Aprovações</b> são as ações que os agentes querem fazer nas licitações, como mover de etapa ou marcar um
         responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder.
       </Aviso>
