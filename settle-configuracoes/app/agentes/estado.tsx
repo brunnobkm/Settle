@@ -41,7 +41,10 @@ export type Tela =
   | { tipo: "novo"; rascunho: Rascunho }
   | { tipo: "agente"; id: string }
   | { tipo: "editar"; id: string }
-  | { tipo: "variavel"; k: string | null }
+  | { tipo: "variavel"; k: string | null; inicial?: DadosDaVariavel }
+  /* Criar conversando: perguntas uma de cada vez, com o resultado montado ao lado. */
+  | { tipo: "conversa-agente" }
+  | { tipo: "conversa-variavel" }
 
 export type DadosDaVariavel = {
   nome: string

@@ -254,6 +254,15 @@ devs; a Nova versão da plataforma aponta para cá.
   Cada passo tem a miniatura do que a pessoa vai encontrar na tela. Termina num resumo de
   uma linha por conceito e nos atalhos Criar variável e Criar agente. No teste, ninguém
   separou agente de variável sem explicação; o que funcionou nas sessões foi o exemplo.
+- **Criar conversando ou manualmente** (padrão de Tarefas agendadas do Claude): "Adicionar
+  agente" e "Adicionar variável" abrem um menu com **Criar conversando** (primeiro) e
+  **Configurar manualmente** (o formulário, com os modelos). Na conversa, as perguntas vêm
+  uma de cada vez, com opções, "Outra opção", Pular e o contador; também dá para responder
+  com as próprias palavras. Ao lado, o agente ou a variável aparece sendo montado, campo
+  por campo (a regra materializada, requisito da Alice). No agente, a variável nasce dentro
+  da conversa: a Settle sugere uma que já existe ou cria uma nova. No fim, "Revisar e
+  criar" abre o formulário preenchido; nada é criado antes. O Score fica só no formulário.
+  No protótipo a conversa é roteirizada.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
 - **Formulário do agente:**
