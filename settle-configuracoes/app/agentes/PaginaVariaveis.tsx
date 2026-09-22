@@ -316,8 +316,8 @@ export function PaginaVariaveis() {
         }}
       />
       <Aviso tom="marca">
-        <b>Variáveis</b> são dados que a Settle tira de todo edital, sempre do mesmo jeito, como o CNPJ do órgão ou se o
-        edital exige atestado. Os agentes usam esses dados, e eles também podem virar campo do card e do e-mail.
+        <b>Variáveis</b> são dados que a Settle tira de todo edital, como o CNPJ do órgão ou se exige atestado. Sozinha,
+        uma variável não faz nada: ela é o dado que os agentes usam.
       </Aviso>
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
         <InputGroup className="max-w-90">
