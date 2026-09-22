@@ -460,7 +460,7 @@ export function CampoInstrucoes({
   return (
     <Campo
       rotulo={<span id={`${id}-rotulo`}>O que o agente faz</span>}
-      dica="Escreva como pediria para uma pessoa do time. Use variáveis para os dados do edital."
+      dica="Escreva como pediria para uma pessoa do time. Use variáveis para o que vem do edital."
       erro={erro}
       acao={
         <Button variant="outline" size="xs" className="shadow-none" onClick={() => campo.current?.openMenu()}>

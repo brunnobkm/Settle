@@ -176,8 +176,8 @@ function useAgentesInterno() {
     } else if (!r.texto.trim()) {
       e.texto = "Escreva o que o agente deve fazer. Ex.: avise quando o edital exigir atestado e diga quantos."
     } else if (!semVariaveis(r.texto)) {
-      /* No teste, duas pessoas puseram só a variável: o agente recebia o dado e não sabia o que fazer com ele. */
-      e.texto = "Diga o que o agente deve fazer com esse dado. Ex.: avise quando for sim."
+      /* No teste, duas pessoas puseram só a variável: o agente recebia a resposta e não sabia o que fazer com ela. */
+      e.texto = "Diga o que o agente deve fazer com essa resposta. Ex.: avise quando for sim."
     }
     if (r.formato === "texto" && !r.onde) e.onde = "Escolha onde o resultado aparece."
     if (!r.gatilho) e.gatilho = "Escolha quando o agente trabalha."

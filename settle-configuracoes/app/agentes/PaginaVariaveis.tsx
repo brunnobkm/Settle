@@ -52,13 +52,13 @@ const COLUNAS: Coluna[] = [
   { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 260, quebra: true,
     info: "Essa é a instrução que você escreve para a gente entender o que precisa procurar para você." },
   { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 120,
-    info: "Todo resultado é escrito em forma de texto, número ou escolha. Aqui você vê qual formato foi escolhido para a informação extraída." },
+    info: "Todo resultado é escrito em forma de texto, número ou escolha. Aqui você vê qual formato foi escolhido para a resposta desta variável." },
   { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 180, quebra: true,
-    info: "As variáveis podem ser buscadas em vários lugares diferentes. Aqui você vê em quais locais o dado deve ser procurado, e em qual ordem." },
+    info: "As variáveis podem ser buscadas em vários lugares diferentes. Aqui você vê em quais locais a resposta deve ser procurada, e em qual ordem." },
   { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 170,
-    info: "Quando uma informação não é encontrada, precisamos mostrar algo para você entender que não houve resultado. Aqui você define o que vai ver quando o dado não for encontrado." },
+    info: "Quando a resposta não é encontrada, precisamos mostrar algo para você entender que não houve resultado. Aqui você define o que vai ver quando isso acontecer." },
   { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 200, quebra: true,
-    info: "Saiba em quais agentes o dado desta variável está sendo usado." },
+    info: "Saiba em quais agentes a resposta desta variável está sendo usada." },
   { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 130,
     info: "Algumas variáveis são criadas pela Settle e não podem ser alteradas; outras você mesmo cria. Aqui mostramos quais são suas e quais são nossas." },
 ]
@@ -330,8 +330,8 @@ export function PaginaVariaveis() {
         }}
       />
       <Aviso tom="marca">
-        <b>Variáveis</b> são dados que a Settle tira de todo edital, como o CNPJ do órgão ou se exige atestado. Sozinha,
-        uma variável não faz nada: ela é o dado que os agentes usam.
+        <b>Variáveis</b> são perguntas que a Settle faz a todo edital, como o CNPJ do órgão ou se exige atestado. Sozinha,
+        uma variável não faz nada: é a resposta dela que os agentes usam.
       </Aviso>
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
         <InputGroup className="max-w-90">
