@@ -191,11 +191,11 @@ function ListaDeAgentes() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Badge variant="secondary" tabIndex={0} className="cursor-help rounded-full">
-                          Desligado
+                          Pausado
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-70">
-                        Não trabalha em nenhuma licitação. Ligue no menu de ações para ele voltar a trabalhar.
+                        Não trabalha em nenhuma licitação. Retome no menu de ações para ele voltar a trabalhar.
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -215,7 +215,7 @@ function ListaDeAgentes() {
                   </span>
                 </div>
               </div>
-              {/* Todas as ações num menu só: o card fica limpo, e o estado (Ligado, Parado)
+              {/* Todas as ações num menu só: o card fica limpo, e o estado (Pausado, Parado)
                   continua legível pelos selos ao lado do nome. */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -241,15 +241,15 @@ function ListaDeAgentes() {
                     <DropdownMenuItem
                       onSelect={() => {
                         alterarAgente(an.id, { ativo: !ativo })
-                        toast(ativo ? `${an.nome} desligado. O que ele já produziu continua nas licitações.` : `${an.nome} ligado`)
+                        toast(ativo ? `${an.nome} pausado. O que ele já produziu continua nas licitações.` : `${an.nome} retomado`)
                       }}
                     >
                       {ativo ? <PauseIcon /> : <PlayIcon />}
                       <span className="flex flex-col">
-                        {ativo ? "Desligar" : "Ligar"}
+                        {ativo ? "Pausar" : "Retomar"}
                         <span className="text-xs text-muted-foreground">
                           {ativo
-                            ? "Para nas próximas licitações; o que já produziu continua"
+                            ? "Deixa de trabalhar nas próximas licitações; o que já produziu continua"
                             : `Volta a trabalhar ${quandoTxt(an).charAt(0).toLowerCase() + quandoTxt(an).slice(1)}`}
                         </span>
                       </span>

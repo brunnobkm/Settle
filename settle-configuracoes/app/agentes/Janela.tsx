@@ -604,8 +604,8 @@ function DetalheDoAgente({ id }: { id: string }) {
         </Alert>
       )}
       <div className="mb-4.5 flex flex-wrap items-center gap-2.5 border-b pb-4 text-[13px] text-muted-foreground">
-        <Switch checked={ativo} aria-label="Agente ligado" onCheckedChange={(v) => alterarAgente(id, { ativo: v })} />
-        <Badge variant={parado ? "destructive" : ativo ? "success" : "secondary"}>{parado ? "Parado" : ativo ? "Ligado" : "Desligado"}</Badge>
+        <Switch checked={ativo} aria-label="Agente em atividade" onCheckedChange={(v) => alterarAgente(id, { ativo: v })} />
+        <Badge variant={parado ? "destructive" : ativo ? "success" : "secondary"}>{parado ? "Parado" : ativo ? "Ativo" : "Pausado"}</Badge>
         <span>{proximaExecucao(an)}</span>
       </div>
       {/* O resumo em frase: o que ninguém conseguiu montar sozinho no teste. */}
