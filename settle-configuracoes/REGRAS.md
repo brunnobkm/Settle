@@ -247,7 +247,8 @@ devs; a Nova versão da plataforma aponta para cá.
 - **Como funciona:** card flutuante no canto inferior direito das duas páginas, com imagem,
   título, descrição, "Ver como funciona" e fechar. O botão abre a explicação numa janela:
   variável (o dado) → agente (a tarefa) → resultado (onde aparece), com um exemplo que
-  atravessa os três. Quem fecha o card ou vê a explicação não vê o card de novo. No teste,
+  atravessa os três. Fechar o card ou ver a explicação esconde o card até a página ser recarregada; a cada
+  refresh ele volta. No teste,
   ninguém separou agente de variável sem explicação.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.

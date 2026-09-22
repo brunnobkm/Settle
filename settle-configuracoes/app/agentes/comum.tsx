@@ -168,24 +168,6 @@ export function Dica({ children, className, id }: { children: ReactNode; classNa
 /* Como funciona                                                       */
 /* ------------------------------------------------------------------ */
 
-const CHAVE_COMO_FUNCIONA = "settle-configuracoes:como-funciona-agentes"
-
-function lerFechado() {
-  try {
-    return window.localStorage.getItem(CHAVE_COMO_FUNCIONA) === "1"
-  } catch {
-    return false
-  }
-}
-
-function lembrarFechado() {
-  try {
-    window.localStorage.setItem(CHAVE_COMO_FUNCIONA, "1")
-  } catch {
-    /* sem armazenamento: esconde só nesta visita */
-  }
-}
-
 /* A imagem do card: os três passos em miniatura (dado, tarefa, resultado), no tema da
    tela. Desenhada aqui para não depender de arquivo de imagem. */
 function Ilustracao() {
@@ -224,16 +206,14 @@ function Ilustracao() {
   O problema mais grave do teste: ninguém separou agente de variável só olhando a tela, e
   em quatro de cinco sessões o conceito precisou ser explicado em voz alta. Em vez de um
   bloco fixo no topo, um card no canto inferior direito convida a ver a explicação, e
-  some quando a pessoa fecha ou já viu. A explicação abre numa janela: o dado, a tarefa e o
+  some quando a pessoa fecha ou já viu, até a página ser recarregada. A explicação abre numa janela: o dado, a tarefa e o
   lugar onde o resultado aparece, com um exemplo que atravessa os três.
 */
 export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariavel?: () => void; aoCriarAgente?: () => void }) {
-  const [fechado, setFechado] = useState(lerFechado)
+  /* Fechar vale até recarregar a página: a cada refresh o card volta (pedido do Brunno). */
+  const [fechado, setFechado] = useState(false)
   const [aberto, setAberto] = useState(false)
-  const fechar = () => {
-    setFechado(true)
-    lembrarFechado()
-  }
+  const fechar = () => setFechado(true)
   const passos = [
     {
       n: "1",

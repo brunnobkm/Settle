@@ -574,7 +574,7 @@ function DetalheDoAgente({ id }: { id: string }) {
           <Button variant="outline" size="icon-sm" className="shadow-none" aria-label="Editar este agente" onClick={editar}>
             <PencilIcon />
           </Button>
-          <Button variant="outline" size="icon-sm" className="shadow-none" aria-label="Excluir este agente" onClick={() => excluirAgentes([id], fecharModal)}>
+          <Button variant="outline" size="icon-sm" className="border-destructive/40 text-destructive shadow-none hover:bg-destructive/8 hover:text-destructive" aria-label="Excluir este agente" onClick={() => excluirAgentes([id], fecharModal)}>
             <Trash2Icon />
           </Button>
         </>

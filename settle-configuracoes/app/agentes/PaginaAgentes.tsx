@@ -19,11 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { useConfig } from "../estado"
-import { ComoFunciona } from "./comum"
+import { ComoFunciona, TagGatilho } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
 import { useAgentes } from "./estado"
 import { rascunhoNovo } from "./Janela"
-import { dicaQuebra, ehAtivo, resumoDoAgente, textoLegivel, varsQuebradas } from "./regras"
+import { dicaQuebra, ehAtivo, quandoTxt, resumoDoAgente, textoLegivel, varsQuebradas } from "./regras"
 
 type Aba = "agentes" | "aprovacoes"
 
@@ -177,7 +177,16 @@ function ListaDeAgentes() {
                   {instr.length > 160 ? `${instr.slice(0, 158)}…` : instr}
                 </p>
                 {/* Quando, com o quê e onde: a frase que ninguém conseguiu montar no teste. */}
-                <p className="text-[12.5px] leading-[18px]">{resumoDoAgente(an, cfg).join(" · ")}</p>
+                {/* O selo colorido do momento, como no handoff, seguido do resto da frase. */}
+                <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[12.5px] leading-[18px] text-muted-foreground">
+                  <TagGatilho agente={an} />
+                  <span>
+                    {[
+                      ...(an.repete === "sempre" ? ["também quando o edital mudar"] : []),
+                      ...resumoDoAgente(an, cfg).slice(1),
+                    ].join(" · ")}
+                  </span>
+                </div>
               </div>
               <div className="flex shrink-0 items-center gap-2.5">
                 {ativo && !parado && (
@@ -187,7 +196,9 @@ function ListaDeAgentes() {
                         <PlayIcon />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Executar agora em todas as licitações</TooltipContent>
+                    <TooltipContent className="max-w-70">
+                      Executar agora: roda este agente em todas as licitações, sem esperar o momento dele
+                    </TooltipContent>
                   </Tooltip>
                 )}
                 <Tooltip>
@@ -203,11 +214,20 @@ function ListaDeAgentes() {
                       />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>{ativo ? "Desligar: para nas próximas licitações" : "Ligar"}</TooltipContent>
+                  <TooltipContent className="max-w-70">
+                    {ativo
+                      ? `Ligado: trabalha sozinho ${quandoTxt(an).charAt(0).toLowerCase() + quandoTxt(an).slice(1)}. Desligue para ele parar nas próximas licitações; o que já produziu continua.`
+                      : "Desligado: não trabalha em nenhuma licitação. Ligue para ele voltar a trabalhar no momento configurado."}
+                  </TooltipContent>
                 </Tooltip>
-                <Button variant="outline" size="icon-sm" className="shadow-none" aria-label={`Excluir ${an.nome}`} onClick={() => excluirAgentes([an.id])}>
-                  <Trash2Icon />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon-sm" className="border-destructive/40 text-destructive shadow-none hover:bg-destructive/8 hover:text-destructive" aria-label={`Excluir ${an.nome}`} onClick={() => excluirAgentes([an.id])}>
+                      <Trash2Icon />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Excluir agente</TooltipContent>
+                </Tooltip>
               </div>
             </li>
           )

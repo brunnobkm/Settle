@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
-import { SettingsPage, SettingsPageDescription } from "@/components/ui/settings-page"
+import { SettingsPage } from "@/components/ui/settings-page"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { ComoFunciona, TagFonte, TagOrigem } from "./comum"
@@ -273,7 +273,7 @@ export function PaginaVariaveis() {
           {!l.v.settle && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" aria-label={`Excluir ${l.v.nome}`} onClick={() => excluirVars([l.k])}>
+                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/8 hover:text-destructive" aria-label={`Excluir ${l.v.nome}`} onClick={() => excluirVars([l.k])}>
                   <Trash2Icon />
                 </Button>
               </TooltipTrigger>
@@ -308,11 +308,6 @@ export function PaginaVariaveis() {
 
   return (
     <SettingsPage width="full" className="max-w-340">
-      <SettingsPageDescription>
-        Variáveis são os dados que a Settle tira de todo edital, sempre do mesmo jeito: o CNPJ do órgão, a data da
-        sessão, se exige atestado. Os agentes usam esses dados nas instruções, e eles também podem virar campo do card e
-        do e-mail.
-      </SettingsPageDescription>
       <ComoFunciona
         aoCriarVariavel={() => abrirModal({ tipo: "variavel", k: null })}
         aoCriarAgente={() => {
