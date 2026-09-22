@@ -54,17 +54,17 @@ type Coluna = {
 const COLUNAS: Coluna[] = [
   { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 160, quebra: true,
     info: "Esse é o nome que você escolhe para identificar sua variável, que será usada nos agentes." },
-  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 220, quebra: true,
+  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 170, quebra: true,
     info: "Essa é a instrução que você escreve para a gente entender o que precisa procurar para você." },
-  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 100,
+  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 140,
     info: "Todo resultado é escrito em forma de texto, número ou escolha. Aqui você vê qual formato foi escolhido para a resposta desta variável." },
   { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 150, quebra: true,
     info: "As variáveis podem ser buscadas em vários lugares diferentes. Aqui você vê em quais locais a resposta deve ser procurada, e em qual ordem." },
-  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 130,
+  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 150,
     info: "Quando a resposta não é encontrada, precisamos mostrar algo para você entender que não houve resultado. Aqui você define o que vai ver quando isso acontecer." },
-  { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 160, quebra: true,
+  { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 140, quebra: true,
     info: "Saiba em quais agentes a resposta desta variável está sendo usada." },
-  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 100,
+  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 120,
     info: "Algumas variáveis são criadas pela Settle e não podem ser alteradas; outras você mesmo cria. Aqui mostramos quais são suas e quais são nossas." },
 ]
 
@@ -457,7 +457,7 @@ export function PaginaVariaveis() {
     {
       id: "acoes",
       header: "Ações",
-      width: 52,
+      width: 76,
       align: "center",
       cell: (l) => (
         <span className="flex items-center justify-center">
@@ -525,6 +525,7 @@ export function PaginaVariaveis() {
         />
       </div>
       <DataTable
+        layout="fixed"
         columns={colunas}
         rows={linhas}
         getRowId={(l) => l.k}

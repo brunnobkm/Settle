@@ -317,7 +317,11 @@ export function CampoFormato({
     )
   }
   return (
-    <Campo rotulo="Formato da resposta" id="var-tipo" dica="Como a resposta chega para os agentes que usarem esta variável.">
+    <Campo
+      rotulo="Formato da resposta"
+      id="var-tipo"
+      dica="Todo resultado é escrito em forma de texto, número ou escolha. Aqui você define o formato da resposta para os agentes que usarem esta variável."
+    >
       <Escolha
         rotuloId="var-tipo"
         valor={valor}
