@@ -30,6 +30,7 @@ import { PaginaAgentes } from "./agentes/PaginaAgentes"
 import { PaginaVariaveis } from "./agentes/PaginaVariaveis"
 import { NOMES, PAPEIS, SO_ADMIN, type Papel, type Rota } from "./dados"
 import { EstadoProvider, useConfig } from "./estado"
+import { VERSAO } from "./versao"
 import { PaginaAbas } from "./PaginaAbas"
 import { PaginaCard } from "./PaginaCard"
 import { PaginaEmail } from "./PaginaEmail"
@@ -99,7 +100,12 @@ function Configuracoes() {
   })
 
   const grupos: AppShellGroup[] = [
-    { items: [{ label: "Voltar para a plataforma", icon: ArrowLeftIcon, href: PLATAFORMA, className: "font-medium" }] },
+    {
+      items: [
+        /* o selo diz qual versão da página está no ar: é como se confere que atualizou */
+        { label: "Voltar para a plataforma", icon: ArrowLeftIcon, href: PLATAFORMA, className: "font-medium", badge: `V${VERSAO}` },
+      ],
+    },
     { items: [{ ...item("inicio", SettingsIcon), label: "Visão geral" }] },
     ...(isAdmin
       ? [
