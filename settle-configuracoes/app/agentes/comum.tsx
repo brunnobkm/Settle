@@ -2,13 +2,14 @@
 // de origem, o texto de apoio e a explicação de como a área funciona.
 
 import { useState, type ReactNode } from "react"
-import { ArrowRightIcon, InfoIcon, LockIcon, XIcon } from "lucide-react"
+import { ArrowRightIcon, ChevronDownIcon, InfoIcon, LockIcon, MessageCircleIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TokenChip, type TokenFieldToken } from "@/components/ui/token-field"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { FORMATO_VAR, GATILHOS, type Agente, type Variavel } from "./dados"
@@ -175,6 +176,50 @@ export function InfoDaColuna({ texto, focavel }: { texto: ReactNode; focavel?: b
       </TooltipTrigger>
       <TooltipContent className="max-w-64 font-normal normal-case">{texto}</TooltipContent>
     </Tooltip>
+  )
+}
+
+/*
+  Criar tem dois caminhos, como em Tarefas agendadas do Claude: conversando (as perguntas
+  uma de cada vez, com o resultado montado ao lado) ou configurando manualmente (o
+  formulário). Conversando vem primeiro: foi o caminho que faltou no teste de 21/09.
+*/
+export function BotaoDeCriar({
+  rotulo,
+  aoConversar,
+  aoConfigurar,
+  className,
+}: {
+  rotulo: string
+  aoConversar: () => void
+  aoConfigurar: () => void
+  className?: string
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className={className}>
+          {rotulo}
+          <ChevronDownIcon data-icon="inline-end" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72">
+        <DropdownMenuItem onSelect={aoConversar} className="items-start gap-2.5 py-2">
+          <MessageCircleIcon className="mt-0.5" />
+          <span className="flex flex-col">
+            <span className="font-medium">Criar conversando</span>
+            <span className="text-xs text-muted-foreground">Responda algumas perguntas e veja o resultado montado ao lado.</span>
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={aoConfigurar} className="items-start gap-2.5 py-2">
+          <SlidersHorizontalIcon className="mt-0.5" />
+          <span className="flex flex-col">
+            <span className="font-medium">Configurar manualmente</span>
+            <span className="text-xs text-muted-foreground">Preencha o formulário, do zero ou a partir de um modelo.</span>
+          </span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

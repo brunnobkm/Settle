@@ -25,7 +25,7 @@ import { SettingsPage } from "@/components/ui/settings-page"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Aviso } from "../comum"
-import { ComoFunciona, InfoDaColuna, TagFonte, TagOrigem } from "./comum"
+import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagFonte, TagOrigem } from "./comum"
 import { EMPRESA, FORMATO_VAR, TIPOS_VAR, type Variavel } from "./dados"
 import { useAgentes } from "./estado"
 import { rascunhoNovo } from "./Janela"
@@ -90,7 +90,7 @@ function opcoesDa(c: Coluna, linhas: Linha[], cfg: Config) {
 
 /** Pedido de criar vindo de outra página (Campos do card, e-mail, Como funciona). */
 function pediuNova() {
-  return new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("nova") === "1"
+  return new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("nova")
 }
 
 export function PaginaVariaveis() {
@@ -102,9 +102,10 @@ export function PaginaVariaveis() {
 
   useEffect(() => {
     const abrirSePediu = () => {
-      if (!pediuNova()) return
+      const pedido = pediuNova()
+      if (!pedido) return
       window.history.replaceState(null, "", "#variaveis")
-      abrirModal({ tipo: "variavel", k: null })
+      abrirModal(pedido === "conversa" ? { tipo: "conversa-variavel" } : { tipo: "variavel", k: null })
     }
     abrirSePediu()
     window.addEventListener("hashchange", abrirSePediu)
@@ -323,7 +324,7 @@ export function PaginaVariaveis() {
   return (
     <SettingsPage width="full" className="max-w-340">
       <ComoFunciona
-        aoCriarVariavel={() => abrirModal({ tipo: "variavel", k: null })}
+        aoCriarVariavel={() => abrirModal({ tipo: "conversa-variavel" })}
         aoCriarAgente={() => {
           window.location.hash = "agentes"
         }}
@@ -339,7 +340,11 @@ export function PaginaVariaveis() {
           </InputGroupAddon>
           <InputGroupInput type="search" aria-label="Procurar variável" placeholder="Procurar variável" value={busca} onChange={(e) => setBusca(e.target.value)} />
         </InputGroup>
-        <Button onClick={() => abrirModal({ tipo: "variavel", k: null })}>Adicionar variável</Button>
+        <BotaoDeCriar
+          rotulo="Adicionar variável"
+          aoConversar={() => abrirModal({ tipo: "conversa-variavel" })}
+          aoConfigurar={() => abrirModal({ tipo: "variavel", k: null })}
+        />
       </div>
       <DataTable
         columns={colunas}

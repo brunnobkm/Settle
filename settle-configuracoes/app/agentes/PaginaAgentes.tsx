@@ -20,10 +20,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 import { Aviso } from "../comum"
 import { useConfig } from "../estado"
-import { ComoFunciona, InfoDaColuna, TagGatilho } from "./comum"
+import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagGatilho } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
 import { useAgentes } from "./estado"
-import { rascunhoNovo } from "./Janela"
 import { dicaQuebra, ehAtivo, quandoTxt, resumoDoAgente, textoLegivel, varsQuebradas } from "./regras"
 
 type Aba = "agentes" | "aprovacoes"
@@ -64,8 +63,8 @@ export function PaginaAgentes() {
   return (
     <SettingsPage width="wide">
       <ComoFunciona
-        aoCriarVariavel={() => (window.location.hash = "variaveis?nova=1")}
-        aoCriarAgente={() => abrirModal({ tipo: "novo", rascunho: rascunhoNovo("texto", false) })}
+        aoCriarVariavel={() => (window.location.hash = "variaveis?nova=conversa")}
+        aoCriarAgente={() => abrirModal({ tipo: "conversa-agente" })}
       />
       <Tabs value={aba} onValueChange={(v) => trocar(v as Aba)} className="gap-0">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -78,7 +77,13 @@ export function PaginaAgentes() {
               <span className={cn(CONTADOR, aprovacoes.length > 0 && "bg-warning/15 text-warning-strong")}>{aprovacoes.length}</span>
             </TabsTrigger>
           </TabsList>
-          {aba === "agentes" && <Button onClick={() => abrirModal({ tipo: "modelos" })}>Adicionar agente</Button>}
+          {aba === "agentes" && (
+            <BotaoDeCriar
+              rotulo="Adicionar agente"
+              aoConversar={() => abrirModal({ tipo: "conversa-agente" })}
+              aoConfigurar={() => abrirModal({ tipo: "modelos" })}
+            />
+          )}
         </div>
         <TabsContent value="agentes">
           <Aviso tom="marca">
@@ -109,9 +114,12 @@ function ListaDeAgentes() {
       <div className="rounded-lg border border-dashed px-6 py-10 text-center">
         <p className="text-sm font-semibold">Nenhum agente ainda</p>
         <p className="mt-1 text-[13px] text-muted-foreground">Crie o primeiro para a Settle trabalhar nas suas licitações.</p>
-        <Button className="mt-3.5" onClick={() => abrirModal({ tipo: "modelos" })}>
-          Adicionar agente
-        </Button>
+        <BotaoDeCriar
+          rotulo="Adicionar agente"
+          className="mt-3.5"
+          aoConversar={() => abrirModal({ tipo: "conversa-agente" })}
+          aoConfigurar={() => abrirModal({ tipo: "modelos" })}
+        />
       </div>
     )
   }

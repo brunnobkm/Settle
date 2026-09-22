@@ -39,7 +39,8 @@ import {
   type TipoVar,
   type Variavel,
 } from "./dados"
-import { useAgentes, type Erros, type Rascunho, type Tela } from "./estado"
+import { ConversaAgente, ConversaVariavel } from "./Conversa"
+import { useAgentes, type DadosDaVariavel, type Erros, type Rascunho, type Tela } from "./estado"
 import {
   agentesDaVar,
   dicaQuebra,
@@ -61,7 +62,7 @@ export function irParaAprovacoes() {
 /* Moldura                                                             */
 /* ------------------------------------------------------------------ */
 
-function Moldura({
+export function Moldura({
   titulo,
   acoesDoTopo,
   rodape,
@@ -124,7 +125,9 @@ function TelaDaJanela({ tela }: { tela: Tela }) {
   if (tela.tipo === "novo") return <FormAgente key="novo" inicial={tela.rascunho} />
   if (tela.tipo === "agente") return <DetalheDoAgente id={tela.id} />
   if (tela.tipo === "editar") return <EditarAgente id={tela.id} />
-  return <FormVariavel key={tela.k ?? "nova"} k={tela.k} />
+  if (tela.tipo === "conversa-agente") return <ConversaAgente />
+  if (tela.tipo === "conversa-variavel") return <ConversaVariavel />
+  return <FormVariavel key={tela.k ?? "nova"} k={tela.k} inicial={tela.inicial} />
 }
 
 /* ------------------------------------------------------------------ */
@@ -667,7 +670,7 @@ function DetalheDoAgente({ id }: { id: string }) {
 
 /* A lista de fontes guarda todas as opções, marcadas ou não: a ordem também vale para as
    que ainda não estão marcadas. */
-function listaDeFontes(v: Variavel | null): PriorityListItem[] {
+function listaDeFontes(v: Pick<Variavel, "fontes"> | null): PriorityListItem[] {
   const atual = v ? v.fontes : ["Edital e anexos"]
   const item = (f: string, checked: boolean) => ({ id: f, label: f, checked })
   return [...atual.map((f) => item(f, true)), ...FONTES.filter((f) => !atual.includes(f)).map((f) => item(f, false))]
@@ -733,16 +736,18 @@ function AvisoDeImpacto({ k }: { k: string }) {
   )
 }
 
-function FormVariavel({ k }: { k: string | null }) {
+/* inicial: o que a conversa já preencheu, para revisar antes de criar. */
+function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVariavel }) {
   const { cfg, salvarVar, excluirVars, fecharModal } = useAgentes()
   const v = k ? (cfg.vars[k] ?? null) : null
+  const base = v ?? inicial ?? null
   const travado = !!v?.settle
-  const [nome, setNome] = useState(v?.nome ?? "")
-  const [tipo, setTipo] = useState<TipoVar>(v?.tipo ?? "sim ou não")
-  const [prompt, setPrompt] = useState(v?.prompt ?? "")
-  const [fontes, setFontes] = useState(() => listaDeFontes(v))
-  const [resto, setResto] = useState(v ? v.resto : true)
-  const [padrao, setPadrao] = useState(v?.padrao ?? "")
+  const [nome, setNome] = useState(base?.nome ?? "")
+  const [tipo, setTipo] = useState<TipoVar>(base?.tipo ?? "sim ou não")
+  const [prompt, setPrompt] = useState(base?.prompt ?? "")
+  const [fontes, setFontes] = useState(() => listaDeFontes(base))
+  const [resto, setResto] = useState(base ? base.resto : true)
+  const [padrao, setPadrao] = useState(base?.padrao ?? "")
   const [erros, setErros] = useState<Erros>({})
   const corpo = useRef<HTMLDivElement>(null)
   const marcadas = fontes.filter((f) => f.checked)
