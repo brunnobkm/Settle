@@ -429,7 +429,7 @@ function variavelProvavel(pedido: string, vars: Record<string, { nome: string }>
   return melhor?.k ?? null
 }
 
-export function ConversaAgente() {
+export function ConversaAgente({ varInicial }: { varInicial?: string }) {
   const { cfg, irParaTela, criarVarRapida } = useAgentes()
   const [r, setR] = useState<Rascunho>(() => rascunhoNovo("texto", false))
   const [pedido, setPedido] = useState("")
@@ -439,7 +439,8 @@ export function ConversaAgente() {
 
   const temRep = !!(r.gatilho && REP_POR_GATILHO[r.gatilho])
   const ids = ["nome", "pedido", "variavel", "quando", ...(temRep ? ["repete"] : []), "onde", "aprovacao"]
-  const sugerida = pedido ? variavelProvavel(pedido, cfg.vars) : null
+  /* Quem acabou de criar a variável já chega com ela na mão. */
+  const sugerida = varInicial && cfg.vars[varInicial] ? varInicial : pedido ? variavelProvavel(pedido, cfg.vars) : null
   const nomeNova = pedido ? cap(semPonto(pedido)).slice(0, 48) : ""
 
   const PASSOS: Record<string, Passo> = {
@@ -737,7 +738,7 @@ function formatoProvavel(t: string): TipoVar {
 }
 
 export function ConversaVariavel() {
-  const { irParaTela } = useAgentes()
+  const { irParaTela, criarVar, abrirModal } = useAgentes()
   const [d, setD] = useState<DadosDaVariavel>({ nome: "", tipo: "sim ou não", prompt: "", fontes: [], resto: true, padrao: "" })
   const [pergunta, setPergunta] = useState("")
   const [tipoDefinido, setTipoDefinido] = useState(false)
@@ -782,9 +783,9 @@ export function ConversaVariavel() {
       id: "formato",
       explica: (
         <>
-          Agora, como a resposta deve vir. Isso importa porque o agente usa a resposta: com <b>sim ou não</b> ele pode
-          decidir &quot;se for sim, avise&quot;; com um <b>número</b>, pode comparar, como &quot;acima de 1.000 horas&quot;; com{" "}
-          <b>texto</b>, recebe o trecho do edital para ler.
+          Agora escolha o formato da resposta. Use <b>sim ou não</b> quando a pergunta for fechada, <b>número</b> quando
+          o agente for comparar valores, <b>data</b> quando for um dia do calendário e <b>texto</b> quando você quiser
+          ler o trecho do edital.
         </>
       ),
       pergunta: "Como a resposta deve chegar?",
@@ -890,7 +891,17 @@ export function ConversaVariavel() {
     proximo()
   }
 
-  const revisar = () => irParaTela({ tipo: "variavel", k: null, inicial: { ...d, fontes: d.fontes.length ? d.fontes : ["Edital e anexos"] } })
+  const dados = () => ({ ...d, fontes: d.fontes.length ? d.fontes : ["Edital e anexos"] })
+  const revisar = () => irParaTela({ tipo: "variavel", k: null, inicial: dados() })
+  /* Criar e emendar no agente: a variável sozinha não faz nada, e esse é o passo seguinte. */
+  const criarEUsar = () => {
+    const r = criarVar(dados())
+    if ("erros" in r) {
+      revisar()
+      return
+    }
+    abrirModal({ tipo: "conversa-agente", varInicial: r.k })
+  }
   const n = Math.min(ids.indexOf(id) + 1 || ids.length, ids.length)
 
   return (
@@ -906,11 +917,14 @@ export function ConversaVariavel() {
       fim={
         <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
           <p className="text-[13.5px] leading-5">
-            Pronto. A variável está montada ao lado. Depois de criar, ela ainda não faz nada sozinha: use-a no que um
-            agente faz, digitando / na instrução.
+            Pronto, a variável está montada. Depois de criar, ela ainda não faz nada sozinha: quem usa a resposta dela é
+            um agente.
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button onClick={revisar}>Revisar e criar</Button>
+            <Button variant="outline" className="shadow-none" onClick={criarEUsar}>
+              Criar e usar em um agente
+            </Button>
           </div>
         </div>
       }

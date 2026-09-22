@@ -124,7 +124,7 @@ function TelaDaJanela({ tela }: { tela: Tela }) {
   if (tela.tipo === "novo") return <FormAgente key="novo" inicial={tela.rascunho} />
   if (tela.tipo === "agente") return <DetalheDoAgente id={tela.id} />
   if (tela.tipo === "editar") return <EditarAgente id={tela.id} />
-  if (tela.tipo === "conversa-agente") return <ConversaAgente />
+  if (tela.tipo === "conversa-agente") return <ConversaAgente varInicial={tela.varInicial} />
   if (tela.tipo === "conversa-variavel") return <ConversaVariavel />
   return <FormVariavel key={tela.k ?? "nova"} k={tela.k} inicial={tela.inicial} />
 }
