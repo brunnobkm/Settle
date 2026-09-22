@@ -43,7 +43,7 @@ export type Tela =
   | { tipo: "editar"; id: string }
   | { tipo: "variavel"; k: string | null; inicial?: DadosDaVariavel }
   /* Criar conversando: perguntas uma de cada vez, com o resultado montado ao lado. */
-  | { tipo: "conversa-agente" }
+  | { tipo: "conversa-agente"; varInicial?: string }
   | { tipo: "conversa-variavel" }
 
 export type DadosDaVariavel = {
@@ -359,6 +359,25 @@ function useAgentesInterno() {
     [auditar, validarVar]
   )
 
+  /** Cria a variável e devolve a chave dela, para quem precisa usá-la na sequência. */
+  const criarVar = useCallback(
+    (d: DadosDaVariavel): { k: string } | { erros: Erros } => {
+      const erros = validarVar(d)
+      if (Object.keys(erros).length) return { erros }
+      const c = atual.current.cfg
+      const k = `nv${Object.keys(c.vars).length}-${novoId()}`
+      const v: Variavel = {
+        nome: d.nome.trim(), desc: "", tipo: d.tipo, prompt: d.prompt.trim(), fontes: d.fontes, resto: d.resto,
+        padrao: d.padrao.trim(), v: "v1", custo: 0.02,
+      }
+      setCfg((x) => ({ ...x, vars: { ...x.vars, [k]: v } }))
+      auditar("Variáveis", `Criou "${v.nome}"`)
+      toast("Variável criada. Use-a nas instruções de um agente.")
+      return { k }
+    },
+    [auditar, validarVar]
+  )
+
   /** Criação a partir da escrita: os campos obrigatórios, em versão curta. Devolve a chave. */
   const criarVarRapida = useCallback(
     (d: { nome: string; tipo: TipoVar; prompt: string; fonte: string }) => {
@@ -406,7 +425,7 @@ function useAgentesInterno() {
     cfg, aprovacoes, modal,
     abrirModal, irParaTela, abrirComVolta, voltarModal, fecharModal,
     alterarAgente, executarEmTodas, excluirAgentes, validarAgente, criarAgente,
-    excluirVars, salvarVar, criarVarRapida, marcarVarVista, responderAprovacoes,
+    excluirVars, salvarVar, criarVar, criarVarRapida, marcarVarVista, responderAprovacoes,
   }
 }
 
