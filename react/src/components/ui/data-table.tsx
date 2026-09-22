@@ -184,19 +184,23 @@ function DataTableCellFrame({
   asChild = false,
   wrap = false,
   align = "start",
+  vAlign = "center",
   className,
   ...props
 }: React.ComponentProps<"div"> & {
   asChild?: boolean
   wrap?: boolean
   align?: "start" | "center"
+  /** "top": o conteúdo fica no topo quando a linha cresce (célula com texto em várias linhas). */
+  vAlign?: "center" | "top"
 }) {
   const Comp = asChild ? Slot.Root : "div"
   return (
     <Comp
       data-slot="data-table-cell"
       className={cn(
-        "flex min-h-11 w-full items-center gap-1.5 px-4 py-[7px] text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+        "flex min-h-11 w-full gap-1.5 px-4 py-[7px] text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+        vAlign === "top" ? "items-start pt-2.5" : "items-center",
         wrap
           ? "flex-wrap whitespace-normal"
           : "flex-nowrap overflow-hidden whitespace-nowrap",
@@ -531,7 +535,7 @@ function DataTable<TRow>({
                 {column.frame === false ? (
                   column.cell(row)
                 ) : (
-                  <DataTableCellFrame wrap={column.wrap} align={column.align}>
+                  <DataTableCellFrame wrap={column.wrap} align={column.align} vAlign={layout === "fixed" ? "top" : "center"}>
                     {column.cell(row)}
                   </DataTableCellFrame>
                 )}
@@ -563,7 +567,7 @@ function DataTable<TRow>({
               key={column.id}
               className={cn("p-0", column.wrap && "whitespace-normal")}
             >
-              <DataTableCellFrame wrap={column.wrap} className="group/cell gap-2">
+              <DataTableCellFrame wrap={column.wrap} vAlign={layout === "fixed" ? "top" : "center"} className="group/cell gap-2">
                 {handle &&
                   (rowMenu ? (
                     <ClickMenu
@@ -631,9 +635,11 @@ function DataTable<TRow>({
       )}
       {...props}
     >
-      <div className="min-h-0 flex-1">
+      {/* a rolagem é deste contêiner: dentro de um flex item sem altura fixa, o h-full do
+          contêiner da tabela não resolvia e as linhas de baixo ficavam cortadas */}
+      <div className="min-h-0 flex-1 overflow-auto">
         <Table
-          containerClassName="h-full overflow-auto"
+          containerClassName="overflow-visible"
           className={cn(
             "border-separate border-spacing-0",
             layout === "fixed" ? "w-full table-fixed" : "w-max min-w-full"
