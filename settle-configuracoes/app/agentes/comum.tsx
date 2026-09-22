@@ -1,7 +1,7 @@
 // Peças pequenas de Agentes e Variáveis: chip de variável, selos de momento, de fonte e
 // de origem, o texto de apoio e a explicação de como a área funciona.
 
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode, type RefObject } from "react"
 import { ArrowRightIcon, ChevronDownIcon, InfoIcon, LockIcon, MessageCircleIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -224,6 +224,36 @@ export function BotaoDeCriar({
       </DropdownMenuContent>
     </DropdownMenu>
   )
+}
+
+/*
+  A altura da tabela é o menor valor entre o conteúdo e o espaço que sobra na tela: com
+  poucas linhas ela encolhe, com muitas ela para no teto e rola por dentro, com o
+  cabeçalho fixo. Nunca estica para "preencher" a tela. Recalcula quando a janela muda de
+  tamanho, quando o que está acima dela muda de altura e quando a página rola.
+*/
+export function useAlturaMaxima(ref: RefObject<HTMLElement | null>, margem = 24) {
+  const [maxima, setMaxima] = useState<number>()
+  useEffect(() => {
+    const calcular = () => {
+      const el = ref.current
+      if (!el) return
+      const topo = el.getBoundingClientRect().top
+      setMaxima(Math.max(240, Math.round(window.innerHeight - topo - margem)))
+    }
+    calcular()
+    window.addEventListener("resize", calcular)
+    // rolagem em qualquer ancestral: a tabela pode subir ou descer na tela
+    document.addEventListener("scroll", calcular, true)
+    const observador = new ResizeObserver(calcular)
+    if (ref.current?.parentElement) observador.observe(ref.current.parentElement)
+    return () => {
+      window.removeEventListener("resize", calcular)
+      document.removeEventListener("scroll", calcular, true)
+      observador.disconnect()
+    }
+  }, [ref, margem])
+  return maxima
 }
 
 /** Texto de apoio abaixo de um campo. */

@@ -61,7 +61,7 @@ export type DadosDaVariavel = {
   o campo vermelho estava fora da tela. O erro agora mora embaixo do próprio campo, e a
   janela rola até o primeiro.
 */
-export type Erros = Partial<Record<"nome" | "texto" | "onde" | "gatilho" | "aprovacao" | "linhas" | "prompt" | "fontes", string>>
+export type Erros = Partial<Record<"nome" | "texto" | "onde" | "gatilho" | "aprovacao" | "linhas" | "prompt" | "fontes" | "padrao", string>>
 
 let sequencia = 0
 const novoId = () => ++sequencia
@@ -311,6 +311,8 @@ function useAgentesInterno() {
     if (!d.nome.trim()) e.nome = "Dê um nome à variável. Ex.: Atestado exigido."
     if (!d.prompt.trim()) e.prompt = "Diga o que procurar no edital. Ex.: diga se o edital exige atestado de capacidade técnica."
     if (!d.fontes.length && !d.resto) e.fontes = "Marque pelo menos um lugar para procurar."
+    /* Sem resposta padrão, o agente fica sem saber o que dizer quando o edital não fala do assunto. */
+    if (!d.padrao.trim()) e.padrao = "Diga o que responder quando o edital não falar disso. Ex.: não, ou não encontrado."
     return e
   }, [])
 

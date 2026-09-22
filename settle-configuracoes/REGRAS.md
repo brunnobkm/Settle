@@ -308,6 +308,12 @@ devs; a Nova versão da plataforma aponta para cá.
   do data-table (novo no design system): as larguras viram proporção, o título da coluna
   quebra em mais de uma linha e não há rolagem lateral.
 - **Cada campo do formulário explica o que pede**, com o mesmo texto do "i" da coluna.
+- **Altura da tabela:** o menor valor entre o conteúdo e o espaço que sobra na tela. Com
+  poucas linhas ela encolhe (sem espaço vazio embaixo); com muitas, para no teto e rola por
+  dentro, com o cabeçalho fixo. Recalcula ao redimensionar, ao rolar e quando o que está
+  acima muda de altura.
+- **A resposta padrão da variável é obrigatória:** sem ela o agente fica sem o que dizer
+  quando o edital não fala do assunto.
 - **Excluir variável** continua livre. Os agentes que dependiam dela aparecem **parados**,
   sem o botão de executar, até alguém revisar. No teste, o agente quebrado parecia ativo.
 - **Aprovações:** cada pedido diz o agente que pediu, a aprovação configurada nele e, na
