@@ -164,10 +164,6 @@ export function Dica({ children, className, id }: { children: ReactNode; classNa
   )
 }
 
-/* ------------------------------------------------------------------ */
-/* Como funciona                                                       */
-/* ------------------------------------------------------------------ */
-
 /* A imagem do card: os três passos em miniatura (dado, tarefa, resultado), no tema da
    tela. Desenhada aqui para não depender de arquivo de imagem. */
 function Ilustracao() {
@@ -202,40 +198,133 @@ function Ilustracao() {
   )
 }
 
+/* ------------------------------------------------------------------ */
+/* Como funciona: passo a passo com um exemplo                         */
+/* ------------------------------------------------------------------ */
+
+/** Moldura das miniaturas: o mesmo desenho das telas de verdade, em escala menor. */
+function Miniatura({ children, rotulo }: { children: ReactNode; rotulo: string }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{rotulo}</span>
+      <div className="rounded-lg border bg-card p-3.5 text-[13px] leading-[19px] shadow-xs">{children}</div>
+    </div>
+  )
+}
+
+/*
+  Os quatro passos seguem um caso só, do começo ao fim, porque foi assim que o conceito
+  ficou claro nas sessões do teste de 21/09: com o exemplo na mão, não com a definição.
+  Cada passo tem uma pergunta de título, a resposta em uma frase e a miniatura do que a
+  pessoa vai encontrar na tela.
+*/
+const PASSOS: { t: string; d: ReactNode; mini: ReactNode }[] = [
+  {
+    t: "A variável faz uma pergunta ao edital",
+    d: (
+      <>
+        Você cria a pergunta uma vez e a Settle responde em <b>todo edital</b>, sempre do mesmo jeito. Sozinha, a
+        variável só guarda a resposta: ela não faz mais nada.
+      </>
+    ),
+    mini: (
+      <Miniatura rotulo="Variáveis">
+        <div className="flex items-center justify-between gap-2">
+          <b className="font-semibold">Atestado exigido</b>
+          <Badge variant="secondary" className="font-normal">Sim ou não</Badge>
+        </div>
+        <p className="mt-0.5 text-muted-foreground">O edital exige atestado de capacidade técnica?</p>
+        <ul className="mt-2.5 flex flex-col gap-1 border-t pt-2.5">
+          <li className="flex justify-between"><span className="text-muted-foreground">PE 90014/2026</span><b className="font-semibold">Sim</b></li>
+          <li className="flex justify-between"><span className="text-muted-foreground">PE 00312/2026</span><b className="font-semibold">Não</b></li>
+          <li className="flex justify-between"><span className="text-muted-foreground">PE 00758/2026</span><b className="font-semibold">Sim</b></li>
+        </ul>
+      </Miniatura>
+    ),
+  },
+  {
+    t: "O agente decide o que fazer com a resposta",
+    d: (
+      <>
+        O agente é como uma pessoa do time: você diz <b>o que ela faz</b> com a resposta e <b>quando</b> ela
+        trabalha. É no agente que a variável ganha uso.
+      </>
+    ),
+    mini: (
+      <Miniatura rotulo="Agentes">
+        <b className="font-semibold">Exige atestado técnico?</b>
+        <p className="mt-1.5">
+          Se <TokenChip>Atestado exigido</TokenChip> for sim, avise e diga quantos atestados o edital pede.
+        </p>
+        <div className="mt-2.5 flex flex-wrap gap-1.5 border-t pt-2.5">
+          <Badge variant="category-1" className="rounded-full font-normal">Quando chega em Recomendadas</Badge>
+          <Badge variant="secondary" className="rounded-full font-normal">Mostra em Habilitação</Badge>
+        </div>
+      </Miniatura>
+    ),
+  },
+  {
+    t: "O resultado aparece dentro da licitação",
+    d: (
+      <>
+        Quando o agente trabalha, o que ele produziu aparece <b>na aba que você escolheu</b>, com o nome do agente e de
+        onde saiu a informação no edital.
+      </>
+    ),
+    mini: (
+      <Miniatura rotulo="Licitação PE 90014/2026 · aba Habilitação">
+        <div className="rounded-md border border-primary/30 bg-primary/5 p-2.5">
+          <b className="font-semibold text-primary">Exige atestado técnico?</b>
+          <p className="mt-1">Sim: 2 atestados de design de produto, somando 1.500 horas.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Edital, item 9.4.1 · p. 21</p>
+        </div>
+      </Miniatura>
+    ),
+  },
+  {
+    t: "Se o agente for mudar algo, ele pode pedir licença",
+    d: (
+      <>
+        Um agente também pode <b>fazer ações</b>, como mover a licitação de etapa. Se você quiser, ele pede aprovação
+        antes, e o pedido espera em <b>Aprovações</b> até alguém responder.
+      </>
+    ),
+    mini: (
+      <Miniatura rotulo="Agentes › Aprovações">
+        <p className="flex flex-wrap items-center gap-1.5">
+          Mover de <Badge variant="secondary" className="font-normal">Recomendadas</Badge>
+          <ArrowRightIcon aria-label="para" className="size-3.5 text-muted-foreground" />
+          <Badge variant="secondary" className="font-normal">Em análise</Badge>
+        </p>
+        <p className="mt-1 text-muted-foreground">Pedido por Exige atestado técnico? · PE 90014/2026</p>
+        <div className="mt-2.5 flex gap-1.5 border-t pt-2.5">
+          <span className="rounded-md border px-2 py-0.5 text-xs">Recusar</span>
+          <span className="rounded-md bg-primary px-2 py-0.5 text-xs text-primary-foreground">Aprovar</span>
+        </div>
+      </Miniatura>
+    ),
+  },
+]
+
 /*
   O problema mais grave do teste: ninguém separou agente de variável só olhando a tela, e
-  em quatro de cinco sessões o conceito precisou ser explicado em voz alta. Em vez de um
-  bloco fixo no topo, um card no canto inferior direito convida a ver a explicação, e
-  some quando a pessoa fecha ou já viu, até a página ser recarregada. A explicação abre numa janela: o dado, a tarefa e o
-  lugar onde o resultado aparece, com um exemplo que atravessa os três.
+  em quatro de cinco sessões o conceito precisou ser explicado em voz alta. Um card no
+  canto inferior direito convida a ver a explicação e volta a cada refresh da página. A
+  explicação é um passo a passo com um exemplo que atravessa tudo, e termina num resumo
+  de uma linha por conceito e nos atalhos para criar.
 */
 export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariavel?: () => void; aoCriarAgente?: () => void }) {
   /* Fechar vale até recarregar a página: a cada refresh o card volta (pedido do Brunno). */
   const [fechado, setFechado] = useState(false)
   const [aberto, setAberto] = useState(false)
+  const [passo, setPasso] = useState(0)
   const fechar = () => setFechado(true)
-  const passos = [
-    {
-      n: "1",
-      t: "Variável",
-      d: "Um dado que a Settle tira de todo edital, sempre do mesmo jeito.",
-      ex: "Atestado exigido: sim ou não",
-      acao: aoCriarVariavel && { t: "Criar variável", f: aoCriarVariavel },
-    },
-    {
-      n: "2",
-      t: "Agente",
-      d: "Uma tarefa que usa esses dados, como uma pessoa do time que faz sempre o mesmo trabalho.",
-      ex: "Avisar quando o edital exigir atestado",
-      acao: aoCriarAgente && { t: "Criar agente", f: aoCriarAgente },
-    },
-    {
-      n: "3",
-      t: "Resultado",
-      d: "O que o agente produz aparece dentro da licitação, na aba que você escolher.",
-      ex: "Um bloco na aba Habilitação",
-    },
-  ]
+  const ultimo = passo === PASSOS.length
+  const criar = (f?: () => void) => {
+    setAberto(false)
+    fechar()
+    f?.()
+  }
   return (
     <>
       {!fechado && (
@@ -255,13 +344,19 @@ export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariav
           </Button>
           <div className="flex flex-col gap-1.5 p-4">
             <h2 id="como-funciona-card" className="text-sm font-semibold">
-              Agentes e variáveis, em três passos
+              Como agentes e variáveis funcionam
             </h2>
             <p className="text-[13px] leading-[19px] text-muted-foreground">
-              Entenda como um dado do edital vira uma tarefa que a Settle faz sozinha, e onde o resultado aparece na
-              licitação.
+              Em quatro passos, com um exemplo do começo ao fim: saber se o edital exige atestado técnico.
             </p>
-            <Button size="sm" className="mt-1.5 self-start" onClick={() => setAberto(true)}>
+            <Button
+              size="sm"
+              className="mt-1.5 self-start"
+              onClick={() => {
+                setPasso(0)
+                setAberto(true)
+              }}
+            >
               Ver como funciona
             </Button>
           </div>
@@ -271,49 +366,72 @@ export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariav
         open={aberto}
         onOpenChange={(o) => {
           setAberto(o)
-          // quem viu a explicação não precisa do convite de novo
+          // quem viu a explicação não precisa do convite de novo, até recarregar
           if (!o) fechar()
         }}
       >
-        <DialogContent className="sm:max-w-[760px]">
-          <DialogHeader>
-            <DialogTitle>Como funciona</DialogTitle>
-            <DialogDescription>Um exemplo atravessa os três passos: saber se o edital exige atestado.</DialogDescription>
+        <DialogContent className="gap-0 p-0 sm:max-w-[720px]">
+          <DialogHeader className="border-b px-6 pt-5 pb-4 text-left">
+            <span className="text-xs font-medium text-muted-foreground">
+              {ultimo ? "Resumo" : `Passo ${passo + 1} de ${PASSOS.length}`}
+            </span>
+            <DialogTitle className="text-lg">{ultimo ? "Em resumo" : PASSOS[passo].t}</DialogTitle>
+            <DialogDescription className="sr-only">Como agentes e variáveis funcionam, passo a passo.</DialogDescription>
           </DialogHeader>
-          <ol className="grid grid-cols-1 gap-3 min-[640px]:grid-cols-[1fr_auto_1fr_auto_1fr] min-[640px]:items-start">
-            {passos.map((p, i) => (
-              <li key={p.n} className="contents">
-                {i > 0 && <ArrowRightIcon aria-hidden className="mt-7 hidden size-4 text-muted-foreground min-[640px]:block" />}
-                <div className="flex h-full flex-col gap-1.5 rounded-md bg-muted/60 p-3">
-                  <span className="flex items-center gap-2 text-[13px] font-semibold">
-                    <span className="flex size-5 items-center justify-center rounded-full bg-primary/10 text-[11px] text-primary">
-                      {p.n}
-                    </span>
-                    {p.t}
-                  </span>
-                  <span className="text-[12.5px] leading-[18px] text-muted-foreground">{p.d}</span>
-                  <span className="text-[12.5px] leading-[18px]">
-                    <span className="text-muted-foreground">Ex.: </span>
-                    {p.ex}
-                  </span>
-                  {p.acao && (
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      className="mt-auto self-start shadow-none"
-                      onClick={() => {
-                        setAberto(false)
-                        fechar()
-                        p.acao!.f()
-                      }}
-                    >
-                      {p.acao.t}
+
+          <div className="min-h-68 px-6 py-5">
+            {ultimo ? (
+              <div className="flex flex-col gap-3">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-sm leading-5">
+                  <dt className="font-semibold">Variável</dt>
+                  <dd className="text-muted-foreground">a pergunta que a Settle faz a todo edital.</dd>
+                  <dt className="font-semibold">Agente</dt>
+                  <dd className="text-muted-foreground">o que fazer com a resposta, e quando.</dd>
+                  <dt className="font-semibold">Resultado</dt>
+                  <dd className="text-muted-foreground">onde você vê o que o agente produziu, dentro da licitação.</dd>
+                  <dt className="font-semibold">Aprovações</dt>
+                  <dd className="text-muted-foreground">onde esperam as ações que o agente quer fazer, se ele precisar de licença.</dd>
+                </dl>
+                <p className="mt-2 rounded-lg bg-primary/8 px-3.5 py-3 text-[13px] leading-[19px]">
+                  Para começar, crie a variável com a pergunta e depois o agente que usa a resposta. Se a variável já
+                  existir, comece pelo agente.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {aoCriarVariavel && (
+                    <Button variant="outline" onClick={() => criar(aoCriarVariavel)}>
+                      Criar variável
                     </Button>
                   )}
+                  {aoCriarAgente && <Button onClick={() => criar(aoCriarAgente)}>Criar agente</Button>}
                 </div>
-              </li>
-            ))}
-          </ol>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 items-start gap-5 min-[620px]:grid-cols-[1fr_300px]">
+                <p className="text-[15px] leading-6">{PASSOS[passo].d}</p>
+                {PASSOS[passo].mini}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 border-t px-6 py-3.5">
+            <div className="flex flex-1 items-center gap-1.5" aria-hidden>
+              {[...PASSOS, null].map((_, i) => (
+                <span key={i} className={cn("h-1.5 rounded-full transition-all", i === passo ? "w-5 bg-primary" : "w-1.5 bg-foreground/15")} />
+              ))}
+            </div>
+            {passo > 0 && (
+              <Button variant="outline" className="shadow-none" onClick={() => setPasso((p) => p - 1)}>
+                Voltar
+              </Button>
+            )}
+            {!ultimo ? (
+              <Button onClick={() => setPasso((p) => p + 1)}>Próximo</Button>
+            ) : (
+              <Button variant="outline" className="shadow-none" onClick={() => criar()}>
+                Fechar
+              </Button>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>
