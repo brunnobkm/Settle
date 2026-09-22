@@ -498,7 +498,7 @@ export function PaginaVariaveis() {
   ]
 
   return (
-    <SettingsPage width="full">
+    <SettingsPage width="full" className="pb-6">
       <ComoFunciona
         aoCriarVariavel={() => abrirModal({ tipo: "conversa-variavel" })}
         aoCriarAgente={() => {
