@@ -64,6 +64,8 @@ type Fala = { quem: "settle" | "voce"; texto: ReactNode }
 
 const cap = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t)
 const semPonto = (t: string) => t.trim().replace(/[.!?]+$/, "")
+/** Para nomes: tira só o ponto final; "Exige atestado técnico?" continua pergunta. */
+const semPontoFinal = (t: string) => t.trim().replace(/\.+$/, "")
 const normal = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
 
 function Bolha({ fala }: { fala: Fala }) {
@@ -347,8 +349,8 @@ const ABERTURA_AGENTE: Fala[] = [
     quem: "settle",
     texto: (
       <>
-        Para criar um, preciso saber quatro coisas: o que ele faz, de que dado do edital ele precisa, quando ele trabalha
-        e onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,{" "}
+        Para criar um, preciso saber o nome dele, o que ele faz, de que dado do edital ele precisa, quando ele trabalha e
+        onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,{" "}
         <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
       </>
     ),
@@ -379,8 +381,8 @@ const ABERTURA_VARIAVEL: Fala[] = [
     quem: "settle",
     texto: (
       <>
-        Para criar uma, preciso saber cinco coisas: o que você quer saber, o nome, o formato da resposta, onde procurar e
-        o que responder quando o edital não falar do assunto. Ao lado você vê a variável sendo montada.{" "}
+        Para criar uma, preciso saber cinco coisas: o nome, a pergunta, o formato da resposta, onde procurar e o que
+        responder quando o edital não falar do assunto. Ao lado você vê a variável sendo montada.{" "}
         <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
       </>
     ),
@@ -428,18 +430,34 @@ export function ConversaAgente() {
   const [r, setR] = useState<Rascunho>(() => rascunhoNovo("texto", false))
   const [pedido, setPedido] = useState("")
   const [varK, setVarK] = useState<string | null>(null)
-  const [id, setId] = useState("pedido")
+  const [id, setId] = useState("nome")
   const [falas, setFalas] = useState<Fala[]>(ABERTURA_AGENTE)
 
   const temRep = !!(r.gatilho && REP_POR_GATILHO[r.gatilho])
-  const ids = ["pedido", "variavel", "quando", ...(temRep ? ["repete"] : []), "onde", "aprovacao"]
+  const ids = ["nome", "pedido", "variavel", "quando", ...(temRep ? ["repete"] : []), "onde", "aprovacao"]
   const sugerida = pedido ? variavelProvavel(pedido, cfg.vars) : null
   const nomeNova = pedido ? cap(semPonto(pedido)).slice(0, 48) : ""
 
   const PASSOS: Record<string, Passo> = {
+    nome: {
+      id: "nome",
+      explica: (
+        <>
+          Primeiro, um nome. Ele aparece na lista de agentes e no topo do resultado dentro da licitação, então vale um
+          nome que diga o que o agente faz. Pode ser uma pergunta, como &quot;Exige atestado técnico?&quot;.
+        </>
+      ),
+      pergunta: "Como vai se chamar o agente?",
+      outra: "Escreva o nome do agente",
+      opcoes: [
+        { v: "Exige atestado técnico?", t: "Exige atestado técnico?" },
+        { v: "Documentos de habilitação em dia?", t: "Documentos de habilitação em dia?" },
+        { v: "Score alto vai para análise", t: "Score alto vai para análise" },
+      ],
+    },
     pedido: {
       id: "pedido",
-      explica: <>Comece pelo trabalho em si. Escreva como pediria para alguém do time: o que ele deve verificar ou fazer em cada licitação.</>,
+      explica: <>Agora, o trabalho em si. Escreva como pediria para alguém do time: o que ele deve verificar ou fazer em cada licitação.</>,
       pergunta: "O que você quer que o agente faça em cada licitação?",
       ajuda: "Escreva como pediria para uma pessoa do time, ou escolha um exemplo.",
       outra: "Escreva o que o agente deve fazer",
@@ -560,11 +578,16 @@ export function ConversaAgente() {
     if (!passo) return
     const livre = valor.startsWith("__livre:") ? valor.slice(8) : null
     let eco: ReactNode = null
+    if (id === "nome") {
+      const t = cap(semPontoFinal(livre ?? valor)).slice(0, 60)
+      eco = <>Ótimo. O agente vai aparecer como <b>{t}</b>.</>
+      setR((x) => ({ ...x, nome: t }))
+    }
     if (id === "pedido") {
       const t = livre ?? valor
       eco = <>Entendi. Vou montar um agente para: <b>{semPonto(t).charAt(0).toLowerCase() + semPonto(t).slice(1)}</b>.</>
       setPedido(t)
-      setR((x) => ({ ...x, nome: cap(semPonto(t)).slice(0, 60), texto: `${cap(semPonto(t))}.` }))
+      setR((x) => ({ ...x, nome: x.nome || cap(semPonto(t)).slice(0, 60), texto: `${cap(semPonto(t))}.` }))
     }
     if (id === "variavel") {
       let k: string | null = null
@@ -588,7 +611,7 @@ export function ConversaAgente() {
       setR((x) => ({ ...x, gatilho: g }))
       registrar(passo, rotulo, eco)
       // a lista de passos muda com o momento: com ou sem a pergunta de repetição
-      proximo("quando", ["pedido", "variavel", "quando", ...(novoRep ? ["repete"] : []), "onde", "aprovacao"])
+      proximo("quando", ["nome", "pedido", "variavel", "quando", ...(novoRep ? ["repete"] : []), "onde", "aprovacao"])
       return
     }
     if (id === "repete") {
@@ -651,9 +674,9 @@ export function ConversaAgente() {
           titulo="Agente"
           atual={id}
           linhas={[
-            { id: "pedido", rotulo: "Nome", valor: r.nome || null },
+            { id: "nome", rotulo: "Nome", valor: r.nome || null },
             {
-              id: "pedido2",
+              id: "pedido",
               rotulo: "O que o agente faz",
               valor: r.texto ? (
                 <>
@@ -690,15 +713,16 @@ export function ConversaAgente() {
 /* Variável                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Um nome curto a partir da pergunta: "Se o edital exige visita técnica" vira "Exige visita técnica". */
-function nomeDaPergunta(t: string) {
-  const s = semPonto(t).replace(/^(se|qual|quais|quanto|quantos|quando|o|a|os|as)\s+(o\s+|a\s+)?(edital\s+)?/i, "")
-  return cap(s).slice(0, 48)
+/** Uma pergunta a partir do nome: "Exige visita técnica" vira "O edital exige visita técnica?". */
+function perguntaDoNome(nome: string) {
+  const n = semPonto(nome)
+  const verbo = /^(exige|permite|tem|aceita|admite|prevê|preve)\b/i.test(n)
+  return verbo ? `O edital ${n.charAt(0).toLowerCase() + n.slice(1)}?` : `Qual ${n.charAt(0).toLowerCase() + n.slice(1)} o edital pede?`
 }
 
 function formatoProvavel(t: string): TipoVar {
   const p = normal(t)
-  if (/^(se|exige|permite|tem|ha)\b/.test(p)) return "sim ou não"
+  if (/(^|\s)(se|exige|exigira|permite|tem|ha)\s/.test(p)) return "sim ou não"
   if (/data|prazo final|dia da|quando/.test(p)) return "data"
   if (/valor|quant|numero|total|percentual|prazo/.test(p)) return "número"
   return "texto"
@@ -709,30 +733,40 @@ export function ConversaVariavel() {
   const [d, setD] = useState<DadosDaVariavel>({ nome: "", tipo: "sim ou não", prompt: "", fontes: [], resto: true, padrao: "" })
   const [pergunta, setPergunta] = useState("")
   const [tipoDefinido, setTipoDefinido] = useState(false)
-  const [id, setId] = useState("pergunta")
+  const [id, setId] = useState("nome")
   const [falas, setFalas] = useState<Fala[]>(ABERTURA_VARIAVEL)
-  const ids = ["pergunta", "nome", "formato", "fonte", "vazio"]
+  const ids = ["nome", "pergunta", "formato", "fonte", "vazio"]
 
   const PASSOS: Record<string, Passo> = {
-    pergunta: {
-      id: "pergunta",
-      explica: <>Comece pelo que você quer saber. Escreva como a pergunta que alguém faria ao ler o edital.</>,
-      pergunta: "O que você quer saber em cada edital?",
-      ajuda: "Escreva como uma pergunta, ou escolha um exemplo.",
-      outra: "Ex.: se o edital exige visita técnica",
-      opcoes: [
-        { v: "Se o edital exige visita técnica", t: "Se o edital exige visita técnica" },
-        { v: "Qual o prazo de entrega exigido", t: "Qual o prazo de entrega exigido" },
-        { v: "Se o edital permite participação em consórcio", t: "Se o edital permite participação em consórcio" },
-      ],
-    },
     nome: {
       id: "nome",
-      explica: <>Dê um nome curto. É por ele que você vai achar a variável quando escrever o que um agente faz.</>,
-      pergunta: "Que nome a variável deve ter?",
-      ajuda: "É o nome que você vai escolher ao escrever o que um agente faz.",
-      outra: "Escreva outro nome",
-      opcoes: pergunta ? [{ v: nomeDaPergunta(pergunta), t: nomeDaPergunta(pergunta), rec: true }] : [],
+      explica: (
+        <>
+          Primeiro, um nome curto. É por ele que você vai achar a variável quando escrever o que um agente faz, e é ele
+          que aparece no card e no e-mail, se ela for parar lá.
+        </>
+      ),
+      pergunta: "Como vai se chamar a variável?",
+      outra: "Escreva o nome da variável",
+      opcoes: [
+        { v: "Exige visita técnica", t: "Exige visita técnica" },
+        { v: "Prazo de entrega", t: "Prazo de entrega" },
+        { v: "Permite consórcio", t: "Permite consórcio" },
+      ],
+    },
+    pergunta: {
+      id: "pergunta",
+      explica: (
+        <>
+          Agora, a pergunta que a Settle vai fazer a todo edital. Escreva como alguém perguntaria ao ler o edital:
+          quanto mais claro, mais certa a resposta.
+        </>
+      ),
+      pergunta: "O que a Settle deve perguntar a cada edital?",
+      outra: "Escreva a pergunta",
+      opcoes: d.nome
+        ? [{ v: perguntaDoNome(d.nome), t: perguntaDoNome(d.nome), rec: true }]
+        : [{ v: "O edital exige visita técnica?", t: "O edital exige visita técnica?" }],
     },
     formato: {
       id: "formato",
@@ -807,9 +841,9 @@ export function ConversaVariavel() {
     const v = livre ?? valor
     if (id === "pergunta") {
       setPergunta(v)
-      setD((x) => ({ ...x, prompt: `${cap(semPonto(v))}.`, tipo: tipoDefinido ? x.tipo : formatoProvavel(v) }))
+      setD((x) => ({ ...x, prompt: cap(v.trim()), tipo: tipoDefinido ? x.tipo : formatoProvavel(`${x.nome} ${v}`) }))
     }
-    if (id === "nome") setD((x) => ({ ...x, nome: v }))
+    if (id === "nome") setD((x) => ({ ...x, nome: cap(semPontoFinal(v)).slice(0, 48), tipo: tipoDefinido ? x.tipo : formatoProvavel(v) }))
     if (id === "formato") {
       setTipoDefinido(true)
       setD((x) => ({ ...x, tipo: (livre ? formatoProvavel(livre) : valor) as TipoVar, padrao: "" }))
@@ -817,8 +851,8 @@ export function ConversaVariavel() {
     if (id === "fonte") setD((x) => ({ ...x, fontes: [FONTES.includes(v) ? v : "Edital e anexos"] }))
     if (id === "vazio") setD((x) => ({ ...x, padrao: v }))
     const eco: ReactNode = {
-      pergunta: <>Entendi. A Settle vai procurar isso em todo edital.</>,
-      nome: <>Ótimo. Nas instruções dos agentes, ela vai aparecer como <b>{v}</b>.</>,
+      nome: <>Ótimo. Nas instruções dos agentes, ela vai aparecer como <b>{cap(semPontoFinal(v)).slice(0, 48)}</b>.</>,
+      pergunta: <>Entendi. A Settle vai fazer essa pergunta a todo edital.</>,
       formato: <>Combinado: a resposta vai chegar como <b>{FORMATO_VAR[(livre ? formatoProvavel(livre) : valor) as TipoVar]?.t ?? "texto"}</b>.</>,
       fonte: <>Certo: primeiro em <b>{FONTES.includes(v) ? v : "Edital e anexos"}</b>, depois nos outros arquivos.</>,
       vazio: v ? <>Quando o edital não falar disso, a resposta vai ser <b>{v}</b>.</> : <>Quando o edital não falar disso, os agentes recebem o campo vazio.</>,
@@ -874,8 +908,8 @@ export function ConversaVariavel() {
           titulo="Variável"
           atual={id}
           linhas={[
-            { id: "pergunta", rotulo: "O que procurar no edital", valor: d.prompt || null },
             { id: "nome", rotulo: "Nome", valor: d.nome || null },
+            { id: "pergunta", rotulo: "O que procurar no edital", valor: d.prompt || null },
             { id: "formato", rotulo: "Formato da resposta", valor: tipoDefinido ? FORMATO_VAR[d.tipo].t : null },
             { id: "fonte", rotulo: "Onde procurar primeiro", valor: d.fontes[0] ?? null },
             {
