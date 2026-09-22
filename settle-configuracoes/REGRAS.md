@@ -242,9 +242,11 @@ devs; a Nova versão da plataforma aponta para cá.
 - **Quem pode.** Configurar agentes e variáveis é de administrador. Aprovações abre para
   qualquer função, porque quem aprova nem sempre é quem configura: para quem não é admin, o
   item vira "Aprovações" e mostra só a fila.
-- **Como funciona** no topo das duas páginas: variável (o dado) → agente (a tarefa) →
-  resultado (onde aparece), com um exemplo que atravessa os três. Quem fecha não vê de novo.
-  No teste, ninguém separou agente de variável sem explicação.
+- **Como funciona:** card flutuante no canto inferior direito das duas páginas, com imagem,
+  título, descrição, "Ver como funciona" e fechar. O botão abre a explicação numa janela:
+  variável (o dado) → agente (a tarefa) → resultado (onde aparece), com um exemplo que
+  atravessa os três. Quem fecha o card ou vê a explicação não vê o card de novo. No teste,
+  ninguém separou agente de variável sem explicação.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
 - **Formulário do agente:**
