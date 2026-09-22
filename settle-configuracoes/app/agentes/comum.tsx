@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { FORMATO_VAR, GATILHOS, type Agente, type Variavel } from "./dados"
+import { useConfig } from "../estado"
 import { useAgentes } from "./estado"
 import { descAgenda, fontesDe, momentoDe } from "./regras"
 
@@ -417,6 +418,9 @@ const PASSOS: { t: string; d: ReactNode; mini: ReactNode }[] = [
 export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariavel?: () => void; aoCriarAgente?: () => void }) {
   /* Fechar vale até recarregar a página: a cada refresh o card volta (pedido do Brunno). */
   const [fechado, setFechado] = useState(false)
+  /* O canto inferior direito é da Settle AI: o card fica acima do botão e sai da frente
+     enquanto a conversa está aberta. */
+  const { iaAberta } = useConfig()
   const [aberto, setAberto] = useState(false)
   const [passo, setPasso] = useState(0)
   const fechar = () => setFechado(true)
@@ -428,10 +432,10 @@ export function ComoFunciona({ aoCriarVariavel, aoCriarAgente }: { aoCriarVariav
   }
   return (
     <>
-      {!fechado && (
+      {!fechado && !iaAberta && (
         <aside
           aria-labelledby="como-funciona-card"
-          className="fixed right-6 bottom-6 z-40 w-[min(320px,calc(100vw-2rem))] overflow-hidden rounded-xl border bg-card shadow-lg"
+          className="fixed right-6 bottom-21 z-40 w-[min(320px,calc(100vw-2rem))] overflow-hidden rounded-xl border bg-card shadow-lg"
         >
           <Ilustracao />
           <Button

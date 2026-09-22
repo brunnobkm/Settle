@@ -38,6 +38,7 @@ import { PaginaEtapas } from "./PaginaEtapas"
 import { PaginaInicio, SemPermissao } from "./PaginaInicio"
 import { PaginaMotivos } from "./PaginaMotivos"
 import { PaginaAuditoria, PaginaEquipe, PaginaPermissoes } from "./PaginaOrganizacao"
+import { SettleAI } from "./SettleAI"
 
 // "Voltar para a plataforma" leva para Recomendadas
 const PLATAFORMA = "../settle-melhoria-deixar-os-filtros-aplicados-mais-visivel/"
@@ -171,6 +172,8 @@ function Configuracoes() {
       }
     >
       <Pagina key={rota} />
+      {/* Settle AI: a mesma da plataforma, presente em qualquer tela. */}
+      <SettleAI rota={rota} />
     </AppShell>
   )
 }

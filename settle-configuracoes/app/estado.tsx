@@ -86,6 +86,10 @@ type Estado = {
   desauditar: (quantos?: number) => void
 
   confirmar: (pedido: PedidoDeConfirmacao) => void
+
+  /** Settle AI aberta: o card "Como funciona" sai da frente enquanto a conversa está no ar. */
+  iaAberta: boolean
+  setIaAberta: Atualizar<boolean>
 }
 
 const Contexto = createContext<Estado | null>(null)
@@ -116,6 +120,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
     personalizado: false,
   })
   const [audit, setAudit] = useState(AUDITORIA)
+  const [iaAberta, setIaAberta] = useState(false)
   const [pedido, setPedido] = useState<PedidoDeConfirmacao | null>(null)
 
   const auditar = useCallback((area: string, txt: string) => {
@@ -156,8 +161,10 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       auditar,
       desauditar,
       confirmar: setPedido,
+      iaAberta,
+      setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, abas, abaTela, abaPrev, campos, maxItens, lic, email, audit, auditar, desauditar]
+    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, abas, abaTela, abaPrev, campos, maxItens, lic, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (
