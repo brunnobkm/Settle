@@ -16,6 +16,7 @@ import {
   SquareMenuIcon,
   TextAlignStartIcon,
   UsersIcon,
+  LayoutPanelTopIcon,
   VariableIcon,
 } from "lucide-react";
 
@@ -45,6 +46,7 @@ import {
   PaginaEquipe,
   PaginaPermissoes,
 } from "./PaginaOrganizacao";
+import { PaginaResultados } from "./PaginaResultados";
 import { ChatLateral, ChatProvider, SettleAI } from "./SettleAI";
 
 // "Voltar para a plataforma" leva para Recomendadas
@@ -61,6 +63,7 @@ const PAGINAS: Record<Rota, ComponentType> = {
   equipe: PaginaEquipe,
   permissoes: PaginaPermissoes,
   auditoria: PaginaAuditoria,
+  resultados: PaginaResultados,
   agentes: PaginaAgentes,
   variaveis: PaginaVariaveis,
 };
@@ -151,6 +154,7 @@ function Configuracoes() {
               /* o contador é da fila de Aprovações, que mora dentro de Agentes */
               { ...item("agentes", SparkleIcon), count: aprovacoes.length },
               item("variaveis", VariableIcon),
+              item("resultados", LayoutPanelTopIcon),
             ],
           },
         ]
