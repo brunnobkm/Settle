@@ -3,7 +3,7 @@
 // precisavam ligar a variável aos agentes por aqui), e excluir ficou à vista na linha (a
 // Eliane não achou onde excluir).
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { EllipsisVerticalIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -26,7 +26,7 @@ import { SettingsPage } from "@/components/ui/settings-page"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Aviso } from "../comum"
-import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagFonte, TagOrigem } from "./comum"
+import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagFonte, TagOrigem, useAlturaMaxima } from "./comum"
 import { cn } from "@/lib/utils"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea"
@@ -229,6 +229,8 @@ export function PaginaVariaveis() {
   const [ordem, setOrdem] = useState<{ id: string; dir: "asc" | "desc" } | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({})
   const [sel, setSel] = useState<string[]>([])
+  const areaDaTabela = useRef<HTMLDivElement>(null)
+  const alturaMaxima = useAlturaMaxima(areaDaTabela)
 
   useEffect(() => {
     const abrirSePediu = () => {
@@ -408,30 +410,27 @@ export function PaginaVariaveis() {
       const a = agentesDaVar(l.k, cfg)
       /* Sem uso não é problema: a variável fica pronta para quando algum agente precisar. */
       if (!a.length) return <span className="text-xs text-muted-foreground">Nenhum agente por enquanto</span>
-      const visiveis = a.slice(0, 2)
-      const resto = a.length - visiveis.length
+      const [primeiro, ...resto] = a
       return (
-        <span className="flex flex-wrap items-center gap-x-1 text-xs leading-4">
-          {visiveis.map((x, i) => (
-            <span key={x.id}>
-              <button
-                type="button"
-                className="rounded-sm text-left font-medium text-primary underline-offset-2 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                onClick={() => abrirModal({ tipo: "agente", id: x.id })}
-              >
-                {x.nome}
-              </button>
-              {i < visiveis.length - 1 || resto ? "," : ""}
-            </span>
-          ))}
-          {resto > 0 && (
+        <span className="flex flex-wrap items-center gap-1.5 text-xs leading-4">
+          <button
+            type="button"
+            className="min-w-0 truncate rounded-sm text-left font-medium text-primary underline-offset-2 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            onClick={() => abrirModal({ tipo: "agente", id: primeiro.id })}
+          >
+            {primeiro.nome}
+          </button>
+          {resto.length > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span tabIndex={0} className="cursor-help text-muted-foreground">
-                  mais {resto}
+                <span
+                  tabIndex={0}
+                  className="shrink-0 cursor-help rounded-full bg-foreground/8 px-1.5 text-[11px] leading-4 font-medium text-muted-foreground"
+                >
+                  +{resto.length}
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="max-w-70">{a.slice(2).map((x) => x.nome).join(", ")}</TooltipContent>
+              <TooltipContent className="max-w-70">{resto.map((x) => x.nome).join(", ")}</TooltipContent>
             </Tooltip>
           )}
         </span>
@@ -524,8 +523,10 @@ export function PaginaVariaveis() {
           aoConfigurar={() => abrirModal({ tipo: "variavel", k: null })}
         />
       </div>
+      <div ref={areaDaTabela} className="min-h-0">
       <DataTable
         layout="fixed"
+        style={alturaMaxima ? { maxHeight: alturaMaxima } : undefined}
         columns={colunas}
         rows={linhas}
         getRowId={(l) => l.k}
@@ -545,6 +546,7 @@ export function PaginaVariaveis() {
           </ActionBarButton>
         }
       />
+      </div>
     </SettingsPage>
   )
 }

@@ -26,7 +26,6 @@ import { Campo, CampoAprovacao, CampoFormato, CampoInstrucoes, CampoOnde, CampoQ
 import {
   AGENDA_PADRAO,
   APROVACAO,
-  DESC_FONTE,
   ESTADO_EXEC,
   FONTES,
   FORMATO_VAR,
@@ -680,12 +679,26 @@ function listaDeFontes(v: Pick<Variavel, "fontes"> | null): PriorityListItem[] {
   return [...atual.map((f) => item(f, true)), ...FONTES.filter((f) => !atual.includes(f)).map((f) => item(f, false))]
 }
 
-function CampoPadrao({ tipo, valor, onChange, travado }: { tipo: TipoVar; valor: string; onChange: (v: string) => void; travado: boolean }) {
+function CampoPadrao({
+  tipo,
+  valor,
+  onChange,
+  travado,
+  invalido,
+}: {
+  tipo: TipoVar
+  valor: string
+  onChange: (v: string) => void
+  travado: boolean
+  invalido?: boolean
+}) {
   const id = "var-padrao"
   if (tipo === "sim ou não") {
     return (
-      <NativeSelect id={id} className="w-full" disabled={travado} value={valor} onChange={(e) => onChange(e.target.value)}>
-        <NativeSelectOption value="">Deixar sem resposta</NativeSelectOption>
+      <NativeSelect id={id} className="w-full" disabled={travado} aria-invalid={invalido || undefined} value={valor} onChange={(e) => onChange(e.target.value)}>
+        <NativeSelectOption value="" disabled>
+          Escolha a resposta
+        </NativeSelectOption>
         <NativeSelectOption value="sim">Responder sim</NativeSelectOption>
         <NativeSelectOption value="não">Responder não</NativeSelectOption>
       </NativeSelect>
@@ -697,6 +710,7 @@ function CampoPadrao({ tipo, valor, onChange, travado }: { tipo: TipoVar; valor:
       type={tipo === "número" ? "number" : tipo === "data" ? "date" : "text"}
       step={tipo === "número" ? "any" : undefined}
       disabled={travado}
+      aria-invalid={invalido || undefined}
       placeholder={FORMATO_VAR[tipo].vazio || undefined}
       value={valor}
       onChange={(e) => onChange(e.target.value)}
@@ -852,22 +866,14 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
           <Checkbox checked={resto} disabled={travado} onCheckedChange={(x) => setResto(x === true)} />
           Se não achar em nenhum deles, procurar nos outros arquivos da licitação
         </Label>
-        {/* No teste, ninguém soube o que eram Manifestações e Arquivos de resultado. */}
-        <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 rounded-md bg-muted/60 px-3 py-2 text-[12px] leading-[17px]">
-          {FONTES.map((f) => (
-            <div key={f} className="contents">
-              <dt className="font-medium">{f}</dt>
-              <dd className="text-muted-foreground">{DESC_FONTE[f]}</dd>
-            </div>
-          ))}
-        </dl>
       </Campo>
       <Campo
         rotulo="Resposta quando o edital não falar disso"
         htmlFor="var-padrao"
         dica="Quando a resposta não é encontrada, precisamos mostrar algo para você entender que não houve resultado. É isso que os agentes recebem."
+        erro={erros.padrao}
       >
-        <CampoPadrao tipo={tipo} valor={padrao} onChange={setPadrao} travado={travado} />
+        <CampoPadrao tipo={tipo} valor={padrao} onChange={setPadrao} travado={travado} invalido={!!erros.padrao} />
       </Campo>
     </Moldura>
   )

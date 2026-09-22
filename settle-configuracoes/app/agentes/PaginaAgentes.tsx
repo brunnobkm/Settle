@@ -3,7 +3,7 @@
 // com as duas separadas. Aprovações também abre para quem não é administrador: quem
 // aprova nem sempre é quem configura.
 
-import { useEffect, useState, type MouseEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent } from "react"
 import { ArrowRightIcon, CheckIcon, EllipsisVerticalIcon, PauseIcon, PencilIcon, PlayIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -27,7 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 import { Aviso } from "../comum"
 import { useConfig } from "../estado"
-import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagGatilho } from "./comum"
+import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagGatilho, useAlturaMaxima } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
 import { useAgentes } from "./estado"
 import { dicaQuebra, ehAtivo, quandoTxt, textoLegivel, varsQuebradas } from "./regras"
@@ -291,6 +291,8 @@ function FilaDeAprovacoes() {
   const { cfg, aprovacoes, responderAprovacoes, abrirModal } = useAgentes()
   const [sel, setSel] = useState<string[]>([])
   const selecionadas = sel.filter((id) => aprovacoes.some((a) => a.id === id))
+  const areaDaTabela = useRef<HTMLDivElement>(null)
+  const alturaMaxima = useAlturaMaxima(areaDaTabela)
 
   const responder = (ids: string[], aprovou: boolean) => {
     const antes = selecionadas
@@ -384,8 +386,10 @@ function FilaDeAprovacoes() {
         <b>Aprovações</b> são as ações que os agentes querem fazer nas licitações, como mover de etapa ou marcar um
         responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder.
       </Aviso>
+      <div ref={areaDaTabela} className="min-h-0">
       <DataTable
         layout="fixed"
+        style={alturaMaxima ? { maxHeight: alturaMaxima } : undefined}
         columns={colunas}
         rows={aprovacoes}
         getRowId={(a) => a.id}
@@ -410,6 +414,7 @@ function FilaDeAprovacoes() {
           </>
         }
       />
+      </div>
     </div>
   )
 }
