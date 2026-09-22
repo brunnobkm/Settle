@@ -1,8 +1,8 @@
 // Campos da configuração de um agente e de uma variável, usados na criação e na edição.
-// Mudança principal em relação ao handoff: as escolhas deixaram de ser listas suspensas
-// com um texto que só aparecia depois de escolher. No teste, três pessoas não viram esse
-// texto. Agora cada opção mostra o que faz antes da escolha, e o erro de preenchimento
-// fica embaixo do próprio campo.
+// Mudança principal em relação ao handoff: nas listas suspensas, o texto de cada opção só
+// aparecia depois de escolher, e no teste três pessoas não o viram. Agora a explicação
+// fica dentro do menu, ao lado de cada opção, e o erro de preenchimento fica embaixo do
+// próprio campo.
 
 import { useRef, useState, type ReactNode } from "react"
 import { CircleAlertIcon } from "lucide-react"
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { TokenField, type TokenFieldHandle, type TokenFieldMenuApi } from "@/components/ui/token-field"
 
@@ -96,57 +96,53 @@ export function mostrarPrimeiroErro(raiz: HTMLElement | null) {
     const campo = raiz?.querySelector<HTMLElement>("[data-erro]")
     if (!campo) return
     campo.scrollIntoView({ behavior: "smooth", block: "center" })
-    campo.querySelector<HTMLElement>("input, textarea, [contenteditable=true], button[role=radio]")?.focus({ preventScroll: true })
+    campo.querySelector<HTMLElement>("input, textarea, [contenteditable=true], button[role=combobox]")?.focus({ preventScroll: true })
   })
 }
 
 /* ------------------------------------------------------------------ */
-/* Opções em cartão                                                    */
+/* Escolha com explicação no menu                                      */
 /* ------------------------------------------------------------------ */
 
-type Opcao<T extends string> = { v: T; t: ReactNode; d?: ReactNode }
+type Opcao<T extends string> = { v: T; t: string; d?: ReactNode }
 
-/** Grupo de opções em que cada uma mostra, antes da escolha, o que faz. */
-function Opcoes<T extends string>({
+/*
+  Lista suspensa com a explicação de cada opção dentro do menu. No teste, o problema era a
+  explicação aparecer só depois de escolher; aqui ela está à vista na hora da escolha, e o
+  formulário continua compacto (pedido do Brunno). O campo fechado mostra só o nome.
+*/
+function Escolha<T extends string>({
   rotuloId,
   valor,
   opcoes,
   onChange,
-  colunas = 1,
+  placeholder,
   invalido,
 }: {
   rotuloId: string
   valor: T | ""
   opcoes: Opcao<T>[]
   onChange: (v: T) => void
-  colunas?: 1 | 2
+  placeholder: string
   invalido?: boolean
 }) {
+  const escolhida = opcoes.find((o) => o.v === valor)
   return (
-    <RadioGroup
-      aria-labelledby={rotuloId}
-      aria-invalid={invalido || undefined}
-      value={valor}
-      onValueChange={(v) => onChange(v as T)}
-      className={cn("grid gap-2", colunas === 2 && "min-[620px]:grid-cols-2")}
-    >
-      {opcoes.map((o) => (
-        <Label
-          key={o.v}
-          className={cn(
-            "flex cursor-pointer items-start gap-2.5 rounded-lg border bg-card px-3 py-2.5 font-normal transition-colors hover:border-foreground/25",
-            valor === o.v && "border-primary bg-primary/5 hover:border-primary",
-            invalido && "border-destructive/50"
-          )}
-        >
-          <RadioGroupItem value={o.v} className="mt-0.5" />
-          <span className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-[13.5px] leading-5 font-semibold">{o.t}</span>
-            {o.d && <span className="text-[12.5px] leading-[18px] text-muted-foreground">{o.d}</span>}
-          </span>
-        </Label>
-      ))}
-    </RadioGroup>
+    <Select value={valor || undefined} onValueChange={(v) => onChange(v as T)}>
+      <SelectTrigger aria-labelledby={rotuloId} aria-invalid={invalido || undefined} className="w-full">
+        <SelectValue placeholder={placeholder}>{escolhida?.t}</SelectValue>
+      </SelectTrigger>
+      <SelectContent position="popper" className="max-h-96">
+        {opcoes.map((o) => (
+          <SelectItem key={o.v} value={o.v} className="py-2">
+            <span className="flex flex-col items-start gap-0.5 whitespace-normal">
+              <span className="text-[13.5px] leading-5 font-medium">{o.t}</span>
+              {o.d && <span className="text-[12.5px] leading-[17px] text-muted-foreground">{o.d}</span>}
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -158,12 +154,12 @@ export function CampoOnde({ valor, onChange, erro }: { valor: Onde | ""; onChang
   const ordem: Onde[] = ["habilitacao", "tecnica", "juridica", "checklist", "score", "nenhum"]
   return (
     <Campo rotulo="Onde o resultado aparece" id="campo-onde" dica="O lugar da licitação onde o que o agente produzir vai aparecer." erro={erro}>
-      <Opcoes
+      <Escolha
         rotuloId="campo-onde"
         valor={valor}
-        colunas={2}
         invalido={!!erro}
         onChange={onChange}
+        placeholder="Escolha onde o resultado aparece"
         opcoes={ordem.map((k) => ({ v: k, t: ONDE[k].t, d: ONDE[k].d }))}
       />
     </Campo>
@@ -195,11 +191,12 @@ export function CampoQuando({
   const mudar = (p: Partial<Agenda>) => onAgenda({ ...agenda, ...p })
   return (
     <Campo rotulo="Quando o agente trabalha" id="campo-quando" dica="O que faz o agente começar. Ele trabalha em cada licitação que passar por esse momento." erro={erro}>
-      <Opcoes
+      <Escolha
         rotuloId="campo-quando"
         valor={gatilho}
         invalido={!!erro}
         onChange={onGatilho}
+        placeholder="Escolha quando o agente trabalha"
         opcoes={(Object.keys(GATILHOS) as Momento[]).map((g) => ({ v: g, t: GATILHOS[g], d: DESC_GATILHO[g] }))}
       />
 
@@ -239,11 +236,11 @@ export function CampoQuando({
           <span id="campo-repeticao" className="text-[13px] font-semibold">
             Trabalhar de novo quando o edital mudar?
           </span>
-          <Opcoes
+          <Escolha
             rotuloId="campo-repeticao"
             valor={repete}
-            colunas={2}
             onChange={onRepete}
+            placeholder="Escolha"
             opcoes={(Object.keys(REPETICAO) as Repeticao[]).map((r) => ({ v: r, t: rep[r].t, d: rep[r].d }))}
           />
         </div>
@@ -287,11 +284,12 @@ export function CampoAprovacao({
         </>
       }
     >
-      <Opcoes
+      <Escolha
         rotuloId="campo-aprovacao"
         valor={valor}
         invalido={!!erro}
         onChange={onChange}
+        placeholder="Escolha se as ações precisam de aprovação"
         opcoes={(Object.keys(APROVACAO) as ModoAprovacao[]).map((k) => ({ v: k, t: APROVACAO[k].t, d: APROVACAO[k].d }))}
       />
     </Campo>
@@ -320,11 +318,11 @@ export function CampoFormato({
   }
   return (
     <Campo rotulo="Formato da resposta" id="var-tipo" dica="Como a resposta chega para os agentes que usarem esta variável.">
-      <Opcoes
+      <Escolha
         rotuloId="var-tipo"
         valor={valor}
-        colunas={2}
         onChange={onChange}
+        placeholder="Escolha o formato"
         opcoes={TIPOS_VAR.map((t) => ({ v: t, t: FORMATO_VAR[t].t, d: FORMATO_VAR[t].d }))}
       />
     </Campo>

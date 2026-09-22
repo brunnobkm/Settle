@@ -255,9 +255,10 @@ devs; a Nova versão da plataforma aponta para cá.
 - **Formulário do agente:**
   - O que o agente faz (antes "Instruções"), com a lista das variáveis usadas embaixo.
     Instrução só com a variável não passa: o agente precisa saber o que fazer com o dado.
-  - Onde o resultado aparece, Quando o agente trabalha e Aprovação das ações viraram
-    opções com a explicação à vista. Antes eram listas suspensas cujo texto só aparecia
-    depois da escolha, e três pessoas não o viram. "AI Widget" saiu do texto.
+  - Onde o resultado aparece, Quando o agente trabalha, Aprovação das ações e Formato da
+    resposta seguem como listas suspensas, mas a explicação de cada opção fica dentro do
+    menu, na hora da escolha. Antes o texto só aparecia depois de escolher, e três pessoas
+    não o viram. "AI Widget" saiu do texto.
   - "Nenhum lugar" diz no nome para que serve: "o agente só faz ações".
   - Repetição virou pergunta: "Trabalhar de novo quando o edital mudar?", com o que conta
     como mudança (retificação, impugnação, esclarecimento, nova data).
