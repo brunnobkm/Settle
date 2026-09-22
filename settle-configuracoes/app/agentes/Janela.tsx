@@ -28,6 +28,7 @@ import {
   APROVACAO,
   ESTADO_EXEC,
   FONTES,
+  DESC_FONTE,
   FORMATO_VAR,
   FORMATOS,
   GATILHOS,
@@ -675,7 +676,19 @@ function DetalheDoAgente({ id }: { id: string }) {
    que ainda não estão marcadas. */
 function listaDeFontes(v: Pick<Variavel, "fontes"> | null): PriorityListItem[] {
   const atual = v ? v.fontes : ["Edital e anexos"]
-  const item = (f: string, checked: boolean) => ({ id: f, label: f, checked })
+  /* Cada documento diz o que é: no teste de 21/09 ninguém sabia o que eram "Manifestações"
+     nem "Arquivos de resultado", e o nome sozinho não conta. */
+  const item = (f: string, checked: boolean) => ({
+    id: f,
+    name: f,
+    label: (
+      <span className="flex flex-col">
+        <span>{f}</span>
+        <span className="text-xs text-muted-foreground">{DESC_FONTE[f]}</span>
+      </span>
+    ),
+    checked,
+  })
   return [...atual.map((f) => item(f, true)), ...FONTES.filter((f) => !atual.includes(f)).map((f) => item(f, false))]
 }
 
