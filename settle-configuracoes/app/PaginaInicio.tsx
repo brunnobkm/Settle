@@ -112,8 +112,8 @@ export function PaginaInicio() {
           <Linha
             href="#abas"
             titulo="Abas das listas"
-            descricao="Abas de Recomendadas, Explorar licitações e Descartadas, cada uma com seus filtros"
-            valor={`${totalAbas} abas em 3 telas`}
+            descricao="Abas de Recomendadas e Descartadas, cada uma com seus filtros"
+            valor={`${totalAbas} abas em 2 telas`}
           />
           <Linha
             href="#motivos"
@@ -180,7 +180,7 @@ export function PaginaInicio() {
             Em andamento › menu {tecla} da coluna › <b>Editar etapas</b>
           </Atalho>
           <Atalho href="#abas">
-            Recomendadas, Explorar e Descartadas › {tecla} ao lado das abas › <b>Editar abas</b> (substitui o + e o menu
+            Recomendadas e Descartadas › {tecla} ao lado das abas › <b>Editar abas</b> (substitui o + e o menu
             de cada aba)
           </Atalho>
           <Atalho href="#motivos">

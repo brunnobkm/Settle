@@ -23,7 +23,7 @@ para a mesma página):
 | Configuração | Atalho no contexto |
 |---|---|
 | Etapas do funil | Em andamento, menu `⋯` da coluna, Editar etapas |
-| Abas das listas | Recomendadas, Explorar e Descartadas, `⋯` ao lado das abas, Editar abas |
+| Abas das listas | Recomendadas e Descartadas, `⋯` ao lado das abas, Editar abas |
 | Motivos | Modal de Descartar e de registrar perda, Gerenciar motivos |
 | Campos do card | Recomendadas, Ordenar, Personalizar campos do card |
 | Modelo de e-mail | Modal Compartilhar licitação, Editar modelo de e-mail |
@@ -129,7 +129,9 @@ assim:
 - **A aba é da organização, como já é hoje** (o usuário não cria abas). A novidade é o
   administrador criar em Configurações e definir nome e filtros padrão; a aba aparece igual
   para todo mundo. O card de "tab personalizada" voltou para Design.
-- Telas com abas: Recomendadas, Explorar licitações e Descartadas. Cada tela tem a sua lista.
+- Telas com abas: **Recomendadas e Descartadas**, as que já têm abas hoje. Cada tela tem a sua
+  lista. Explorar licitações não tem abas na plataforma (a aba "Órgãos favoritos" só existia
+  nos protótipos) e fica fora desta task (decidido em 21/09), para não criar mecânica nova.
 - **Aba é um conjunto de filtros salvo.** Os filtros disponíveis são os do botão Filtrar da
   tela, mais as variáveis da organização. Data é valor relativo ("Próximos 7 dias",
   "Hoje"), para a aba continuar certa com o passar do tempo.
