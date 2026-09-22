@@ -244,12 +244,16 @@ devs; a Nova versão da plataforma aponta para cá.
 - **Quem pode.** Configurar agentes e variáveis é de administrador. Aprovações abre para
   qualquer função, porque quem aprova nem sempre é quem configura: para quem não é admin, o
   item vira "Aprovações" e mostra só a fila.
-- **Como funciona:** card flutuante no canto inferior direito das duas páginas, com imagem,
-  título, descrição, "Ver como funciona" e fechar. O botão abre a explicação numa janela:
-  variável (o dado) → agente (a tarefa) → resultado (onde aparece), com um exemplo que
-  atravessa os três. Fechar o card ou ver a explicação esconde o card até a página ser recarregada; a cada
-  refresh ele volta. No teste,
-  ninguém separou agente de variável sem explicação.
+- **Como funciona:** card flutuante no canto inferior direito das duas páginas (imagem,
+  título, descrição, "Ver como funciona" e fechar), que volta a cada refresh. O botão abre
+  um passo a passo com um exemplo do começo ao fim (saber se o edital exige atestado):
+  1. a variável faz uma pergunta ao edital e, sozinha, só guarda a resposta;
+  2. o agente decide o que fazer com a resposta, e quando;
+  3. o resultado aparece dentro da licitação, na aba escolhida, com a fonte;
+  4. se o agente for mudar algo, pode pedir aprovação, que espera em Aprovações.
+  Cada passo tem a miniatura do que a pessoa vai encontrar na tela. Termina num resumo de
+  uma linha por conceito e nos atalhos Criar variável e Criar agente. No teste, ninguém
+  separou agente de variável sem explicação; o que funcionou nas sessões foi o exemplo.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
 - **Formulário do agente:**
