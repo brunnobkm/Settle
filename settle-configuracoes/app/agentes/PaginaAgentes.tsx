@@ -384,7 +384,8 @@ function FilaDeAprovacoes() {
     <div className="flex flex-col">
       <Aviso tom="marca" fechavel>
         <b>Aprovações</b> são as ações que os agentes querem fazer nas licitações, como mover de etapa ou marcar um
-        responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder.
+        responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder. Quem respondeu, o que
+        respondeu e quando fica registrado em <b>Auditoria</b>.
       </Aviso>
       <div ref={areaDaTabela} className="min-h-0">
       <DataTable

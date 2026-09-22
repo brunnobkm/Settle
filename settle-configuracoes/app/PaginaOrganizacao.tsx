@@ -106,8 +106,8 @@ export function PaginaAuditoria() {
   return (
     <SettingsPage>
       <SettingsPageDescription>
-        Hoje em Menu do usuário › Auditoria. Aqui aparecem só as alterações de configuração; as ações feitas nesta sessão
-        entram no topo.
+        Hoje em Menu do usuário › Auditoria. Aqui aparecem as alterações de configuração e as respostas às aprovações
+        dos agentes, uma linha por decisão; as ações feitas nesta sessão entram no topo.
       </SettingsPageDescription>
       <Tabela
         colunas={["Quando", "Quem", "Área", "Alteração"]}
