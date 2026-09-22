@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+import { Aviso } from "../comum"
 import { useConfig } from "../estado"
 import { ComoFunciona, TagGatilho } from "./comum"
 import { APROVACAO, type Aprovacao } from "./dados"
@@ -80,6 +81,10 @@ export function PaginaAgentes() {
           {aba === "agentes" && <Button onClick={() => abrirModal({ tipo: "modelos" })}>Adicionar agente</Button>}
         </div>
         <TabsContent value="agentes">
+          <Aviso tom="marca">
+            <b>Agentes</b> são tarefas que a Settle faz sozinha em cada licitação, como uma pessoa do time. Cada um usa
+            variáveis, trabalha no momento que você escolher e mostra o resultado dentro da licitação.
+          </Aviso>
           <ListaDeAgentes />
         </TabsContent>
         <TabsContent value="aprovacoes">
@@ -348,7 +353,11 @@ function FilaDeAprovacoes() {
   ]
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col">
+      <Aviso tom="marca">
+        <b>Aprovações</b> são as ações que os agentes querem fazer nas licitações, como mover de etapa ou marcar um
+        responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder.
+      </Aviso>
       <DataTable
         columns={colunas}
         rows={aprovacoes}

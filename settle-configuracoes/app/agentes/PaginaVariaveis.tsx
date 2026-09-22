@@ -24,6 +24,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { SettingsPage } from "@/components/ui/settings-page"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+import { Aviso } from "../comum"
 import { ComoFunciona, TagFonte, TagOrigem } from "./comum"
 import { EMPRESA, FORMATO_VAR, TIPOS_VAR, type Variavel } from "./dados"
 import { useAgentes } from "./estado"
@@ -314,6 +315,10 @@ export function PaginaVariaveis() {
           window.location.hash = "agentes"
         }}
       />
+      <Aviso tom="marca">
+        <b>Variáveis</b> são dados que a Settle tira de todo edital, sempre do mesmo jeito, como o CNPJ do órgão ou se o
+        edital exige atestado. Os agentes usam esses dados, e eles também podem virar campo do card e do e-mail.
+      </Aviso>
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
         <InputGroup className="max-w-90">
           <InputGroupAddon>
