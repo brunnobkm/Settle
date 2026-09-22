@@ -266,7 +266,8 @@ devs; a Nova versão da plataforma aponta para cá.
   (o que é variável, os momentos da licitação, onde o resultado aparece, o que é uma
   ação), e cada resposta é confirmada com o efeito dela ("o agente vai trabalhar quando a
   licitação chegar em Recomendadas").
-  No protótipo a conversa é roteirizada.
+  A primeira pergunta é o nome; depois vêm o que faz (ou a pergunta ao edital, na
+  variável) e o resto. No protótipo a conversa é roteirizada.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
 - **Formulário do agente:**
