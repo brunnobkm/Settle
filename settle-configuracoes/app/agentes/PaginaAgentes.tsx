@@ -60,7 +60,7 @@ export function PaginaAgentes() {
 
   if (!isAdmin) {
     return (
-      <SettingsPage width="full">
+      <SettingsPage width="full" className="pb-6">
         <SettingsPageDescription>A configuração dos agentes é feita por administradores.</SettingsPageDescription>
         <FilaDeAprovacoes />
       </SettingsPage>
@@ -68,7 +68,7 @@ export function PaginaAgentes() {
   }
 
   return (
-    <SettingsPage width="full">
+    <SettingsPage width="full" className="pb-6">
       <ComoFunciona
         aoCriarVariavel={() => (window.location.hash = "variaveis?nova=conversa")}
         aoCriarAgente={() => abrirModal({ tipo: "conversa-agente" })}
