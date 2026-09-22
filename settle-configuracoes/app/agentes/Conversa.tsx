@@ -40,6 +40,7 @@ import {
   type Repeticao,
   type TipoVar,
 } from "./dados"
+import { useConfig } from "../estado"
 import { useAgentes, type DadosDaVariavel, type Rascunho } from "./estado"
 import { Moldura, rascunhoNovo } from "./Janela"
 
@@ -247,6 +248,8 @@ function Conversa({
   onResponder,
   onPular,
   aoConfigurarManualmente,
+  respondeu,
+  oque,
 }: {
   titulo: string
   falas: Fala[]
@@ -258,8 +261,32 @@ function Conversa({
   onResponder: (valor: string, rotulo: string) => void
   onPular: () => void
   aoConfigurarManualmente: () => void
+  /** Já há resposta a perder. */
+  respondeu: boolean
+  oque: "o agente" | "a variável"
 }) {
+  const { confirmar } = useConfig()
   const [livre, setLivre] = useState("")
+  /*
+    Trocar para o formulário começa do zero, para simplificar o desenvolvimento: o que foi
+    respondido na conversa não vai junto. Por isso o aviso antes.
+  */
+  const irParaOFormulario = () => {
+    if (!respondeu) {
+      aoConfigurarManualmente()
+      return
+    }
+    confirmar({
+      titulo: "Continuar no formulário?",
+      corpo: (
+        <p>
+          O que você respondeu até aqui não vai junto: o formulário de {oque} começa em branco.
+        </p>
+      ),
+      acao: "Continuar no formulário",
+      ok: aoConfigurarManualmente,
+    })
+  }
   const fundo = useRef<HTMLDivElement>(null)
   useEffect(() => {
     fundo.current?.scrollIntoView({ behavior: "smooth", block: "end" })
@@ -273,7 +300,7 @@ function Conversa({
     <Moldura
       titulo={titulo}
       acoesDoTopo={
-        <Button variant="outline" size="sm" className="shadow-none" onClick={aoConfigurarManualmente}>
+        <Button variant="outline" size="sm" className="shadow-none" onClick={irParaOFormulario}>
           Configurar manualmente
         </Button>
       }
@@ -354,8 +381,8 @@ const ABERTURA_AGENTE: Fala[] = [
     texto: (
       <>
         Para criar um, preciso saber o nome dele, o que ele faz, de qual variável ele precisa, quando ele trabalha e
-        onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,{" "}
-        <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
+        onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,
+        dá para <b>Configurar manualmente</b> a qualquer momento, e aí o formulário começa em branco.
       </>
     ),
   },
@@ -386,8 +413,8 @@ const ABERTURA_VARIAVEL: Fala[] = [
     texto: (
       <>
         Para criar uma, preciso saber cinco coisas: o nome, a pergunta, o formato da resposta, onde procurar e o que
-        responder quando o edital não falar do assunto. Ao lado você vê a variável sendo montada.{" "}
-        <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
+        responder quando o edital não falar do assunto. Ao lado você vê a variável sendo montada. Se preferir, dá para{" "}
+        <b>Configurar manualmente</b> a qualquer momento, e aí o formulário começa em branco.
       </>
     ),
   },
@@ -656,6 +683,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
 
   const revisar = () => irParaTela({ tipo: "novo", rascunho: r })
   const n = Math.min(ids.indexOf(id) + 1 || ids.length, ids.length)
+  const respondeu = falas.length > ABERTURA_AGENTE.length
 
   return (
     <Conversa
@@ -666,7 +694,9 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       total={ids.length}
       onResponder={responder}
       onPular={pular}
-      aoConfigurarManualmente={revisar}
+      respondeu={respondeu}
+      oque="o agente"
+      aoConfigurarManualmente={() => irParaTela({ tipo: "modelos" })}
       fim={
         <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
           <p className="text-[13.5px] leading-5">
@@ -903,6 +933,7 @@ export function ConversaVariavel() {
     abrirModal({ tipo: "conversa-agente", varInicial: r.k })
   }
   const n = Math.min(ids.indexOf(id) + 1 || ids.length, ids.length)
+  const respondeu = falas.length > ABERTURA_VARIAVEL.length
 
   return (
     <Conversa
@@ -913,7 +944,9 @@ export function ConversaVariavel() {
       total={ids.length}
       onResponder={responder}
       onPular={pular}
-      aoConfigurarManualmente={revisar}
+      respondeu={respondeu}
+      oque="a variável"
+      aoConfigurarManualmente={() => irParaTela({ tipo: "variavel", k: null })}
       fim={
         <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
           <p className="text-[13.5px] leading-5">
