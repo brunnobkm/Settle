@@ -4,7 +4,7 @@
 // aprova nem sempre é quem configura.
 
 import { useEffect, useState, type MouseEvent } from "react"
-import { ArrowRightIcon, CheckIcon, PlayIcon, Trash2Icon, XIcon } from "lucide-react"
+import { ArrowRightIcon, CheckIcon, EllipsisVerticalIcon, PauseIcon, PencilIcon, PlayIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -13,8 +13,15 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { SettingsPage, SettingsPageDescription } from "@/components/ui/settings-page"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -181,9 +188,16 @@ function ListaDeAgentes() {
                     </Tooltip>
                   )}
                   {!ativo && (
-                    <Badge variant="secondary" className="rounded-full">
-                      Desligado
-                    </Badge>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="secondary" tabIndex={0} className="cursor-help rounded-full">
+                          Desligado
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-70">
+                        Não trabalha em nenhuma licitação. Ligue no menu de ações para ele voltar a trabalhar.
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </span>
                 <p className="line-clamp-2 text-[13px] leading-[19px] text-muted-foreground">
@@ -201,47 +215,55 @@ function ListaDeAgentes() {
                   </span>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2.5">
-                {ativo && !parado && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon-sm" className="shadow-none" aria-label={`Executar ${an.nome} agora em todas as licitações`} onClick={() => executarEmTodas(an.id)}>
-                        <PlayIcon />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-70">
-                      Executar agora: roda este agente em todas as licitações, sem esperar o momento dele
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex items-center">
-                      <Switch
-                        checked={ativo}
-                        aria-label={`${an.nome} ligado`}
-                        onCheckedChange={(v) => {
-                          alterarAgente(an.id, { ativo: v })
-                          toast(v ? `${an.nome} ligado` : `${an.nome} desligado. O que ele já produziu continua nas licitações.`)
-                        }}
-                      />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-70">
-                    {ativo
-                      ? `Ligado: trabalha sozinho ${quandoTxt(an).charAt(0).toLowerCase() + quandoTxt(an).slice(1)}. Desligue para ele parar nas próximas licitações; o que já produziu continua.`
-                      : "Desligado: não trabalha em nenhuma licitação. Ligue para ele voltar a trabalhar no momento configurado."}
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon-sm" className="border-destructive/40 text-destructive shadow-none hover:bg-destructive/8 hover:text-destructive" aria-label={`Excluir ${an.nome}`} onClick={() => excluirAgentes([an.id])}>
+              {/* Todas as ações num menu só: o card fica limpo, e o estado (Ligado, Parado)
+                  continua legível pelos selos ao lado do nome. */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" className="shrink-0 text-muted-foreground" aria-label={`Ações de ${an.nome}`}>
+                    <EllipsisVerticalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onSelect={() => abrirModal({ tipo: "agente", id: an.id })}>
+                      <PencilIcon />
+                      Abrir e editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={!ativo || parado} onSelect={() => executarEmTodas(an.id)}>
+                      <PlayIcon />
+                      <span className="flex flex-col">
+                        Executar agora
+                        <span className="text-xs text-muted-foreground">
+                          {parado ? "Revise a instrução antes" : "Em todas as licitações, sem esperar o momento dele"}
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        alterarAgente(an.id, { ativo: !ativo })
+                        toast(ativo ? `${an.nome} desligado. O que ele já produziu continua nas licitações.` : `${an.nome} ligado`)
+                      }}
+                    >
+                      {ativo ? <PauseIcon /> : <PlayIcon />}
+                      <span className="flex flex-col">
+                        {ativo ? "Desligar" : "Ligar"}
+                        <span className="text-xs text-muted-foreground">
+                          {ativo
+                            ? "Para nas próximas licitações; o que já produziu continua"
+                            : `Volta a trabalhar ${quandoTxt(an).charAt(0).toLowerCase() + quandoTxt(an).slice(1)}`}
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem variant="destructive" onSelect={() => excluirAgentes([an.id])}>
                       <Trash2Icon />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Excluir agente</TooltipContent>
-                </Tooltip>
-              </div>
+                      Excluir agente
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </li>
           )
         })}

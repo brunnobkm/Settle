@@ -268,6 +268,9 @@ devs; a Nova versão da plataforma aponta para cá.
   licitação chegar em Recomendadas").
   A primeira pergunta é o nome; depois vêm o que faz (ou a pergunta ao edital, na
   variável) e o resto. No protótipo a conversa é roteirizada.
+- **Ações do card num menu só** (ícone de mais opções, à direita): abrir e editar, executar
+  agora, ligar ou desligar e excluir. O estado continua legível nos selos ao lado do nome
+  (Desligado, Parado).
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
 - **Formulário do agente:**
