@@ -274,7 +274,7 @@ function FilaDeAprovacoes() {
   const colunas: DataTableColumn<Aprovacao>[] = [
     {
       id: "lic",
-      header: "Licitação", headerAddon: <InfoDaColuna focavel texto="A licitação em que o agente quer fazer a ação." />,
+      header: "Licitação", headerAddon: <InfoDaColuna focavel texto="A licitação em que o agente quer agir, com o órgão responsável." />,
       width: 186,
       wrap: true,
       cell: (a) => (
@@ -286,7 +286,7 @@ function FilaDeAprovacoes() {
     },
     {
       id: "acao",
-      header: "O que o agente quer fazer", headerAddon: <InfoDaColuna focavel texto="A ação que espera resposta. Nada acontece na licitação antes disso." />,
+      header: "O que o agente quer fazer", headerAddon: <InfoDaColuna focavel texto="A mudança que o agente vai fazer se você aprovar. Ex.: mover a licitação de Recomendadas para Em análise." />,
       width: 190,
       wrap: true,
       cell: (a) =>
@@ -303,14 +303,14 @@ function FilaDeAprovacoes() {
     },
     {
       id: "por",
-      header: "Por quê", headerAddon: <InfoDaColuna focavel texto="O motivo que o agente deu, a partir do que encontrou no edital." />,
+      header: "Por quê", headerAddon: <InfoDaColuna focavel texto="O motivo do pedido, tirado do que o agente encontrou no edital. Use para decidir se aprova ou recusa." />,
       width: 184,
       wrap: true,
       cell: (a) => <span className="text-[13px] text-muted-foreground">{a.por}</span>,
     },
     {
       id: "agente",
-      header: "Pedido por", headerAddon: <InfoDaColuna focavel texto="O agente que pediu e a aprovação configurada nele. Para ele parar de pedir, mude a aprovação no agente." />,
+      header: "Pedido por", headerAddon: <InfoDaColuna focavel texto="O agente que fez o pedido e como a aprovação dele está configurada. Ele pede porque está em Pedir aprovação para tudo, ou porque a ação é arriscada." />,
       width: 160,
       wrap: true,
       cell: (a) => {
@@ -334,10 +334,10 @@ function FilaDeAprovacoes() {
         )
       },
     },
-    { id: "quando", header: "Pedido em", headerAddon: <InfoDaColuna focavel texto="Quando o pedido chegou." />, width: 96, cell: (a) => <span className="text-[13px] text-muted-foreground">{a.quando}</span> },
+    { id: "quando", header: "Pedido em", headerAddon: <InfoDaColuna focavel texto="Quando o agente fez o pedido. O pedido continua esperando até alguém responder." />, width: 96, cell: (a) => <span className="text-[13px] text-muted-foreground">{a.quando}</span> },
     {
       id: "responder",
-      header: "Responder", headerAddon: <InfoDaColuna focavel texto="Aprovar faz a ação na hora. Recusar descarta o pedido, e a licitação continua como está." />,
+      header: "Responder", headerAddon: <InfoDaColuna focavel texto="Aprovar faz a mudança na licitação na hora. Recusar cancela o pedido, e a licitação fica como está." />,
       width: 160,
       cell: (a) => (
         <span className="flex items-center gap-1.5">
