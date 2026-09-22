@@ -25,7 +25,7 @@ import { SettingsPage } from "@/components/ui/settings-page"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Aviso } from "../comum"
-import { ComoFunciona, TagFonte, TagOrigem } from "./comum"
+import { ComoFunciona, InfoDaColuna, TagFonte, TagOrigem } from "./comum"
 import { EMPRESA, FORMATO_VAR, TIPOS_VAR, type Variavel } from "./dados"
 import { useAgentes } from "./estado"
 import { rascunhoNovo } from "./Janela"
@@ -42,16 +42,25 @@ type Coluna = {
   opcoes?: () => string[]
   largura?: number
   quebra?: boolean
+  /** O que a coluna representa: no "i" do cabeçalho e no topo do menu. */
+  info: string
 }
 
 const COLUNAS: Coluna[] = [
-  { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 210, quebra: true },
-  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 260, quebra: true },
-  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 110 },
-  { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 170, quebra: true },
-  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 140 },
-  { id: "usos", titulo: "Usada por", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 190, quebra: true },
-  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 110 },
+  { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 210, quebra: true,
+    info: "Como a variável aparece nas instruções dos agentes, no card e no e-mail." },
+  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 260, quebra: true,
+    info: "A pergunta que a Settle faz a todo edital para encontrar este dado." },
+  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 120,
+    info: "Como a resposta chega para os agentes: texto, número, sim ou não, ou data." },
+  { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 180, quebra: true,
+    info: "Os documentos em que a Settle procura, nesta ordem: começa pelo primeiro e só passa ao seguinte se não achar." },
+  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 170,
+    info: "A resposta que os agentes recebem quando o dado não está no edital." },
+  { id: "usos", titulo: "Usada por", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 200, quebra: true,
+    info: "Os agentes que usam esta variável. Mudar ou excluir a variável muda o que eles recebem." },
+  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 130,
+    info: `Settle: variável padrão, que você usa mas não edita. ${EMPRESA}: criada pela sua organização.` },
 ]
 
 type Filtros = Record<string, string | string[]>
@@ -121,6 +130,9 @@ export function PaginaVariaveis() {
     const marcadas = (filtros[c.id] as string[] | undefined) ?? []
     return (
       <>
+        {/* o mesmo texto do "i", para quem chega pelo teclado */}
+        <p className="max-w-60 px-2 pt-1.5 pb-2 text-xs leading-[17px] text-muted-foreground">{c.info}</p>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuCheckboxItem checked={ordem?.id === c.id && ordem.dir === "asc"} onSelect={() => setOrdem({ id: c.id, dir: "asc" })}>
             Ordenar de A a Z
@@ -256,6 +268,7 @@ export function PaginaVariaveis() {
       (c): DataTableColumn<Linha> => ({
         id: c.id,
         header: c.titulo,
+        headerAddon: <InfoDaColuna texto={c.info} />,
         width: c.largura,
         wrap: c.quebra,
         sorted: ordem?.id === c.id ? ordem.dir : false,
