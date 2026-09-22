@@ -304,7 +304,10 @@ devs; a Nova versão da plataforma aponta para cá.
   não encontrar abre o campo ali mesmo; Enter ou sair salva, Esc desfaz, e o toast traz
   Desfazer. "Onde procurar" continua só no formulário, porque ali a ordem também conta, e
   as variáveis da Settle não são editáveis. Excluir fica no menu de mais opções da linha.
-- **Largura:** Agentes e Variáveis ocupam a largura da tela; a tabela estica junto.
+- **Largura:** Agentes e Variáveis ocupam a largura da tela. As tabelas usam o layout fixo
+  do data-table (novo no design system): as larguras viram proporção, o título da coluna
+  quebra em mais de uma linha e não há rolagem lateral.
+- **Cada campo do formulário explica o que pede**, com o mesmo texto do "i" da coluna.
 - **Excluir variável** continua livre. Os agentes que dependiam dela aparecem **parados**,
   sem o botão de executar, até alguém revisar. No teste, o agente quebrado parecia ativo.
 - **Aprovações:** cada pedido diz o agente que pediu, a aprovação configurada nele e, na

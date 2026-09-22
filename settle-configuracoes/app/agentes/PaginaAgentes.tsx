@@ -385,6 +385,7 @@ function FilaDeAprovacoes() {
         responsável, e que esperam alguém aprovar. Nada muda na licitação até alguém responder.
       </Aviso>
       <DataTable
+        layout="fixed"
         columns={colunas}
         rows={aprovacoes}
         getRowId={(a) => a.id}

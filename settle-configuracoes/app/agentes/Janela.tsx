@@ -478,7 +478,11 @@ function EditarAgente({ id }: { id: string }) {
         ),
       }}
     >
-      <Campo rotulo="Nome do agente" htmlFor="editar-nome">
+      <Campo
+        rotulo="Nome do agente"
+        htmlFor="editar-nome"
+        dica="Aparece na lista de agentes e no topo do resultado, dentro da licitação."
+      >
         <Input id="editar-nome" value={r.nome} onChange={(e) => mudar({ nome: e.target.value })} />
       </Campo>
       {estruturado ? (
@@ -793,7 +797,12 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
         v && k && <AvisoDeImpacto k={k} />
       )}
 
-      <Campo rotulo="Nome da variável" htmlFor="var-nome" erro={erros.nome}>
+      <Campo
+        rotulo="Nome da variável"
+        htmlFor="var-nome"
+        dica="É o nome que você escolhe para identificar sua variável, e é por ele que você a encontra ao escrever o que um agente faz."
+        erro={erros.nome}
+      >
         <Input
           id="var-nome"
           disabled={travado}
@@ -811,7 +820,7 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
       <Campo
         rotulo="O que procurar no edital"
         htmlFor="var-prompt"
-        dica="Escreva como pediria para uma pessoa do time."
+        dica="É a instrução que você escreve para a gente entender o que precisa procurar para você. Escreva como pediria para uma pessoa do time."
         erro={erros.prompt}
       >
         <Textarea
@@ -833,7 +842,11 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
           setPadrao("")
         }}
       />
-      <Campo rotulo="Onde procurar" dica="Marque os documentos e arraste para mudar a ordem: a Settle procura primeiro no de cima." erro={erros.fontes}>
+      <Campo
+        rotulo="Onde procurar"
+        dica="As variáveis podem ser buscadas em vários lugares diferentes. Marque os documentos e arraste para mudar a ordem: a Settle procura primeiro no de cima e só passa ao seguinte se não achar."
+        erro={erros.fontes}
+      >
         <PriorityList items={fontes} onItemsChange={setFontes} disabled={travado} aria-label="Onde procurar" />
         <Label className="mt-1.5 cursor-pointer text-[13px] font-normal">
           <Checkbox checked={resto} disabled={travado} onCheckedChange={(x) => setResto(x === true)} />
@@ -852,7 +865,7 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
       <Campo
         rotulo="Resposta quando o edital não falar disso"
         htmlFor="var-padrao"
-        dica="É a resposta que os agentes recebem quando a Settle procura e não encontra."
+        dica="Quando a resposta não é encontrada, precisamos mostrar algo para você entender que não houve resultado. É isso que os agentes recebem."
       >
         <CampoPadrao tipo={tipo} valor={padrao} onChange={setPadrao} travado={travado} />
       </Campo>

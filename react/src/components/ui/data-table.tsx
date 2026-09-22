@@ -149,6 +149,12 @@ type DataTableProps<TRow> = Omit<React.ComponentProps<"div">, "children"> & {
   onColumnMove?: (fromId: string, toId: string) => void
   /** Ativa redimensionar colunas pela borda do cabeçalho. */
   onColumnResize?: (columnId: string, width: number) => void
+  /**
+   * "auto" (padrão): a coluna nunca fica menor que o conteúdo, e a tabela rola quando não
+   * cabe. "fixed": as larguras de `width` mandam, o conteúdo e o título quebram em mais de
+   * uma linha e a tabela acompanha a largura disponível, sem rolagem lateral.
+   */
+  layout?: "auto" | "fixed"
   minColumnWidth?: number
   /**
    * Última coluna "Adicionar coluna". Com content, o botão abre um popover com ele;
@@ -270,6 +276,7 @@ function DataTable<TRow>({
   onOpenRow,
   onColumnMove,
   onColumnResize,
+  layout = "auto",
   minColumnWidth = 60,
   addColumn,
   onAddRow,
@@ -364,7 +371,9 @@ function DataTable<TRow>({
             {column.icon}
           </span>
         )}
-        <span className="truncate">{column.header}</span>
+        <span className={cn(layout === "fixed" ? "min-w-0 break-words whitespace-normal" : "truncate")}>
+          {column.header}
+        </span>
         {column.headerAddon}
         {column.sorted && (
           <span className="flex shrink-0 text-muted-foreground [&_svg]:size-3.5">
@@ -388,6 +397,7 @@ function DataTable<TRow>({
     )
     const triggerClass = cn(
       "flex h-full min-w-0 flex-1 items-center gap-1.5 pr-4 text-left font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+      layout === "fixed" && "py-2",
       first && selectable ? "pl-1.5" : "pl-4"
     )
     return (
@@ -426,11 +436,13 @@ function DataTable<TRow>({
           }
         }}
         className={cn(
-          "group/head sticky top-0 z-10 h-11 border-b bg-background p-0 select-none",
+          "group/head sticky top-0 z-10 border-b bg-background p-0 align-bottom select-none",
+          // no modo fixo o título quebra em mais de uma linha, e a altura acompanha
+          layout === "fixed" ? "h-auto min-h-11" : "h-11",
           draggingColumn === column.id && "opacity-40"
         )}
       >
-        <div className="flex h-11 items-center hover:bg-muted">
+        <div className={cn("flex items-center hover:bg-muted", layout === "fixed" ? "min-h-11" : "h-11")}>
           {first && selectable && (
             <Checkbox
               aria-label={labels.selectAll}
@@ -622,7 +634,10 @@ function DataTable<TRow>({
       <div className="min-h-0 flex-1">
         <Table
           containerClassName="h-full overflow-auto"
-          className="w-max min-w-full border-separate border-spacing-0"
+          className={cn(
+            "border-separate border-spacing-0",
+            layout === "fixed" ? "w-full table-fixed" : "w-max min-w-full"
+          )}
         >
           <colgroup>
             {columns.map((column) => (
