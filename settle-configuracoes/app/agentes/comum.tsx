@@ -186,11 +186,14 @@ export function InfoDaColuna({ texto, focavel }: { texto: ReactNode; focavel?: b
 */
 export function BotaoDeCriar({
   rotulo,
+  oque,
   aoConversar,
   aoConfigurar,
   className,
 }: {
   rotulo: string
+  /** "uma variável", "um agente": entra nos textos das duas opções. */
+  oque: string
   aoConversar: () => void
   aoConfigurar: () => void
   className?: string
@@ -208,14 +211,14 @@ export function BotaoDeCriar({
           <MessageCircleIcon className="mt-0.5" />
           <span className="flex flex-col">
             <span className="font-medium">Criar conversando</span>
-            <span className="text-xs text-muted-foreground">Responda algumas perguntas e veja o resultado montado ao lado.</span>
+            <span className="text-xs text-muted-foreground">Converse com a nossa IA para ela ajudar você a criar {oque}.</span>
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={aoConfigurar} className="items-start gap-2.5 py-2">
           <SlidersHorizontalIcon className="mt-0.5" />
           <span className="flex flex-col">
             <span className="font-medium">Configurar manualmente</span>
-            <span className="text-xs text-muted-foreground">Preencha o formulário, do zero ou a partir de um modelo.</span>
+            <span className="text-xs text-muted-foreground">Preencha o formulário você mesmo, do zero ou a partir de um modelo.</span>
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>

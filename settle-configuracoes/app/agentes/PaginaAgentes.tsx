@@ -60,7 +60,7 @@ export function PaginaAgentes() {
 
   if (!isAdmin) {
     return (
-      <SettingsPage width="wide">
+      <SettingsPage width="full">
         <SettingsPageDescription>A configuração dos agentes é feita por administradores.</SettingsPageDescription>
         <FilaDeAprovacoes />
       </SettingsPage>
@@ -68,7 +68,7 @@ export function PaginaAgentes() {
   }
 
   return (
-    <SettingsPage width="wide">
+    <SettingsPage width="full">
       <ComoFunciona
         aoCriarVariavel={() => (window.location.hash = "variaveis?nova=conversa")}
         aoCriarAgente={() => abrirModal({ tipo: "conversa-agente" })}
@@ -87,6 +87,7 @@ export function PaginaAgentes() {
           {aba === "agentes" && (
             <BotaoDeCriar
               rotulo="Adicionar agente"
+              oque="um agente"
               aoConversar={() => abrirModal({ tipo: "conversa-agente" })}
               aoConfigurar={() => abrirModal({ tipo: "modelos" })}
             />
@@ -123,6 +124,7 @@ function ListaDeAgentes() {
         <p className="mt-1 text-[13px] text-muted-foreground">Crie o primeiro para a Settle trabalhar nas suas licitações.</p>
         <BotaoDeCriar
           rotulo="Adicionar agente"
+              oque="um agente"
           className="mt-3.5"
           aoConversar={() => abrirModal({ tipo: "conversa-agente" })}
           aoConfigurar={() => abrirModal({ tipo: "modelos" })}

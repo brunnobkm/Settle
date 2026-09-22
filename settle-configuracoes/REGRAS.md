@@ -300,6 +300,11 @@ devs; a Nova versão da plataforma aponta para cá.
   virou "O que procurar no edital"; cada fonte de "Onde procurar" diz o que tem dentro
   (Manifestações e Arquivos de resultado não eram conhecidos). A tabela troca "Agentes
   usando" por "Usada por", com os nomes; excluir fica à vista na linha.
+- **Editar na própria tabela:** clicar no valor de Nome, O que procurar, Formato ou Quando
+  não encontrar abre o campo ali mesmo; Enter ou sair salva, Esc desfaz, e o toast traz
+  Desfazer. "Onde procurar" continua só no formulário, porque ali a ordem também conta, e
+  as variáveis da Settle não são editáveis. Excluir fica no menu de mais opções da linha.
+- **Largura:** Agentes e Variáveis ocupam a largura da tela; a tabela estica junto.
 - **Excluir variável** continua livre. Os agentes que dependiam dela aparecem **parados**,
   sem o botão de executar, até alguém revisar. No teste, o agente quebrado parecia ativo.
 - **Aprovações:** cada pedido diz o agente que pediu, a aprovação configurada nele e, na

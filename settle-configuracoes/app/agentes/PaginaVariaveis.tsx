@@ -4,7 +4,8 @@
 // Eliane não achou onde excluir).
 
 import { useEffect, useState, type ReactNode } from "react"
-import { EllipsisVerticalIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { EllipsisVerticalIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { toast } from "sonner"
 
 import { ActionBarButton } from "@/components/ui/action-bar"
 import { Button } from "@/components/ui/button"
@@ -26,8 +27,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 import { Aviso } from "../comum"
 import { BotaoDeCriar, ComoFunciona, InfoDaColuna, TagFonte, TagOrigem } from "./comum"
-import { EMPRESA, FORMATO_VAR, TIPOS_VAR, type Variavel } from "./dados"
-import { useAgentes } from "./estado"
+import { cn } from "@/lib/utils"
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import { Textarea } from "@/components/ui/textarea"
+
+import { EMPRESA, FORMATO_VAR, TIPOS_VAR, type TipoVar, type Variavel } from "./dados"
+import { useAgentes, type DadosDaVariavel } from "./estado"
 import { rascunhoNovo } from "./Janela"
 import { agentesDaVar, fontesDe, type Config } from "./regras"
 
@@ -47,19 +52,19 @@ type Coluna = {
 }
 
 const COLUNAS: Coluna[] = [
-  { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 210, quebra: true,
+  { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 160, quebra: true,
     info: "Esse é o nome que você escolhe para identificar sua variável, que será usada nos agentes." },
-  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 260, quebra: true,
+  { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 220, quebra: true,
     info: "Essa é a instrução que você escreve para a gente entender o que precisa procurar para você." },
-  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 120,
+  { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 100,
     info: "Todo resultado é escrito em forma de texto, número ou escolha. Aqui você vê qual formato foi escolhido para a resposta desta variável." },
-  { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 180, quebra: true,
+  { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 150, quebra: true,
     info: "As variáveis podem ser buscadas em vários lugares diferentes. Aqui você vê em quais locais a resposta deve ser procurada, e em qual ordem." },
-  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 170,
+  { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 130,
     info: "Quando a resposta não é encontrada, precisamos mostrar algo para você entender que não houve resultado. Aqui você define o que vai ver quando isso acontecer." },
-  { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 200, quebra: true,
+  { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 160, quebra: true,
     info: "Saiba em quais agentes a resposta desta variável está sendo usada." },
-  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 130,
+  { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 100,
     info: "Algumas variáveis são criadas pela Settle e não podem ser alteradas; outras você mesmo cria. Aqui mostramos quais são suas e quais são nossas." },
 ]
 
@@ -88,13 +93,138 @@ function opcoesDa(c: Coluna, linhas: Linha[], cfg: Config) {
   return [...o].sort()
 }
 
+/*
+  Edição na própria tabela: um jeito rápido de corrigir um nome ou uma instrução sem abrir
+  a variável. Clicar no valor abre o campo; Enter ou sair salva, Esc desfaz. As variáveis
+  da Settle não são editáveis, e "Onde procurar" continua só no formulário, porque ali a
+  ordem também conta.
+*/
+function CelulaTexto({
+  valor,
+  rotulo,
+  vazio,
+  multilinha,
+  travado,
+  negrito,
+  onSalvar,
+}: {
+  valor: string
+  rotulo: string
+  vazio?: string
+  multilinha?: boolean
+  travado?: boolean
+  negrito?: boolean
+  onSalvar: (v: string) => void
+}) {
+  const [editando, setEditando] = useState(false)
+  const [texto, setTexto] = useState(valor)
+  const classe = negrito ? "text-[13px] font-semibold" : "text-xs leading-4 text-muted-foreground"
+
+  if (travado) return <span className={classe}>{valor || vazio}</span>
+
+  const confirmar = () => {
+    setEditando(false)
+    if (texto.trim() !== valor) onSalvar(texto.trim())
+  }
+  if (editando) {
+    const comuns = {
+      autoFocus: true,
+      "aria-label": rotulo,
+      value: texto,
+      onBlur: confirmar,
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setTexto(valor)
+          setEditando(false)
+        }
+        if (e.key === "Enter" && (!multilinha || e.metaKey || e.ctrlKey)) {
+          e.preventDefault()
+          confirmar()
+        }
+      },
+    }
+    return multilinha ? (
+      <Textarea {...comuns} rows={3} className="text-xs" onChange={(e) => setTexto(e.target.value)} />
+    ) : (
+      <Input {...comuns} className="h-7 text-[13px]" onChange={(e) => setTexto(e.target.value)} />
+    )
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setTexto(valor)
+        setEditando(true)
+      }}
+      className="-mx-1 flex w-[calc(100%+0.5rem)] items-start gap-1 rounded-sm px-1 py-0.5 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <span className={cn("min-w-0 flex-1", classe, !valor && "text-muted-foreground")}>{valor || vazio}</span>
+      <PencilIcon aria-hidden className="mt-0.5 size-3 shrink-0 text-muted-foreground opacity-0 group-hover/cell:opacity-100" />
+      <span className="sr-only">Editar {rotulo}</span>
+    </button>
+  )
+}
+
+function CelulaEscolha({
+  valor,
+  rotulo,
+  opcoes,
+  travado,
+  onSalvar,
+}: {
+  valor: string
+  rotulo: string
+  opcoes: { v: string; t: string }[]
+  travado?: boolean
+  onSalvar: (v: string) => void
+}) {
+  const [editando, setEditando] = useState(false)
+  const atual = opcoes.find((o) => o.v === valor)
+  if (travado) return <span className="text-[13px] text-muted-foreground">{atual?.t ?? valor}</span>
+  if (editando) {
+    return (
+      <NativeSelect
+        autoFocus
+        aria-label={rotulo}
+        size="sm"
+        className="w-full"
+        value={valor}
+        onBlur={() => setEditando(false)}
+        onChange={(e) => {
+          setEditando(false)
+          if (e.target.value !== valor) onSalvar(e.target.value)
+        }}
+      >
+        {opcoes.map((o) => (
+          <NativeSelectOption key={o.v} value={o.v}>
+            {o.t}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+    )
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setEditando(true)}
+      className="-mx-1 flex w-[calc(100%+0.5rem)] items-center gap-1 rounded-sm px-1 py-0.5 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <span className={cn("min-w-0 flex-1 text-[13px]", atual ? "text-muted-foreground" : "text-muted-foreground italic")}>
+        {atual?.t ?? valor}
+      </span>
+      <PencilIcon aria-hidden className="size-3 shrink-0 text-muted-foreground opacity-0 group-hover/cell:opacity-100" />
+      <span className="sr-only">Editar {rotulo}</span>
+    </button>
+  )
+}
+
 /** Pedido de criar vindo de outra página (Campos do card, e-mail, Como funciona). */
 function pediuNova() {
   return new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("nova")
 }
 
 export function PaginaVariaveis() {
-  const { cfg, abrirModal, excluirVars } = useAgentes()
+  const { cfg, abrirModal, excluirVars, salvarVar } = useAgentes()
   const [busca, setBusca] = useState("")
   const [ordem, setOrdem] = useState<{ id: string; dir: "asc" | "desc" } | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({})
@@ -111,6 +241,15 @@ export function PaginaVariaveis() {
     window.addEventListener("hashchange", abrirSePediu)
     return () => window.removeEventListener("hashchange", abrirSePediu)
   }, [abrirModal])
+
+  /** Salva uma alteração feita na própria tabela, com as mesmas regras do formulário. */
+  const editar = (l: Linha, patch: Partial<DadosDaVariavel>) => {
+    const e = salvarVar(l.k, {
+      nome: l.v.nome, tipo: l.v.tipo, prompt: l.v.prompt, fontes: l.v.fontes, resto: l.v.resto, padrao: l.v.padrao,
+      ...patch,
+    })
+    if (e) toast(Object.values(e)[0] as string)
+  }
 
   const todas: Linha[] = Object.entries(cfg.vars).map(([k, v]) => ({ k, v }))
   const q = busca.trim().toLowerCase()
@@ -210,16 +349,32 @@ export function PaginaVariaveis() {
 
   const celula: Record<string, (l: Linha) => ReactNode> = {
     nome: (l) => (
-      <button
-        type="button"
-        onClick={() => abrirModal({ tipo: "variavel", k: l.k })}
-        className="rounded-sm text-left text-[13px] font-semibold outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        {l.v.nome}
-      </button>
+      <CelulaTexto
+        negrito
+        rotulo={`Nome de ${l.v.nome}`}
+        valor={l.v.nome}
+        travado={l.v.settle}
+        onSalvar={(v) => editar(l, { nome: v })}
+      />
     ),
-    prompt: (l) => <span className="line-clamp-2 text-xs leading-4 text-muted-foreground">{l.v.prompt}</span>,
-    tipo: (l) => <span className="text-[13px] text-muted-foreground">{FORMATO_VAR[l.v.tipo].t}</span>,
+    prompt: (l) => (
+      <CelulaTexto
+        multilinha
+        rotulo={`O que procurar no edital, de ${l.v.nome}`}
+        valor={l.v.prompt}
+        travado={l.v.settle}
+        onSalvar={(v) => editar(l, { prompt: v })}
+      />
+    ),
+    tipo: (l) => (
+      <CelulaEscolha
+        rotulo={`Formato de ${l.v.nome}`}
+        valor={l.v.tipo}
+        travado={l.v.settle}
+        opcoes={TIPOS_VAR.map((t) => ({ v: t, t: FORMATO_VAR[t].t }))}
+        onSalvar={(v) => editar(l, { tipo: v as TipoVar, padrao: "" })}
+      />
+    ),
     fonte: (l) => (
       <span className="flex flex-wrap gap-1 py-0.5">
         {fontesDe(l.v).map((f) => (
@@ -227,7 +382,28 @@ export function PaginaVariaveis() {
         ))}
       </span>
     ),
-    padrao: (l) => <span className="text-xs text-muted-foreground">{l.v.padrao || "sem resposta"}</span>,
+    padrao: (l) =>
+      l.v.tipo === "sim ou não" ? (
+        <CelulaEscolha
+          rotulo={`Quando não encontrar, de ${l.v.nome}`}
+          valor={l.v.padrao}
+          travado={l.v.settle}
+          opcoes={[
+            { v: "", t: "sem resposta" },
+            { v: "sim", t: "sim" },
+            { v: "não", t: "não" },
+          ]}
+          onSalvar={(v) => editar(l, { padrao: v })}
+        />
+      ) : (
+        <CelulaTexto
+          rotulo={`Quando não encontrar, de ${l.v.nome}`}
+          valor={l.v.padrao}
+          vazio="sem resposta"
+          travado={l.v.settle}
+          onSalvar={(v) => editar(l, { padrao: v })}
+        />
+      ),
     usos: (l) => {
       const a = agentesDaVar(l.k, cfg)
       /* Sem uso não é problema: a variável fica pronta para quando algum agente precisar. */
@@ -281,20 +457,10 @@ export function PaginaVariaveis() {
     {
       id: "acoes",
       header: "Ações",
-      width: 88,
+      width: 52,
       align: "center",
       cell: (l) => (
-        <span className="flex items-center justify-center gap-0.5">
-          {!l.v.settle && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/8 hover:text-destructive" aria-label={`Excluir ${l.v.nome}`} onClick={() => excluirVars([l.k])}>
-                  <Trash2Icon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Excluir variável</TooltipContent>
-            </Tooltip>
-          )}
+        <span className="flex items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label={`Mais opções de ${l.v.nome}`}>
@@ -314,6 +480,17 @@ export function PaginaVariaveis() {
                   Criar agente com esta variável
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+              {!l.v.settle && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem variant="destructive" onSelect={() => excluirVars([l.k])}>
+                      <Trash2Icon />
+                      Excluir variável
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </span>
@@ -322,7 +499,7 @@ export function PaginaVariaveis() {
   ]
 
   return (
-    <SettingsPage width="full" className="max-w-340">
+    <SettingsPage width="full">
       <ComoFunciona
         aoCriarVariavel={() => abrirModal({ tipo: "conversa-variavel" })}
         aoCriarAgente={() => {
@@ -342,6 +519,7 @@ export function PaginaVariaveis() {
         </InputGroup>
         <BotaoDeCriar
           rotulo="Adicionar variável"
+          oque="uma variável"
           aoConversar={() => abrirModal({ tipo: "conversa-variavel" })}
           aoConfigurar={() => abrirModal({ tipo: "variavel", k: null })}
         />
