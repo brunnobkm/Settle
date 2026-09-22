@@ -505,7 +505,7 @@ export function PaginaVariaveis() {
           window.location.hash = "agentes"
         }}
       />
-      <Aviso tom="marca">
+      <Aviso tom="marca" id="variaveis">
         <b>Variáveis</b> são perguntas que a Settle faz a todo edital, como o CNPJ do órgão ou se exige atestado. Sozinha,
         uma variável não faz nada: é a resposta dela que os agentes usam.
       </Aviso>

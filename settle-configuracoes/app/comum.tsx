@@ -1,6 +1,6 @@
 // Peças pequenas usadas em mais de uma página de Configurações.
 
-import type { ComponentProps, ReactNode } from "react"
+import { useState, type ComponentProps, type ReactNode } from "react"
 import { InfoIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -26,13 +26,30 @@ export function avisarComDesfazer(mensagem: string, desfazer: () => void) {
   toast(mensagem, { action: { label: "Desfazer", onClick: desfazer } })
 }
 
-/** Aviso de consequência (o que acontece com o que já existe). tom "marca": no verde da Settle, para explicar uma seção. */
-export function Aviso({ children, className, tom = "neutro" }: { children: ReactNode; className?: string; tom?: "neutro" | "marca" }) {
+/**
+ * Aviso de consequência (o que acontece com o que já existe). tom "marca": no verde da Settle, para explicar uma seção.
+ * Com `id`, ganha um botão de fechar: quem fecha não vê de novo (fica guardado no navegador).
+ * Quem fechou ainda reencontra a explicação pelo card "Como funciona", que volta a cada recarregamento.
+ */
+export function Aviso({
+  children,
+  className,
+  tom = "neutro",
+  id,
+}: {
+  children: ReactNode
+  className?: string
+  tom?: "neutro" | "marca"
+  id?: string
+}) {
+  const [fechado, setFechado] = useState(() => (id ? avisoFechado(id) : false))
+  if (fechado) return null
   return (
     <Alert
       className={cn(
         "mb-3.5 px-3.5 py-2.75",
         tom === "marca" ? "border-primary/25 bg-primary/8 [&>svg]:text-primary" : "bg-muted",
+        id && "pr-11",
         className
       )}
     >
@@ -40,8 +57,41 @@ export function Aviso({ children, className, tom = "neutro" }: { children: React
       <AlertDescription className="text-[13px] leading-[19px] text-foreground [&_b]:font-semibold">
         {children}
       </AlertDescription>
+      {id && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Fechar explicação"
+          title="Fechar. Esta explicação não aparece de novo."
+          className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            guardarAvisoFechado(id)
+            setFechado(true)
+          }}
+        >
+          <XIcon />
+        </Button>
+      )}
     </Alert>
   )
+}
+
+const CHAVE_AVISO = "settle-configuracoes:aviso-fechado:"
+
+function avisoFechado(id: string) {
+  try {
+    return localStorage.getItem(CHAVE_AVISO + id) === "1"
+  } catch {
+    return false
+  }
+}
+
+function guardarAvisoFechado(id: string) {
+  try {
+    localStorage.setItem(CHAVE_AVISO + id, "1")
+  } catch {
+    // navegador sem armazenamento: o aviso some só nesta visita.
+  }
 }
 
 /** Botão só com ícone, com dica. perigo: fica vermelho no hover (excluir, arquivar). */
