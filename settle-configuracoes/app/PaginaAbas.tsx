@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { CopyIcon, PlusIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { SettingsBox, SettingsPage, SettingsPageDescription, SettingsPreviewHeader, SettingsSection } from "@/components/ui/settings-page"
+import { SettingsBox, SettingsPage, SettingsPreviewHeader, SettingsSection } from "@/components/ui/settings-page"
 import {
   SettingsList,
   SettingsListAdd,
@@ -119,10 +119,6 @@ export function PaginaAbas() {
 
   return (
     <SettingsPage className="max-w-245">
-      <SettingsPageDescription>
-        As abas que aparecem no topo das listas de licitações. Cada aba é um conjunto de filtros salvo pela
-        organização: o administrador cria, define os filtros padrão e ela aparece igual para todas as pessoas.
-      </SettingsPageDescription>
 
       <Tabs value={tela} onValueChange={(v) => setAbaTela(v as TelaAba)} className="mb-3.5">
         <TabsList aria-label="Tela" className="max-w-full justify-start overflow-x-auto">
