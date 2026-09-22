@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TokenChip } from "@/components/ui/token-field"
+import { USUARIO } from "@/settle/navegacao"
 
 import { TagGatilho } from "./comum"
 import {
@@ -314,6 +315,79 @@ function comRecomendada(opcoes: Opcao[], rec?: string): Opcao[] {
 }
 
 /* ------------------------------------------------------------------ */
+/* Aberturas                                                           */
+/* ------------------------------------------------------------------ */
+
+/* A conversa começa pelo nome da pessoa e explica o conceito antes da primeira pergunta:
+   o que é, como funciona na plataforma e o que vai ser perguntado. */
+const PRIMEIRO_NOME = USUARIO.name.split(" ")[0]
+
+const ABERTURA_AGENTE: Fala[] = [
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Olá, {PRIMEIRO_NOME}. Vou ajudar você a criar um agente. Mas antes vou explicar o que é um agente e como ele
+        funciona na plataforma.
+      </>
+    ),
+  },
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Um <b>agente</b> é uma tarefa que a Settle faz sozinha em cada licitação, como uma pessoa do time a quem você
+        delega um trabalho. Ele funciona assim: num <b>momento</b> que você escolhe (por exemplo, quando a licitação chega
+        em Recomendadas), ele lê os <b>dados do edital</b> de que precisa, faz o que você pediu e mostra o{" "}
+        <b>resultado dentro da licitação</b>.
+      </>
+    ),
+  },
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Para criar um, preciso saber quatro coisas: o que ele faz, de que dado do edital ele precisa, quando ele trabalha
+        e onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,{" "}
+        <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
+      </>
+    ),
+  },
+]
+
+const ABERTURA_VARIAVEL: Fala[] = [
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Olá, {PRIMEIRO_NOME}. Vou ajudar você a criar uma variável. Mas antes vou explicar o que é uma variável e como ela
+        funciona na plataforma.
+      </>
+    ),
+  },
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Uma <b>variável</b> é uma pergunta que a Settle faz a todo edital, sempre do mesmo jeito, como &quot;o edital
+        exige atestado?&quot;. Ela funciona assim: a Settle procura a resposta nos documentos de cada licitação e guarda
+        essa resposta. Sozinha, a variável não faz nada: os <b>agentes</b> usam a resposta para decidir o que fazer.
+      </>
+    ),
+  },
+  {
+    quem: "settle",
+    texto: (
+      <>
+        Para criar uma, preciso saber cinco coisas: o que você quer saber, o nome, o formato da resposta, onde procurar e
+        o que responder quando o edital não falar do assunto. Ao lado você vê a variável sendo montada.{" "}
+        <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
+      </>
+    ),
+  },
+]
+
+/* ------------------------------------------------------------------ */
 /* Agente                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -355,20 +429,7 @@ export function ConversaAgente() {
   const [pedido, setPedido] = useState("")
   const [varK, setVarK] = useState<string | null>(null)
   const [id, setId] = useState("pedido")
-  const [falas, setFalas] = useState<Fala[]>([
-    {
-      quem: "settle",
-      texto: (
-        <>
-          Um <b>agente</b> é uma tarefa que a Settle faz sozinha em cada licitação, como uma pessoa do time a quem você
-          delega um trabalho. Para criar um, preciso saber quatro coisas: <b>o que ele faz</b>, <b>de que dado do edital
-          ele precisa</b>, <b>quando ele trabalha</b> e <b>onde você vê o resultado</b>. Vou perguntar uma de cada vez, e
-          ao lado você vê o agente sendo montado. Se preferir, <b>Configurar manualmente</b> leva o que já respondeu para
-          o formulário.
-        </>
-      ),
-    },
-  ])
+  const [falas, setFalas] = useState<Fala[]>(ABERTURA_AGENTE)
 
   const temRep = !!(r.gatilho && REP_POR_GATILHO[r.gatilho])
   const ids = ["pedido", "variavel", "quando", ...(temRep ? ["repete"] : []), "onde", "aprovacao"]
@@ -649,19 +710,7 @@ export function ConversaVariavel() {
   const [pergunta, setPergunta] = useState("")
   const [tipoDefinido, setTipoDefinido] = useState(false)
   const [id, setId] = useState("pergunta")
-  const [falas, setFalas] = useState<Fala[]>([
-    {
-      quem: "settle",
-      texto: (
-        <>
-          Uma <b>variável</b> é uma pergunta que a Settle faz a todo edital, sempre do mesmo jeito, e cuja resposta ela
-          guarda para cada licitação. Sozinha ela não faz nada: os <b>agentes</b> usam a resposta para decidir. Vou te
-          perguntar cinco coisas, e ao lado você vê a variável sendo montada. <b>Configurar manualmente</b> leva o que já
-          respondeu para o formulário.
-        </>
-      ),
-    },
-  ])
+  const [falas, setFalas] = useState<Fala[]>(ABERTURA_VARIAVEL)
   const ids = ["pergunta", "nome", "formato", "fonte", "vazio"]
 
   const PASSOS: Record<string, Passo> = {
