@@ -170,8 +170,10 @@ export function quandoTxt(an: Pick<Agente, "gatilho" | "agenda" | "repete">) {
 
 /** Onde o resultado aparece, em frase curta: "Mostra em Habilitação", "Só faz ações". */
 export function ondeTxt(an: Pick<Agente, "onde">) {
-  if (!an.onde) return "Sem lugar definido"
-  return an.onde === "nenhum" ? "Só faz ações" : `Mostra em ${ONDE[an.onde].t}`
+  const onde = an.onde ?? []
+  if (!onde.length) return "Sem lugar definido"
+  if (onde.includes("nenhum")) return "Só faz ações"
+  return `Mostra em ${onde.map((k) => ONDE[k].t).join(" e ")}`
 }
 
 /** Quando, com o quê e onde, em três pedaços: "Quando chega em Recomendadas · usa 2 variáveis · mostra em Habilitação". */

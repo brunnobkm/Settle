@@ -533,9 +533,9 @@ function sugestoesAgora(agente: Agente | null | undefined, cfg: ReturnType<typeo
       r: (
         <>
           {quandoTxt(agente)}, ele {agente.texto ? "segue a instrução que você escreveu" : "aplica as regras configuradas"} e{" "}
-          {agente.onde && agente.onde !== "nenhum" ? (
+          {agente.onde?.length && !agente.onde.includes("nenhum") ? (
             <>
-              mostra o resultado em <b>{ONDE[agente.onde].t}</b>.
+              mostra o resultado em <b>{agente.onde.map((k) => ONDE[k].t).join(" e ")}</b>.
             </>
           ) : (
             "não mostra resultado: ele só faz ações na licitação."

@@ -276,6 +276,18 @@ devs; a Nova versão da plataforma aponta para cá.
   No protótipo isso já acontece: responder escreve uma linha por decisão em Auditoria, com a
   licitação, o agente e a ação. O que falta no produto é a persistência de verdade (sobrevive
   a recarregar, com retenção longa) e os filtros.
+- **Onde o resultado aparece: mais de um lugar.** O mesmo resultado pode fazer falta em mais
+  de uma aba (pedido da Isadora no teste), então o campo aceita vários. "Nenhum lugar" anda
+  sozinho: marcar ele desmarca os outros, porque é a ausência de bloco. Na conversa a pessoa
+  escolhe um lugar, e a revisão permite acrescentar os demais.
+- **Criação conversando:** o cartão da pergunta tem teto de altura, com a explicação e o
+  rodapé fixos e as opções rolando dentro. Assim a conversa acima continua visível mesmo
+  quando a pergunta tem muitas opções. **Não existe "Pular":** toda pergunta tem uma opção
+  que cobre o "não quero isso" ("Não usar variável", "Não, só uma vez"), e um Pular ao lado
+  dela seria uma segunda forma de dizer a mesma coisa. Toda variável citada na conversa é um
+  chip: o mouse em cima mostra o que ela procura e o clique abre a variável por cima, com
+  volta para a conversa. Se ela tiver sido excluída, o clique abre o formulário em branco com
+  o nome, para recriar.
 - **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro, com as mesmas
   ferramentas:
   - **Três tamanhos para a mesma conversa**, como no Notion: flutuante (ancorada no botão),

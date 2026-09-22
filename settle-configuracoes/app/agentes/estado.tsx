@@ -30,7 +30,7 @@ export type Rascunho = {
   linhas: { k: string; cond: string; pontos: number }[]
   gatilho: Momento | ""
   repete: Repeticao
-  onde: Onde | ""
+  onde: Onde[]
   agenda: Agenda
   aprovacao: ModoAprovacao | ""
 }
@@ -179,7 +179,7 @@ function useAgentesInterno() {
       /* No teste, duas pessoas puseram só a variável: o agente recebia a resposta e não sabia o que fazer com ela. */
       e.texto = "Diga o que o agente deve fazer com essa resposta. Ex.: avise quando for sim."
     }
-    if (r.formato === "texto" && !r.onde) e.onde = "Escolha onde o resultado aparece."
+    if (r.formato === "texto" && !r.onde.length) e.onde = "Marque pelo menos um lugar para o resultado aparecer."
     if (!r.gatilho) e.gatilho = "Escolha quando o agente trabalha."
     if (!r.aprovacao) e.aprovacao = "Escolha se as ações do agente precisam de aprovação."
     return e
@@ -202,7 +202,7 @@ function useAgentesInterno() {
           vars: [l.k], pontos: +l.pontos || 0, custo: c.vars[l.k].custo || 0.02, regraTexto: l.cond, analise: id,
         }))
         an = {
-          id, nome: r.nome.trim() || "Score sem nome", formato: "estruturado", destino: "score", propria: true, onde: "score",
+          id, nome: r.nome.trim() || "Score sem nome", formato: "estruturado", destino: "score", propria: true, onde: ["score"],
           desc: `${linhas.length} critérios, ${linhas.reduce((t, l) => t + (+l.pontos || 0), 0)} pontos no total`,
           gatilho, repete: r.repete, agenda: r.agenda, aprovacao: r.aprovacao as ModoAprovacao, execs: [], ativo: true,
           texto: regras.map((x) => `${x.nome}: ${x.regraTexto} Use {{${x.vars[0]}}}.`).join("\n"),
@@ -211,7 +211,7 @@ function useAgentesInterno() {
         const texto = r.texto.trim()
         const legivel = textoLegivel(texto, c.vars)
         an = {
-          id, nome: r.nome.trim() || "Agente sem nome", formato: "texto", onde: r.onde as Onde,
+          id, nome: r.nome.trim() || "Agente sem nome", formato: "texto", onde: r.onde,
           desc: legivel.length > 90 ? `${legivel.slice(0, 88)}…` : legivel,
           gatilho, repete: r.repete, agenda: r.agenda, aprovacao: r.aprovacao as ModoAprovacao, execs: [], ativo: true, texto,
         }
