@@ -861,7 +861,14 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
         dica="As variáveis podem ser buscadas em vários lugares diferentes. Marque os documentos e arraste para mudar a ordem: a Settle procura primeiro no de cima e só passa ao seguinte se não achar."
         erro={erros.fontes}
       >
-        <PriorityList items={fontes} onItemsChange={setFontes} disabled={travado} aria-label="Onde procurar" />
+        <PriorityList
+          items={fontes}
+          onItemsChange={setFontes}
+          disabled={travado}
+          aria-invalid={erros.fontes ? true : undefined}
+          className={erros.fontes ? "rounded-lg ring-3 ring-destructive/20" : undefined}
+          aria-label="Onde procurar"
+        />
         <Label className="mt-1.5 cursor-pointer text-[13px] font-normal">
           <Checkbox checked={resto} disabled={travado} onCheckedChange={(x) => setResto(x === true)} />
           Se não achar em nenhum deles, procurar nos outros arquivos da licitação
