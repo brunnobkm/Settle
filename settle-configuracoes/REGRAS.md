@@ -276,6 +276,13 @@ devs; a Nova versão da plataforma aponta para cá.
   No protótipo isso já acontece: responder escreve uma linha por decisão em Auditoria, com a
   licitação, o agente e a ação. O que falta no produto é a persistência de verdade (sobrevive
   a recarregar, com retenção longa) e os filtros.
+- **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro: botão flutuante no
+  canto inferior direito, com a janela ancorada nele (não é gaveta, não empurra a página).
+  A conversa abre dizendo em que área a pessoa está, responde sobre aquela área e sobre
+  agentes e variáveis, e leva direto para a criação conversacional de um ou de outro. O canto
+  inferior direito é dela: o card "Como funciona" fica acima do botão e sai da frente enquanto
+  a conversa está aberta. No protótipo as respostas são roteirizadas; o que não está no
+  roteiro ela diz que ainda não sabe, em vez de inventar.
 - **Como funciona:** card flutuante no canto inferior direito das duas páginas (imagem,
   título, descrição, "Ver como funciona" e fechar), que volta a cada refresh. O botão abre
   um passo a passo com um exemplo do começo ao fim (saber se o edital exige atestado):
