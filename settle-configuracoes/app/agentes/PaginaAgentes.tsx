@@ -62,10 +62,6 @@ export function PaginaAgentes() {
 
   return (
     <SettingsPage width="wide">
-      <SettingsPageDescription>
-        Agentes são tarefas que a Settle faz sozinha em cada licitação, usando as variáveis. O que eles produzem aparece
-        dentro da licitação.
-      </SettingsPageDescription>
       <ComoFunciona
         aoCriarVariavel={() => (window.location.hash = "variaveis?nova=1")}
         aoCriarAgente={() => abrirModal({ tipo: "novo", rascunho: rascunhoNovo("texto", false) })}
@@ -333,11 +329,6 @@ function FilaDeAprovacoes() {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[13px] leading-[19px] text-muted-foreground">
-        Ações que os agentes querem fazer nas licitações e esperam alguém aprovar. Elas aparecem aqui porque o agente
-        está configurado para pedir aprovação; nada acontece na licitação até alguém responder. Selecione várias para
-        responder de uma vez.
-      </p>
       <DataTable
         columns={colunas}
         rows={aprovacoes}
