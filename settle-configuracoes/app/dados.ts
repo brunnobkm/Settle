@@ -15,7 +15,7 @@ export const ADMINS = ["Brunno Krier", "Larissa Almeida", "Bruno Ortiz", "Andre 
 
 /* ======================= ROTAS ======================= */
 
-export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "equipe" | "permissoes" | "auditoria" | "agentes" | "variaveis"
+export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "equipe" | "permissoes" | "auditoria" | "agentes" | "variaveis" | "resultados"
 
 export const NOMES: Record<Rota, string> = {
   inicio: "Configurações",
@@ -29,10 +29,11 @@ export const NOMES: Record<Rota, string> = {
   auditoria: "Auditoria",
   agentes: "Agentes",
   variaveis: "Variáveis",
+  resultados: "Resultado na licitação",
 }
 
 /* Agentes fica de fora: quem não é administrador entra para responder Aprovações. */
-export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria", "variaveis"]
+export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria", "variaveis", "resultados"]
 
 /* ======================= ETAPAS ======================= */
 

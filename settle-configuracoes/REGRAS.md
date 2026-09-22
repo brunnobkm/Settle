@@ -288,6 +288,14 @@ devs; a Nova versão da plataforma aponta para cá.
   chip: o mouse em cima mostra o que ela procura e o clique abre a variável por cima, com
   volta para a conversa. Se ela tiver sido excluída, o clique abre o formulário em branco com
   o nome, para recriar.
+- **Resultado na licitação (página de apresentação).** Terceira página do grupo
+  Inteligência, abaixo de Variáveis. Reúne os formatos do bloco que um agente produz dentro
+  da licitação, com dados de licitação de verdade: resposta curta, lista com situação, nota,
+  tabela de comparação, parecer com trechos, prazo em destaque, ação esperando aprovação, e
+  os três estados (trabalhando, não encontrou, não deu certo). Termina na anatomia do bloco.
+  É só para o time escolher o formato ao criar um agente: **nada ali é configurável**. O
+  componente se chama **AI Widget** no design system, e esse nome fica entre nós: no teste
+  ele precisou de analogia para ser entendido, então na interface é "o resultado do agente".
 - **Settle AI.** A mesma IA da plataforma acompanha a pessoa aqui dentro, com as mesmas
   ferramentas:
   - **Três tamanhos para a mesma conversa**, como no Notion: flutuante (ancorada no botão),
