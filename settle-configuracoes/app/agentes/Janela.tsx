@@ -850,9 +850,9 @@ function FormVariavel({ k, inicial }: { k: string | null; inicial?: DadosDaVaria
         </dl>
       </Campo>
       <Campo
-        rotulo="Resposta quando o dado não estiver no edital"
+        rotulo="Resposta quando o edital não falar disso"
         htmlFor="var-padrao"
-        dica="É o que os agentes recebem quando a Settle procura e não encontra."
+        dica="É a resposta que os agentes recebem quando a Settle procura e não encontra."
       >
         <CampoPadrao tipo={tipo} valor={padrao} onChange={setPadrao} travado={travado} />
       </Campo>

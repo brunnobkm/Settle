@@ -238,6 +238,12 @@ Versão final da área, com as melhorias do teste de usabilidade de 21/09 (cinco
 O handoff (`settle-agentes/plataforma`, seção Handoff da sidebar) continua como está, para os
 devs; a Nova versão da plataforma aponta para cá.
 
+- **Vocabulário (uma palavra por coisa).** **Variável** é a pergunta que a Settle faz a todo
+  edital; **resposta** é o que ela traz em cada licitação; **agente** é a tarefa que usa
+  essa resposta; **resultado** é o que o agente produz e aparece na licitação; **ação** é o
+  que o agente muda na licitação (mover, marcar, descartar). Não usar "dado" nem
+  "informação" como sinônimo de variável ou de resposta. O agente **pausa e retoma**, não
+  liga e desliga; quando a variável que ele usa some, ele fica **parado**.
 - **Onde fica.** Agentes e Variáveis no grupo Inteligência. **Aprovações é uma seção de
   Agentes**: a fila existe por causa da aprovação configurada em cada agente, e separadas
   ninguém ligava uma coisa à outra. O contador do item Agentes é o de Aprovações pendentes.

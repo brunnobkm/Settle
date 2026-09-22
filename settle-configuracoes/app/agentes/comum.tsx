@@ -232,7 +232,7 @@ export function Dica({ children, className, id }: { children: ReactNode; classNa
   )
 }
 
-/* A imagem do card: os três passos em miniatura (dado, tarefa, resultado), no tema da
+/* A imagem do card: os três passos em miniatura (pergunta, tarefa, resultado), no tema da
    tela. Desenhada aqui para não depender de arquivo de imagem. */
 function Ilustracao() {
   return (
@@ -336,7 +336,7 @@ const PASSOS: { t: string; d: ReactNode; mini: ReactNode }[] = [
     d: (
       <>
         Quando o agente trabalha, o que ele produziu aparece <b>na aba que você escolheu</b>, com o nome do agente e de
-        onde saiu a informação no edital.
+        onde saiu a resposta no edital.
       </>
     ),
     mini: (

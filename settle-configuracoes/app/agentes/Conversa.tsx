@@ -340,7 +340,7 @@ const ABERTURA_AGENTE: Fala[] = [
       <>
         Um <b>agente</b> é uma tarefa que a Settle faz sozinha em cada licitação, como uma pessoa do time a quem você
         delega um trabalho. Ele funciona assim: num <b>momento</b> que você escolhe (por exemplo, quando a licitação chega
-        em Recomendadas), ele lê os <b>dados do edital</b> de que precisa, faz o que você pediu e mostra o{" "}
+        em Recomendadas), ele lê as <b>respostas das variáveis</b> de que precisa, faz o que você pediu e mostra o{" "}
         <b>resultado dentro da licitação</b>.
       </>
     ),
@@ -349,7 +349,7 @@ const ABERTURA_AGENTE: Fala[] = [
     quem: "settle",
     texto: (
       <>
-        Para criar um, preciso saber o nome dele, o que ele faz, de que dado do edital ele precisa, quando ele trabalha e
+        Para criar um, preciso saber o nome dele, o que ele faz, de qual variável ele precisa, quando ele trabalha e
         onde você vê o resultado. Vou perguntar uma de cada vez, e ao lado você vê o agente sendo montado. Se preferir,{" "}
         <b>Configurar manualmente</b> leva o que já respondeu para o formulário.
       </>
@@ -471,17 +471,16 @@ export function ConversaAgente() {
       id: "variavel",
       explica: (
         <>
-          Para fazer isso, o agente precisa de uma informação que está no edital. Essa informação vem de uma{" "}
-          <b>variável</b>: uma pergunta que a Settle faz a todo edital, sempre igual, e cuja resposta ela guarda. Ex.: a
-          variável <i>Atestado exigido</i> responde sim ou não em cada licitação. O agente lê essa resposta e decide o que
-          fazer.
+          Para fazer isso, o agente precisa de uma resposta que está no edital, e quem traz essa resposta é uma{" "}
+          <b>variável</b>: uma pergunta que a Settle faz a todo edital, sempre igual. Ex.: a variável{" "}
+          <i>Atestado exigido</i> responde sim ou não em cada licitação. O agente lê essa resposta e decide o que fazer.
         </>
       ),
       pergunta: sugerida
-        ? `Para isso, o agente precisa de um dado do edital. Uso a variável "${cfg.vars[sugerida].nome}"?`
-        : "Para isso, o agente precisa de um dado do edital. Crio uma variável nova?",
+        ? `Para isso, o agente precisa de uma resposta do edital. Uso a variável "${cfg.vars[sugerida].nome}"?`
+        : "Para isso, o agente precisa de uma resposta do edital. Crio uma variável nova?",
       ajuda: "A variável é a pergunta que a Settle faz a todo edital. O agente usa a resposta dela.",
-      outra: "Qual dado o agente precisa? Ex.: se exige visita técnica",
+      outra: "O que o agente precisa saber? Ex.: se exige visita técnica",
       opcoes: [
         ...(sugerida
           ? [{ v: `usar:${sugerida}`, t: `Usar "${cfg.vars[sugerida].nome}"`, d: `${FORMATO_VAR[cfg.vars[sugerida].tipo].t} · ${cfg.vars[sugerida].prompt}`, rec: true }]
@@ -529,7 +528,7 @@ export function ConversaAgente() {
       explica: (
         <>
           Onde você vai ver o resultado. O que o agente produz aparece <b>dentro da licitação</b>, num bloco com o nome
-          dele e de onde tirou a informação. Escolha a aba em que esse bloco faz mais sentido. Se o agente só faz ações,
+          dele e de onde tirou a resposta no edital. Escolha a aba em que esse bloco faz mais sentido. Se o agente só faz ações,
           como mover a licitação, não há bloco: o que ele fez fica no histórico dele.
         </>
       ),
@@ -661,7 +660,7 @@ export function ConversaAgente() {
       fim={
         <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
           <p className="text-[13.5px] leading-5">
-            Pronto. O agente está montado ao lado: ele faz o que você pediu, usando o dado do edital, no momento que você
+            Pronto. O agente está montado ao lado: ele faz o que você pediu, usando a resposta da variável, no momento que você
             escolheu, e mostra o resultado no lugar certo. Revise os campos e crie: nada é criado antes disso.
           </p>
           <div className="flex gap-2">
@@ -789,7 +788,7 @@ export function ConversaVariavel() {
       id: "fonte",
       explica: (
         <>
-          Onde a Settle procura primeiro. Cada licitação tem vários documentos, e a informação costuma estar num deles.
+          Onde a Settle procura primeiro. Cada licitação tem vários documentos, e a resposta costuma estar num deles.
           Começar pelo certo deixa a resposta mais precisa. Se não achar ali, ela procura nos outros arquivos.
         </>
       ),
@@ -809,7 +808,7 @@ export function ConversaVariavel() {
           sem resposta. Ex.: se o edital não fala de visita técnica, normalmente é porque não exige.
         </>
       ),
-      pergunta: "E se o dado não estiver no edital, o que responder?",
+      pergunta: "E se o edital não falar disso, o que responder?",
       ajuda: "É o que os agentes recebem quando a Settle procura e não encontra.",
       outra: "Escreva a resposta",
       opcoes:
