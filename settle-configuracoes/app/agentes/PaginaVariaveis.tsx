@@ -48,19 +48,19 @@ type Coluna = {
 
 const COLUNAS: Coluna[] = [
   { id: "nome", titulo: "Nome", tipo: "texto", valor: (l) => l.v.nome, largura: 210, quebra: true,
-    info: "O nome da variável. É ele que você escolhe ao escrever o que um agente faz. Ex.: Atestado exigido." },
+    info: "Esse é o nome que você escolhe para identificar sua variável, que será usada nos agentes." },
   { id: "prompt", titulo: "O que procurar no edital", tipo: "texto", valor: (l) => l.v.prompt || "", largura: 260, quebra: true,
-    info: "A pergunta que a Settle faz a todo edital para achar este dado. Ex.: o edital exige atestado de capacidade técnica?" },
+    info: "Essa é a instrução que você escreve para a gente entender o que precisa procurar para você." },
   { id: "tipo", titulo: "Formato", tipo: "opcoes", valor: (l) => FORMATO_VAR[l.v.tipo].t, opcoes: () => TIPOS_VAR.map((t) => FORMATO_VAR[t].t), largura: 120,
-    info: "O tipo de resposta que a variável devolve. Ex.: Sim ou não devolve só sim ou não; Texto devolve o trecho do edital." },
+    info: "Todo resultado é escrito em forma de texto, número ou escolha. Aqui você vê qual formato foi escolhido para a informação extraída." },
   { id: "fonte", titulo: "Onde procurar", tipo: "multi", valor: (l) => fontesDe(l.v), largura: 180, quebra: true,
-    info: "Em quais documentos da licitação a Settle procura a resposta, e em que ordem. Ex.: primeiro no edital e, se não achar, no termo de referência." },
+    info: "As variáveis podem ser buscadas em vários lugares diferentes. Aqui você vê em quais locais o dado deve ser procurado, e em qual ordem." },
   { id: "padrao", titulo: "Quando não encontrar", tipo: "texto", valor: (l) => l.v.padrao || "", largura: 170,
-    info: "A resposta usada quando o dado não está em nenhum documento. Ex.: não, ou não encontrado. Se ficar sem resposta, os agentes recebem o campo vazio." },
-  { id: "usos", titulo: "Usada por", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 200, quebra: true,
-    info: "Os agentes que usam esta variável. Se você mudar ou excluir a variável, eles são afetados. Nenhum agente quer dizer que ela está pronta, mas ninguém usa ainda." },
+    info: "Quando uma informação não é encontrada, precisamos mostrar algo para você entender que não houve resultado. Aqui você define o que vai ver quando o dado não for encontrado." },
+  { id: "usos", titulo: "Quais agentes usam", tipo: "multi", valor: (l, cfg) => agentesDaVar(l.k, cfg).map((a) => a.nome), largura: 200, quebra: true,
+    info: "Saiba em quais agentes o dado desta variável está sendo usado." },
   { id: "origem", titulo: "Quem criou", tipo: "opcoes", valor: (l) => (l.v.settle ? "Settle" : EMPRESA), largura: 130,
-    info: `Quem criou a variável. As da Settle vêm prontas: você usa, mas não edita. As da ${EMPRESA} foram criadas pela sua equipe e podem ser editadas.` },
+    info: "Algumas variáveis são criadas pela Settle e não podem ser alteradas; outras você mesmo cria. Aqui mostramos quais são suas e quais são nossas." },
 ]
 
 type Filtros = Record<string, string | string[]>
