@@ -262,6 +262,10 @@ devs; a Nova versão da plataforma aponta para cá.
   por campo (a regra materializada, requisito da Alice). No agente, a variável nasce dentro
   da conversa: a Settle sugere uma que já existe ou cria uma nova. No fim, "Revisar e
   criar" abre o formulário preenchido; nada é criado antes. O Score fica só no formulário.
+  A conversa ensina enquanto pergunta: cada pergunta vem com a explicação do conceito
+  (o que é variável, os momentos da licitação, onde o resultado aparece, o que é uma
+  ação), e cada resposta é confirmada com o efeito dela ("o agente vai trabalhar quando a
+  licitação chegar em Recomendadas").
   No protótipo a conversa é roteirizada.
 - **Cada agente em uma frase:** "Quando chega em Recomendadas · usa 1 variável · mostra em
   Habilitação", no card da lista e no topo do agente.
