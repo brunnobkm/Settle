@@ -46,7 +46,7 @@ import {
   PaginaEquipe,
   PaginaPermissoes,
 } from "./PaginaOrganizacao";
-import { PaginaResultados } from "./PaginaResultados";
+import { PaginaArtefato } from "./PaginaArtefato";
 import { ChatLateral, ChatProvider, SettleAI } from "./SettleAI";
 
 // "Voltar para a plataforma" leva para Recomendadas
@@ -63,7 +63,7 @@ const PAGINAS: Record<Rota, ComponentType> = {
   equipe: PaginaEquipe,
   permissoes: PaginaPermissoes,
   auditoria: PaginaAuditoria,
-  resultados: PaginaResultados,
+  artefato: PaginaArtefato,
   agentes: PaginaAgentes,
   variaveis: PaginaVariaveis,
 };
@@ -154,7 +154,7 @@ function Configuracoes() {
               /* o contador é da fila de Aprovações, que mora dentro de Agentes */
               { ...item("agentes", SparkleIcon), count: aprovacoes.length },
               item("variaveis", VariableIcon),
-              item("resultados", LayoutPanelTopIcon),
+              item("artefato", LayoutPanelTopIcon),
             ],
           },
         ]

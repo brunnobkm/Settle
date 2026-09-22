@@ -229,15 +229,15 @@ const POR_ROTA: Record<Rota, { resumo: string; sugestoes: Sugestao[] }> = {
     resumo: "Esta é a área das variáveis: as perguntas que eu faço a todo edital.",
     sugestoes: [SOBRE_VARIAVEL, CRIAR_VARIAVEL, PARADO, SOBRE_AGENTE],
   },
-  resultados: {
-    resumo: "Esta página mostra os formatos do bloco que um agente produz dentro da licitação. É uma galeria: nada aqui é configurável.",
+  artefato: {
+    resumo: "Esta página mostra o artefato: o bloco que um agente produz dentro da licitação. É uma apresentação, nada aqui é configurável.",
     sugestoes: [
       {
-        p: "Como escolho o formato do resultado?",
+        p: "O que define o conteúdo do artefato?",
         r: (
           <>
-            Pela instrução do agente: se ela pede uma resposta curta, o bloco sai curto; se pede conferir item a item,
-            sai uma lista. O que você escolhe no formulário é <b>onde</b> esse bloco aparece, não o formato dele.
+            A instrução do agente: se ela pede uma resposta curta, o artefato sai curto; se pede conferir item a item,
+            sai uma lista. O que você escolhe no formulário é <b>onde</b> ele aparece, não o que vem dentro.
           </>
         ),
       },

@@ -14,7 +14,7 @@
 // preencher o Score conversando).
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { ArrowUpIcon, SparklesIcon } from "lucide-react"
+import { ArrowLeftIcon, ArrowUpIcon, SparklesIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -94,11 +94,14 @@ function CartaoDaPergunta({
   n,
   total,
   onResponder,
+  onVoltar,
 }: {
   passo: Passo
   n: number
   total: number
   onResponder: (valor: string, rotulo: string) => void
+  /** Sem passo anterior, não aparece. */
+  onVoltar?: () => void
 }) {
   const [sel, setSel] = useState<string | null>(null)
   const [outra, setOutra] = useState("")
@@ -109,10 +112,10 @@ function CartaoDaPergunta({
   }
   const pode = sel === "__outra" ? !!outra.trim() : !!escolhida
   return (
-    <section aria-labelledby={`pergunta-${passo.id}`} className="flex max-h-[min(56svh,460px)] shrink-0 flex-col rounded-xl border bg-card shadow-xs">
+    <section aria-labelledby={`pergunta-${passo.id}`} className="flex max-h-[min(34svh,268px)] shrink-0 flex-col rounded-xl border bg-card shadow-xs">
       {/* o que é isso que está sendo perguntado: fica sempre à vista, junto da pergunta */}
       {passo.explica && (
-        <div className="flex max-h-38 shrink-0 items-start gap-2.5 overflow-y-auto rounded-t-xl border-b bg-primary/5 px-4 py-3 text-[13px] leading-[19px]">
+        <div className="flex max-h-22 shrink-0 items-start gap-2.5 overflow-y-auto rounded-t-xl border-b bg-primary/5 px-4 py-3 text-[13px] leading-[19px]">
           <SparklesIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-primary" />
           <p>{passo.explica}</p>
         </div>
@@ -197,8 +200,14 @@ function CartaoDaPergunta({
           </label>
         </li>
       </ul>
-      <div className="flex shrink-0 items-center justify-end gap-2 border-t px-3 py-2.5">
-        <Button size="icon-sm" aria-label="Responder" disabled={!pode} onClick={enviar}>
+      <div className="flex shrink-0 items-center gap-2 border-t px-3 py-2.5">
+        {onVoltar && (
+          <Button variant="ghost" size="sm" className="-ml-1" onClick={onVoltar}>
+            <ArrowLeftIcon data-icon="inline-start" />
+            Voltar
+          </Button>
+        )}
+        <Button size="icon-sm" aria-label="Responder" className="ml-auto" disabled={!pode} onClick={enviar}>
           <ArrowUpIcon />
         </Button>
       </div>
@@ -238,6 +247,7 @@ function Conversa({
   fim,
   previa,
   onResponder,
+  onVoltar,
   aoConfigurarManualmente,
   respondeu,
   oque,
@@ -250,6 +260,8 @@ function Conversa({
   fim: ReactNode
   previa: ReactNode
   onResponder: (valor: string, rotulo: string) => void
+  /** Volta para a pergunta anterior, desfazendo a resposta dada. */
+  onVoltar?: () => void
   aoConfigurarManualmente: () => void
   /** Já há resposta a perder. */
   respondeu: boolean
@@ -305,7 +317,7 @@ function Conversa({
           </div>
           {passo ? (
             <>
-              <CartaoDaPergunta key={passo.id} passo={passo} n={n} total={total} onResponder={onResponder} />
+              <CartaoDaPergunta key={passo.id} passo={passo} n={n} total={total} onResponder={onResponder} onVoltar={onVoltar} />
               <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-1.5">
                 <Input
                   aria-label="Responder com suas palavras"
@@ -466,6 +478,8 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
   const [varK, setVarK] = useState<string | null>(null)
   const [id, setId] = useState("nome")
   const [falas, setFalas] = useState<Fala[]>(ABERTURA_AGENTE)
+  /* Voltar desfaz a resposta: guardo o estado inteiro antes de responder e restauro. */
+  const [pilha, setPilha] = useState<{ id: string; falas: Fala[]; r: Rascunho; pedido: string; varK: string | null }[]>([])
 
   const temRep = !!(r.gatilho && REP_POR_GATILHO[r.gatilho])
   const ids = ["nome", "pedido", "variavel", "quando", ...(temRep ? ["repete"] : []), "onde", "aprovacao"]
@@ -617,6 +631,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
 
   const responder = (valor: string, rotulo: string) => {
     if (!passo) return
+    setPilha((p) => [...p, { id, falas, r, pedido, varK }])
     const livre = valor.startsWith("__livre:") ? valor.slice(8) : null
     let eco: ReactNode = null
     if (id === "nome") {
@@ -680,6 +695,17 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
     proximo(id)
   }
 
+  const voltar = () => {
+    const anterior = pilha[pilha.length - 1]
+    if (!anterior) return
+    setPilha((p) => p.slice(0, -1))
+    setId(anterior.id)
+    setFalas(anterior.falas)
+    setR(anterior.r)
+    setPedido(anterior.pedido)
+    setVarK(anterior.varK)
+  }
+
   const revisar = () => irParaTela({ tipo: "novo", rascunho: r })
   const n = Math.min(ids.indexOf(id) + 1 || ids.length, ids.length)
   const respondeu = falas.length > ABERTURA_AGENTE.length
@@ -692,6 +718,7 @@ export function ConversaAgente({ varInicial }: { varInicial?: string }) {
       n={n}
       total={ids.length}
       onResponder={responder}
+      onVoltar={pilha.length ? voltar : undefined}
       respondeu={respondeu}
       oque="o agente"
       aoConfigurarManualmente={() => irParaTela({ tipo: "modelos" })}
@@ -772,6 +799,8 @@ export function ConversaVariavel() {
   const [tipoDefinido, setTipoDefinido] = useState(false)
   const [id, setId] = useState("nome")
   const [falas, setFalas] = useState<Fala[]>(ABERTURA_VARIAVEL)
+  /* Mesma ideia da conversa do agente: o Voltar restaura o estado de antes da resposta. */
+  const [pilha, setPilha] = useState<{ id: string; falas: Fala[]; d: DadosDaVariavel; pergunta: string; tipoDefinido: boolean }[]>([])
   const ids = ["nome", "pergunta", "formato", "fonte", "vazio"]
 
   const PASSOS: Record<string, Passo> = {
@@ -877,6 +906,7 @@ export function ConversaVariavel() {
 
   const responder = (valor: string, rotulo: string) => {
     if (!passo) return
+    setPilha((p) => [...p, { id, falas, d, pergunta, tipoDefinido }])
     const livre = valor.startsWith("__livre:") ? valor.slice(8) : null
     const v = livre ?? valor
     if (id === "pergunta") {
@@ -907,6 +937,17 @@ export function ConversaVariavel() {
     proximo()
   }
 
+  const voltar = () => {
+    const anterior = pilha[pilha.length - 1]
+    if (!anterior) return
+    setPilha((p) => p.slice(0, -1))
+    setId(anterior.id)
+    setFalas(anterior.falas)
+    setD(anterior.d)
+    setPergunta(anterior.pergunta)
+    setTipoDefinido(anterior.tipoDefinido)
+  }
+
   const dados = () => ({ ...d, fontes: d.fontes.length ? d.fontes : ["Edital e anexos"] })
   const revisar = () => irParaTela({ tipo: "variavel", k: null, inicial: dados() })
   /* Criar e emendar no agente: a variável sozinha não faz nada, e esse é o passo seguinte. */
@@ -929,6 +970,7 @@ export function ConversaVariavel() {
       n={n}
       total={ids.length}
       onResponder={responder}
+      onVoltar={pilha.length ? voltar : undefined}
       respondeu={respondeu}
       oque="a variável"
       aoConfigurarManualmente={() => irParaTela({ tipo: "variavel", k: null })}
