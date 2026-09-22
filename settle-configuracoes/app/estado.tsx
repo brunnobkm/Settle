@@ -82,7 +82,8 @@ type Estado = {
   /** Registra uma alteração na Auditoria (quem: o usuário da sessão). */
   auditar: (area: string, txt: string) => void
   /** Tira o último registro (desfazer). */
-  desauditar: () => void
+  /** Tira do topo da Auditoria os registros do que acabou de ser desfeito. */
+  desauditar: (quantos?: number) => void
 
   confirmar: (pedido: PedidoDeConfirmacao) => void
 }
@@ -120,7 +121,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const auditar = useCallback((area: string, txt: string) => {
     setAudit((a) => [{ quando: agora(), quem: "Brunno Krier", area, txt }, ...a])
   }, [])
-  const desauditar = useCallback(() => setAudit((a) => a.slice(1)), [])
+  const desauditar = useCallback((quantos = 1) => setAudit((a) => a.slice(quantos)), [])
 
   const valor = useMemo<Estado>(
     () => ({

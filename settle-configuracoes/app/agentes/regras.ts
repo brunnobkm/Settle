@@ -14,6 +14,7 @@ import {
   VARS_INICIAIS,
   type Agenda,
   type Agente,
+  type Aprovacao,
   type Momento,
   type Regra,
   type Variavel,
@@ -195,4 +196,9 @@ export function listaDeNomes<T>(itens: T[], e: T): T[] {
     out.push(it)
   })
   return out
+}
+
+/** A ação que o agente quer fazer, em uma linha (para a Auditoria e para qualquer lugar sem espaço para selos). */
+export function acaoTxt(a: Aprovacao) {
+  return a.de && a.para ? `mover de ${a.de} para ${a.para}` : a.acao.charAt(0).toLowerCase() + a.acao.slice(1)
 }

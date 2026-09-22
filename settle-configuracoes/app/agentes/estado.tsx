@@ -20,7 +20,7 @@ import {
   type TipoVar,
   type Variavel,
 } from "./dados"
-import { configInicial, semVariaveis, textoLegivel, usosDaVar, type Config } from "./regras"
+import { acaoTxt, configInicial, semVariaveis, textoLegivel, usosDaVar, type Config } from "./regras"
 
 /** Rascunho do agente em criação. */
 export type Rascunho = {
@@ -69,7 +69,7 @@ const novoId = () => ++sequencia
 const RISCO_EXCLUIDA = "A variável que alimentava esta regra foi excluída, então ela não roda mais."
 
 function useAgentesInterno() {
-  const { confirmar, auditar } = useConfig()
+  const { confirmar, auditar, desauditar } = useConfig()
   const [cfg, setCfg] = useState<Config>(configInicial)
   const [aprovacoes, setAprovacoes] = useState<Aprovacao[]>(APROVACOES_INICIAIS)
   const [modal, setModal] = useState<{ tela: Tela; pilha: Tela[] } | null>(null)
@@ -405,20 +405,30 @@ function useAgentesInterno() {
     (ids: string[], aprovou: boolean, aoFeito?: () => void, aoDesfazer?: () => void) => {
       if (!ids.length) return
       const antes = atual.current.aprovacoes
+      const decididas = antes.filter((a) => ids.includes(a.id))
       setAprovacoes(antes.filter((a) => !ids.includes(a.id)))
       aoFeito?.()
-      auditar("Aprovações", `${aprovou ? "Aprovou" : "Recusou"} ${ids.length} ${ids.length === 1 ? "ação" : "ações"} de agentes`)
+      // Um registro por decisão, não um resumo: auditoria serve para responder "quem aprovou
+      // isto, nesta licitação, e quando". Ver REGRAS.md, seção 6 (histórico das aprovações).
+      decididas.forEach((a) => {
+        const nome = atual.current.cfg.agentes.find((x) => x.id === a.agente)?.nome ?? "agente excluído"
+        auditar(
+          "Aprovações",
+          `${aprovou ? "Aprovou" : "Recusou"} ${acaoTxt(a)}, pedido do agente "${nome}" em ${a.lic} (${a.org})`
+        )
+      })
       toast(aprovou ? `${ids.length === 1 ? "Ação aprovada e executada" : `${ids.length} ações aprovadas e executadas`}` : `${ids.length === 1 ? "Ação recusada" : `${ids.length} ações recusadas`}`, {
         action: {
           label: "Desfazer",
           onClick: () => {
             setAprovacoes(antes)
+            desauditar(decididas.length)
             aoDesfazer?.()
           },
         },
       })
     },
-    [auditar]
+    [auditar, desauditar]
   )
 
   return {

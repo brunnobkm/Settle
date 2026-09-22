@@ -257,6 +257,25 @@ devs; a Nova versão da plataforma aponta para cá.
   ocupando o topo todo dia. Quem fechou ainda reencontra a explicação pelo card "Como
   funciona". No protótipo, fechar vale só até recarregar a página, igual ao card, para dar
   para demonstrar de novo.
+- **Histórico das aprovações (guardar no banco).** Hoje, respondida a aprovação, a linha sai
+  da fila e a escolha some da tela. Isso não pode se perder: a decisão de um agente mudar uma
+  licitação é o tipo de coisa que a empresa vai querer auditar depois ("quem aprovou mover
+  esta licitação?", "por que este edital foi descartado?"). **Toda resposta vira um registro
+  permanente**, um por ação decidida, nunca um resumo do lote:
+  - quando (data e hora), quem respondeu (pessoa, não "o sistema");
+  - a licitação e o órgão;
+  - o agente que pediu e o motivo que ele deu;
+  - a ação proposta (de qual etapa para qual, por exemplo);
+  - a decisão: aprovada ou recusada;
+  - se foi desfeita, o desfazer é outro registro, não apaga o primeiro.
+  O registro é **imutável**: nem administrador edita ou remove. Onde aparece: em
+  **Auditoria** (Organização), junto das alterações de configuração, e no futuro também no
+  histórico da própria licitação, que é onde a pergunta costuma nascer. Filtros úteis lá:
+  por agente, por pessoa, por decisão e por período. Aprovações continua sendo só a fila do
+  que ainda espera resposta; o que já foi respondido vive na Auditoria.
+  No protótipo isso já acontece: responder escreve uma linha por decisão em Auditoria, com a
+  licitação, o agente e a ação. O que falta no produto é a persistência de verdade (sobrevive
+  a recarregar, com retenção longa) e os filtros.
 - **Como funciona:** card flutuante no canto inferior direito das duas páginas (imagem,
   título, descrição, "Ver como funciona" e fechar), que volta a cada refresh. O botão abre
   um passo a passo com um exemplo do começo ao fim (saber se o edital exige atestado):
