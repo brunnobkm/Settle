@@ -207,11 +207,11 @@ o app faz hoje em Recomendadas (código do frontend, `home.shared`):
 
 Modelo do Linear: categorias fixas com itens editáveis dentro.
 
-**Nome:** a etapa é o dado, não a coluna. Em andamento tem três visualizações (o seletor da
-plataforma diz **Board**, **Tabela** e **Calendário**), e a etapa aparece nas três: como coluna
-no Board, na coluna "Etapa" da Tabela, como marcação no Calendário. Por isso os textos falam
-em "etapas de Em andamento", e só citam Board ou Tabela quando a regra é mesmo daquela visão
-(a cor, por exemplo).
+**Nome:** a etapa é o dado, não a coluna. Hoje Em andamento tem mais de uma visualização (o
+seletor da plataforma diz Board, Tabela e Calendário) e a etapa aparece em todas. Nos textos
+da interface, **falar sempre em "etapas de Em andamento" e nunca listar as visualizações**:
+a lista muda quando uma nova visão entra, e ninguém vai lembrar de caçar os textos espalhados
+para atualizar.
 
 | Grupo | Pode renomear | Pode mover | Pode remover | Por quê |
 |---|---|---|---|---|
@@ -234,9 +234,10 @@ lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não 
   ganha uma fatia "Sem motivo". **Como a plataforma valida hoje** (conferido no bundle
   `workflow`, diálogo "Resultado da Licitação"): com "Perdeu a licitação" marcado e nenhum
   motivo escolhido, o botão de confirmar fica `disabled`; o comentário é opcional.
-- **Desligar a exigência não desabilita a lista.** Renomear, reordenar, arquivar, excluir e
-  "pede descrição" continuam valendo: o motivo passa a ser opcional, não deixa de existir, e
-  quem quiser continua escolhendo um. O que o switch muda é só a trava do último motivo.
+- **O switch faz uma coisa só: deixar de obrigar.** Desligado, a pessoa consegue concluir o
+  registro sem escolher motivo; a lista continua na tela, continua editável e quem quiser
+  continua escolhendo um. Nada é apagado nem escondido. Os dois efeitos colaterais: o gráfico
+  ganha a fatia "Sem motivo" e a trava do último motivo deixa de valer.
 - **Com a exigência ligada, o último motivo da lista não pode sair.** Arquivar ou excluir é
   recusado com o aviso de desligar a exigência antes. Sem essa trava a pessoa ficaria sem
   como registrar "Perdeu": aqui não existe "Outros" fixo como no descarte.
@@ -250,17 +251,18 @@ Casos que podem dar problema, e a regra proposta:
    segundos. Etapa vazia também passa pela confirmação, só sem a escolha de destino.
 2. **Mover por remoção para a Entrada.** Não roda os agentes de novo. Agente só dispara em
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
-3. **A última etapa não pode ser destino de remoção.** Conferido no bundle `workflow`
-   (`useBiddings.updateBiddingStage`): mover uma licitação para Resultados Finais **sempre**
-   abre o diálogo "Resultado da Licitação", e o que é gravado é `FINAL_RESULTS_WON` ou
-   `FINAL_RESULTS_LOST`. Não existe caminho pela interface que ponha uma licitação lá sem
-   resultado. Some-se a isso que licitação em resultado final **não pode ser movida de volta**
-   ("Licitações em 'Resultados Finais' não podem ser movidas"): um lote mandado para lá sem
-   resultado ficaria preso. Por isso a etapa de saída não aparece na lista de destinos, e o
-   diálogo explica o porquê. Se um dia a plataforma precisar disso, o modelo já tem o status
-   `FINAL_RESULTS` puro, mas hoje ele não é alcançável pela interface.
+3. **Remover mandando as licitações para a última etapa: o diálogo registra o resultado.**
+   Conferido no bundle `workflow` (`useBiddings.updateBiddingStage`): mover para Resultados
+   Finais **sempre** abre o diálogo "Resultado da Licitação", e o que é gravado é
+   `FINAL_RESULTS_WON` ou `FINAL_RESULTS_LOST`; não há caminho que ponha uma licitação lá sem
+   resultado, e de lá ela **não volta** ("Licitações em 'Resultados Finais' não podem ser
+   movidas"). O mesmo diálogo já serve à seleção múltipla ("Informe o resultado para N
+   licitações"), com **um resultado para todas**. A remoção de etapa segue esse precedente:
+   escolhido o destino de saída, o diálogo mostra Ganhou/Perdeu, o motivo (quando Perdeu) e um
+   comentário opcional, e a ação vira "Remover e registrar". Com Perdeu e sem motivo, o botão
+   fica desabilitado enquanto a exigência estiver ligada, igual à plataforma.
 4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
-   tema). A cor é só visual, para reconhecer a etapa no Board e na Tabela: nada depende dela,
+   tema). A cor é só visual, para reconhecer a etapa em Em andamento: nada depende dela,
    e duas etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio. Hoje as cores
    são fixas no código, uma por status (`workflow.constants`), então isto é proposta nova.
 5. **Dashboard.** Etapa é acompanhada por ID, não por nome. Renomear não quebra histórico.
@@ -280,7 +282,7 @@ Casos que podem dar problema, e a regra proposta:
    sempre ID e nome.
 11. **Duas pessoas editando ao mesmo tempo.** Última gravação vence, com aviso de que a
     lista mudou desde que a página foi aberta.
-12. **Limite de etapas.** Sugestão: até 12 no total, para o Board continuar legível.
+12. **Limite de etapas.** Sugestão: até 12 no total, para o funil continuar legível.
 13. **"Suspensa" é etapa ou estado?** Hoje é coluna, mas uma licitação suspensa pode voltar
     para qualquer ponto do funil. Vale discutir se vira marcação no card (como o Linear faz
     com "Blocked"), o que também simplifica o dashboard.
