@@ -207,3 +207,10 @@
     @apply font-mono;
     }
 }
+
+/* O balão do tooltip não pode capturar o mouse: além do balão (pointer-events-none no
+   componente), a caixa que o posiciona também precisa deixar passar, senão ela cobre o
+   item de cima e impede de chegar nele. Só para tooltip: popover e menu continuam clicáveis. */
+[data-radix-popper-content-wrapper]:has([data-slot="tooltip-content"]) {
+  pointer-events: none;
+}
