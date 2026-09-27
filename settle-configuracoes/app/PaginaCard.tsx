@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  LicitacaoCardActions,
   LicitacaoCardAvatars,
   LicitacaoCardContent,
   LicitacaoCardDescription,
@@ -52,7 +51,6 @@ import {
   SettingsListGroupLabel,
   SettingsListItem,
   SettingsListItemActions,
-  SettingsListLockBadge,
   SettingsListName,
 } from "@/components/ui/settings-list"
 
@@ -159,13 +157,6 @@ export function PaginaCard() {
                 auditar("Campos do card", "Reordenou os campos")
               }}
             >
-              <SettingsListGroupLabel description="fixo">Topo</SettingsListGroupLabel>
-              <SettingsListItem id="topo" group="topo" locked>
-                <SettingsListName className="whitespace-normal">Número do edital, ações e Score</SettingsListName>
-                <SettingsListLockBadge tooltip="O topo do card é igual para todos: não pode ser ocultado nem movido.">
-                  Não editável
-                </SettingsListLockBadge>
-              </SettingsListItem>
               {GRUPOS_CAMPO.map(([g, nome, descricao]) => [
                 <SettingsListGroupLabel key={`g-${g}`} description={descricao || undefined}>
                   {nome}
@@ -226,6 +217,7 @@ function PreviaDoCard() {
     }
   }
 
+  const topo = campos.filter((c) => c.g === "topo" && c.on)
   const destaque = campos.filter((c) => c.g === "destaque" && c.on)
   const datas = campos.filter((c) => c.g === "datas" && c.on)
   const meta = campos.filter((c) => c.g === "meta" && c.on)
@@ -234,6 +226,76 @@ function PreviaDoCard() {
   const itensVisiveis = maxItens ? L.itens.slice(0, maxItens) : L.itens
   const resto = L.itens.length - itensVisiveis.length
   const nota = Number(L.score.split("/")[0])
+
+  // O título fica à esquerda e empurra o resto para a direita (mr-auto); as peças seguintes
+  // aparecem na ordem da lista. Tudo aqui é ilustrativo: a pré-visualização não executa ações.
+  const blocoTopo = (c: Campo) => {
+    switch (c.id) {
+      case "edital":
+        return (
+          <div key={c.id} className="mr-auto flex min-w-0 items-center gap-2.5">
+            <span aria-hidden className="size-4.5 flex-none rounded-[5px] border border-input" />
+            <LicitacaoCardTitle prefix="Edital">
+              <b>{L.edital}</b>
+            </LicitacaoCardTitle>
+          </div>
+        )
+      case "descartar":
+        return (
+          <Button key={c.id} variant="outline" size="sm" asChild>
+            <span>Descartar</span>
+          </Button>
+        )
+      case "analise":
+        return (
+          <Button key={c.id} size="sm" asChild>
+            <span>Enviar para análise</span>
+          </Button>
+        )
+      case "responsaveis":
+        return (
+          <LicitacaoCardAvatars
+            key={c.id}
+            avatars={[
+              { initials: "MB", name: "Mateus Brum" },
+              { initials: "AC", name: "Ana Camargo" },
+              { initials: "RS", name: "Rafael Souza" },
+            ]}
+            onAdd={() => {}}
+          />
+        )
+      case "acoes":
+        return (
+          <LicitacaoCardIconActions key={c.id}>
+            {[
+              { label: "Abrir no portal", icon: <GlobeIcon /> },
+              { label: "Salvar", icon: <BookmarkIcon /> },
+              { label: "Copiar link", icon: <Link2Icon /> },
+              { label: "Compartilhar", icon: <Share2Icon /> },
+              { label: "Arquivos", icon: <FolderIcon /> },
+            ].map((a) => (
+              <LicitacaoCardIconAction key={a.label} {...a} />
+            ))}
+          </LicitacaoCardIconActions>
+        )
+      case "score":
+        return (
+          <LicitacaoCardStatusButton
+            key={c.id}
+            size="sm"
+            tone={nota >= 70 ? "success" : nota >= 40 ? "warning" : "destructive"}
+            asChild
+          >
+            <span>
+              <GaugeIcon aria-hidden className="size-3.5" />
+              {L.score}
+            </span>
+          </LicitacaoCardStatusButton>
+        )
+      default:
+        return null
+    }
+  }
 
   const blocoDestaque = (c: Campo) => {
     switch (c.id) {
@@ -281,48 +343,7 @@ function PreviaDoCard() {
   return (
     <LicitacaoCardRoot>
       <LicitacaoCardHeader>
-        <span aria-hidden className="size-4.5 flex-none rounded-[5px] border border-input" />
-        <LicitacaoCardTitle prefix="Edital">
-          <b>{L.edital}</b>
-        </LicitacaoCardTitle>
-        {/* tudo daqui para a direita é ilustrativo: a pré-visualização não executa ações */}
-        <LicitacaoCardActions>
-          <Button variant="outline" size="sm" asChild>
-            <span>Descartar</span>
-          </Button>
-          <Button size="sm" asChild>
-            <span>Enviar para análise</span>
-          </Button>
-          <LicitacaoCardAvatars
-            avatars={[
-              { initials: "MB", name: "Mateus Brum" },
-              { initials: "AC", name: "Ana Camargo" },
-              { initials: "RS", name: "Rafael Souza" },
-            ]}
-            onAdd={() => {}}
-          />
-          <LicitacaoCardIconActions>
-            {[
-              { label: "Abrir no portal", icon: <GlobeIcon /> },
-              { label: "Salvar", icon: <BookmarkIcon /> },
-              { label: "Copiar link", icon: <Link2Icon /> },
-              { label: "Compartilhar", icon: <Share2Icon /> },
-              { label: "Arquivos", icon: <FolderIcon /> },
-            ].map((a) => (
-              <LicitacaoCardIconAction key={a.label} {...a} />
-            ))}
-          </LicitacaoCardIconActions>
-          <LicitacaoCardStatusButton
-            size="sm"
-            tone={nota >= 70 ? "success" : nota >= 40 ? "warning" : "destructive"}
-            asChild
-          >
-            <span>
-              <GaugeIcon aria-hidden className="size-3.5" />
-              {L.score}
-            </span>
-          </LicitacaoCardStatusButton>
-        </LicitacaoCardActions>
+        {topo.map((c) => blocoTopo(c))}
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
         {destaque.map(blocoDestaque)}
