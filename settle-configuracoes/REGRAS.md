@@ -116,12 +116,18 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 
 ## 3. Campos do card de Recomendadas
 
-- **Uma lista só, sem grupos.** A ordem é livre de ponta a ponta, e o que define onde o campo
-  aparece no card é o formato escolhido na própria linha: **Destaque** (linha larga), **Data**
-  (caixa da esquerda) ou **Propriedade** (célula da grade). "Metadados" passou a se chamar
+- **A lista tem duas seções, e só duas: Datas e Propriedades.** São as duas caixas de verdade
+  do card, e por isso são as únicas que valem como seção na configuração. Todo o resto (as
+  peças do topo e os campos do corpo: segmentos, órgão, ME/EPP, objeto, valor) fica solto no
+  começo da lista, na ordem em que aparece no card. "Metadados" passou a se chamar
   **Propriedades**, que é o nome certo.
-- Dentro de cada formato, o card respeita a ordem da lista. Mudar o formato de um campo o
-  move de lugar no card sem precisar arrastar por seções.
+- **Arrastar é o que muda a seção.** O campo assume o lugar de quem estava onde ele foi
+  solto: soltar um campo do corpo entre as datas o põe na caixa das datas, e tirá-lo de lá o
+  devolve ao corpo. Não há seletor: a posição na lista é a configuração.
+- Seção sem nenhum campo continua na tela com a linha "Arraste um campo para cá", senão não
+  haveria como devolver um campo para ela.
+- As peças do topo e a tabela de itens só mudam de ordem, nunca de seção: arrastá-las para
+  dentro de uma seção é recusado com um aviso dizendo por quê.
 - **Campos na mesma linha.** Um campo de destaque pode grudar no destaque anterior em vez de
   abrir linha nova: é o "Mesma linha" da lista. Serve para deixar, por exemplo, segmentos,
   órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.

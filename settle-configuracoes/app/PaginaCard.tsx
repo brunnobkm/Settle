@@ -50,6 +50,7 @@ import {
   SettingsList,
   SettingsListAdd,
   SettingsListItem,
+  SettingsListGroupLabel,
   SettingsListItemActions,
   SettingsListLockBadge,
   SettingsListName,
@@ -59,7 +60,6 @@ import { Aviso, BotaoIcone, ListaDeVariaveis, Pilula, SeloDeOrigem } from "./com
 import {
   BLOCO_DE_ITENS,
   CAMPOS,
-  FORMATOS,
   fmt,
   LIC_EXEMPLO,
   LICS,
@@ -75,14 +75,38 @@ export function PaginaCard() {
   const { campos, setCampos, maxItens, setMaxItens, auditar, confirmar } = useConfig()
   const [menuAberto, setMenuAberto] = useState(false)
 
+  /**
+   * Arrastar é o que muda a seção: o campo assume o formato de quem estava no lugar onde ele
+   * foi solto. As peças do topo e a tabela de itens só mudam de ordem, nunca de seção.
+   */
+  function soltar(deId: string, paraId: string) {
+    const campo = campos.find((c) => c.id === deId)
+    if (!campo) return
+    const alvo = campos.find((c) => c.id === paraId)
+    const destino: FormatoCampo = alvo ? alvo.f : paraId === "vazio-data" ? "data" : "propriedade"
+    if (campo.fixo && destino !== campo.f) {
+      toast(
+        campo.f === "tabela"
+          ? "A tabela de itens fica sempre no fim do card"
+          : "As peças do topo não entram nas seções: elas ficam na primeira linha do card"
+      )
+      return
+    }
+    setCampos((l) => {
+      const nova = alvo ? mover(l, deId, paraId) : l
+      return nova.map((x) => (x.id === deId ? { ...x, f: destino, junto: destino === "destaque" ? x.junto : false } : x))
+    })
+    auditar(
+      "Campos do card",
+      destino === campo.f
+        ? "Reordenou os campos"
+        : `"${campo.nome}" foi para ${NOME_DO_FORMATO[destino]}`
+    )
+  }
+
   function alternarLinha(c: Campo) {
     setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, junto: !x.junto } : x)))
     auditar("Campos do card", `"${c.nome}" ${c.junto ? "voltou para uma linha própria" : "foi para a mesma linha do campo acima"}`)
-  }
-
-  function trocarFormato(c: Campo, f: FormatoCampo) {
-    setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, f } : x)))
-    auditar("Campos do card", `"${c.nome}" passou a aparecer como ${FORMATOS.find((x) => x[0] === f)?.[1]}`)
   }
 
   function alternar(c: Campo, on: boolean) {
@@ -142,23 +166,6 @@ export function PaginaCard() {
             Mesma linha
           </Pilula>
         )}
-        {!c.fixo && (
-          <NativeSelect
-            size="sm"
-            value={c.f}
-            aria-label={`Como ${c.nome} aparece no card`}
-            title={`Onde ${c.nome} aparece no card`}
-            className="w-auto flex-none text-foreground"
-            onChange={(e) => trocarFormato(c, e.target.value as FormatoCampo)}
-            data-settings-list-no-drag
-          >
-            {FORMATOS.map(([f, nome]) => (
-              <NativeSelectOption key={f} value={f}>
-                {nome}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        )}
         {c.sempre && (
           <SettingsListLockBadge tooltip="É por ela que a pessoa marca o card para as ações em lote. Dá para mudar a posição, não dá para esconder.">
             Sempre visível
@@ -215,12 +222,19 @@ export function PaginaCard() {
           <SettingsBox>
             <SettingsList
               labels={{ moveHandle: (n) => `Mover o campo ${n ?? ""}. Use as setas para cima e para baixo.` }}
-              onMove={(de, para) => {
-                setCampos((l) => mover(l, de, para))
-                auditar("Campos do card", "Reordenou os campos")
-              }}
+              onMove={soltar}
             >
-              {campos.map(item)}
+              {campos.filter((c) => c.f === "topo" || c.f === "destaque").map(item)}
+              {SECOES.map(([f, nome, descricao]) => {
+                const doGrupo = campos.filter((c) => c.f === f)
+                return [
+                  <SettingsListGroupLabel key={`s-${f}`} description={descricao}>
+                    {nome}
+                  </SettingsListGroupLabel>,
+                  ...(doGrupo.length ? doGrupo.map(item) : [<SecaoVazia key={`v-${f}`} formato={f} />]),
+                ]
+              })}
+              {campos.filter((c) => c.f === "tabela").map(item)}
               <Popover open={menuAberto} onOpenChange={setMenuAberto}>
                 <PopoverTrigger asChild>
                   <SettingsListAdd>Adicionar variável ao card</SettingsListAdd>
@@ -606,6 +620,29 @@ function ItemMeta({ campo, className }: { campo: LicitacaoCardMetaField; classNa
         <span className="truncate">{campo.value}</span>
       </dd>
     </div>
+  )
+}
+
+/** As duas caixas do card que recebem campos: as datas e a grade de propriedades. */
+const SECOES: [FormatoCampo, string, string][] = [
+  ["data", "Datas", "caixa da esquerda"],
+  ["propriedade", "Propriedades", "grade ao lado das datas"],
+]
+
+const NOME_DO_FORMATO: Record<FormatoCampo, string> = {
+  topo: "o topo",
+  destaque: "o corpo do card",
+  data: "Datas",
+  propriedade: "Propriedades",
+  tabela: "a tabela de itens",
+}
+
+/** Linha que segura a seção quando ela fica sem campo nenhum, para continuar dando para soltar. */
+function SecaoVazia({ formato }: { formato: FormatoCampo }) {
+  return (
+    <SettingsListItem id={`vazio-${formato}`} name="">
+      <span className="py-1 text-[13px] text-muted-foreground">Arraste um campo para cá</span>
+    </SettingsListItem>
   )
 }
 
