@@ -91,6 +91,10 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   licitações que o usaram, no filtro de Descartadas e no dashboard. Pode ser restaurado.
 - Motivo nunca usado pode ser excluído. Como toda exclusão da plataforma, passa por um
   diálogo de confirmação, e depois ainda tem desfazer no aviso.
+- **Nome repetido é recusado**, como já acontece em abas e etapas: o campo volta ao valor
+  anterior e explica no aviso. Vale contra os motivos ativos, contra os arquivados ("Restaure
+  X em Arquivados") e contra "Outros", que é da plataforma. Motivo novo já nasce com nome
+  livre ("Novo motivo 2" se "Novo motivo" existir).
 - Renomear muda o nome em todas as licitações que já usaram (o vínculo é por ID). Se a
   intenção for outro significado, o certo é arquivar e criar um novo; a tela avisa quantas
   licitações serão afetadas.
@@ -213,7 +217,13 @@ o resultado como 'Perdeu a licitação'"), e a lista de motivos de perda é busc
 lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não em Motivos.
 
 - Mesmas regras de lista do descarte: renomear, reordenar, "pede descrição", arquivar quando já
-  foi usado, excluir (com confirmação) quando nunca foi.
+  foi usado, excluir (com confirmação) quando nunca foi, nome repetido recusado.
+- **Exigir motivo ao registrar perda** é um switch (proposta nova; hoje a plataforma sempre
+  exige). Ligado é o padrão. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
+  ganha uma fatia "Sem motivo".
+- **Com a exigência ligada, o último motivo da lista não pode sair.** Arquivar ou excluir é
+  recusado com o aviso de desligar a exigência antes. Sem essa trava a pessoa ficaria sem
+  como registrar "Perdeu": aqui não existe "Outros" fixo como no descarte.
 - Os motivos de perda do protótipo são exemplo: **confirmar a lista real com o time.**
 - Em aberto: se o "Ganhou" também aceita motivo (hoje não exige).
 
@@ -226,23 +236,26 @@ Casos que podem dar problema, e a regra proposta:
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
 3. **Mover por remoção para a Saída.** Não registra resultado. A licitação fica "pendente de
    registro" até alguém marcar ganho ou perda.
-4. **Dashboard.** Etapa é acompanhada por ID, não por nome. Renomear não quebra histórico.
+4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
+   tema). A cor é só visual, para reconhecer a coluna no quadro: nada depende dela, e duas
+   etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio.
+5. **Dashboard.** Etapa é acompanhada por ID, não por nome. Renomear não quebra histórico.
    Reordenar muda só a ordem do funil. Remover: o período em que a etapa existiu continua no
    histórico com o nome dela; a partir da remoção, as licitações contam na etapa destino.
-5. **Tempo em etapa (SLA, "há quantos dias está aqui").** Ao mover por remoção, o relógio
+6. **Tempo em etapa (SLA, "há quantos dias está aqui").** Ao mover por remoção, o relógio
    recomeça na etapa destino, mas o histórico guarda a passagem pela etapa removida.
-6. **Nome duplicado.** Bloqueado.
-7. **Filtros e views salvos que citam a etapa removida.** A condição some do filtro e a
+7. **Nome duplicado.** Bloqueado, com aviso que diz por quê.
+8. **Filtros e views salvos que citam a etapa removida.** A condição some do filtro e a
    pessoa é avisada na próxima vez que abrir a view.
-8. **Automação ou agente configurado para uma etapa intermediária** (V3 de Agentes, "plugar
+9. **Automação ou agente configurado para uma etapa intermediária** (V3 de Agentes, "plugar
    agente em qualquer lugar"). Não deixar remover sem antes reapontar o gatilho; a
    confirmação lista quais agentes dependem da etapa.
-9. **Integrações e exportação** (planilha, relatórios) que usam o nome da coluna: exportar
+10. **Integrações e exportação** (planilha, relatórios) que usam o nome da coluna: exportar
    sempre ID e nome.
-10. **Duas pessoas editando ao mesmo tempo.** Última gravação vence, com aviso de que a
+11. **Duas pessoas editando ao mesmo tempo.** Última gravação vence, com aviso de que a
     lista mudou desde que a página foi aberta.
-11. **Limite de etapas.** Sugestão: até 12 no total, para o quadro continuar legível.
-12. **"Suspensa" é etapa ou estado?** Hoje é coluna, mas uma licitação suspensa pode voltar
+12. **Limite de etapas.** Sugestão: até 12 no total, para o quadro continuar legível.
+13. **"Suspensa" é etapa ou estado?** Hoje é coluna, mas uma licitação suspensa pode voltar
     para qualquer ponto do funil. Vale discutir se vira marcação no card (como o Linear faz
     com "Blocked"), o que também simplifica o dashboard.
 

@@ -54,6 +54,22 @@ export const CLASSE_COR_ETAPA: Record<CorEtapa, string> = {
   neutra: "bg-muted-foreground/60",
 }
 
+/** Nome de cada cor, para a pessoa escolher pelo nome e não por tentativa. */
+export const NOME_COR_ETAPA: Record<CorEtapa, string> = {
+  "category-1": "Azul",
+  "category-6": "Índigo",
+  "category-4": "Roxo",
+  "category-8": "Vinho",
+  "category-3": "Terracota",
+  "category-5": "Ocre",
+  "category-7": "Oliva",
+  "category-2": "Verde",
+  neutra: "Cinza",
+}
+
+/** Ordem em que as cores aparecem no seletor. */
+export const CORES_ETAPA = Object.keys(NOME_COR_ETAPA) as CorEtapa[]
+
 /** Cores das etapas novas, em rodízio. */
 export const CORES_NOVAS: CorEtapa[] = ["category-6", "category-7", "category-3", "category-1", "category-8"]
 
