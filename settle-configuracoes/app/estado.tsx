@@ -40,9 +40,8 @@ export type PedidoDeConfirmacao = {
   corpo: ReactNode
   acao: string
   perigo?: boolean
-  /** Bloqueia a ação enquanto falta algo no formulário dentro do diálogo. */
-  desabilitado?: boolean
-  ok: () => void
+  /** Devolver false mantém o diálogo aberto: é assim que a validação avisa o que falta. */
+  ok: () => void | boolean
 }
 
 type Estado = {
@@ -213,10 +212,13 @@ export function Confirmacao({
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction
                 variant={visivel.perigo ? "destructive" : "default"}
-                disabled={visivel.desabilitado}
-                onClick={() => {
+                onClick={(evento) => {
+                  // o botão nunca fica desabilitado: quem valida é a ação, que explica o que falta
+                  if (visivel.ok() === false) {
+                    evento.preventDefault()
+                    return
+                  }
                   onFechar()
-                  visivel.ok()
                 }}
               >
                 {visivel.acao}
