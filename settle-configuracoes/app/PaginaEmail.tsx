@@ -70,7 +70,7 @@ export function PaginaEmail() {
   const pCorpo = preencher(corpo, L, email.vazio, vazias, true)
 
   return (
-    <SettingsPage width="wide">
+    <SettingsPage width="full">
       <SettingsPageDescription>
         O texto de Compartilhar licitação. Vale para Gmail e para Copiar texto, em todas as telas onde o card aparece.
       </SettingsPageDescription>

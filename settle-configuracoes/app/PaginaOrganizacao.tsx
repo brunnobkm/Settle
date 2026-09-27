@@ -52,7 +52,7 @@ function Tabela({ colunas, linhas }: { colunas: string[]; linhas: ReactNode[][] 
 
 export function PaginaEquipe() {
   return (
-    <SettingsPage>
+    <SettingsPage width="full">
       <SettingsPageDescription>
         Hoje em Menu do usuário › Gerenciar equipe. Passa a morar aqui, com a mesma tabela e as mesmas ações (convidar,
         mudar função, resetar senha, remover).
@@ -75,7 +75,7 @@ function Regra({ titulo, children }: { titulo: string; children: ReactNode }) {
 
 export function PaginaPermissoes() {
   return (
-    <SettingsPage>
+    <SettingsPage width="full">
       <SettingsPageDescription>
         As quatro funções que já existem em Gerenciar equipe. Configuração da organização é ação de Administrador; as
         outras funções usam o que foi configurado.
@@ -104,7 +104,7 @@ export function PaginaPermissoes() {
 export function PaginaAuditoria() {
   const { audit } = useConfig()
   return (
-    <SettingsPage>
+    <SettingsPage width="full">
       <SettingsPageDescription>
         Hoje em Menu do usuário › Auditoria. Aqui aparecem as alterações de configuração e as respostas às aprovações
         dos agentes, uma linha por decisão; as ações feitas nesta sessão entram no topo.

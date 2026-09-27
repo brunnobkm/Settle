@@ -137,6 +137,18 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   da organização.
 - **Em aberto:** Em andamento e Descartadas herdam essa configuração ou têm a sua?
 
+**Fidelidade da pré-visualização.** A prévia reproduz o card real (referência: o node
+35780-8043 do Figma do design system): selo Atualizado, Descartar, Enviar para análise, botão
+de status, responsáveis, ações de ícone, Score, segmentos, Órgão com a tag ME - EPP, Objeto,
+Valor global, a caixa de metadados com as datas à esquerda e "Ver mais", e a tabela de itens
+com Lote, Nome, Segmento, Unidades, Valor Unitário e Valor Total, com o total do edital à
+direita do título. O que não é configurável aparece igual para servir de referência; só os
+campos dos quatro grupos respondem aos interruptores e à ordem.
+
+**Para o design system:** no card real os chips de segmento do topo usam o tom claro da
+categoria (fundo suave, texto na cor), enquanto `LicitacaoCardSegment` só tem o chip sólido.
+Na tela isso está resolvido por `className`; o certo é a Base ganhar um `tone="soft"`.
+
 ## 4. Abas das listas
 
 Decisão da reunião de 18/09 com a Alice: o protótipo do Explorar licitações criava a aba

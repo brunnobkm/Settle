@@ -39,7 +39,7 @@ export function PaginaMotivos() {
   }
 
   return (
-    <SettingsPage className="max-w-245">
+    <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
         Aqui você gerencia a lista de motivos que aparece para a pessoa quando ela descarta uma licitação em
         Recomendadas ou Em andamento. O motivo escolhido fica na licitação: aparece no filtro de Descartadas e no

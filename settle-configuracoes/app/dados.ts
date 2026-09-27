@@ -396,7 +396,7 @@ export type Lic = {
   visita: string
   impugnacao: string
   local_entrega: string
-  seg: string
+  segs: string[]
   me: boolean
   adicionada: string
   atualizada: string
@@ -407,7 +407,19 @@ export type Lic = {
   uasg: string
   capagM: string
   habitantes: string
-  itens: [string, string, string][]
+  /** Quantos itens o edital tem no total (o card mostra só os que deram correspondência). */
+  totalItens: number
+  itens: ItemLic[]
+}
+
+export type ItemLic = {
+  lote: string
+  nome: string
+  seg: string
+  /** Quantidade pedida no edital. */
+  unid: string
+  unit: string
+  total: string
 }
 
 /** Valor de texto de uma licitação pela chave da variável ou do campo ("" se não houver). */
@@ -436,7 +448,7 @@ export const LICS: Lic[] = [
     visita: "Não",
     impugnacao: "30/09/2026",
     local_entrega: "Secretaria de Tecnologia, Limeira/SP",
-    seg: "Software",
+    segs: ["Software"],
     me: false,
     adicionada: "17/09/2026",
     atualizada: "17/09/2026",
@@ -447,7 +459,17 @@ export const LICS: Lic[] = [
     uasg: "-",
     capagM: "C",
     habitantes: "291.869",
-    itens: [["CONTRATACAO DE EMPRESA ESPECIALIZADA PARA DESENVOLVIMENTO DE APLICATIVO MOBILE NATIVO", "Software", "R$ 60.000,00"]],
+    totalItens: 12,
+    itens: [
+      {
+        lote: "1",
+        nome: "CONTRATACAO DE EMPRESA ESPECIALIZADA PARA DESENVOLVIMENTO DE APLICATIVO MOBILE NATIVO",
+        seg: "Software",
+        unid: "1",
+        unit: "R$ 60.000,00",
+        total: "R$ 60.000,00",
+      },
+    ],
   },
   {
     edital: "22/2026",
@@ -468,7 +490,7 @@ export const LICS: Lic[] = [
     visita: "Sim",
     impugnacao: "30/09/2026",
     local_entrega: "",
-    seg: "Software",
+    segs: ["Software", "Serviços"],
     me: false,
     adicionada: "17/09/2026",
     atualizada: "17/09/2026",
@@ -479,11 +501,12 @@ export const LICS: Lic[] = [
     uasg: "-",
     capagM: "C",
     habitantes: "14.304",
+    totalItens: 37,
     itens: [
-      ["Implantação do software, configuração, migração de dados e parametrização", "Software", "-"],
-      ["Suporte técnico e manutenção do sistema integrado de gestão tributária", "Software", "-"],
-      ["Cessão de licença de uso do sistema integrado de Gestão Tributária Municipal (21 módulos)", "Software", "-"],
-      ["Treinamento dos usuários internos (banco de horas)", "Software", "-"],
+      { lote: "1", nome: "Implantação do software, configuração, migração de dados e parametrização", seg: "Software", unid: "1", unit: "-", total: "-" },
+      { lote: "1", nome: "Suporte técnico e manutenção do sistema integrado de gestão tributária", seg: "Software", unid: "12", unit: "-", total: "-" },
+      { lote: "1", nome: "Cessão de licença de uso do sistema integrado de Gestão Tributária Municipal (21 módulos)", seg: "Software", unid: "12", unit: "-", total: "-" },
+      { lote: "2", nome: "Treinamento dos usuários internos (banco de horas)", seg: "Software", unid: "40", unit: "-", total: "-" },
     ],
   },
   {
@@ -504,7 +527,7 @@ export const LICS: Lic[] = [
     visita: "Não",
     impugnacao: "26/09/2026",
     local_entrega: "Almoxarifado central, São Paulo/SP",
-    seg: "Produtos",
+    segs: ["Produtos", "Equipamentos de TI"],
     me: true,
     adicionada: "17/09/2026",
     atualizada: "17/09/2026",
@@ -515,16 +538,17 @@ export const LICS: Lic[] = [
     uasg: "990189",
     capagM: "B",
     habitantes: "11.451.999",
+    totalItens: 140,
     itens: [
-      ['Notebook corporativo 14", 16 GB RAM, SSD 512 GB', "Produtos", "R$ 22.649,97"],
-      ['Monitor LED 24", Full HD, ajuste de altura', "Produtos", "R$ 8.940,00"],
-      ["Desktop corporativo, Core i5, 16 GB RAM", "Produtos", "R$ 18.300,00"],
-      ["Nobreak 1.500 VA bivolt", "Produtos", "R$ 4.380,00"],
-      ["Switch gerenciável 24 portas PoE", "Produtos", "R$ 6.790,00"],
-      ["Impressora multifuncional laser monocromática", "Produtos", "R$ 3.980,00"],
-      ["Webcam Full HD com microfone", "Produtos", "R$ 1.259,98"],
-      ["Kit teclado e mouse sem fio", "Produtos", "R$ 950,00"],
-      ["Headset USB com cancelamento de ruído", "Produtos", "R$ 700,00"],
+      { lote: "1", nome: 'Notebook corporativo 14", 16 GB RAM, SSD 512 GB', seg: "Produtos", unid: "3", unit: "R$ 7.549,99", total: "R$ 22.649,97" },
+      { lote: "1", nome: 'Monitor LED 24", Full HD, ajuste de altura', seg: "Produtos", unid: "12", unit: "R$ 745,00", total: "R$ 8.940,00" },
+      { lote: "1", nome: "Desktop corporativo, Core i5, 16 GB RAM", seg: "Produtos", unid: "6", unit: "R$ 3.050,00", total: "R$ 18.300,00" },
+      { lote: "2", nome: "Nobreak 1.500 VA bivolt", seg: "Produtos", unid: "6", unit: "R$ 730,00", total: "R$ 4.380,00" },
+      { lote: "2", nome: "Switch gerenciável 24 portas PoE", seg: "Produtos", unid: "2", unit: "R$ 3.395,00", total: "R$ 6.790,00" },
+      { lote: "2", nome: "Impressora multifuncional laser monocromática", seg: "Produtos", unid: "2", unit: "R$ 1.990,00", total: "R$ 3.980,00" },
+      { lote: "3", nome: "Webcam Full HD com microfone", seg: "Produtos", unid: "2", unit: "R$ 629,99", total: "R$ 1.259,98" },
+      { lote: "3", nome: "Kit teclado e mouse sem fio", seg: "Produtos", unid: "10", unit: "R$ 95,00", total: "R$ 950,00" },
+      { lote: "3", nome: "Headset USB com cancelamento de ruído", seg: "Produtos", unid: "5", unit: "R$ 140,00", total: "R$ 700,00" },
     ],
   },
 ]
