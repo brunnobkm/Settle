@@ -16,6 +16,7 @@ import {
   SettingsRowDescription,
   SettingsRowTitle,
   SettingsSection,
+  SettingsSectionDescription,
   SettingsSectionTitle,
 } from "@/components/ui/settings-page"
 import {
@@ -32,6 +33,7 @@ import {
 import { avisarComDesfazer, Aviso, BotaoIcone } from "./comum"
 import { CLASSE_COR_ETAPA, CORES_NOVAS, fmt, mover, novoId, type Etapa, type TipoEtapa } from "./dados"
 import { Confirmacao, useConfig, type PedidoDeConfirmacao } from "./estado"
+import { ListaMotivos } from "./ListaMotivos"
 
 /** Foca e seleciona o nome do item recém-criado. */
 export function useFocoNoNome() {
@@ -143,6 +145,7 @@ export function PaginaEtapas() {
     )
   }
   const grupo = (t: TipoEtapa) => etapas.filter((e) => e.tipo === t).map(item)
+  const saida = etapas.find((e) => e.tipo === "saida")
 
   return (
     <SettingsPage>
@@ -173,6 +176,16 @@ export function PaginaEtapas() {
           {grupo("saida")}
         </SettingsList>
       </SettingsBox>
+
+      <SettingsSection className="mt-7">
+        <SettingsSectionTitle>Registro do resultado</SettingsSectionTitle>
+        <SettingsSectionDescription>
+          Ao mover uma licitação para {saida?.nome ?? "a última etapa"}, a pessoa informa se ganhou ou perdeu. Quando
+          perdeu, ela precisa escolher um motivo desta lista. Um motivo já usado é arquivado, nunca apagado, para o
+          histórico e o dashboard continuarem certos.
+        </SettingsSectionDescription>
+        <ListaMotivos tipo="perda" area="Etapas do funil" usos="perdas" acao="registros de perda" />
+      </SettingsSection>
 
       <SettingsSection className="mt-7">
         <SettingsSectionTitle>O que acontece com o que já existe</SettingsSectionTitle>

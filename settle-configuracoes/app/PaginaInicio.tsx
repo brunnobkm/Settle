@@ -117,9 +117,9 @@ export function PaginaInicio() {
           />
           <Linha
             href="#motivos"
-            titulo="Motivos de descarte e perda"
-            descricao="O que a pessoa escolhe ao descartar ou registrar uma perda"
-            valor={`${ativos("descarte")} de descarte · ${ativos("perda")} de perda`}
+            titulo="Motivos de descarte"
+            descricao="O que a pessoa escolhe ao descartar uma licitação"
+            valor={`${ativos("descarte")} motivos`}
           />
           <Linha
             href="#card"
