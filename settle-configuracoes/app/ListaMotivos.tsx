@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react"
 import { toast } from "sonner"
-import { ArchiveIcon, InfoIcon, Trash2Icon } from "lucide-react"
+import { ArchiveIcon, Trash2Icon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -19,7 +19,7 @@ import {
   SettingsListNameInput,
 } from "@/components/ui/settings-list"
 
-import { avisarComDesfazer, BotaoIcone, Pilula } from "./comum"
+import { avisarComDesfazer, BotaoIcone, MetaComDica, Pilula } from "./comum"
 import { fmt, mover, novoId, type Motivo, type TipoMotivo } from "./dados"
 import { useConfig } from "./estado"
 import { useFocoNoNome } from "./PaginaEtapas"
@@ -32,6 +32,8 @@ export function ListaMotivos({
   acao,
   usoPassado,
   onde,
+  reservados,
+  bloquearUltimo,
   extras,
   fixo,
 }: {
@@ -48,6 +50,10 @@ export function ListaMotivos({
   usoPassado: string
   /** Onde o motivo continua aparecendo depois de arquivado. */
   onde: string
+  /** Nomes que a lista não pode usar porque já são de um motivo fixo (ex.: "Outros"). */
+  reservados?: string[]
+  /** Quando existe, impede tirar o último motivo da lista e explica o porquê no toast. */
+  bloquearUltimo?: string
   /** Conteúdo extra na linha de cada motivo (ex.: escopo por tela no descarte). */
   extras?: (x: Motivo) => ReactNode
   /** Item fixo no fim da lista (ex.: "Outros" no descarte). */
@@ -60,6 +66,17 @@ export function ListaMotivos({
   const arquivados = motivos.filter((x) => x.tipo === tipo && x.arq)
   const atualizar = (id: string, f: (m: Motivo) => Motivo) => setMotivos((l) => l.map((x) => (x.id === id ? f(x) : x)))
 
+  /** Devolve a mensagem do conflito, ou undefined quando o nome está livre. */
+  function nomeOcupado(v: string, fora?: Motivo) {
+    const igual = (n: string) => n.toLowerCase() === v.toLowerCase()
+    if (reservados?.some(igual)) return `"${v}" é um motivo fixo da plataforma. Escolha outro nome.`
+    const outro = motivos.find((m) => m.tipo === tipo && m !== fora && igual(m.nome))
+    if (!outro) return undefined
+    return outro.arq
+      ? `Já existe um motivo arquivado com esse nome. Restaure "${outro.nome}" em Arquivados.`
+      : "Já existe um motivo com esse nome"
+  }
+
   function alternarDescricao(x: Motivo) {
     atualizar(x.id, (m) => ({ ...m, desc: !m.desc }))
     auditar(area, `"${x.nome}" ${x.desc ? "deixou de pedir" : "passou a pedir"} descrição`)
@@ -71,12 +88,21 @@ export function ListaMotivos({
   }
 
   function renomear(x: Motivo, v: string) {
+    const conflito = nomeOcupado(v, x)
+    if (conflito) {
+      toast(conflito)
+      return false
+    }
     auditar(area, `Renomeou "${x.nome}" para "${v}"`)
     atualizar(x.id, (m) => ({ ...m, nome: v }))
     toast(x.uso ? `Nome salvo. As ${fmt(x.uso)} licitações com este motivo passam a mostrar o novo nome` : "Nome salvo")
   }
 
   function tirar(x: Motivo) {
+    if (bloquearUltimo && lista.length === 1) {
+      toast(bloquearUltimo)
+      return
+    }
     if (!x.uso) {
       confirmar({
         titulo: `Excluir "${x.nome}"?`,
@@ -122,13 +148,15 @@ export function ListaMotivos({
   }
 
   function adicionar() {
-    const n: Motivo = { id: novoId("n"), nome: "Novo motivo", uso: 0, rec: true, and: true, tipo, arq: false, desc: false }
+    let nome = "Novo motivo"
+    for (let i = 2; nomeOcupado(nome); i++) nome = `Novo motivo ${i}`
+    const n: Motivo = { id: novoId("n"), nome, uso: 0, rec: true, and: true, tipo, arq: false, desc: false }
     setMotivos((l) => {
       const ultimo = l.filter((y) => y.tipo === tipo && !y.arq).pop()
       const idx = ultimo ? l.indexOf(ultimo) : l.length - 1
       return [...l.slice(0, idx + 1), n, ...l.slice(idx + 1)]
     })
-    auditar(area, 'Adicionou "Novo motivo"')
+    auditar(area, `Adicionou "${nome}"`)
     focar(n.id)
   }
 
@@ -156,19 +184,7 @@ export function ListaMotivos({
                 </TooltipTrigger>
                 <TooltipContent>Ao escolher este motivo, a pessoa precisa escrever o porquê</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label={`O que significa "${x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}"`}
-                    className="flex flex-none cursor-help items-center gap-1 text-[12.5px] text-muted-foreground"
-                  >
-                    {x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}
-                    <InfoIcon aria-hidden className="size-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>{dicaUso}</TooltipContent>
-              </Tooltip>
+              <MetaComDica dica={dicaUso}>{x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}</MetaComDica>
               <SettingsListItemActions>
                 <BotaoIcone
                   rotulo={`${x.uso ? "Arquivar" : "Excluir"} ${x.nome}`}

@@ -93,6 +93,7 @@ export function PaginaMotivos() {
         acao="descartes"
         usoPassado="descartadas com este motivo"
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard"
+        reservados={["Outros"]}
         extras={(x) =>
           !unificar && (
             <div role="group" aria-label={`Onde "${x.nome}" aparece`} className="flex flex-none gap-1">

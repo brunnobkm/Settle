@@ -3,10 +3,13 @@
 
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { Trash2Icon } from "lucide-react"
+import { CheckIcon, Trash2Icon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Switch } from "@/components/ui/switch"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   SettingsBox,
   SettingsPage,
@@ -24,13 +27,23 @@ import {
   SettingsListGroupLabel,
   SettingsListItem,
   SettingsListItemActions,
-  SettingsListItemMeta,
   SettingsListLockBadge,
   SettingsListNameInput,
 } from "@/components/ui/settings-list"
 
-import { avisarComDesfazer, Aviso, BotaoIcone } from "./comum"
-import { CLASSE_COR_ETAPA, CORES_NOVAS, fmt, mover, novoId, type Etapa, type TipoEtapa } from "./dados"
+import { avisarComDesfazer, Aviso, BotaoIcone, MetaComDica } from "./comum"
+import {
+  CLASSE_COR_ETAPA,
+  CORES_ETAPA,
+  CORES_NOVAS,
+  fmt,
+  mover,
+  NOME_COR_ETAPA,
+  novoId,
+  type CorEtapa,
+  type Etapa,
+  type TipoEtapa,
+} from "./dados"
 import { Confirmacao, useConfig, type PedidoDeConfirmacao } from "./estado"
 import { ListaMotivos } from "./ListaMotivos"
 
@@ -48,7 +61,7 @@ export function useFocoNoNome() {
 }
 
 export function PaginaEtapas() {
-  const { etapas, setEtapas, auditar, desauditar } = useConfig()
+  const { etapas, setEtapas, exigirMotivoPerda, setExigirMotivoPerda, auditar, desauditar } = useConfig()
   const focar = useFocoNoNome()
   // a etapa continua guardada depois de fechar, para o diálogo sair animado com o conteúdo
   const [remocao, setRemocao] = useState<Etapa | null>(null)
@@ -121,22 +134,43 @@ export function PaginaEtapas() {
         ok: () => aplicarRemocao(remocao, null),
       }
 
+  function trocarCor(e: Etapa, cor: CorEtapa) {
+    if (cor === e.cor) return
+    setEtapas((l) => l.map((x) => (x.id === e.id ? { ...x, cor } : x)))
+    auditar("Etapas do funil", `Mudou a cor de "${e.nome}" para ${NOME_COR_ETAPA[cor]}`)
+    toast(`Cor salva. A coluna ${e.nome} fica ${NOME_COR_ETAPA[cor].toLowerCase()} no quadro para todo mundo`)
+  }
+
   const item = (e: Etapa) => {
     const fixa = e.tipo !== "meio"
     return (
       <SettingsListItem key={e.id} id={e.id} group={e.tipo} locked={fixa} lockedLabel="Posição fixa" name={e.nome}>
-        <span aria-hidden className={cn("size-2.5 flex-none rounded-full", CLASSE_COR_ETAPA[e.cor])} />
+        <SeletorDeCor etapa={e} onEscolher={(c) => trocarCor(e, c)} />
         <SettingsListNameInput
           value={e.nome}
           aria-label="Nome da etapa"
           data-nome-id={e.id}
           onValueCommit={(v) => renomear(e, v)}
         />
-        <SettingsListItemMeta>
+        <MetaComDica
+          dica={
+            e.qtd
+              ? "Quantas licitações estão nesta etapa agora. O número muda conforme o time move as licitações no quadro."
+              : "Nenhuma licitação está nesta etapa agora."
+          }
+        >
           {e.qtd ? `${fmt(e.qtd)} ${e.qtd === 1 ? "licitação" : "licitações"}` : "vazia"}
-        </SettingsListItemMeta>
+        </MetaComDica>
         {fixa ? (
-          <SettingsListLockBadge>{e.tipo === "entrada" ? "Agentes começam aqui" : "Resultado registrado aqui"}</SettingsListLockBadge>
+          <SettingsListLockBadge
+            tooltip={
+              e.tipo === "entrada"
+                ? "É aqui que a licitação cai quando alguém clica em Enviar para análise, e é o que dispara os agentes. Por isso a etapa não sai do começo do funil."
+                : "É aqui que a pessoa informa se ganhou ou perdeu, o que fecha a licitação e alimenta o dashboard. Por isso a etapa não sai do fim do funil."
+            }
+          >
+            {e.tipo === "entrada" ? "Agentes começam aqui" : "Resultado registrado aqui"}
+          </SettingsListLockBadge>
         ) : (
           <SettingsListItemActions>
             <BotaoIcone rotulo={`Remover etapa ${e.nome}`} perigo onClick={() => remover(e)}>
@@ -184,13 +218,40 @@ export function PaginaEtapas() {
         <SettingsSectionTitle>Registro do resultado</SettingsSectionTitle>
         <SettingsSectionDescription>
           Ao mover uma licitação para {saida?.nome ?? "a última etapa"}, a pessoa informa se ganhou ou perdeu. Quando
-          perdeu, ela precisa escolher um motivo desta lista. Um motivo já usado é arquivado, nunca apagado, para o
-          histórico e o dashboard continuarem certos.
+          perdeu, ela escolhe um motivo desta lista. Um motivo já usado é arquivado, nunca apagado, para o histórico e o
+          dashboard continuarem certos.
         </SettingsSectionDescription>
+
+        <SettingsBox className="mb-3.5">
+          <SettingsRow>
+            <SettingsRowContent>
+              <SettingsRowTitle id="t-perda">Exigir motivo ao registrar perda</SettingsRowTitle>
+              <SettingsRowDescription>
+                Sem motivo, o registro de "Perdeu" fica bloqueado até a pessoa escolher um. Desligue para deixar o motivo
+                opcional; o gráfico "Motivos de perda" passa a ter uma fatia "Sem motivo".
+              </SettingsRowDescription>
+            </SettingsRowContent>
+            <Switch
+              aria-labelledby="t-perda"
+              checked={exigirMotivoPerda}
+              onCheckedChange={(v) => {
+                setExigirMotivoPerda(v)
+                auditar("Etapas do funil", `${v ? "Passou a exigir" : "Deixou de exigir"} motivo ao registrar perda`)
+                toast("Salvo")
+              }}
+            />
+          </SettingsRow>
+        </SettingsBox>
+
         <ListaMotivos
           tipo="perda"
           area="Etapas do funil"
           usos="perdas"
+          bloquearUltimo={
+            exigirMotivoPerda
+              ? "Com motivo obrigatório, a lista precisa ter pelo menos um motivo. Desligue a exigência antes de tirar o último."
+              : undefined
+          }
           dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda."
           acao="registros de perda"
           usoPassado="registradas como perdidas com este motivo"
@@ -199,7 +260,11 @@ export function PaginaEtapas() {
       </SettingsSection>
 
       <SettingsSection className="mt-7">
-        <SettingsSectionTitle>O que acontece com o que já existe</SettingsSectionTitle>
+        <SettingsSectionTitle>Efeito de cada mudança</SettingsSectionTitle>
+        <SettingsSectionDescription>
+          Só para consulta: o que acontece com as licitações que já estão no quadro e com o dashboard quando você mexe
+          nas etapas acima.
+        </SettingsSectionDescription>
         <SettingsBox>
           <SettingsRow>
             <SettingsRowContent>
@@ -260,5 +325,48 @@ export function PaginaEtapas() {
         )}
       </Confirmacao>
     </SettingsPage>
+  )
+}
+
+/** Bolinha da etapa: clicar abre a paleta. A cor é só visual, o quadro usa o nome. */
+function SeletorDeCor({ etapa, onEscolher }: { etapa: Etapa; onEscolher: (cor: CorEtapa) => void }) {
+  const [aberto, setAberto] = useState(false)
+  return (
+    <Popover open={aberto} onOpenChange={setAberto}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label={`Cor da etapa ${etapa.nome}: ${NOME_COR_ETAPA[etapa.cor]}. Clique para trocar.`}
+              className="flex size-5 flex-none items-center justify-center rounded-md hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              <span aria-hidden className={cn("size-2.5 rounded-full", CLASSE_COR_ETAPA[etapa.cor])} />
+            </button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Cor da etapa no quadro de Em andamento. Clique para trocar.</TooltipContent>
+      </Tooltip>
+      <PopoverContent align="start" className="w-44 p-1">
+        <div role="group" aria-label="Cores" className="flex flex-col">
+          {CORES_ETAPA.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={c === etapa.cor}
+              onClick={() => {
+                onEscolher(c)
+                setAberto(false)
+              }}
+              className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[13px] hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              <span aria-hidden className={cn("size-2.5 flex-none rounded-full", CLASSE_COR_ETAPA[c])} />
+              <span className="flex-1">{NOME_COR_ETAPA[c]}</span>
+              {c === etapa.cor && <CheckIcon aria-hidden className="size-3.5 flex-none text-muted-foreground" />}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
