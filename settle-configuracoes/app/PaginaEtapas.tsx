@@ -82,6 +82,7 @@ export function PaginaEtapas() {
   const [resultado, setResultado] = useState<"ganhou" | "perdeu">("ganhou")
   const [motivoPerda, setMotivoPerda] = useState("")
   const [comentario, setComentario] = useState("")
+  const [erroMotivo, setErroMotivo] = useState(false)
 
   function renomear(e: Etapa, v: string) {
     if (etapas.some((x) => x.id !== e.id && x.nome.toLowerCase() === v.toLowerCase())) {
@@ -148,6 +149,7 @@ export function PaginaEtapas() {
     setResultado("ganhou")
     setMotivoPerda("")
     setComentario("")
+    setErroMotivo(false)
     setRemocao(e)
     setConfirmando(true)
   }
@@ -170,8 +172,14 @@ export function PaginaEtapas() {
         ),
         acao: vaiRegistrar ? "Remover e registrar" : "Remover e mover",
         perigo: true,
-        desabilitado: faltaMotivo,
-        ok: () => aplicarRemocao(remocao, destino),
+        ok: () => {
+          if (faltaMotivo) {
+            setErroMotivo(true)
+            toast.error(`Selecione um motivo para registrar o resultado como "Perdeu a licitação".`)
+            return false
+          }
+          aplicarRemocao(remocao, destino)
+        },
       }
     : {
         titulo: `Remover "${remocao.nome}"?`,
@@ -274,9 +282,8 @@ export function PaginaEtapas() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-perda">Exigir motivo ao registrar perda</SettingsRowTitle>
               <SettingsRowDescription>
-                Ligado, o botão que confirma o resultado fica desabilitado enquanto a pessoa não escolher um motivo, que
-                é como a plataforma funciona hoje. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
-                ganha uma fatia "Sem motivo".
+                Ligado, quem registra "Perdeu" precisa escolher um motivo para concluir. Desligado, o motivo vira
+                opcional e o gráfico "Motivos de perda" ganha uma fatia "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -358,7 +365,12 @@ export function PaginaEtapas() {
                       Motivo da perda
                       <NativeSelect
                         value={motivoPerda}
-                        onChange={(ev) => setMotivoPerda(ev.target.value)}
+                        onChange={(ev) => {
+                          setMotivoPerda(ev.target.value)
+                          setErroMotivo(false)
+                        }}
+                        aria-invalid={erroMotivo}
+                        aria-describedby={erroMotivo ? "erro-motivo" : undefined}
                         className="w-full font-normal"
                       >
                         <NativeSelectOption value="">
@@ -370,6 +382,11 @@ export function PaginaEtapas() {
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
+                      {erroMotivo && (
+                        <span id="erro-motivo" role="alert" className="text-[12.5px] font-normal text-destructive">
+                          Selecione um motivo para registrar o resultado como "Perdeu a licitação".
+                        </span>
+                      )}
                     </label>
                     <Textarea
                       value={comentario}

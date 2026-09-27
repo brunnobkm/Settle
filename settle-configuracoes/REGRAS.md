@@ -101,12 +101,17 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 - "Outros" é fixo e sempre pede descrição.
 - **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
   escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
-- Interruptor "Exigir motivo ao descartar". **Como a plataforma valida hoje** (conferido no
-  bundle `ResponsibleSelect`, diálogo `DiscardReasonDialog`): o botão Descartar continua
-  clicável; quem confirma sem motivo recebe o campo em vermelho, a mensagem "Selecione um
-  motivo para descartar a licitação" abaixo dele e um toast de erro, e o descarte não
-  acontece. É diferente do registro de perda, que desabilita o botão. **Vale unificar as
-  duas.**
+- Interruptor "Exigir motivo ao descartar".
+
+**Como avisar que falta o motivo, nas duas listas.** Hoje a plataforma faz de dois jeitos: o
+descarte (`DiscardReasonDialog`) deixa o botão clicável e, ao confirmar sem motivo, marca o
+campo em vermelho, mostra a mensagem abaixo dele e dispara um toast; o registro de perda
+(diálogo "Resultado da Licitação") desabilita o botão. **A direção é a do descarte:** botão
+sempre habilitado, erro claro na hora de confirmar. Botão desabilitado não diz o que falta
+nem o que fazer, e some com o motivo da recusa justamente de quem precisa dele. O protótipo
+segue essa direção em todos os lugares, inclusive no registro de resultado da remoção de
+etapa, e por isso os textos da tela falam da regra ("precisa escolher um motivo para
+concluir"), não do mecanismo. **O botão desabilitado do registro de perda é para corrigir.**
 - Hoje existem 15 motivos de descarte (incluindo Outros).
 
 ## 3. Campos do card de Recomendadas
@@ -259,8 +264,7 @@ Casos que podem dar problema, e a regra proposta:
    movidas"). O mesmo diálogo já serve à seleção múltipla ("Informe o resultado para N
    licitações"), com **um resultado para todas**. A remoção de etapa segue esse precedente:
    escolhido o destino de saída, o diálogo mostra Ganhou/Perdeu, o motivo (quando Perdeu) e um
-   comentário opcional, e a ação vira "Remover e registrar". Com Perdeu e sem motivo, o botão
-   fica desabilitado enquanto a exigência estiver ligada, igual à plataforma.
+   comentário opcional, e a ação vira "Remover e registrar".
 4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
    tema). A cor é só visual, para reconhecer a etapa em Em andamento: nada depende dela,
    e duas etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio. Hoje as cores
