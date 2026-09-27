@@ -302,7 +302,7 @@ export function resumoFiltro(x: FiltroAba) {
 
 /* ======================= CAMPOS DO CARD ======================= */
 
-export type GrupoCampo = "destaque" | "datas" | "meta" | "itens"
+export type GrupoCampo = "topo" | "destaque" | "datas" | "meta" | "itens"
 
 export type Campo = {
   id: string
@@ -315,6 +315,7 @@ export type Campo = {
 }
 
 export const GRUPOS_CAMPO: [GrupoCampo, string, string][] = [
+  ["topo", "Topo", "primeira linha do card"],
   ["destaque", "Destaque", "abaixo do número do edital"],
   ["datas", "Datas", "coluna da esquerda"],
   ["meta", "Metadados", "qualquer variável da organização pode entrar aqui"],
@@ -322,6 +323,12 @@ export const GRUPOS_CAMPO: [GrupoCampo, string, string][] = [
 ]
 
 export const CAMPOS: Campo[] = [
+  { id: "edital", nome: "Número do edital", g: "topo", on: true },
+  { id: "descartar", nome: "Descartar", g: "topo", on: true },
+  { id: "analise", nome: "Enviar para análise", g: "topo", on: true },
+  { id: "responsaveis", nome: "Responsáveis", g: "topo", on: true },
+  { id: "acoes", nome: "Ações de ícone", g: "topo", on: true },
+  { id: "score", nome: "Score", g: "topo", on: true },
   { id: "segmento", nome: "Segmento", g: "destaque", on: true },
   { id: "orgao", nome: "Órgão", g: "destaque", on: true },
   { id: "me", nome: "ME/EPP", g: "destaque", on: true },

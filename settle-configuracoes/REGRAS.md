@@ -116,8 +116,15 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 
 ## 3. Campos do card de Recomendadas
 
-- Mostrar/ocultar e ordenar, em quatro grupos: Destaque, Datas (coluna esquerda), Metadados
-  (grade), Itens. O topo (edital, ações, Score) é fixo.
+- Mostrar/ocultar e ordenar, em cinco grupos: Topo (primeira linha), Destaque, Datas (coluna
+  esquerda), Metadados (grade), Itens.
+- **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou seis itens:
+  Número do edital, Descartar, Enviar para análise, Responsáveis, Ações de ícone e Score. Cada
+  um liga, desliga e muda de ordem como qualquer outro campo. O número do edital fica à
+  esquerda e empurra o resto para a direita; os demais aparecem na ordem da lista.
+- **Em aberto:** desligar Descartar ou Enviar para análise tira o botão do card, mas a ação
+  continua existindo no menu da linha e nas ações em lote. Confirmar com o time se é isso
+  mesmo, ou se esses dois deveriam ser tratados como permissão e não como campo do card.
 - Reordenar só dentro do grupo: o card tem estrutura, e um campo de data no meio do objeto
   quebraria a leitura.
 - Variável da organização pode virar campo. Quando não é encontrada naquela licitação, mostra
