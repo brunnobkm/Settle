@@ -29,7 +29,6 @@ import { Switch } from "@/components/ui/switch"
 import {
   SettingsBox,
   SettingsPage,
-  SettingsPageDescription,
   SettingsPreview,
   SettingsPreviewHeader,
   SettingsSplit,
@@ -44,7 +43,7 @@ import {
   SettingsListName,
 } from "@/components/ui/settings-list"
 
-import { BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
+import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
 import { CAMPOS, GRUPOS_CAMPO, LICS, OPCOES_MAX_ITENS, mover, valorDaLic, type Campo } from "./dados"
 import { useConfig } from "./estado"
 
@@ -54,7 +53,8 @@ export function SeletorDeExemplo({ id }: { id: string }) {
     <NativeSelect
       id={id}
       size="sm"
-      aria-label="Licitação de exemplo"
+      aria-label="Edital usado no exemplo"
+      title="Troca o edital do exemplo, para conferir o resultado com dados diferentes (inclusive com campo vazio)"
       value={lic}
       onChange={(e) => setLic(Number(e.target.value))}
       className="text-foreground"
@@ -153,10 +153,10 @@ export function PaginaCard() {
 
   return (
     <SettingsPage width="wide">
-      <SettingsPageDescription>
-        O que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da organização. Os campos
-        escondidos continuam disponíveis em Filtrar e Ordenar.
-      </SettingsPageDescription>
+      <Aviso tom="marca" fechavel>
+        Aqui você escolhe o que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da
+        organização. Os campos escondidos continuam disponíveis em Filtrar e Ordenar.
+      </Aviso>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
           <SettingsBox>
