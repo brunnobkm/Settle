@@ -18,9 +18,18 @@ function TooltipProvider({
 }
 
 function Tooltip({
+  // o balão é só informação: deixá-lo "alcançável pelo mouse" cria uma área de tolerância
+  // entre gatilho e balão que segura o tooltip aberto e atrapalha quem só está passando
+  disableHoverableContent = true,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+  return (
+    <TooltipPrimitive.Root
+      data-slot="tooltip"
+      disableHoverableContent={disableHoverableContent}
+      {...props}
+    />
+  )
 }
 
 function TooltipTrigger({
