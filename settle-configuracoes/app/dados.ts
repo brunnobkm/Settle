@@ -539,7 +539,8 @@ export const LICS: Lic[] = [
   {
     edital: "37/2026",
     orgao: "ESP-FED-PENIT. ESTADO DE SÃO PAULO",
-    objeto: "Aquisição de material permanente: equipamentos de TI (PEAIPEN, Convênio nº 936.735/2022).",
+    objeto:
+      "VEICULO, aereo, nao tripulado para gravacao de imagens aereas. O equipamento deve conter as seguintes especificacoes: Deve fotografar e filmar nas orientacoes vertical e horizontal, distancia maxima de voo: 12km, resolucao maxima da camera: 4K, tempo maximo de voo de 34min podendo chegar a ate 47min, velocidade maxima: 57km/h, Peso: 249 g, possuir a funcao de retorno automatico, sensores de obstaculos tri direcional, GPS incluido, altura maxima: 500m e altitude maxima: 4000m, com 3 baterias, filtros ND de 32, 64 e 100, polarizador e controle com tela.",
     valor: "R$ 67.949,95",
     envio: "02/10/2026",
     modalidade: "Pregão - Eletrônico",

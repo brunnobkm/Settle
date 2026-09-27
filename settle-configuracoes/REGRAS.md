@@ -140,6 +140,13 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 - Variável da organização pode virar campo. Quando não é encontrada naquela licitação, mostra
   "Não encontrado" (mesmo tratamento FOUND/NOT_FOUND/OTHER do Resumo).
 - Campo oculto continua em Filtrar e Ordenar.
+- **Objeto longo é o caso comum, não a exceção.** O edital de exemplo usa um objeto de
+  compra de equipamento com especificação inteira no texto (565 caracteres). Hoje o card
+  desenha tudo: são 5 linhas numa caixa de 832px, e o card inteiro vai a 744px de altura.
+  Conferido no bundle `workflow`: o Objeto do card não tem corte nenhum hoje (`line-clamp`
+  só aparece na Tabela e em outras telas). **Em aberto:** cortar em 2 ou 3 linhas com "ver
+  mais", ou deixar a organização escolher quantas linhas o Objeto ocupa. Sem isso, dois ou
+  três editais assim enchem a tela e a lista perde a densidade que a torna útil.
 - **Quantidade de itens** (feedback da Alice, 18/09): hoje o card mostra até 5 itens com
   correspondência. O admin escolhe 3, 5, 10 ou todos; o que passar do limite fica em
   "Ver mais N itens". O contador mostra sempre o total.
