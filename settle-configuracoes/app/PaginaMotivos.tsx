@@ -41,9 +41,9 @@ export function PaginaMotivos() {
   return (
     <SettingsPage className="max-w-245">
       <Aviso tom="marca" fechavel>
-        O que a pessoa escolhe ao descartar uma licitação em Recomendadas ou Em andamento. Depois, o motivo fica no
-        filtro de Descartadas e no gráfico "Motivos de descarte" do dashboard, por isso um motivo já usado é arquivado,
-        nunca apagado.
+        Aqui você gerencia a lista de motivos que aparece para a pessoa quando ela descarta uma licitação em
+        Recomendadas ou Em andamento. O motivo escolhido fica na licitação: aparece no filtro de Descartadas e no
+        gráfico "Motivos de descarte" do dashboard. Por isso um motivo já usado é arquivado, nunca apagado.
       </Aviso>
 
       <SettingsSection>
