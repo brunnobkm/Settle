@@ -24,7 +24,8 @@ para a mesma página):
 |---|---|
 | Etapas do funil | Em andamento, menu `⋯` da coluna, Editar etapas |
 | Abas das listas | Recomendadas e Descartadas, `⋯` ao lado das abas, Editar abas |
-| Motivos | Modal de Descartar e de registrar perda, Gerenciar motivos |
+| Motivos de descarte | Modal de Descartar, Gerenciar motivos |
+| Motivos de perda | Diálogo de registrar o resultado, Gerenciar motivos (leva a Etapas do funil) |
 | Campos do card | Recomendadas, Ordenar, Personalizar campos do card |
 | Modelo de e-mail | Modal Compartilhar licitação, Editar modelo de e-mail |
 
@@ -76,9 +77,13 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 - Em aberto: mais de um modelo (ex.: um para diretoria, outro para parceiro) escolhido na hora
   de compartilhar. Fica para depois de validar o uso de um.
 
-## 2. Motivos de descarte e de perda
+## 2. Motivos de descarte
 
-- **Uma lista por tipo** (Descarte, Perda). Recomendação: unificar Recomendadas e Em andamento
+- **Só descarte nesta seção** (decidido em 27/09). Ganhou ou Perdeu é decisão do funil, não do
+  descarte: acontece quando a licitação chega na etapa de saída. Por isso os **motivos de perda
+  ficam na seção 5, Etapas do funil**, junto da etapa em que o resultado é registrado. As regras
+  de lista (renomear, arquivar, pedir descrição) são as mesmas nos dois lugares.
+- Uma lista de motivos de descarte. Recomendação: unificar Recomendadas e Em andamento
   por padrão (interruptor ligado) e permitir, desligando, escolher motivo a motivo em qual tela
   ele aparece. Guarda-se sempre uma lista só; a diferença é um atributo do motivo.
 - Um motivo precisa aparecer em pelo menos uma das telas.
@@ -90,11 +95,9 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   licitações serão afetadas.
 - "Outros" é fixo e sempre pede descrição.
 - **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
-  escreva o porquê ao escolhê-lo. Vale para descarte e perda. Ligar não afeta os descartes
-  já feitos sem descrição.
+  escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
 - Interruptor "Exigir motivo ao descartar".
-- Hoje existem 15 motivos de descarte (incluindo Outros). Os de perda no protótipo são exemplo:
-  **confirmar a lista atual com o time.**
+- Hoje existem 15 motivos de descarte (incluindo Outros).
 
 ## 3. Campos do card de Recomendadas
 
@@ -199,6 +202,19 @@ Modelo do Linear: categorias fixas com itens editáveis dentro.
 | Entrada (Análise de Oportunidades) | sim | não | não | agentes rodam quando a licitação entra |
 | Intermediárias | sim | sim | sim | fluxo de trabalho do cliente |
 | Saída (Resultados Finais) | sim | não | não | agentes e registro do resultado |
+
+### Registro do resultado e motivos de perda
+
+Verificado no código da plataforma em 27/09: ao mover uma licitação para a etapa de saída, o
+app abre um diálogo perguntando o resultado (**Ganhou** ou **Perdeu**), com motivo e
+observação. O motivo é **obrigatório só quando é Perdeu** ("Selecione um motivo para registrar
+o resultado como 'Perdeu a licitação'"), e a lista de motivos de perda é buscada separada da
+lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não em Motivos.
+
+- Mesmas regras de lista do descarte: renomear, reordenar, "pede descrição", arquivar quando já
+  foi usado, excluir quando nunca foi.
+- Os motivos de perda do protótipo são exemplo: **confirmar a lista real com o time.**
+- Em aberto: se o "Ganhou" também aceita motivo (hoje não exige).
 
 Casos que podem dar problema, e a regra proposta:
 

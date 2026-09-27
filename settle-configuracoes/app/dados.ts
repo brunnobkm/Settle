@@ -21,7 +21,7 @@ export const NOMES: Record<Rota, string> = {
   inicio: "Configurações",
   etapas: "Etapas do funil",
   abas: "Abas das listas",
-  motivos: "Motivos de descarte e perda",
+  motivos: "Motivos de descarte",
   card: "Campos do card",
   email: "Modelo de e-mail",
   equipe: "Equipe",
@@ -549,7 +549,7 @@ export const EQUIPE: [string, string, string][] = [
 export const PERMISSOES: string[][] = [
   ["Etapas do funil", "Altera", "Usa", "Usa", "Vê"],
   ["Abas das listas", "Cria, edita e exclui", "Usa", "Usa", "Usa"],
-  ["Motivos de descarte e perda", "Altera", "Usa", "Usa", "Não usa (não descarta)"],
+  ["Motivos de descarte", "Altera", "Usa", "Usa", "Não usa (não descarta)"],
   ["Campos do card", "Altera", "Vê", "Vê", "Vê"],
   ["Modelo de e-mail", "Altera", "Usa", "Usa", "Usa"],
   ["Equipe", "Altera", "Não vê", "Não vê", "Não vê"],
