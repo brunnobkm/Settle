@@ -302,60 +302,71 @@ export function resumoFiltro(x: FiltroAba) {
 
 /* ======================= CAMPOS DO CARD ======================= */
 
-export type GrupoCampo = "topo" | "destaque" | "datas" | "meta" | "itens"
+/** Como o campo aparece no card. A pessoa escolhe, campo a campo, na lista. */
+export type FormatoCampo = "topo" | "destaque" | "data" | "propriedade" | "tabela"
+
+/** Formatos que a pessoa pode escolher (os outros são de campos fixos). */
+export const FORMATOS: [FormatoCampo, string, string][] = [
+  ["destaque", "Destaque", "linha larga, abaixo do topo"],
+  ["data", "Data", "na caixa da esquerda"],
+  ["propriedade", "Propriedade", "célula da grade"],
+]
 
 export type Campo = {
   id: string
   nome: string
-  g: GrupoCampo
+  f: FormatoCampo
   on: boolean
   /** Não pode ser ocultado, só reordenado (ex.: a caixa de seleção do card). */
   sempre?: boolean
+  /** Formato fixo: peça do topo ou a tabela de itens, que não viram célula nem linha. */
+  fixo?: boolean
+  /** Destaque: fica na mesma linha do destaque anterior, em vez de abrir uma linha nova. */
+  junto?: boolean
   /** Variável adicionada pela organização (ou da Settle) à grade de metadados. */
   var?: boolean
   origem?: OrigemVar
 }
 
-export const GRUPOS_CAMPO: [GrupoCampo, string, string][] = [
-  ["topo", "Topo", "primeira linha do card"],
-  ["destaque", "Destaque", "abaixo do número do edital"],
-  ["datas", "Datas", "coluna da esquerda"],
-  ["meta", "Metadados", "qualquer variável da organização pode entrar aqui"],
-  ["itens", "Itens", ""],
-]
-
 export const CAMPOS: Campo[] = [
-  { id: "selecao", nome: "Seleção do card", g: "topo", on: true, sempre: true },
-  { id: "edital", nome: "Número do edital", g: "topo", on: true },
-  { id: "descartar", nome: "Descartar", g: "topo", on: true },
-  { id: "analise", nome: "Enviar para análise", g: "topo", on: true },
-  { id: "responsaveis", nome: "Responsáveis", g: "topo", on: true },
-  { id: "acoes", nome: "Ações de ícone", g: "topo", on: true },
-  { id: "score", nome: "Score", g: "topo", on: true },
-  { id: "segmento", nome: "Segmento", g: "destaque", on: true },
-  { id: "orgao", nome: "Órgão", g: "destaque", on: true },
-  { id: "me", nome: "ME/EPP", g: "destaque", on: true },
-  { id: "objeto", nome: "Objeto", g: "destaque", on: true },
-  { id: "valor", nome: "Valor global", g: "destaque", on: true },
-  { id: "adicionada", nome: "Adicionada", g: "datas", on: true },
-  { id: "atualizada", nome: "Atualizada", g: "datas", on: true },
-  { id: "envio", nome: "Envio da proposta", g: "datas", on: true },
-  { id: "id", nome: "ID", g: "meta", on: true },
-  { id: "julgamento", nome: "Julgamento", g: "meta", on: true },
-  { id: "portal", nome: "Portal de Disputa", g: "meta", on: true },
-  { id: "estado", nome: "Estado", g: "meta", on: true },
-  { id: "capagE", nome: "CAPAG Estadual", g: "meta", on: true },
-  { id: "modalidade", nome: "Modalidade", g: "meta", on: true },
-  { id: "uasg", nome: "UASG", g: "meta", on: true },
-  { id: "cidade", nome: "Cidade", g: "meta", on: true },
-  { id: "capagM", nome: "CAPAG Municipal", g: "meta", on: true },
-  { id: "habitantes", nome: "Habitantes", g: "meta", on: true },
-  { id: "substatus", nome: "Substatus", g: "meta", on: true },
-  { id: "descricao", nome: "Descrição", g: "meta", on: true },
-  { id: "itens", nome: "Itens com correspondência", g: "itens", on: true },
+  { fixo: true, sempre: true, id: "selecao", nome: "Seleção do card", f: "topo", on: true },
+  { fixo: true, id: "edital", nome: "Número do edital", f: "topo", on: true },
+  { fixo: true, id: "descartar", nome: "Descartar", f: "topo", on: true },
+  { fixo: true, id: "analise", nome: "Enviar para análise", f: "topo", on: true },
+  { fixo: true, id: "responsaveis", nome: "Responsáveis", f: "topo", on: true },
+  { fixo: true, id: "acoes", nome: "Ações de ícone", f: "topo", on: true },
+  { fixo: true, id: "score", nome: "Score", f: "topo", on: true },
+  { id: "segmento", nome: "Segmento", f: "destaque", on: true },
+  { id: "orgao", nome: "Órgão", f: "destaque", on: true },
+  { id: "me", nome: "ME/EPP", f: "destaque", on: true },
+  { id: "objeto", nome: "Objeto", f: "destaque", on: true },
+  { id: "valor", nome: "Valor global", f: "destaque", on: true },
+  { id: "adicionada", nome: "Adicionada", f: "data", on: true },
+  { id: "atualizada", nome: "Atualizada", f: "data", on: true },
+  { id: "envio", nome: "Envio da proposta", f: "data", on: true },
+  { id: "id", nome: "ID", f: "propriedade", on: true },
+  { id: "julgamento", nome: "Julgamento", f: "propriedade", on: true },
+  { id: "portal", nome: "Portal de Disputa", f: "propriedade", on: true },
+  { id: "estado", nome: "Estado", f: "propriedade", on: true },
+  { id: "capagE", nome: "CAPAG Estadual", f: "propriedade", on: true },
+  { id: "modalidade", nome: "Modalidade", f: "propriedade", on: true },
+  { id: "uasg", nome: "UASG", f: "propriedade", on: true },
+  { id: "cidade", nome: "Cidade", f: "propriedade", on: true },
+  { id: "capagM", nome: "CAPAG Municipal", f: "propriedade", on: true },
+  { id: "habitantes", nome: "Habitantes", f: "propriedade", on: true },
+  { id: "substatus", nome: "Substatus", f: "propriedade", on: true },
+  { id: "descricao", nome: "Descrição", f: "propriedade", on: true },
+  { fixo: true, id: "itens", nome: "Itens com correspondência", f: "tabela", on: true },
 ]
 
 export const OPCOES_MAX_ITENS = [3, 5, 10, 0]
+
+/**
+ * Quantos itens entram por vez quando a organização escolhe "Todos os itens". Um edital com
+ * centenas de itens não pode desenhar tudo de uma vez: a tabela ganha altura própria e vai
+ * carregando o próximo bloco conforme a pessoa rola.
+ */
+export const BLOCO_DE_ITENS = 25
 
 /* ======================= VARIÁVEIS ======================= */
 
@@ -555,17 +566,7 @@ export const LICS: Lic[] = [
     capagM: "B",
     habitantes: "11.451.999",
     totalItens: 140,
-    itens: [
-      { lote: "1", nome: 'Notebook corporativo 14", 16 GB RAM, SSD 512 GB', seg: "Produtos", unid: "3", unit: "R$ 7.549,99", total: "R$ 22.649,97" },
-      { lote: "1", nome: 'Monitor LED 24", Full HD, ajuste de altura', seg: "Produtos", unid: "12", unit: "R$ 745,00", total: "R$ 8.940,00" },
-      { lote: "1", nome: "Desktop corporativo, Core i5, 16 GB RAM", seg: "Produtos", unid: "6", unit: "R$ 3.050,00", total: "R$ 18.300,00" },
-      { lote: "2", nome: "Nobreak 1.500 VA bivolt", seg: "Produtos", unid: "6", unit: "R$ 730,00", total: "R$ 4.380,00" },
-      { lote: "2", nome: "Switch gerenciável 24 portas PoE", seg: "Produtos", unid: "2", unit: "R$ 3.395,00", total: "R$ 6.790,00" },
-      { lote: "2", nome: "Impressora multifuncional laser monocromática", seg: "Produtos", unid: "2", unit: "R$ 1.990,00", total: "R$ 3.980,00" },
-      { lote: "3", nome: "Webcam Full HD com microfone", seg: "Produtos", unid: "2", unit: "R$ 629,99", total: "R$ 1.259,98" },
-      { lote: "3", nome: "Kit teclado e mouse sem fio", seg: "Produtos", unid: "10", unit: "R$ 95,00", total: "R$ 950,00" },
-      { lote: "3", nome: "Headset USB com cancelamento de ruído", seg: "Produtos", unid: "5", unit: "R$ 140,00", total: "R$ 700,00" },
-    ],
+    itens: itensDeTI(),
   },
 ]
 
@@ -638,3 +639,69 @@ export function mover<T extends { id: string }>(lista: T[], deId: string, paraId
 
 let seq = 0
 export const novoId = (prefixo: string) => `${prefixo}${Date.now()}${seq++}`
+
+/**
+ * Itens com correspondência do edital de TI usado no exemplo. São muitos de propósito: é com
+ * eles que dá para ver a tabela carregando por partes em "Todos os itens".
+ */
+function itensDeTI(): ItemLic[] {
+  const base: [string, string, number][] = [
+    ['Notebook corporativo 14", 16 GB RAM, SSD 512 GB', "Produtos", 7549.99],
+    ['Notebook corporativo 15,6", 8 GB RAM, SSD 256 GB', "Produtos", 4980.0],
+    ['Monitor LED 24", Full HD, ajuste de altura', "Produtos", 745.0],
+    ['Monitor LED 27", Quad HD, ajuste de altura', "Produtos", 1690.0],
+    ["Desktop corporativo, Core i5, 16 GB RAM", "Produtos", 3050.0],
+    ["Desktop corporativo, Core i7, 32 GB RAM", "Produtos", 5890.0],
+    ["Estação de trabalho para CAD, 64 GB RAM", "Produtos", 12400.0],
+    ["Nobreak 1.500 VA bivolt", "Produtos", 730.0],
+    ["Nobreak 3.000 VA rack 2U", "Produtos", 2890.0],
+    ["Estabilizador 1.000 VA", "Produtos", 189.9],
+    ["Switch gerenciável 24 portas PoE", "Produtos", 3395.0],
+    ["Switch gerenciável 48 portas PoE", "Produtos", 6480.0],
+    ["Roteador corporativo Wi-Fi 6 dual band", "Produtos", 1980.0],
+    ["Ponto de acesso Wi-Fi 6 de teto", "Produtos", 1240.0],
+    ["Firewall de borda com licença de 36 meses", "Produtos", 18900.0],
+    ["Rack padrão 19 polegadas, 24U", "Produtos", 2450.0],
+    ["Patch panel 24 portas Cat6", "Produtos", 389.0],
+    ["Cabo de rede Cat6 em caixa de 305 m", "Produtos", 720.0],
+    ["Impressora multifuncional laser monocromática", "Produtos", 1990.0],
+    ["Impressora multifuncional laser colorida", "Produtos", 4350.0],
+    ["Scanner de mesa com alimentador automático", "Produtos", 2180.0],
+    ["Projetor multimídia 4.000 lúmens", "Produtos", 3290.0],
+    ["Webcam Full HD com microfone", "Produtos", 629.99],
+    ["Headset USB com cancelamento de ruído", "Produtos", 140.0],
+    ["Kit teclado e mouse sem fio", "Produtos", 95.0],
+    ["Mouse óptico USB com fio", "Produtos", 39.9],
+    ["Teclado ABNT2 USB com fio", "Produtos", 62.5],
+    ["Hub USB-C com HDMI e leitor de cartão", "Produtos", 310.0],
+    ["Docking station USB-C 90 W", "Produtos", 1450.0],
+    ["Storage NAS 4 baias com 2 discos de 8 TB", "Produtos", 9800.0],
+    ["Disco rígido interno 4 TB SATA", "Produtos", 890.0],
+    ["SSD NVMe 1 TB", "Produtos", 540.0],
+    ["Pen drive USB 3.0 64 GB", "Produtos", 48.0],
+    ["Licença de antivírus corporativo, 12 meses", "Software", 168.0],
+    ["Licença de suíte de escritório, 12 meses", "Software", 890.0],
+    ["Licença de sistema operacional para servidor", "Software", 4700.0],
+    ["Serviço de instalação e configuração por estação", "Serviços", 180.0],
+    ["Serviço de migração de dados por estação", "Serviços", 240.0],
+    ["Treinamento presencial para equipe de TI (turma)", "Serviços", 3800.0],
+    ["Suporte técnico on-site, banco de 100 horas", "Serviços", 12500.0],
+  ]
+  const quantidades = [3, 12, 6, 2, 10, 5, 8, 4, 20, 1, 15, 7]
+  return base.map(([nome, seg, unit], i) => {
+    const unid = quantidades[i % quantidades.length]
+    return {
+      lote: String(Math.floor(i / 8) + 1),
+      nome,
+      seg,
+      unid: String(unid),
+      unit: reais(unit),
+      total: reais(unit * unid),
+    }
+  })
+}
+
+/** Número no formato do edital: R$ 1.234.567,89. */
+function reais(v: number) {
+  return `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
