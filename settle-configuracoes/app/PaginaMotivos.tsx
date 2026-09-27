@@ -90,7 +90,6 @@ export function PaginaMotivos() {
         area="Motivos"
         usos="descartes"
         dicaUso="Quantas licitações já foram descartadas com este motivo."
-        porQueArquivar="senão elas sumiriam do filtro de Descartadas e do gráfico “Motivos de descarte” do dashboard"
         acao="descartes"
         usoPassado="descartadas com este motivo"
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard"

@@ -29,7 +29,6 @@ export function ListaMotivos({
   area,
   usos,
   dicaUso,
-  porQueArquivar,
   acao,
   usoPassado,
   onde,
@@ -43,8 +42,6 @@ export function ListaMotivos({
   usos: string
   /** Tooltip do número de usos, no "i" ao lado dele. */
   dicaUso: string
-  /** Fim da frase do tooltip de arquivar: "Não dá para excluir, <porQueArquivar>". */
-  porQueArquivar: string
   /** O que a pessoa faz com o motivo: "descartes", "registros de perda". */
   acao: string
   /** Como as licitações que já usaram o motivo são descritas: "descartadas com este motivo". */
@@ -177,8 +174,8 @@ export function ListaMotivos({
                   rotulo={`${x.uso ? "Arquivar" : "Excluir"} ${x.nome}`}
                   dica={
                     x.uso
-                      ? `Arquivar: sai da lista, e as licitações que já usaram este motivo continuam com ele. Não dá para excluir, ${porQueArquivar}`
-                      : "Excluir: nunca foi usado, então nada se perde"
+                      ? `Não dá para excluir: ${fmt(x.uso)} licitações já foram ${usoPassado} e perderiam esse registro. Arquivar só tira o motivo da lista de opções, sem mexer nelas.`
+                      : "Dá para excluir: nenhuma licitação usou este motivo, então nada se perde."
                   }
                   perigo
                   onClick={() => tirar(x)}
