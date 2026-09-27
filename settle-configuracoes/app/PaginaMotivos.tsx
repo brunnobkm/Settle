@@ -40,7 +40,7 @@ export function PaginaMotivos() {
 
   return (
     <SettingsPage className="max-w-245">
-      <Aviso fechavel>
+      <Aviso tom="marca" fechavel>
         O que a pessoa escolhe ao descartar uma licitação ou registrar que perdeu. Os motivos alimentam o filtro de
         Descartadas e o dashboard, por isso um motivo já usado é arquivado, nunca apagado. Os motivos de perda ficam em{" "}
         <b>Etapas do funil</b>, junto da etapa em que o resultado é registrado.
