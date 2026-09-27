@@ -1,7 +1,7 @@
 // Peças pequenas usadas em mais de uma página de Configurações.
 
 import { useState, type ComponentProps, type ReactNode } from "react"
-import { InfoIcon, XIcon } from "lucide-react"
+import { CheckIcon, InfoIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -107,17 +107,21 @@ export function BotaoIcone({
 }
 
 /** Pílula liga/desliga (onde o motivo aparece, "Pede descrição"). */
-export function Pilula({ className, ...props }: ComponentProps<typeof Toggle>) {
+export function Pilula({ className, children, ...props }: ComponentProps<typeof Toggle>) {
   return (
     <Toggle
       size="sm"
       variant="outline"
       className={cn(
-        "h-5.5 min-w-0 flex-none rounded-full bg-card px-2.25 text-[11.5px] font-normal text-muted-foreground shadow-none hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:font-semibold aria-pressed:text-primary",
+        "h-5.5 min-w-0 flex-none gap-1 rounded-full bg-card px-2.25 text-[11.5px] font-normal text-muted-foreground shadow-none hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:pl-1.75 aria-pressed:font-semibold aria-pressed:text-primary",
         className
       )}
       {...props}
-    />
+    >
+      {/* o check deixa claro que a pilha ligada é uma escolha, não só uma cor diferente */}
+      {props.pressed && <CheckIcon aria-hidden className="size-3" />}
+      {children}
+    </Toggle>
   )
 }
 
