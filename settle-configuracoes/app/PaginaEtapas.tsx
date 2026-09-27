@@ -188,10 +188,10 @@ export function PaginaEtapas() {
           tipo="perda"
           area="Etapas do funil"
           usos="perdas"
-          dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda. Por isso ele é arquivado, e não excluído: o histórico e o dashboard continuam mostrando o motivo nessas licitações."
+          dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda. Por isso ele é arquivado, e não excluído: essas licitações continuam com ele no resultado e no gráfico “Motivos de perda” do dashboard."
           acao="registros de perda"
           usoPassado="registradas como perdidas com este motivo"
-          onde="no resultado dessas licitações e nos números do dashboard"
+          onde="no resultado dessas licitações e no gráfico “Motivos de perda” do dashboard"
         />
       </SettingsSection>
 
