@@ -6,6 +6,14 @@ import { toast } from "sonner"
 import { CheckIcon, Trash2Icon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
@@ -79,9 +87,12 @@ export function PaginaEtapas() {
   }
 
   function adicionar() {
+    // "Nova etapa" duas vezes seguidas deixaria duas etapas com o mesmo nome
+    let nome = "Nova etapa"
+    for (let i = 2; etapas.some((x) => x.nome.toLowerCase() === nome.toLowerCase()); i++) nome = `Nova etapa ${i}`
     const n: Etapa = {
       id: novoId("e"),
-      nome: "Nova etapa",
+      nome,
       cor: CORES_NOVAS[etapas.length % CORES_NOVAS.length],
       qtd: 0,
       tipo: "meio",
@@ -90,7 +101,7 @@ export function PaginaEtapas() {
       const iSaida = l.findIndex((e) => e.tipo === "saida")
       return [...l.slice(0, iSaida), n, ...l.slice(iSaida)]
     })
-    auditar("Etapas do funil", 'Adicionou a etapa "Nova etapa"')
+    auditar("Etapas do funil", `Adicionou a etapa "${nome}"`)
     focar(n.id)
   }
 
@@ -165,8 +176,8 @@ export function PaginaEtapas() {
           <SettingsListLockBadge
             tooltip={
               e.tipo === "entrada"
-                ? "É aqui que a licitação cai quando alguém clica em Enviar para análise, e é o que dispara os agentes. Por isso a etapa não sai do começo do funil."
-                : "É aqui que a pessoa informa se ganhou ou perdeu, o que fecha a licitação e alimenta o dashboard. Por isso a etapa não sai do fim do funil."
+                ? "É aqui que a licitação cai quando alguém clica em Enviar para análise."
+                : "É aqui que a pessoa informa se ganhou ou perdeu, o que fecha a licitação e alimenta o dashboard."
             }
           >
             {e.tipo === "entrada" ? "Agentes começam aqui" : "Resultado registrado aqui"}
@@ -188,7 +199,7 @@ export function PaginaEtapas() {
     <SettingsPage>
       <Aviso tom="marca" fechavel>
         Aqui você monta as colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as
-        pessoas da organização assim que você salva o nome ou solta a etapa no lugar.
+        pessoas da organização assim que você salva o nome ou solta a etapa no lugar. <EfeitoDeCadaMudanca />
       </Aviso>
       <Aviso>
         A <b>primeira</b> e a <b>última</b> etapas têm posição fixa: os agentes começam a trabalhar quando a licitação
@@ -227,8 +238,9 @@ export function PaginaEtapas() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-perda">Exigir motivo ao registrar perda</SettingsRowTitle>
               <SettingsRowDescription>
-                Sem motivo, o registro de "Perdeu" fica bloqueado até a pessoa escolher um. Desligue para deixar o motivo
-                opcional; o gráfico "Motivos de perda" passa a ter uma fatia "Sem motivo".
+                Ligado, o botão que confirma o resultado fica desabilitado enquanto a pessoa não escolher um motivo, que
+                é como a plataforma funciona hoje. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
+                ganha uma fatia "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -259,47 +271,6 @@ export function PaginaEtapas() {
         />
       </SettingsSection>
 
-      <SettingsSection className="mt-7">
-        <SettingsSectionTitle>Efeito de cada mudança</SettingsSectionTitle>
-        <SettingsSectionDescription>
-          Só para consulta: o que acontece com as licitações que já estão no quadro e com o dashboard quando você mexe
-          nas etapas acima.
-        </SettingsSectionDescription>
-        <SettingsBox>
-          <SettingsRow>
-            <SettingsRowContent>
-              <SettingsRowTitle>Renomear</SettingsRowTitle>
-              <SettingsRowDescription>
-                As licitações continuam na etapa e o dashboard mantém o histórico: a etapa é acompanhada pelo
-                identificador, não pelo nome.
-              </SettingsRowDescription>
-            </SettingsRowContent>
-          </SettingsRow>
-          <SettingsRow>
-            <SettingsRowContent>
-              <SettingsRowTitle>Reordenar</SettingsRowTitle>
-              <SettingsRowDescription>O funil do dashboard passa a seguir a nova ordem. Nenhum número muda.</SettingsRowDescription>
-            </SettingsRowContent>
-          </SettingsRow>
-          <SettingsRow>
-            <SettingsRowContent>
-              <SettingsRowTitle>Remover</SettingsRowTitle>
-              <SettingsRowDescription>
-                Se houver licitações na etapa, você escolhe para qual etapa elas vão antes de confirmar. No dashboard, o
-                período em que a etapa existiu continua com o nome dela.
-              </SettingsRowDescription>
-            </SettingsRowContent>
-          </SettingsRow>
-          <SettingsRow>
-            <SettingsRowContent>
-              <SettingsRowTitle>Adicionar</SettingsRowTitle>
-              <SettingsRowDescription>
-                A etapa nasce vazia e sem histórico. Aparece no quadro na posição em que você a deixar.
-              </SettingsRowDescription>
-            </SettingsRowContent>
-          </SettingsRow>
-        </SettingsBox>
-      </SettingsSection>
 
       <Confirmacao pedido={pedido} onFechar={() => setConfirmando(false)}>
         {remocao && remocao.qtd > 0 && (
@@ -317,10 +288,13 @@ export function PaginaEtapas() {
                   ))}
               </NativeSelect>
             </label>
-            <p className="text-[12.5px] leading-[19px] text-muted-foreground">
-              Mudança de etapa por remoção não dispara agentes: voltar para a primeira não roda a análise de novo, e ir
-              para a última não registra resultado (a licitação fica pendente de registro).
-            </p>
+            {destino === etapas.find((x) => x.tipo === "saida")?.id && (
+              <p className="text-[12.5px] leading-[19px] text-muted-foreground">
+                {remocao.qtd === 1 ? "A licitação chega" : "As licitações chegam"} sem resultado registrado. Em{" "}
+                {etapas.find((x) => x.tipo === "saida")?.nome}, o resultado é informado por pessoa, então{" "}
+                {remocao.qtd === 1 ? "ela fica pendente" : "elas ficam pendentes"} até alguém marcar ganhou ou perdeu.
+              </p>
+            )}
           </div>
         )}
       </Confirmacao>
@@ -368,5 +342,48 @@ function SeletorDeCor({ etapa, onEscolher }: { etapa: Etapa; onEscolher: (cor: C
         </div>
       </PopoverContent>
     </Popover>
+  )
+}
+
+/** O que cada mudança faz com as licitações que já estão no quadro. Antes era uma seção no
+ * fim da página, mas é referência, não configuração: virou o "Saiba mais" do card de abertura. */
+function EfeitoDeCadaMudanca() {
+  const linhas = [
+    [
+      "Renomear",
+      "As licitações continuam na etapa e o dashboard mantém o histórico: a etapa é acompanhada pelo identificador, não pelo nome.",
+    ],
+    ["Reordenar", "O funil do dashboard passa a seguir a nova ordem. Nenhum número muda."],
+    [
+      "Remover",
+      "Se houver licitações na etapa, você escolhe para qual etapa elas vão antes de confirmar. No dashboard, o período em que a etapa existiu continua com o nome dela.",
+    ],
+    ["Adicionar", "A etapa nasce vazia e sem histórico. Aparece no quadro na posição em que você a deixar."],
+    ["Trocar a cor", "Só muda a bolinha da coluna no quadro. Nenhuma licitação e nenhum número são afetados."],
+  ]
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button type="button" className="font-semibold text-primary underline-offset-2 hover:underline">
+          Saiba mais
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-130">
+        <DialogHeader>
+          <DialogTitle>Efeito de cada mudança</DialogTitle>
+          <DialogDescription>
+            O que acontece com as licitações que já estão no quadro e com o dashboard quando você mexe nas etapas.
+          </DialogDescription>
+        </DialogHeader>
+        <dl className="flex flex-col gap-3">
+          {linhas.map(([titulo, texto]) => (
+            <div key={titulo}>
+              <dt className="text-[13px] font-semibold">{titulo}</dt>
+              <dd className="text-[13px] leading-[19px] text-muted-foreground">{texto}</dd>
+            </div>
+          ))}
+        </dl>
+      </DialogContent>
+    </Dialog>
   )
 }

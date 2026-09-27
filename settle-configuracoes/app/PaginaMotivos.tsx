@@ -51,7 +51,10 @@ export function PaginaMotivos() {
           <SettingsRow>
             <SettingsRowContent>
               <SettingsRowTitle id="t-exigir">Exigir motivo ao descartar</SettingsRowTitle>
-              <SettingsRowDescription>Sem motivo, o botão Descartar fica bloqueado até a pessoa escolher um.</SettingsRowDescription>
+              <SettingsRowDescription>
+                Ligado, quem confirma sem escolher vê o campo em vermelho com "Selecione um motivo para descartar a
+                licitação", e o descarte não acontece. O botão continua clicável, diferente do registro de perda.
+              </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
               aria-labelledby="t-exigir"

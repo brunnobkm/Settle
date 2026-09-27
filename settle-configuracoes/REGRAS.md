@@ -101,7 +101,12 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 - "Outros" é fixo e sempre pede descrição.
 - **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
   escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
-- Interruptor "Exigir motivo ao descartar".
+- Interruptor "Exigir motivo ao descartar". **Como a plataforma valida hoje** (conferido no
+  bundle `ResponsibleSelect`, diálogo `DiscardReasonDialog`): o botão Descartar continua
+  clicável; quem confirma sem motivo recebe o campo em vermelho, a mensagem "Selecione um
+  motivo para descartar a licitação" abaixo dele e um toast de erro, e o descarte não
+  acontece. É diferente do registro de perda, que desabilita o botão. **Vale unificar as
+  duas.**
 - Hoje existem 15 motivos de descarte (incluindo Outros).
 
 ## 3. Campos do card de Recomendadas
@@ -220,7 +225,12 @@ lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não 
   foi usado, excluir (com confirmação) quando nunca foi, nome repetido recusado.
 - **Exigir motivo ao registrar perda** é um switch (proposta nova; hoje a plataforma sempre
   exige). Ligado é o padrão. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
-  ganha uma fatia "Sem motivo".
+  ganha uma fatia "Sem motivo". **Como a plataforma valida hoje** (conferido no bundle
+  `workflow`, diálogo "Resultado da Licitação"): com "Perdeu a licitação" marcado e nenhum
+  motivo escolhido, o botão de confirmar fica `disabled`; o comentário é opcional.
+- **Desligar a exigência não desabilita a lista.** Renomear, reordenar, arquivar, excluir e
+  "pede descrição" continuam valendo: o motivo passa a ser opcional, não deixa de existir, e
+  quem quiser continua escolhendo um. O que o switch muda é só a trava do último motivo.
 - **Com a exigência ligada, o último motivo da lista não pode sair.** Arquivar ou excluir é
   recusado com o aviso de desligar a exigência antes. Sem essa trava a pessoa ficaria sem
   como registrar "Perdeu": aqui não existe "Outros" fixo como no descarte.
@@ -234,8 +244,9 @@ Casos que podem dar problema, e a regra proposta:
    segundos. Etapa vazia também passa pela confirmação, só sem a escolha de destino.
 2. **Mover por remoção para a Entrada.** Não roda os agentes de novo. Agente só dispara em
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
-3. **Mover por remoção para a Saída.** Não registra resultado. A licitação fica "pendente de
-   registro" até alguém marcar ganho ou perda.
+3. **Mover por remoção para a Saída.** Não registra resultado: a licitação fica pendente até
+   alguém marcar ganhou ou perdeu. O diálogo de remoção avisa isso só quando o destino
+   escolhido é a última etapa, ligando esta lista à seção "Registro do resultado".
 4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
    tema). A cor é só visual, para reconhecer a coluna no quadro: nada depende dela, e duas
    etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio.
@@ -244,7 +255,9 @@ Casos que podem dar problema, e a regra proposta:
    histórico com o nome dela; a partir da remoção, as licitações contam na etapa destino.
 6. **Tempo em etapa (SLA, "há quantos dias está aqui").** Ao mover por remoção, o relógio
    recomeça na etapa destino, mas o histórico guarda a passagem pela etapa removida.
-7. **Nome duplicado.** Bloqueado, com aviso que diz por quê.
+7. **Nome duplicado.** Renomear para um nome que já existe é recusado, com aviso. A etapa
+   nova também nasce com nome livre ("Nova etapa 2" se "Nova etapa" existir), senão dois
+   cliques seguidos em Adicionar deixariam duas colunas iguais no quadro.
 8. **Filtros e views salvos que citam a etapa removida.** A condição some do filtro e a
    pessoa é avisada na próxima vez que abrir a view.
 9. **Automação ou agente configurado para uma etapa intermediária** (V3 de Agentes, "plugar
