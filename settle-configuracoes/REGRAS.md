@@ -89,7 +89,8 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 - Um motivo precisa aparecer em pelo menos uma das telas.
 - **Motivo já usado é arquivado, nunca excluído.** Sai das novas escolhas, continua nas
   licitações que o usaram, no filtro de Descartadas e no dashboard. Pode ser restaurado.
-- Motivo nunca usado pode ser excluído (com desfazer).
+- Motivo nunca usado pode ser excluído. Como toda exclusão da plataforma, passa por um
+  diálogo de confirmação, e depois ainda tem desfazer no aviso.
 - Renomear muda o nome em todas as licitações que já usaram (o vínculo é por ID). Se a
   intenção for outro significado, o certo é arquivar e criar um novo; a tela avisa quantas
   licitações serão afetadas.
@@ -212,7 +213,7 @@ o resultado como 'Perdeu a licitação'"), e a lista de motivos de perda é busc
 lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não em Motivos.
 
 - Mesmas regras de lista do descarte: renomear, reordenar, "pede descrição", arquivar quando já
-  foi usado, excluir quando nunca foi.
+  foi usado, excluir (com confirmação) quando nunca foi.
 - Os motivos de perda do protótipo são exemplo: **confirmar a lista real com o time.**
 - Em aberto: se o "Ganhou" também aceita motivo (hoje não exige).
 
@@ -220,7 +221,7 @@ Casos que podem dar problema, e a regra proposta:
 
 1. **Remover etapa com licitações.** Obrigatório escolher a etapa destino antes de confirmar
    (padrão: a anterior). Responsável, substatus e descrição não mudam. Desfazer por alguns
-   segundos.
+   segundos. Etapa vazia também passa pela confirmação, só sem a escolha de destino.
 2. **Mover por remoção para a Entrada.** Não roda os agentes de novo. Agente só dispara em
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
 3. **Mover por remoção para a Saída.** Não registra resultado. A licitação fica "pendente de
