@@ -240,7 +240,7 @@ export function PaginaEtapas() {
   const saida = etapas.find((e) => e.tipo === "saida")
 
   return (
-    <SettingsPage>
+    <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
         Aqui você monta as etapas de Em andamento, da análise ao resultado. A mudança vale para todas as pessoas da
         organização assim que você salva o nome ou solta a etapa no lugar. <EfeitoDeCadaMudanca />

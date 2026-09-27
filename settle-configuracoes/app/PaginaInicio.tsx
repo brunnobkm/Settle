@@ -69,7 +69,7 @@ export function PaginaInicio() {
 
   if (!isAdmin) {
     return (
-      <SettingsPage>
+      <SettingsPage width="full">
         <SettingsPageDescription>Você entrou como {PAPEIS[papel]}.</SettingsPageDescription>
         <Empty className="rounded-lg border border-dashed py-14">
           <EmptyHeader className="max-w-lg">
@@ -99,7 +99,7 @@ export function PaginaInicio() {
   const totalAbas = Object.values(abas).reduce((n, l) => n + l.length, 0)
 
   return (
-    <SettingsPage>
+    <SettingsPage width="full">
       <SettingsPageDescription>
         O que a organização personaliza na Settle, num lugar só. Vale para todas as pessoas da conta e só
         administradores alteram.

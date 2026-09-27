@@ -118,7 +118,7 @@ export function PaginaAbas() {
   const abaEditada = L.find((a) => a.id === editando)
 
   return (
-    <SettingsPage className="max-w-245">
+    <SettingsPage width="full">
 
       <Tabs value={tela} onValueChange={(v) => setAbaTela(v as TelaAba)} className="mb-3.5">
         <TabsList aria-label="Tela" className="max-w-full justify-start overflow-x-auto">

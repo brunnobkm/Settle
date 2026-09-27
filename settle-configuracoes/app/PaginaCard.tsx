@@ -3,20 +3,35 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { ExternalLinkIcon, Trash2Icon } from "lucide-react"
+import {
+  BookmarkIcon,
+  ExternalLinkIcon,
+  FolderIcon,
+  GaugeIcon,
+  GlobeIcon,
+  Link2Icon,
+  PencilIcon,
+  RefreshCwIcon,
+  Share2Icon,
+  Trash2Icon,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   LicitacaoCardActions,
+  LicitacaoCardAvatars,
   LicitacaoCardContent,
   LicitacaoCardDescription,
   LicitacaoCardField,
   LicitacaoCardHeader,
+  LicitacaoCardIconAction,
+  LicitacaoCardIconActions,
   LicitacaoCardItems,
   LicitacaoCardMeta,
   LicitacaoCardRoot,
+  LicitacaoCardSegment,
   LicitacaoCardSegments,
   LicitacaoCardStatusButton,
   LicitacaoCardTitle,
@@ -152,7 +167,7 @@ export function PaginaCard() {
   }
 
   return (
-    <SettingsPage width="wide">
+    <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
         Aqui você escolhe o que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da
         organização. Os campos escondidos continuam disponíveis em Filtrar e Ordenar.
@@ -216,7 +231,7 @@ export function PaginaCard() {
   )
 }
 
-/** O card de Recomendadas montado com a configuração atual. */
+/** O card de Recomendadas montado com a configuração atual, no layout do card real. */
 function PreviaDoCard() {
   const { campos, maxItens, lic } = useConfig()
   const L = LICS[lic]
@@ -226,29 +241,59 @@ function PreviaDoCard() {
     const fixos: Record<string, string> = { substatus: "Selecionar Substatus", descricao: "Adicionar Descrição" }
     return fixos[c.id] ?? (valorDaLic(L, c.id) || "-")
   }
-  const campo = (c: Campo): LicitacaoCardMetaField => ({ label: c.nome, value: valor(c) })
+  const campo = (c: Campo): LicitacaoCardMetaField => {
+    const capag = c.id === "capagE" || c.id === "capagM"
+    const v = valor(c)
+    return {
+      label: c.nome,
+      value: capag && v !== "-" ? <SeloCapag nota={v} /> : v,
+      tone: c.id === "envio" ? "warning" : "default",
+    }
+  }
 
   const destaque = campos.filter((c) => c.g === "destaque" && c.on)
   const datas = campos.filter((c) => c.g === "datas" && c.on)
   const meta = campos.filter((c) => c.g === "meta" && c.on)
   const mostrarItens = campos.some((c) => c.id === "itens" && c.on)
+  const temME = campos.some((c) => c.id === "me" && c.on) && L.me
   const itensVisiveis = maxItens ? L.itens.slice(0, maxItens) : L.itens
   const resto = L.itens.length - itensVisiveis.length
+  const nota = Number(L.score.split("/")[0])
 
   const blocoDestaque = (c: Campo) => {
     switch (c.id) {
       case "segmento":
-        return <LicitacaoCardSegments key={c.id} segments={[L.seg]} />
+        return (
+          <LicitacaoCardSegments
+            key={c.id}
+            segments={L.segs.map((nome, i) => ({
+              label: nome,
+              // o card real usa o tom claro da categoria, não o chip sólido
+              className: i % 2 === 0 ? "bg-category-1/12 text-category-1" : "bg-category-4/12 text-category-4",
+            }))}
+          />
+        )
+      // ME/EPP é uma tag ao lado do órgão; sozinho, vira um selo na própria linha
       case "me":
-        return L.me ? (
+        return L.me && !campos.some((x) => x.id === "orgao" && x.on) ? (
           <div key={c.id}>
-            <Badge variant="secondary" className="rounded-md bg-muted px-2 font-medium text-muted-foreground">
-              ME - EPP
-            </Badge>
+            <SeloME />
           </div>
         ) : null
+      case "orgao":
+        return (
+          <LicitacaoCardDescription key={c.id}>
+            <LicitacaoCardField label={c.nome} tag={temME ? <SeloME /> : undefined}>
+              {valorDaLic(L, c.id)}
+            </LicitacaoCardField>
+          </LicitacaoCardDescription>
+        )
       case "valor":
-        return <LicitacaoCardValue key={c.id}>{L.valor}</LicitacaoCardValue>
+        return (
+          <LicitacaoCardValue key={c.id} label={c.nome}>
+            {L.valor}
+          </LicitacaoCardValue>
+        )
       default:
         return (
           <LicitacaoCardDescription key={c.id}>
@@ -259,13 +304,17 @@ function PreviaDoCard() {
   }
 
   return (
-    <LicitacaoCardRoot className="py-3.5 [--card-spacing:--spacing(4)]">
+    <LicitacaoCardRoot>
       <LicitacaoCardHeader>
         <span aria-hidden className="size-4.5 flex-none rounded-[5px] border border-input" />
         <LicitacaoCardTitle prefix="Edital">
           <b>{L.edital}</b>
         </LicitacaoCardTitle>
-        {/* botões ilustrativos: a pré-visualização não tem ações */}
+        <Badge className="flex-none gap-1 rounded-md bg-warning px-2 py-0.75 text-xs font-semibold text-warning-foreground">
+          <RefreshCwIcon aria-hidden className="size-3" />
+          Atualizado
+        </Badge>
+        {/* tudo daqui para a direita é ilustrativo: a pré-visualização não executa ações */}
         <LicitacaoCardActions>
           <Button variant="outline" size="sm" asChild>
             <span>Descartar</span>
@@ -274,19 +323,59 @@ function PreviaDoCard() {
             <span>Enviar para análise</span>
           </Button>
           <LicitacaoCardStatusButton size="sm" asChild>
-            <span>{L.score}</span>
+            <span>
+              <PencilIcon aria-hidden className="size-3.5" />
+              Em disputa ou Homologação
+            </span>
+          </LicitacaoCardStatusButton>
+          <LicitacaoCardAvatars
+            avatars={[
+              { initials: "MB", name: "Mateus Brum" },
+              { initials: "AC", name: "Ana Camargo" },
+              { initials: "RS", name: "Rafael Souza" },
+            ]}
+            onAdd={() => {}}
+          />
+          <LicitacaoCardIconActions>
+            {[
+              { label: "Abrir no portal", icon: <GlobeIcon /> },
+              { label: "Salvar", icon: <BookmarkIcon /> },
+              { label: "Copiar link", icon: <Link2Icon /> },
+              { label: "Compartilhar", icon: <Share2Icon /> },
+              { label: "Arquivos", icon: <FolderIcon /> },
+            ].map((a) => (
+              <LicitacaoCardIconAction key={a.label} {...a} />
+            ))}
+          </LicitacaoCardIconActions>
+          <LicitacaoCardStatusButton
+            size="sm"
+            tone={nota >= 70 ? "success" : nota >= 40 ? "warning" : "destructive"}
+            asChild
+          >
+            <span>
+              <GaugeIcon aria-hidden className="size-3.5" />
+              {L.score}
+            </span>
           </LicitacaoCardStatusButton>
         </LicitacaoCardActions>
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
         {destaque.map(blocoDestaque)}
         {(datas.length > 0 || meta.length > 0) && (
-          <LicitacaoCardMeta
-            aside={meta.length ? datas.map((d) => [campo(d)]) : undefined}
-            fields={(meta.length ? meta : datas).map(campo)}
-            // a pré-visualização é estreita: grade de 3 colunas e coluna de datas mais fina
-            className="[&>dl:last-child]:grid-cols-2 min-[640px]:[&>dl:last-child]:grid-cols-3! [&>dl:not(:last-child)]:w-37.5"
-          />
+          <div className="flex flex-col gap-1.5">
+            <LicitacaoCardMeta
+              variant="boxed"
+              // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
+              aside={meta.length ? emPares(datas.map(campo)) : undefined}
+              fields={(meta.length ? meta : datas).map(campo)}
+            />
+            <button
+              type="button"
+              className="self-start text-[13px] font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Ver mais
+            </button>
+          </div>
         )}
         {mostrarItens && (
           <>
@@ -294,20 +383,22 @@ function PreviaDoCard() {
               variant="boxed"
               title="Itens com Correspondência"
               count={L.itens.length}
-              summary={`Mostrando ${itensVisiveis.length} de ${L.itens.length}`}
+              summary={`Total de itens: ${L.totalItens}`}
               columns={[
+                { key: "lote", label: "Lote", width: 56 },
                 { key: "nome", label: "Nome", className: "whitespace-normal" },
-                { key: "segmento", label: "Segmento", width: 96 },
-                { key: "valor", label: "Valor Total", align: "right", width: 112 },
+                { key: "seg", label: "Segmento", width: 112 },
+                { key: "unid", label: "Unidades", width: 88 },
+                { key: "unit", label: "Valor Unitário", align: "right", width: 128 },
+                { key: "total", label: "Valor Total", align: "right", width: 128 },
               ]}
-              rows={itensVisiveis.map(([nome, segmento, v]) => ({
-                nome,
-                segmento: (
-                  <Badge variant="secondary" className="rounded-md bg-muted px-2 font-medium text-muted-foreground">
-                    {segmento}
-                  </Badge>
-                ),
-                valor: v,
+              rows={itensVisiveis.map((it) => ({
+                lote: it.lote,
+                nome: it.nome,
+                seg: <LicitacaoCardSegment size="sm">{it.seg}</LicitacaoCardSegment>,
+                unid: it.unid,
+                unit: it.unit,
+                total: it.total,
               }))}
             />
             {resto > 0 && (
@@ -319,5 +410,36 @@ function PreviaDoCard() {
         )}
       </LicitacaoCardContent>
     </LicitacaoCardRoot>
+  )
+}
+
+/** Quebra a lista em linhas de dois, para a grade lateral do card. */
+function emPares(campos: LicitacaoCardMetaField[]) {
+  const linhas: LicitacaoCardMetaField[][] = []
+  for (let i = 0; i < campos.length; i += 2) linhas.push(campos.slice(i, i + 2))
+  return linhas
+}
+
+/** Selo ME - EPP, do lado do órgão. */
+function SeloME() {
+  return (
+    <Badge variant="secondary" className="rounded-md bg-muted px-2 font-medium text-muted-foreground">
+      ME - EPP
+    </Badge>
+  )
+}
+
+/** Nota CAPAG: A e B passam, C e D acendem. */
+function SeloCapag({ nota }: { nota: string }) {
+  const bom = nota === "A" || nota === "B"
+  return (
+    <Badge
+      className={cn(
+        "size-5 justify-center rounded-md p-0 text-xs font-semibold",
+        bom ? "bg-success/12 text-success-strong" : "bg-warning/15 text-warning-strong"
+      )}
+    >
+      {nota}
+    </Badge>
   )
 }
