@@ -184,7 +184,15 @@ export function PaginaEtapas() {
           perdeu, ela precisa escolher um motivo desta lista. Um motivo já usado é arquivado, nunca apagado, para o
           histórico e o dashboard continuarem certos.
         </SettingsSectionDescription>
-        <ListaMotivos tipo="perda" area="Etapas do funil" usos="perdas" acao="registros de perda" />
+        <ListaMotivos
+          tipo="perda"
+          area="Etapas do funil"
+          usos="perdas"
+          dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda. Por isso ele é arquivado, e não excluído: o histórico e o dashboard continuam mostrando o motivo nessas licitações."
+          acao="registros de perda"
+          usoPassado="registradas como perdidas com este motivo"
+          onde="no resultado dessas licitações e nos números do dashboard"
+        />
       </SettingsSection>
 
       <SettingsSection className="mt-7">
