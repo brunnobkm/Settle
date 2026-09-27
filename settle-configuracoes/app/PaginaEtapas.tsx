@@ -10,7 +10,6 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import {
   SettingsBox,
   SettingsPage,
-  SettingsPageDescription,
   SettingsRow,
   SettingsRowContent,
   SettingsRowDescription,
@@ -153,10 +152,10 @@ export function PaginaEtapas() {
 
   return (
     <SettingsPage>
-      <SettingsPageDescription>
-        As colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as pessoas da
-        organização assim que você salva o nome ou solta a etapa no lugar.
-      </SettingsPageDescription>
+      <Aviso tom="marca" fechavel>
+        Aqui você monta as colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as
+        pessoas da organização assim que você salva o nome ou solta a etapa no lugar.
+      </Aviso>
       <Aviso>
         A <b>primeira</b> e a <b>última</b> etapas têm posição fixa: os agentes começam a trabalhar quando a licitação
         entra na primeira e registram o resultado na última. Dá para renomear, mas não mover nem remover.
