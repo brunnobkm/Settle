@@ -101,6 +101,7 @@ const DESCARTE: [string, number, boolean, boolean][] = [
   ["Prazo muito próximo", 219, true, true],
   ["Duplicado", 88, true, true],
   ["Revenda", 34, true, false],
+  ["Certificação que não temos", 0, true, true],
 ]
 
 const PERDA: [string, number][] = [
@@ -110,6 +111,7 @@ const PERDA: [string, number][] = [
   ["Recurso não provido", 2],
   ["Não participou da disputa", 4],
   ["Licitação revogada ou fracassada", 2],
+  ["Desistimos de participar", 0],
 ]
 
 export const MOTIVOS: Motivo[] = [
