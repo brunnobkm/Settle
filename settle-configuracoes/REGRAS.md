@@ -128,9 +128,16 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   haveria como devolver um campo para ela.
 - As peças do topo e a tabela de itens só mudam de ordem, nunca de seção: arrastá-las para
   dentro de uma seção é recusado com um aviso dizendo por quê.
-- **Campos na mesma linha.** Um campo de destaque pode grudar no destaque anterior em vez de
-  abrir linha nova: é o "Mesma linha" da lista. Serve para deixar, por exemplo, segmentos,
-  órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.
+- **Os campos do corpo se organizam no próprio card, arrastando.** Passar o mouse mostra que
+  a peça pega; ao arrastar aparecem dois tipos de alvo: o fino, entre duas peças, põe o campo
+  na mesma linha; o largo, entre duas linhas, abre linha nova. É assim que se deixa, por
+  exemplo, segmentos, órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.
+  Não há interruptor de "mesma linha": o lugar onde se solta é a configuração.
+- Pelo teclado, com foco no campo: **Alt + setas** move (esquerda e direita dentro da linha,
+  cima e baixo entre linhas) e **Alt + Shift + ↑/↓** junta o campo à linha de cima ou de
+  baixo. Arrastar não pode ser o único caminho.
+- A lista ao lado continua valendo para ligar, desligar e trocar de seção; o card cuida de
+  como o corpo se organiza.
 - **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou sete itens:
   Seleção do card, Número do edital, Descartar, Enviar para análise, Responsáveis, Ações de
   ícone e Score. Ligam, desligam e mudam de ordem como qualquer outro campo, com uma exceção.
@@ -195,6 +202,11 @@ Uma diferença de propósito entre o protótipo e o produto: **aqui o "Ver mais"
 a grade está de volta no topo**, senão quem está demonstrando a tela mostra o efeito uma vez e
 não consegue mostrar de novo. No produto vale a regra original, some depois da primeira
 rolagem.
+
+**Cor do segmento.** O mesmo segmento tem a mesma cor em qualquer lugar do card: os chips do
+topo e a coluna Segmento da tabela de itens. A cor sai do nome do segmento por uma função
+determinística sobre a paleta de categorias, como a plataforma já faz com as iniciais dos
+responsáveis. Sem isso, "Produtos" aparecia azul em cima e preto na tabela.
 
 **Para o design system:** duas coisas desta tela deviam estar na Base, e hoje estão
 duplicadas. (1) No card real os chips de segmento do topo usam o tom claro da categoria
