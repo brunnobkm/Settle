@@ -153,9 +153,13 @@ campos dos quatro grupos respondem aos interruptores e à ordem.
 `app/CardEditavel.tsx`): a partir de 768px a caixa das propriedades (ID, Julgamento, Portal,
 Estado...) assume a altura da caixa de datas ao lado e rola por dentro, em vez de esticar o
 card. O "Ver mais", com degradê no pé da caixa, só aparece quando sobra conteúdo e some de vez
-na primeira rolagem, seja pelo botão, pela roda do mouse ou pela barra. Abaixo de 768px as
-duas caixas empilham e nada rola. O número de colunas vem do tamanho da própria caixa
-(container query): 1, 2 ou 5.
+na primeira rolagem. Abaixo de 768px as duas caixas empilham e nada rola. O número de colunas
+vem do tamanho da própria caixa (container query): 1, 2 ou 5.
+
+Uma diferença de propósito entre o protótipo e o produto: **aqui o "Ver mais" volta sempre que
+a grade está de volta no topo**, senão quem está demonstrando a tela mostra o efeito uma vez e
+não consegue mostrar de novo. No produto vale a regra original, some depois da primeira
+rolagem.
 
 **Para o design system:** duas coisas desta tela deviam estar na Base, e hoje estão
 duplicadas. (1) No card real os chips de segmento do topo usam o tom claro da categoria

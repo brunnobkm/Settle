@@ -11,7 +11,6 @@ import {
   GaugeIcon,
   GlobeIcon,
   Link2Icon,
-  PencilIcon,
   Share2Icon,
   Trash2Icon,
 } from "lucide-react"
@@ -294,12 +293,6 @@ function PreviaDoCard() {
           <Button size="sm" asChild>
             <span>Enviar para análise</span>
           </Button>
-          <LicitacaoCardStatusButton size="sm" asChild>
-            <span>
-              <PencilIcon aria-hidden className="size-3.5" />
-              Em disputa ou Homologação
-            </span>
-          </LicitacaoCardStatusButton>
           <LicitacaoCardAvatars
             avatars={[
               { initials: "MB", name: "Mateus Brum" },
@@ -379,8 +372,12 @@ function PreviaDoCard() {
 /**
  * Caixa de datas + grade de propriedades, com a regra de rolagem do card real
  * (settle-card-licitacao): a partir de 768px a grade tem a altura da caixa de datas ao lado e
- * rola por dentro; "Ver mais" só aparece quando sobra conteúdo e some de vez na primeira
- * rolagem. Abaixo disso as duas empilham e nada rola.
+ * rola por dentro; "Ver mais" só aparece quando sobra conteúdo. Abaixo disso as duas empilham
+ * e nada rola.
+ *
+ * Diferença de propósito: no card real o "Ver mais" some de vez depois da primeira rolagem,
+ * porque já cumpriu o papel de avisar. Aqui ele volta sempre que a grade está no topo, senão
+ * quem está vendo a demonstração perde o efeito e não consegue mostrar de novo.
  */
 function GradeDePropriedades({
   datas,
@@ -393,7 +390,7 @@ function GradeDePropriedades({
   const rolagem = useRef<HTMLDivElement>(null)
   const [alturaMax, setAlturaMax] = useState<number | null>(null)
   const [sobra, setSobra] = useState(false)
-  const [dispensado, setDispensado] = useState(false)
+  const [noTopo, setNoTopo] = useState(true)
 
   useLayoutEffect(() => {
     const datasEl = caixaDatas.current
@@ -403,9 +400,10 @@ function GradeDePropriedades({
       // altura útil = caixa de datas menos o padding vertical da caixa da grade
       if (window.innerWidth >= 768) setAlturaMax(Math.max(72, datasEl.clientHeight - 24))
       else setAlturaMax(null)
-      requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
         setSobra(rolagemEl.scrollHeight - rolagemEl.clientHeight > 4 && window.innerWidth >= 768)
-      )
+        setNoTopo(rolagemEl.scrollTop <= 4)
+      })
     }
     ajustar()
     const observador = new ResizeObserver(ajustar)
@@ -419,7 +417,6 @@ function GradeDePropriedades({
     }
   }, [])
 
-  const dispensar = () => setDispensado(true)
   const colunas = Math.max(1, ...datas.map((linha) => linha.length))
 
   return (
@@ -439,10 +436,10 @@ function GradeDePropriedades({
           </dl>
         </div>
       )}
-      <div className="@container relative min-w-0 rounded-xl border px-3.5 py-3" onWheel={dispensar}>
+      <div className="@container relative min-w-0 rounded-xl border px-3.5 py-3">
         <div
           ref={rolagem}
-          onScroll={dispensar}
+          onScroll={(e) => setNoTopo(e.currentTarget.scrollTop <= 4)}
           style={alturaMax != null ? { maxHeight: alturaMax } : undefined}
           className={cn(alturaMax != null && "overflow-y-scroll [scrollbar-width:thin]")}
         >
@@ -455,13 +452,10 @@ function GradeDePropriedades({
             ))}
           </dl>
         </div>
-        {sobra && !dispensado && (
+        {sobra && noTopo && (
           <button
             type="button"
-            onClick={() => {
-              rolagem.current?.scrollBy({ top: 56, behavior: "smooth" })
-              dispensar()
-            }}
+            onClick={() => rolagem.current?.scrollBy({ top: 56, behavior: "smooth" })}
             className="absolute right-2.25 bottom-0 left-0 flex items-center gap-1 rounded-b-xl bg-linear-to-t from-card from-55% to-transparent px-3.5 pt-5.5 pb-2.5 text-left text-[13px] font-medium text-primary outline-none hover:text-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             Ver mais
