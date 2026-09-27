@@ -40,6 +40,8 @@ export type PedidoDeConfirmacao = {
   corpo: ReactNode
   acao: string
   perigo?: boolean
+  /** Bloqueia a ação enquanto falta algo no formulário dentro do diálogo. */
+  desabilitado?: boolean
   ok: () => void
 }
 
@@ -211,6 +213,7 @@ export function Confirmacao({
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction
                 variant={visivel.perigo ? "destructive" : "default"}
+                disabled={visivel.desabilitado}
                 onClick={() => {
                   onFechar()
                   visivel.ok()

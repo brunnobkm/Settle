@@ -177,7 +177,7 @@ export function PaginaInicio() {
         </SettingsSectionDescription>
         <SettingsBox>
           <Atalho href="#etapas">
-            Em andamento › menu {tecla} da etapa (no Board, da coluna) › <b>Editar etapas</b>
+            Em andamento › menu {tecla} da etapa › <b>Editar etapas</b>
           </Atalho>
           <Atalho href="#abas">
             Recomendadas e Descartadas › {tecla} ao lado das abas › <b>Editar abas</b> (substitui o + e o menu
