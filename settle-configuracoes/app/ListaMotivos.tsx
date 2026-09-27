@@ -29,6 +29,7 @@ export function ListaMotivos({
   area,
   usos,
   dicaUso,
+  porQueArquivar,
   acao,
   usoPassado,
   onde,
@@ -42,6 +43,8 @@ export function ListaMotivos({
   usos: string
   /** Tooltip do número de usos, no "i" ao lado dele. */
   dicaUso: string
+  /** Fim da frase do tooltip de arquivar: "Não dá para excluir, <porQueArquivar>". */
+  porQueArquivar: string
   /** O que a pessoa faz com o motivo: "descartes", "registros de perda". */
   acao: string
   /** Como as licitações que já usaram o motivo são descritas: "descartadas com este motivo". */
@@ -78,12 +81,20 @@ export function ListaMotivos({
 
   function tirar(x: Motivo) {
     if (!x.uso) {
-      const i = motivos.indexOf(x)
-      setMotivos((l) => l.filter((m) => m.id !== x.id))
-      auditar(area, `Excluiu "${x.nome}"`)
-      avisarComDesfazer("Motivo excluído", () => {
-        setMotivos((l) => [...l.slice(0, i), x, ...l.slice(i)])
-        desauditar()
+      confirmar({
+        titulo: `Excluir "${x.nome}"?`,
+        corpo: <p>Ele sai da lista para novos {acao}. Como nunca foi usado, nada se perde: nenhuma licitação fica sem motivo.</p>,
+        acao: "Excluir motivo",
+        perigo: true,
+        ok: () => {
+          const i = motivos.indexOf(x)
+          setMotivos((l) => l.filter((m) => m.id !== x.id))
+          auditar(area, `Excluiu "${x.nome}"`)
+          avisarComDesfazer("Motivo excluído", () => {
+            setMotivos((l) => [...l.slice(0, i), x, ...l.slice(i)])
+            desauditar()
+          })
+        },
       })
       return
     }
@@ -164,7 +175,11 @@ export function ListaMotivos({
               <SettingsListItemActions>
                 <BotaoIcone
                   rotulo={`${x.uso ? "Arquivar" : "Excluir"} ${x.nome}`}
-                  dica={x.uso ? "Arquivar" : "Excluir"}
+                  dica={
+                    x.uso
+                      ? `Arquivar: sai da lista, e as licitações que já usaram este motivo continuam com ele. Não dá para excluir, ${porQueArquivar}`
+                      : "Excluir: nunca foi usado, então nada se perde"
+                  }
                   perigo
                   onClick={() => tirar(x)}
                 >

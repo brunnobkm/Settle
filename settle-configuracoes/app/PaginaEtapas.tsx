@@ -94,10 +94,6 @@ export function PaginaEtapas() {
   }
 
   function remover(e: Etapa) {
-    if (!e.qtd) {
-      aplicarRemocao(e, null)
-      return
-    }
     // padrão: a etapa anterior
     const i = etapas.indexOf(e)
     setDestino(etapas[i - 1]?.id ?? etapas.find((x) => x.id !== e.id)!.id)
@@ -105,18 +101,26 @@ export function PaginaEtapas() {
     setConfirmando(true)
   }
 
-  const pedido: PedidoDeConfirmacao | null = !confirmando || !remocao ? null : {
-    titulo: `Remover "${remocao.nome}"?`,
-    corpo: (
-      <p>
-        {fmt(remocao.qtd)} {remocao.qtd === 1 ? "licitação está" : "licitações estão"} nesta etapa. Escolha para onde{" "}
-        {remocao.qtd === 1 ? "ela vai" : "elas vão"}. Responsável, substatus e descrição continuam iguais.
-      </p>
-    ),
-    acao: "Remover e mover",
-    perigo: true,
-    ok: () => aplicarRemocao(remocao, destino),
-  }
+  const pedido: PedidoDeConfirmacao | null = !confirmando || !remocao ? null : remocao.qtd
+    ? {
+        titulo: `Remover "${remocao.nome}"?`,
+        corpo: (
+          <p>
+            {fmt(remocao.qtd)} {remocao.qtd === 1 ? "licitação está" : "licitações estão"} nesta etapa. Escolha para onde{" "}
+            {remocao.qtd === 1 ? "ela vai" : "elas vão"}. Responsável, substatus e descrição continuam iguais.
+          </p>
+        ),
+        acao: "Remover e mover",
+        perigo: true,
+        ok: () => aplicarRemocao(remocao, destino),
+      }
+    : {
+        titulo: `Remover "${remocao.nome}"?`,
+        corpo: <p>A etapa está vazia, então nenhuma licitação muda de lugar. Ela some do funil para toda a organização.</p>,
+        acao: "Remover etapa",
+        perigo: true,
+        ok: () => aplicarRemocao(remocao, null),
+      }
 
   const item = (e: Etapa) => {
     const fixa = e.tipo !== "meio"
@@ -188,7 +192,8 @@ export function PaginaEtapas() {
           tipo="perda"
           area="Etapas do funil"
           usos="perdas"
-          dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda. Por isso ele é arquivado, e não excluído: essas licitações continuam com ele no resultado e no gráfico “Motivos de perda” do dashboard."
+          dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda."
+          porQueArquivar="senão elas ficariam sem motivo no resultado e no gráfico “Motivos de perda” do dashboard"
           acao="registros de perda"
           usoPassado="registradas como perdidas com este motivo"
           onde="no resultado dessas licitações e no gráfico “Motivos de perda” do dashboard"
@@ -234,7 +239,7 @@ export function PaginaEtapas() {
       </SettingsSection>
 
       <Confirmacao pedido={pedido} onFechar={() => setConfirmando(false)}>
-        {remocao && (
+        {remocao && remocao.qtd > 0 && (
           <div className="flex flex-col gap-2.5">
             <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
               Mover licitações para
