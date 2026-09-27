@@ -1,9 +1,10 @@
 // Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
 // com variáveis da organização na grade de metadados e pré-visualização ao lado.
 
-import { useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
+  ArrowDownIcon,
   BookmarkIcon,
   ExternalLinkIcon,
   FolderIcon,
@@ -11,7 +12,6 @@ import {
   GlobeIcon,
   Link2Icon,
   PencilIcon,
-  RefreshCwIcon,
   Share2Icon,
   Trash2Icon,
 } from "lucide-react"
@@ -29,7 +29,6 @@ import {
   LicitacaoCardIconAction,
   LicitacaoCardIconActions,
   LicitacaoCardItems,
-  LicitacaoCardMeta,
   LicitacaoCardRoot,
   LicitacaoCardSegment,
   LicitacaoCardSegments,
@@ -287,10 +286,6 @@ function PreviaDoCard() {
         <LicitacaoCardTitle prefix="Edital">
           <b>{L.edital}</b>
         </LicitacaoCardTitle>
-        <Badge className="flex-none gap-1 rounded-md bg-warning px-2 py-0.75 text-xs font-semibold text-warning-foreground">
-          <RefreshCwIcon aria-hidden className="size-3" />
-          Atualizado
-        </Badge>
         {/* tudo daqui para a direita é ilustrativo: a pré-visualização não executa ações */}
         <LicitacaoCardActions>
           <Button variant="outline" size="sm" asChild>
@@ -339,20 +334,11 @@ function PreviaDoCard() {
       <LicitacaoCardContent>
         {destaque.map(blocoDestaque)}
         {(datas.length > 0 || meta.length > 0) && (
-          <div className="flex flex-col gap-1.5">
-            <LicitacaoCardMeta
-              variant="boxed"
-              // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
-              aside={meta.length ? emPares(datas.map(campo)) : undefined}
-              fields={(meta.length ? meta : datas).map(campo)}
-            />
-            <button
-              type="button"
-              className="self-start text-[13px] font-medium text-primary underline-offset-2 hover:underline"
-            >
-              Ver mais
-            </button>
-          </div>
+          <GradeDePropriedades
+            // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
+            datas={meta.length ? emPares(datas.map(campo)) : []}
+            campos={(meta.length ? meta : datas).map(campo)}
+          />
         )}
         {mostrarItens && (
           <>
@@ -387,6 +373,118 @@ function PreviaDoCard() {
         )}
       </LicitacaoCardContent>
     </LicitacaoCardRoot>
+  )
+}
+
+/**
+ * Caixa de datas + grade de propriedades, com a regra de rolagem do card real
+ * (settle-card-licitacao): a partir de 768px a grade tem a altura da caixa de datas ao lado e
+ * rola por dentro; "Ver mais" só aparece quando sobra conteúdo e some de vez na primeira
+ * rolagem. Abaixo disso as duas empilham e nada rola.
+ */
+function GradeDePropriedades({
+  datas,
+  campos,
+}: {
+  datas: LicitacaoCardMetaField[][]
+  campos: LicitacaoCardMetaField[]
+}) {
+  const caixaDatas = useRef<HTMLDivElement>(null)
+  const rolagem = useRef<HTMLDivElement>(null)
+  const [alturaMax, setAlturaMax] = useState<number | null>(null)
+  const [sobra, setSobra] = useState(false)
+  const [dispensado, setDispensado] = useState(false)
+
+  useLayoutEffect(() => {
+    const datasEl = caixaDatas.current
+    const rolagemEl = rolagem.current
+    if (!datasEl || !rolagemEl) return
+    const ajustar = () => {
+      // altura útil = caixa de datas menos o padding vertical da caixa da grade
+      if (window.innerWidth >= 768) setAlturaMax(Math.max(72, datasEl.clientHeight - 24))
+      else setAlturaMax(null)
+      requestAnimationFrame(() =>
+        setSobra(rolagemEl.scrollHeight - rolagemEl.clientHeight > 4 && window.innerWidth >= 768)
+      )
+    }
+    ajustar()
+    const observador = new ResizeObserver(ajustar)
+    observador.observe(datasEl)
+    observador.observe(rolagemEl)
+    window.addEventListener("resize", ajustar)
+    document.fonts?.ready.then(ajustar)
+    return () => {
+      observador.disconnect()
+      window.removeEventListener("resize", ajustar)
+    }
+  }, [])
+
+  const dispensar = () => setDispensado(true)
+  const colunas = Math.max(1, ...datas.map((linha) => linha.length))
+
+  return (
+    <div className="grid w-full items-start gap-2 md:grid-cols-[auto_minmax(0,1fr)]">
+      {datas.length > 0 && (
+        <div ref={caixaDatas} className="rounded-xl border px-3.5 py-3">
+          <dl
+            aria-label="Datas"
+            className="grid gap-x-8 gap-y-4"
+            style={{ gridTemplateColumns: `repeat(${colunas}, max-content)` }}
+          >
+            {datas.map((linha) =>
+              linha.map((campo, coluna) => (
+                <ItemMeta key={campo.label} campo={campo} className={coluna === 0 ? "col-start-1" : undefined} />
+              ))
+            )}
+          </dl>
+        </div>
+      )}
+      <div className="@container relative min-w-0 rounded-xl border px-3.5 py-3" onWheel={dispensar}>
+        <div
+          ref={rolagem}
+          onScroll={dispensar}
+          style={alturaMax != null ? { maxHeight: alturaMax } : undefined}
+          className={cn(alturaMax != null && "overflow-y-scroll [scrollbar-width:thin]")}
+        >
+          <dl
+            aria-label="Informações do edital"
+            className="grid grid-cols-1 gap-x-6 gap-y-4 @sm:grid-cols-2 @3xl:grid-cols-5"
+          >
+            {campos.map((c) => (
+              <ItemMeta key={c.label} campo={c} />
+            ))}
+          </dl>
+        </div>
+        {sobra && !dispensado && (
+          <button
+            type="button"
+            onClick={() => {
+              rolagem.current?.scrollBy({ top: 56, behavior: "smooth" })
+              dispensar()
+            }}
+            className="absolute right-2.25 bottom-0 left-0 flex items-center gap-1 rounded-b-xl bg-linear-to-t from-card from-55% to-transparent px-3.5 pt-5.5 pb-2.5 text-left text-[13px] font-medium text-primary outline-none hover:text-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            Ver mais
+            <ArrowDownIcon aria-hidden className="size-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Uma propriedade da grade: rótulo em cima, valor embaixo. */
+function ItemMeta({ campo, className }: { campo: LicitacaoCardMetaField; className?: string }) {
+  return (
+    <div className={cn("flex min-w-0 flex-col gap-0.75", className)}>
+      <dt className="text-sm leading-5 font-semibold text-foreground">{campo.label}</dt>
+      <dd
+        data-tone={campo.tone ?? "default"}
+        className="flex min-w-0 items-center gap-1 text-sm leading-5 text-muted-foreground data-[tone=warning]:font-medium data-[tone=warning]:text-warning-strong"
+      >
+        <span className="truncate">{campo.value}</span>
+      </dd>
+    </div>
   )
 }
 

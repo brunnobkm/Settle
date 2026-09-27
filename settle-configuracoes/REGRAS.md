@@ -149,9 +149,20 @@ com Lote, Nome, Segmento, Unidades, Valor Unitário e Valor Total, com o total d
 direita do título. O que não é configurável aparece igual para servir de referência; só os
 campos dos quatro grupos respondem aos interruptores e à ordem.
 
-**Para o design system:** no card real os chips de segmento do topo usam o tom claro da
-categoria (fundo suave, texto na cor), enquanto `LicitacaoCardSegment` só tem o chip sólido.
-Na tela isso está resolvido por `className`; o certo é a Base ganhar um `tone="soft"`.
+**Rolagem da grade de propriedades** (regra vinda do protótipo `settle-card-licitacao`, em
+`app/CardEditavel.tsx`): a partir de 768px a caixa das propriedades (ID, Julgamento, Portal,
+Estado...) assume a altura da caixa de datas ao lado e rola por dentro, em vez de esticar o
+card. O "Ver mais", com degradê no pé da caixa, só aparece quando sobra conteúdo e some de vez
+na primeira rolagem, seja pelo botão, pela roda do mouse ou pela barra. Abaixo de 768px as
+duas caixas empilham e nada rola. O número de colunas vem do tamanho da própria caixa
+(container query): 1, 2 ou 5.
+
+**Para o design system:** duas coisas desta tela deviam estar na Base, e hoje estão
+duplicadas. (1) No card real os chips de segmento do topo usam o tom claro da categoria
+(fundo suave, texto na cor), enquanto `LicitacaoCardSegment` só tem o chip sólido; aqui está
+resolvido por `className`, e o certo é um `tone="soft"`. (2) A grade com rolagem acima existe
+em dois protótipos com o mesmo código; o certo é `LicitacaoCardMeta` ganhar esse
+comportamento.
 
 ## 4. Abas das listas
 
