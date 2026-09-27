@@ -1,11 +1,12 @@
 // Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
 // com variáveis da organização na grade de metadados e pré-visualização ao lado.
 
-import { useLayoutEffect, useRef, useState } from "react"
+import { Fragment, useLayoutEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
   ArrowDownIcon,
   BookmarkIcon,
+  CheckIcon,
   ExternalLinkIcon,
   FolderIcon,
   GaugeIcon,
@@ -51,6 +52,7 @@ import {
   SettingsListGroupLabel,
   SettingsListItem,
   SettingsListItemActions,
+  SettingsListLockBadge,
   SettingsListName,
 } from "@/components/ui/settings-list"
 
@@ -94,13 +96,24 @@ export function PaginaCard() {
     const itens = c.g === "itens"
     return (
       <SettingsListItem key={c.id} id={c.id} group={c.g} movable={!itens} name={c.nome}>
-        <Switch
-          checked={c.on}
-          aria-label={`Mostrar ${c.nome}`}
-          onCheckedChange={(v) => alternar(c, v)}
-          data-settings-list-no-drag
-        />
+        {c.sempre ? (
+          <span aria-hidden className="flex w-8 flex-none justify-center">
+            <CheckIcon className="size-4 text-muted-foreground" />
+          </span>
+        ) : (
+          <Switch
+            checked={c.on}
+            aria-label={`Mostrar ${c.nome}`}
+            onCheckedChange={(v) => alternar(c, v)}
+            data-settings-list-no-drag
+          />
+        )}
         <SettingsListName className={cn(!c.on && "text-muted-foreground", itens && "whitespace-normal")}>{c.nome}</SettingsListName>
+        {c.sempre && (
+          <SettingsListLockBadge tooltip="É por ela que a pessoa marca o card para as ações em lote. Dá para mudar a posição, não dá para esconder.">
+            Sempre visível
+          </SettingsListLockBadge>
+        )}
         {itens && (
           <label className="flex flex-none items-center gap-2 text-[13px] text-muted-foreground">
             Mostrar até
@@ -229,16 +242,20 @@ function PreviaDoCard() {
 
   // O título fica à esquerda e empurra o resto para a direita (mr-auto); as peças seguintes
   // aparecem na ordem da lista. Tudo aqui é ilustrativo: a pré-visualização não executa ações.
-  const blocoTopo = (c: Campo) => {
+  const blocoTopo = (c: Campo, empurra = false) => {
     switch (c.id) {
+      case "selecao":
+        return (
+          <span
+            aria-hidden
+            className={cn("size-4.5 flex-none rounded-[5px] border border-input", empurra && "mr-auto")}
+          />
+        )
       case "edital":
         return (
-          <div key={c.id} className="mr-auto flex min-w-0 items-center gap-2.5">
-            <span aria-hidden className="size-4.5 flex-none rounded-[5px] border border-input" />
-            <LicitacaoCardTitle prefix="Edital">
-              <b>{L.edital}</b>
-            </LicitacaoCardTitle>
-          </div>
+          <LicitacaoCardTitle key={c.id} prefix="Edital" className="mr-auto">
+            <b>{L.edital}</b>
+          </LicitacaoCardTitle>
         )
       case "descartar":
         return (
@@ -343,7 +360,10 @@ function PreviaDoCard() {
   return (
     <LicitacaoCardRoot>
       <LicitacaoCardHeader>
-        {topo.map((c) => blocoTopo(c))}
+        {topo.map((c, i) => (
+          // sem o número do edital, quem empurra o resto para a direita é a primeira peça
+          <Fragment key={c.id}>{blocoTopo(c, i === 0 && !topo.some((x) => x.id === "edital"))}</Fragment>
+        ))}
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
         {destaque.map(blocoDestaque)}
