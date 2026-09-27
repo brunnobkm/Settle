@@ -428,6 +428,12 @@ export function valorDaLic(l: Lic, k: string) {
   return typeof v === "string" ? v : ""
 }
 
+/**
+ * Edital usado nas pré-visualizações. É o mais completo da lista (dois segmentos, ME-EPP,
+ * itens em lotes e uma variável sem valor), para o exemplo mostrar o card cheio.
+ */
+export const LIC_EXEMPLO = 2
+
 export const LICS: Lic[] = [
   {
     edital: "00153/2026",

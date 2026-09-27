@@ -17,9 +17,8 @@ import {
 import { TokenField, type TokenFieldHandle } from "@/components/ui/token-field"
 
 import { ListaDeVariaveis } from "./comum"
-import { EMAIL_ASSUNTO, EMAIL_CORPO, LICS, nomeDaVariavel, valorDaLic, type Lic, type VazioEmail } from "./dados"
+import { EMAIL_ASSUNTO, EMAIL_CORPO, LIC_EXEMPLO, LICS, nomeDaVariavel, valorDaLic, type Lic, type VazioEmail } from "./dados"
 import { useConfig } from "./estado"
-import { SeletorDeExemplo } from "./PaginaCard"
 
 type Campo = "assunto" | "corpo"
 
@@ -29,7 +28,7 @@ const doCampo = (t: string) => t.replace(/\{\{(\w+)\}\}/g, "{$1}")
 const token = (k: string) => ({ label: nomeDaVariavel(k) })
 
 export function PaginaEmail() {
-  const { email, setEmail, lic, auditar, confirmar } = useConfig()
+  const { email, setEmail, auditar, confirmar } = useConfig()
   // rascunho: só vira o modelo da organização ao salvar
   const [assunto, setAssunto] = useState(email.assunto)
   const [corpo, setCorpo] = useState(email.corpo)
@@ -64,7 +63,7 @@ export function PaginaEmail() {
   // lista de variáveis que abre no cursor (tecla "/" ou botão Inserir variável)
   const menu = ({ insert }: { insert: (key: string) => void }) => <ListaDeVariaveis onEscolher={(v) => insert(v.k)} />
 
-  const L = LICS[lic]
+  const L = LICS[LIC_EXEMPLO]
   const vazias = new Set<string>()
   const pAssunto = preencher(assunto, L, email.vazio, vazias, false)
   const pCorpo = preencher(corpo, L, email.vazio, vazias, true)
@@ -138,9 +137,7 @@ export function PaginaEmail() {
         </div>
 
         <SettingsPreview aria-live="polite">
-          <SettingsPreviewHeader label="Pré-visualização">
-            <SeletorDeExemplo id="email-exemplo" />
-          </SettingsPreviewHeader>
+          <SettingsPreviewHeader label="Pré-visualização" />
           <div className="rounded-lg border bg-card text-sm leading-[22px]">
             <div className="border-b px-4 py-3 text-[13px] text-muted-foreground">
               Assunto: <b className="font-semibold text-foreground">{pAssunto}</b>
