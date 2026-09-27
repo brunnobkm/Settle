@@ -331,8 +331,10 @@ export function PaginaEtapas() {
                   Resultado {remocao.qtd === 1 ? "desta licitação" : `destas ${fmt(remocao.qtd)} licitações`}
                 </p>
                 <p className="text-[12.5px] leading-[19px] text-muted-foreground">
-                  Em {etapaSaida?.nome} toda licitação tem resultado, então ele é informado aqui. Vale o mesmo para
-                  todas, como no registro em lote de Em andamento.
+                  Em {etapaSaida?.nome} toda licitação precisa ter um resultado de conclusão.{" "}
+                  {remocao.qtd === 1
+                    ? "Para mover esta licitação, escolha uma das opções abaixo."
+                    : `Para mover as ${fmt(remocao.qtd)}, escolha uma das opções abaixo: a mesma vale para todas.`}
                 </p>
                 <RadioGroup
                   value={resultado}
