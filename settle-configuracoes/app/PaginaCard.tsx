@@ -1,7 +1,7 @@
 // Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
 // com variáveis da organização entre as propriedades e pré-visualização ao lado.
 
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 import {
   ArrowDownIcon,
@@ -12,6 +12,7 @@ import {
   GaugeIcon,
   GlobeIcon,
   Link2Icon,
+  PlusIcon,
   Share2Icon,
   Trash2Icon,
 } from "lucide-react"
@@ -48,7 +49,6 @@ import {
 } from "@/components/ui/settings-page"
 import {
   SettingsList,
-  SettingsListAdd,
   SettingsListItem,
   SettingsListGroupLabel,
   SettingsListItemActions,
@@ -56,10 +56,12 @@ import {
   SettingsListName,
 } from "@/components/ui/settings-list"
 
-import { Aviso, BotaoIcone, ListaDeVariaveis, Pilula, SeloDeOrigem } from "./comum"
+import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
 import {
   BLOCO_DE_ITENS,
   CAMPOS,
+  CLASSE_CHIP_SEGMENTO,
+  corDoSegmento,
   fmt,
   LIC_EXEMPLO,
   LICS,
@@ -104,11 +106,6 @@ export function PaginaCard() {
     )
   }
 
-  function alternarLinha(c: Campo) {
-    setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, junto: !x.junto } : x)))
-    auditar("Campos do card", `"${c.nome}" ${c.junto ? "voltou para uma linha própria" : "foi para a mesma linha do campo acima"}`)
-  }
-
   function alternar(c: Campo, on: boolean) {
     setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, on } : x)))
     auditar("Campos do card", `${on ? "Mostrou" : "Ocultou"} "${c.nome}"`)
@@ -137,13 +134,6 @@ export function PaginaCard() {
     })
   }
 
-  /** Só faz sentido juntar um destaque a outro destaque que já esteja acima dele. */
-  const podeJuntar = (c: Campo) => {
-    if (c.fixo || c.f !== "destaque" || !c.on) return false
-    const antes = campos.slice(0, campos.indexOf(c))
-    return antes.some((x) => x.f === "destaque" && x.on)
-  }
-
   const item = (c: Campo) => {
     const itens = c.f === "tabela"
     return (
@@ -161,11 +151,6 @@ export function PaginaCard() {
           />
         )}
         <SettingsListName className={cn(!c.on && "text-muted-foreground", itens && "whitespace-normal")}>{c.nome}</SettingsListName>
-        {podeJuntar(c) && (
-          <Pilula pressed={!!c.junto} onPressedChange={() => alternarLinha(c)} data-settings-list-no-drag>
-            Mesma linha
-          </Pilula>
-        )}
         {c.sempre && (
           <SettingsListLockBadge tooltip="É por ela que a pessoa marca o card para as ações em lote. Dá para mudar a posição, não dá para esconder.">
             Sempre visível
@@ -211,6 +196,23 @@ export function PaginaCard() {
     )
   }
 
+  /**
+   * Arrastar dentro do card: a matriz de linhas é a verdade, e os campos voltam para a lista
+   * na mesma ordem. "Mesma linha" deixou de ser um interruptor e virou o lugar onde se solta.
+   */
+  function reorganizarDestaques(linhas: Campo[][]) {
+    const ordem = linhas.flatMap((linha) => linha.map((c, i) => ({ ...c, junto: i > 0 })))
+    setCampos((l) => {
+      const ocultos = l.filter((c) => c.f === "destaque" && !c.on)
+      const resto = l.filter((c) => c.f !== "destaque")
+      const iPrimeiro = l.findIndex((c) => c.f === "destaque")
+      const antes = resto.filter((c) => l.indexOf(c) < iPrimeiro)
+      const depois = resto.filter((c) => l.indexOf(c) > iPrimeiro)
+      return [...antes, ...ordem, ...ocultos, ...depois]
+    })
+    auditar("Campos do card", "Reorganizou os campos do corpo do card")
+  }
+
   return (
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
@@ -219,6 +221,30 @@ export function PaginaCard() {
       </Aviso>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Popover open={menuAberto} onOpenChange={setMenuAberto}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <PlusIcon />
+                  Adicionar variável
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 p-0">
+                <ListaDeVariaveis
+                  excluir={[...campos.map((c) => c.id), "edital", "score"]}
+                  onEscolher={(v) => {
+                    setMenuAberto(false)
+                    setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
+                    auditar("Campos do card", `Adicionou a variável "${v.n}" ao card`)
+                    toast(`${v.n} entrou no card, como propriedade`)
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" className="ml-auto" onClick={restaurarPadrao}>
+              Restaurar padrão da Settle
+            </Button>
+          </div>
           <SettingsBox>
             <SettingsList
               labels={{ moveHandle: (n) => `Mover o campo ${n ?? ""}. Use as setas para cima e para baixo.` }}
@@ -235,34 +261,13 @@ export function PaginaCard() {
                 ]
               })}
               {campos.filter((c) => c.f === "tabela").map(item)}
-              <Popover open={menuAberto} onOpenChange={setMenuAberto}>
-                <PopoverTrigger asChild>
-                  <SettingsListAdd>Adicionar variável ao card</SettingsListAdd>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-80 p-0">
-                  <ListaDeVariaveis
-                    excluir={[...campos.map((c) => c.id), "edital", "score"]}
-                    onEscolher={(v) => {
-                      setMenuAberto(false)
-                      setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
-                      auditar("Campos do card", `Adicionou a variável "${v.n}" ao card`)
-                      toast(`${v.n} entrou no card, como propriedade`)
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
             </SettingsList>
           </SettingsBox>
-          <div>
-            <Button variant="outline" onClick={restaurarPadrao}>
-              Restaurar padrão da Settle
-            </Button>
-          </div>
         </div>
 
         <SettingsPreview aria-live="polite">
           <SettingsPreviewHeader label="Pré-visualização" />
-          <PreviaDoCard />
+          <PreviaDoCard aoReorganizar={reorganizarDestaques} />
         </SettingsPreview>
       </SettingsSplit>
     </SettingsPage>
@@ -270,7 +275,7 @@ export function PaginaCard() {
 }
 
 /** O card de Recomendadas montado com a configuração atual, no layout do card real. */
-function PreviaDoCard() {
+function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) => void }) {
   const { campos, maxItens } = useConfig()
   const L = LICS[LIC_EXEMPLO]
   const [carregados, setCarregados] = useState(BLOCO_DE_ITENS)
@@ -394,11 +399,7 @@ function PreviaDoCard() {
         return (
           <LicitacaoCardSegments
             key={c.id}
-            segments={L.segs.map((nome, i) => ({
-              label: nome,
-              // o card real usa o tom claro da categoria, não o chip sólido
-              className: i % 2 === 0 ? "bg-category-1/12 text-category-1" : "bg-category-4/12 text-category-4",
-            }))}
+            segments={L.segs.map((nome) => ({ label: nome, className: classeDeSegmento(nome) }))}
           />
         )
       // ME/EPP é uma tag ao lado do órgão; sozinho, vira um selo na própria linha
@@ -440,15 +441,7 @@ function PreviaDoCard() {
         ))}
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
-        {emLinhas(destaque).map((linha, i) =>
-          linha.length === 1 ? (
-            blocoDestaque(linha[0])
-          ) : (
-            <div key={`linha-${i}`} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
-              {linha.map(blocoDestaque)}
-            </div>
-          )
-        )}
+        <CorpoArrastavel linhas={emLinhas(destaque)} render={blocoDestaque} aoSoltar={aoReorganizar} />
         {(datas.length > 0 || meta.length > 0) && (
           <GradeDePropriedades
             // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
@@ -484,7 +477,11 @@ function PreviaDoCard() {
               rows={itensVisiveis.map((it) => ({
                 lote: it.lote,
                 nome: it.nome,
-                seg: <LicitacaoCardSegment size="sm">{it.seg}</LicitacaoCardSegment>,
+                seg: (
+                  <LicitacaoCardSegment size="sm" className={classeDeSegmento(it.seg)}>
+                    {it.seg}
+                  </LicitacaoCardSegment>
+                ),
                 unid: it.unid,
                 unit: it.unit,
                 total: it.total,
@@ -623,6 +620,14 @@ function ItemMeta({ campo, className }: { campo: LicitacaoCardMetaField; classNa
   )
 }
 
+/**
+ * Chip de segmento no tom claro da categoria, como no card real. A cor vem do nome, então o
+ * mesmo segmento tem a mesma cor no topo e na coluna Segmento da tabela.
+ */
+function classeDeSegmento(nome: string) {
+  return CLASSE_CHIP_SEGMENTO[corDoSegmento(nome)]
+}
+
 /** As duas caixas do card que recebem campos: as datas e a grade de propriedades. */
 const SECOES: [FormatoCampo, string, string][] = [
   ["data", "Datas", "caixa da esquerda"],
@@ -646,7 +651,148 @@ function SecaoVazia({ formato }: { formato: FormatoCampo }) {
   )
 }
 
-/** Agrupa os destaques em linhas: cada campo com "Mesma linha" gruda no anterior. */
+
+/**
+ * Corpo do card com os campos arrastáveis. Passar o mouse mostra que a peça pega; arrastar
+ * abre os alvos: os finos, entre duas peças, põem o campo na mesma linha; os largos, entre
+ * duas linhas, abrem uma linha nova. Também funciona no teclado, com Alt e as setas.
+ */
+function CorpoArrastavel({
+  linhas,
+  render,
+  aoSoltar,
+}: {
+  linhas: Campo[][]
+  render: (c: Campo) => ReactNode
+  aoSoltar: (linhas: Campo[][]) => void
+}) {
+  const [arrastando, setArrastando] = useState<string | null>(null)
+  const [alvo, setAlvo] = useState<string | null>(null)
+
+  /**
+   * Os alvos são contados na matriz como ela está na tela, mas a inserção acontece depois de
+   * tirar o campo do lugar antigo. Quando isso esvazia uma linha acima do alvo, os índices
+   * abaixo sobem um: é o que os dois ajustes aqui corrigem.
+   */
+  const soltarEm = (id: string, l: number, p: number, novaLinha: boolean) => {
+    const lOrigem = linhas.findIndex((linha) => linha.some((c) => c.id === id))
+    if (lOrigem < 0) return
+    const pOrigem = linhas[lOrigem].findIndex((c) => c.id === id)
+    const campo = linhas[lOrigem][pOrigem]
+    const sumiu = linhas[lOrigem].length === 1
+    const matriz = linhas.map((linha) => linha.filter((c) => c.id !== id)).filter((linha) => linha.length > 0)
+    const li = sumiu && lOrigem < l ? l - 1 : l
+    if (novaLinha) {
+      matriz.splice(Math.max(0, Math.min(li, matriz.length)), 0, [campo])
+    } else {
+      const destino = matriz[Math.max(0, Math.min(li, matriz.length - 1))]
+      if (!destino) return
+      const pi = lOrigem === li && p > pOrigem ? p - 1 : p
+      destino.splice(Math.max(0, Math.min(pi, destino.length)), 0, campo)
+    }
+    aoSoltar(matriz)
+    setArrastando(null)
+    setAlvo(null)
+  }
+
+  /**
+   * O que o arrastar faz com o mouse, o teclado faz com Alt: as setas movem o campo, e com
+   * Shift ele entra na linha de cima ou de baixo em vez de abrir uma linha nova.
+   */
+  const porTeclado = (e: React.KeyboardEvent, l: number, p: number) => {
+    if (!e.altKey || !e.key.startsWith("Arrow")) return
+    const id = linhas[l][p].id
+    e.preventDefault()
+    if (e.shiftKey) {
+      if (e.key === "ArrowUp" && l > 0) soltarEm(id, l - 1, linhas[l - 1].length, false)
+      else if (e.key === "ArrowDown" && l < linhas.length - 1) soltarEm(id, l + 1, 0, false)
+      return
+    }
+    if (e.key === "ArrowLeft" && p > 0) soltarEm(id, l, p - 1, false)
+    else if (e.key === "ArrowRight" && p < linhas[l].length - 1) soltarEm(id, l, p + 2, false)
+    else if (e.key === "ArrowUp") soltarEm(id, Math.max(0, l - 1), 0, true)
+    else if (e.key === "ArrowDown") soltarEm(id, l + 1, 0, true)
+  }
+
+  const alvoLinha = (l: number) => (
+    <div
+      onDragOver={(e) => {
+        e.preventDefault()
+        setAlvo(`linha-${l}`)
+      }}
+      onDragLeave={() => setAlvo(null)}
+      onDrop={() => arrastando && soltarEm(arrastando, l, 0, true)}
+      className={cn(
+        "h-1.5 rounded-full transition-colors",
+        arrastando ? "bg-transparent" : "hidden",
+        alvo === `linha-${l}` && "bg-primary"
+      )}
+    />
+  )
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {alvoLinha(0)}
+      {linhas.map((linha, l) => (
+        <Fragment key={linha.map((c) => c.id).join("-")}>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1.5">
+            {linha.map((c, p) => (
+              <Fragment key={c.id}>
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    setAlvo(`${l}-${p}`)
+                  }}
+                  onDragLeave={() => setAlvo(null)}
+                  onDrop={() => arrastando && soltarEm(arrastando, l, p, false)}
+                  className={cn(
+                    "w-1 self-stretch rounded-full transition-colors",
+                    arrastando ? "bg-transparent" : "hidden",
+                    alvo === `${l}-${p}` && "bg-primary"
+                  )}
+                />
+                <div
+                  draggable
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Mover ${c.nome} no card. Alt com as setas move; Alt e Shift junta na linha de cima ou de baixo.`}
+                  onDragStart={() => setArrastando(c.id)}
+                  onDragEnd={() => {
+                    setArrastando(null)
+                    setAlvo(null)
+                  }}
+                  onKeyDown={(e) => porTeclado(e, l, p)}
+                  className={cn(
+                    "min-w-0 cursor-grab rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:cursor-grabbing",
+                    arrastando === c.id && "opacity-40"
+                  )}
+                >
+                  {render(c)}
+                </div>
+              </Fragment>
+            ))}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault()
+                setAlvo(`${l}-fim`)
+              }}
+              onDragLeave={() => setAlvo(null)}
+              onDrop={() => arrastando && soltarEm(arrastando, l, linha.length, false)}
+              className={cn(
+                "w-1 self-stretch rounded-full transition-colors",
+                arrastando ? "bg-transparent" : "hidden",
+                alvo === `${l}-fim` && "bg-primary"
+              )}
+            />
+          </div>
+          {alvoLinha(l + 1)}
+        </Fragment>
+      ))}
+    </div>
+  )
+}
+
+/** Agrupa os destaques em linhas: cada campo gruda no anterior quando foi solto ao lado dele. */
 function emLinhas(campos: Campo[]) {
   const linhas: Campo[][] = []
   for (const c of campos) {

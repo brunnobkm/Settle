@@ -6,4 +6,4 @@
 //   git rev-list --count origin/main -- settle-configuracoes
 //
 // some 1 ao resultado e troque aqui.
-export const VERSAO = 72
+export const VERSAO = 73

@@ -54,6 +54,30 @@ export const CLASSE_COR_ETAPA: Record<CorEtapa, string> = {
   neutra: "bg-muted-foreground/60",
 }
 
+/** Chip claro por cor (classe inteira: o Tailwind não enxerga classe montada em tempo de execução). */
+export const CLASSE_CHIP_SEGMENTO: Record<CorEtapa, string> = {
+  "category-1": "bg-category-1/12 text-category-1",
+  "category-2": "bg-category-2/12 text-category-2",
+  "category-3": "bg-category-3/12 text-category-3",
+  "category-4": "bg-category-4/12 text-category-4",
+  "category-5": "bg-category-5/12 text-category-5",
+  "category-6": "bg-category-6/12 text-category-6",
+  "category-7": "bg-category-7/12 text-category-7",
+  "category-8": "bg-category-8/12 text-category-8",
+  neutra: "bg-muted text-muted-foreground",
+}
+
+/**
+ * Cor de um segmento, sempre a mesma em qualquer lugar do card: os chips do topo e a coluna
+ * Segmento da tabela de itens precisam bater. A escolha é determinística pelo nome.
+ */
+export function corDoSegmento(nome: string): CorEtapa {
+  const paleta: CorEtapa[] = ["category-1", "category-4", "category-6", "category-7", "category-3", "category-8"]
+  let h = 0
+  for (const ch of nome.trim().toLocaleLowerCase("pt-BR")) h = (h * 31 + ch.codePointAt(0)!) >>> 0
+  return paleta[h % paleta.length]
+}
+
 /** Nome de cada cor, para a pessoa escolher pelo nome e não por tentativa. */
 export const NOME_COR_ETAPA: Record<CorEtapa, string> = {
   "category-1": "Azul",
