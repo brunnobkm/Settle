@@ -132,7 +132,7 @@ const POR_ROTA: Record<Rota, { resumo: string; sugestoes: Sugestao[] }> = {
     sugestoes: [SOBRE_AGENTE, SOBRE_VARIAVEL],
   },
   etapas: {
-    resumo: "As etapas são as colunas do Kanban, o caminho que uma licitação percorre até virar proposta.",
+    resumo: "As etapas são o caminho que uma licitação percorre em Em andamento, da análise ao resultado.",
     sugestoes: [
       {
         p: "O que acontece com as licitações se eu renomear uma etapa?",

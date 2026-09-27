@@ -108,7 +108,7 @@ export function PaginaInicio() {
       <SettingsSection>
         <SettingsSectionTitle>Licitações</SettingsSectionTitle>
         <SettingsBox>
-          <Linha href="#etapas" titulo="Etapas do funil" descricao="Colunas do quadro em Em andamento" valor={`${etapas.length} etapas`} />
+          <Linha href="#etapas" titulo="Etapas do funil" descricao="Etapas de Em andamento" valor={`${etapas.length} etapas`} />
           <Linha
             href="#abas"
             titulo="Abas das listas"
@@ -177,7 +177,7 @@ export function PaginaInicio() {
         </SettingsSectionDescription>
         <SettingsBox>
           <Atalho href="#etapas">
-            Em andamento › menu {tecla} da coluna › <b>Editar etapas</b>
+            Em andamento › menu {tecla} da etapa (no Board, da coluna) › <b>Editar etapas</b>
           </Atalho>
           <Atalho href="#abas">
             Recomendadas e Descartadas › {tecla} ao lado das abas › <b>Editar abas</b> (substitui o + e o menu

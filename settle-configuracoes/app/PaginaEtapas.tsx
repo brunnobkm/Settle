@@ -1,4 +1,4 @@
-// Etapas do funil (colunas do Kanban de Em andamento). Modelo do Linear: primeira e
+// Etapas do funil de Em andamento (no Board elas viram colunas). Modelo do Linear: primeira e
 // última etapas fixas (renomeáveis), intermediárias livres.
 
 import { useEffect, useState } from "react"
@@ -149,7 +149,7 @@ export function PaginaEtapas() {
     if (cor === e.cor) return
     setEtapas((l) => l.map((x) => (x.id === e.id ? { ...x, cor } : x)))
     auditar("Etapas do funil", `Mudou a cor de "${e.nome}" para ${NOME_COR_ETAPA[cor]}`)
-    toast(`Cor salva. A coluna ${e.nome} fica ${NOME_COR_ETAPA[cor].toLowerCase()} no quadro para todo mundo`)
+    toast(`Cor salva. A bolinha de ${e.nome} fica ${NOME_COR_ETAPA[cor].toLowerCase()} para todo mundo`)
   }
 
   const item = (e: Etapa) => {
@@ -166,7 +166,7 @@ export function PaginaEtapas() {
         <MetaComDica
           dica={
             e.qtd
-              ? "Quantas licitações estão nesta etapa agora. O número muda conforme o time move as licitações no quadro."
+              ? "Quantas licitações estão nesta etapa agora. O número muda conforme o time move as licitações em Em andamento."
               : "Nenhuma licitação está nesta etapa agora."
           }
         >
@@ -198,8 +198,9 @@ export function PaginaEtapas() {
   return (
     <SettingsPage>
       <Aviso tom="marca" fechavel>
-        Aqui você monta as colunas do quadro em Em andamento, da análise ao resultado. A mudança vale para todas as
-        pessoas da organização assim que você salva o nome ou solta a etapa no lugar. <EfeitoDeCadaMudanca />
+        Aqui você monta as etapas de Em andamento, da análise ao resultado. Elas valem para as três visualizações
+        (Board, Tabela e Calendário) e para todas as pessoas da organização, assim que você salva o nome ou solta a
+        etapa no lugar. <EfeitoDeCadaMudanca />
       </Aviso>
       <Aviso>
         A <b>primeira</b> e a <b>última</b> etapas têm posição fixa: os agentes começam a trabalhar quando a licitação
@@ -279,7 +280,7 @@ export function PaginaEtapas() {
               Mover licitações para
               <NativeSelect value={destino} onChange={(ev) => setDestino(ev.target.value)} className="w-full font-normal">
                 {etapas
-                  .filter((x) => x.id !== remocao.id)
+                  .filter((x) => x.id !== remocao.id && x.tipo !== "saida")
                   .map((x) => (
                     <NativeSelectOption key={x.id} value={x.id}>
                       {x.nome}
@@ -288,13 +289,10 @@ export function PaginaEtapas() {
                   ))}
               </NativeSelect>
             </label>
-            {destino === etapas.find((x) => x.tipo === "saida")?.id && (
-              <p className="text-[12.5px] leading-[19px] text-muted-foreground">
-                {remocao.qtd === 1 ? "A licitação chega" : "As licitações chegam"} sem resultado registrado. Em{" "}
-                {etapas.find((x) => x.tipo === "saida")?.nome}, o resultado é informado por pessoa, então{" "}
-                {remocao.qtd === 1 ? "ela fica pendente" : "elas ficam pendentes"} até alguém marcar ganhou ou perdeu.
-              </p>
-            )}
+            <p className="text-[12.5px] leading-[19px] text-muted-foreground">
+              {etapas.find((x) => x.tipo === "saida")?.nome} não entra na lista: lá o resultado é informado licitação
+              por licitação, então não dá para mandar um lote de uma vez.
+            </p>
           </div>
         )}
       </Confirmacao>
@@ -302,7 +300,7 @@ export function PaginaEtapas() {
   )
 }
 
-/** Bolinha da etapa: clicar abre a paleta. A cor é só visual, o quadro usa o nome. */
+/** Bolinha da etapa: clicar abre a paleta. A cor é só visual, quem identifica a etapa é o nome. */
 function SeletorDeCor({ etapa, onEscolher }: { etapa: Etapa; onEscolher: (cor: CorEtapa) => void }) {
   const [aberto, setAberto] = useState(false)
   return (
@@ -319,7 +317,7 @@ function SeletorDeCor({ etapa, onEscolher }: { etapa: Etapa; onEscolher: (cor: C
             </button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Cor da etapa no quadro de Em andamento. Clique para trocar.</TooltipContent>
+        <TooltipContent>Cor da etapa no Board e na Tabela de Em andamento. Clique para trocar.</TooltipContent>
       </Tooltip>
       <PopoverContent align="start" className="w-44 p-1">
         <div role="group" aria-label="Cores" className="flex flex-col">
@@ -345,7 +343,7 @@ function SeletorDeCor({ etapa, onEscolher }: { etapa: Etapa; onEscolher: (cor: C
   )
 }
 
-/** O que cada mudança faz com as licitações que já estão no quadro. Antes era uma seção no
+/** O que cada mudança faz com as licitações que já estão em Em andamento. Antes era uma seção no
  * fim da página, mas é referência, não configuração: virou o "Saiba mais" do card de abertura. */
 function EfeitoDeCadaMudanca() {
   const linhas = [
@@ -358,8 +356,8 @@ function EfeitoDeCadaMudanca() {
       "Remover",
       "Se houver licitações na etapa, você escolhe para qual etapa elas vão antes de confirmar. No dashboard, o período em que a etapa existiu continua com o nome dela.",
     ],
-    ["Adicionar", "A etapa nasce vazia e sem histórico. Aparece no quadro na posição em que você a deixar."],
-    ["Trocar a cor", "Só muda a bolinha da coluna no quadro. Nenhuma licitação e nenhum número são afetados."],
+    ["Adicionar", "A etapa nasce vazia e sem histórico. Aparece em Em andamento na posição em que você a deixar."],
+    ["Trocar a cor", "Só muda a bolinha da etapa no Board e na Tabela. Nenhuma licitação e nenhum número são afetados."],
   ]
   return (
     <Dialog>
@@ -372,7 +370,8 @@ function EfeitoDeCadaMudanca() {
         <DialogHeader>
           <DialogTitle>Efeito de cada mudança</DialogTitle>
           <DialogDescription>
-            O que acontece com as licitações que já estão no quadro e com o dashboard quando você mexe nas etapas.
+            O que acontece com as licitações que já estão em Em andamento e com o dashboard quando você mexe nas
+            etapas.
           </DialogDescription>
         </DialogHeader>
         <dl className="flex flex-col gap-3">
