@@ -41,9 +41,8 @@ export function PaginaMotivos() {
   return (
     <SettingsPage className="max-w-245">
       <Aviso tom="marca" fechavel>
-        O que a pessoa escolhe ao descartar uma licitação ou registrar que perdeu. Os motivos alimentam o filtro de
-        Descartadas e o dashboard, por isso um motivo já usado é arquivado, nunca apagado. Os motivos de perda ficam em{" "}
-        <b>Etapas do funil</b>, junto da etapa em que o resultado é registrado.
+        O que a pessoa escolhe ao descartar uma licitação. Os motivos alimentam o filtro de Descartadas e o dashboard,
+        por isso um motivo já usado é arquivado, nunca apagado.
       </Aviso>
 
       <SettingsSection>
@@ -89,7 +88,10 @@ export function PaginaMotivos() {
         tipo="descarte"
         area="Motivos"
         usos="descartes"
+        dicaUso="Quantas licitações já foram descartadas com este motivo. Por isso ele é arquivado, e não excluído: o filtro de Descartadas e o dashboard continuam mostrando o motivo nessas licitações."
         acao="descartes"
+        usoPassado="descartadas com este motivo"
+        onde="quando alguém filtra por ele em Descartadas e nos números do dashboard"
         extras={(x) =>
           !unificar && (
             <div role="group" aria-label={`Onde "${x.nome}" aparece`} className="flex flex-none gap-1">

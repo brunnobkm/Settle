@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react"
 import { toast } from "sonner"
-import { ArchiveIcon, Trash2Icon } from "lucide-react"
+import { ArchiveIcon, InfoIcon, Trash2Icon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -28,7 +28,10 @@ export function ListaMotivos({
   tipo,
   area,
   usos,
+  dicaUso,
   acao,
+  usoPassado,
+  onde,
   extras,
   fixo,
 }: {
@@ -37,8 +40,14 @@ export function ListaMotivos({
   area: string
   /** Como o uso é contado na linha: "descartes", "perdas". */
   usos: string
+  /** Tooltip do número de usos, no "i" ao lado dele. */
+  dicaUso: string
   /** O que a pessoa faz com o motivo: "descartes", "registros de perda". */
   acao: string
+  /** Como as licitações que já usaram o motivo são descritas: "descartadas com este motivo". */
+  usoPassado: string
+  /** Onde o motivo continua aparecendo depois de arquivado. */
+  onde: string
   /** Conteúdo extra na linha de cada motivo (ex.: escopo por tela no descarte). */
   extras?: (x: Motivo) => ReactNode
   /** Item fixo no fim da lista (ex.: "Outros" no descarte). */
@@ -82,10 +91,10 @@ export function ListaMotivos({
       titulo: `Arquivar "${x.nome}"?`,
       corpo: (
         <>
-          <p>Ele deixa de aparecer para novos {acao}.</p>
+          <p>Ele deixa de aparecer na lista para novos {acao}.</p>
           <p>
-            As {fmt(x.uso)} licitações que já usaram este motivo continuam com ele, e o filtro e o dashboard seguem
-            contando. Dá para restaurar depois.
+            Nada muda no que já aconteceu: as {fmt(x.uso)} licitações {usoPassado} continuam com ele, e continuam
+            aparecendo {onde}. Dá para restaurar o motivo quando quiser.
           </p>
         </>
       ),
@@ -139,7 +148,19 @@ export function ListaMotivos({
                 </TooltipTrigger>
                 <TooltipContent>Ao escolher este motivo, a pessoa precisa escrever o porquê</TooltipContent>
               </Tooltip>
-              <SettingsListItemMeta>{x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}</SettingsListItemMeta>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={`O que significa "${x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}"`}
+                    className="flex flex-none cursor-help items-center gap-1 text-[12.5px] text-muted-foreground"
+                  >
+                    {x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}
+                    <InfoIcon aria-hidden className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{dicaUso}</TooltipContent>
+              </Tooltip>
               <SettingsListItemActions>
                 <BotaoIcone
                   rotulo={`${x.uso ? "Arquivar" : "Excluir"} ${x.nome}`}
@@ -161,7 +182,8 @@ export function ListaMotivos({
         <SettingsSection className="mt-6">
           <SettingsSectionTitle>Arquivados</SettingsSectionTitle>
           <SettingsSectionDescription>
-            Não aparecem para novos {acao}. Continuam nas licitações que já usaram, no filtro e no dashboard.
+            Não aparecem na lista para novos {acao}, mas continuam valendo no que já aconteceu: as licitações {usoPassado}
+            seguem com eles, e seguem aparecendo {onde}.
           </SettingsSectionDescription>
           <SettingsBox>
             <SettingsList>
