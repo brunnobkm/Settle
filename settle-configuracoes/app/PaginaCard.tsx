@@ -59,29 +59,8 @@ import {
 } from "@/components/ui/settings-list"
 
 import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
-import { CAMPOS, GRUPOS_CAMPO, LICS, OPCOES_MAX_ITENS, mover, valorDaLic, type Campo } from "./dados"
+import { CAMPOS, GRUPOS_CAMPO, LIC_EXEMPLO, LICS, OPCOES_MAX_ITENS, mover, valorDaLic, type Campo } from "./dados"
 import { useConfig } from "./estado"
-
-export function SeletorDeExemplo({ id }: { id: string }) {
-  const { lic, setLic } = useConfig()
-  return (
-    <NativeSelect
-      id={id}
-      size="sm"
-      aria-label="Edital usado no exemplo"
-      title="Troca o edital do exemplo, para conferir o resultado com dados diferentes (inclusive com campo vazio)"
-      value={lic}
-      onChange={(e) => setLic(Number(e.target.value))}
-      className="text-foreground"
-    >
-      {LICS.map((l, i) => (
-        <NativeSelectOption key={l.edital} value={i}>
-          Edital {l.edital}
-        </NativeSelectOption>
-      ))}
-    </NativeSelect>
-  )
-}
 
 export function PaginaCard() {
   const { campos, setCampos, maxItens, setMaxItens, auditar, confirmar } = useConfig()
@@ -221,9 +200,7 @@ export function PaginaCard() {
         </div>
 
         <SettingsPreview aria-live="polite">
-          <SettingsPreviewHeader label="Pré-visualização">
-            <SeletorDeExemplo id="card-exemplo" />
-          </SettingsPreviewHeader>
+          <SettingsPreviewHeader label="Pré-visualização" />
           <PreviaDoCard />
         </SettingsPreview>
       </SettingsSplit>
@@ -233,8 +210,8 @@ export function PaginaCard() {
 
 /** O card de Recomendadas montado com a configuração atual, no layout do card real. */
 function PreviaDoCard() {
-  const { campos, maxItens, lic } = useConfig()
-  const L = LICS[lic]
+  const { campos, maxItens } = useConfig()
+  const L = LICS[LIC_EXEMPLO]
 
   const valor = (c: Campo) => {
     if (c.var) return valorDaLic(L, c.id) || "Não encontrado"

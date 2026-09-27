@@ -75,8 +75,6 @@ type Estado = {
   maxItens: number
   setMaxItens: Atualizar<number>
   /** Licitação de exemplo das pré-visualizações (card e e-mail). */
-  lic: number
-  setLic: Atualizar<number>
 
   email: { assunto: string; corpo: string; vazio: VazioEmail; personalizado: boolean }
   setEmail: Atualizar<Estado["email"]>
@@ -117,7 +115,6 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const [abaPrev, setAbaPrev] = useState<Partial<Record<TelaAba, string>>>({})
   const [campos, setCampos] = useState(CAMPOS)
   const [maxItens, setMaxItens] = useState(5)
-  const [lic, setLic] = useState(0)
   const [email, setEmail] = useState<Estado["email"]>({
     assunto: EMAIL_ASSUNTO,
     corpo: EMAIL_CORPO,
@@ -160,8 +157,6 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       setCampos,
       maxItens,
       setMaxItens,
-      lic,
-      setLic,
       email,
       setEmail,
       audit,
@@ -171,7 +166,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, maxItens, lic, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (

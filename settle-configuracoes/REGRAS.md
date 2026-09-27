@@ -137,6 +137,10 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   da organização.
 - **Em aberto:** Em andamento e Descartadas herdam essa configuração ou têm a sua?
 
+**A pré-visualização usa um edital fixo**, o mais completo da lista de exemplo (dois
+segmentos, ME-EPP, itens em lotes e uma variável sem valor). Não há seletor de edital: a tela
+configura o card, não o conteúdo de uma licitação.
+
 **Fidelidade da pré-visualização.** A prévia reproduz o card real (referência: o node
 35780-8043 do Figma do design system): selo Atualizado, Descartar, Enviar para análise, botão
 de status, responsáveis, ações de ícone, Score, segmentos, Órgão com a tag ME - EPP, Objeto,
