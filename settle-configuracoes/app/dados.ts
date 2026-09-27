@@ -309,6 +309,8 @@ export type Campo = {
   nome: string
   g: GrupoCampo
   on: boolean
+  /** Não pode ser ocultado, só reordenado (ex.: a caixa de seleção do card). */
+  sempre?: boolean
   /** Variável adicionada pela organização (ou da Settle) à grade de metadados. */
   var?: boolean
   origem?: OrigemVar
@@ -323,6 +325,7 @@ export const GRUPOS_CAMPO: [GrupoCampo, string, string][] = [
 ]
 
 export const CAMPOS: Campo[] = [
+  { id: "selecao", nome: "Seleção do card", g: "topo", on: true, sempre: true },
   { id: "edital", nome: "Número do edital", g: "topo", on: true },
   { id: "descartar", nome: "Descartar", g: "topo", on: true },
   { id: "analise", nome: "Enviar para análise", g: "topo", on: true },

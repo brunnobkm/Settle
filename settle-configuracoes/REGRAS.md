@@ -118,10 +118,15 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 
 - Mostrar/ocultar e ordenar, em cinco grupos: Topo (primeira linha), Destaque, Datas (coluna
   esquerda), Metadados (grade), Itens.
-- **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou seis itens:
-  Número do edital, Descartar, Enviar para análise, Responsáveis, Ações de ícone e Score. Cada
-  um liga, desliga e muda de ordem como qualquer outro campo. O número do edital fica à
-  esquerda e empurra o resto para a direita; os demais aparecem na ordem da lista.
+- **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou sete itens:
+  Seleção do card, Número do edital, Descartar, Enviar para análise, Responsáveis, Ações de
+  ícone e Score. Ligam, desligam e mudam de ordem como qualquer outro campo, com uma exceção.
+- **A caixa de seleção não pode ser ocultada, só reordenada.** É por ela que a pessoa marca o
+  card para as ações em lote; sem ela, some o caminho para descartar, mover etapa ou registrar
+  resultado em lote. Na lista ela aparece sem interruptor, com o selo "Sempre visível". Ocultar
+  o número do edital não a leva junto: ela é um campo próprio.
+- O número do edital fica à esquerda e empurra o resto para a direita; sem ele, quem empurra é
+  a primeira peça da lista.
 - **Em aberto:** desligar Descartar ou Enviar para análise tira o botão do card, mas a ação
   continua existindo no menu da linha e nas ações em lote. Confirmar com o time se é isso
   mesmo, ou se esses dois deveriam ser tratados como permissão e não como campo do card.
