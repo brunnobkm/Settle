@@ -116,8 +116,15 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 
 ## 3. Campos do card de Recomendadas
 
-- Mostrar/ocultar e ordenar, em cinco grupos: Topo (primeira linha), Destaque, Datas (coluna
-  esquerda), Metadados (grade), Itens.
+- **Uma lista só, sem grupos.** A ordem é livre de ponta a ponta, e o que define onde o campo
+  aparece no card é o formato escolhido na própria linha: **Destaque** (linha larga), **Data**
+  (caixa da esquerda) ou **Propriedade** (célula da grade). "Metadados" passou a se chamar
+  **Propriedades**, que é o nome certo.
+- Dentro de cada formato, o card respeita a ordem da lista. Mudar o formato de um campo o
+  move de lugar no card sem precisar arrastar por seções.
+- **Campos na mesma linha.** Um campo de destaque pode grudar no destaque anterior em vez de
+  abrir linha nova: é o "Mesma linha" da lista. Serve para deixar, por exemplo, segmentos,
+  órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.
 - **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou sete itens:
   Seleção do card, Número do edital, Descartar, Enviar para análise, Responsáveis, Ações de
   ícone e Score. Ligam, desligam e mudam de ordem como qualquer outro campo, com uma exceção.
@@ -130,16 +137,19 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 - **Em aberto:** desligar Descartar ou Enviar para análise tira o botão do card, mas a ação
   continua existindo no menu da linha e nas ações em lote. Confirmar com o time se é isso
   mesmo, ou se esses dois deveriam ser tratados como permissão e não como campo do card.
-- Reordenar só dentro do grupo: o card tem estrutura, e um campo de data no meio do objeto
-  quebraria a leitura.
 - Variável da organização pode virar campo. Quando não é encontrada naquela licitação, mostra
   "Não encontrado" (mesmo tratamento FOUND/NOT_FOUND/OTHER do Resumo).
 - Campo oculto continua em Filtrar e Ordenar.
 - **Quantidade de itens** (feedback da Alice, 18/09): hoje o card mostra até 5 itens com
   correspondência. O admin escolhe 3, 5, 10 ou todos; o que passar do limite fica em
   "Ver mais N itens". O contador mostra sempre o total.
-- **Variáveis nos metadados** (feedback da Alice, 18/09): qualquer variável da organização
-  ou da Settle pode entrar na grade, inclusive as de checklist (prazo de impugnação, local
+- **"Todos os itens" não desenha tudo de uma vez.** Um edital pode ter centenas de itens, e
+  uma tabela de 800 linhas trava o card e a lista inteira. Nessa opção a tabela ganha altura
+  própria (360px), rola por dentro e carrega o bloco seguinte (25 itens) quando a rolagem
+  chega perto do fim. O rodapé diz "Mostrando N de M. Role a tabela para carregar mais." e,
+  no fim, só o total. Nas opções 3, 5 e 10 nada disso aparece: continua o "Ver mais N itens".
+- **Variáveis como propriedade** (feedback da Alice, 18/09): qualquer variável da organização
+  ou da Settle pode entrar no card, inclusive as de checklist (prazo de impugnação, local
   de entrega). O botão Adicionar lista o catálogo inteiro e tem "Criar variável", que leva
   à central de Agentes e variáveis; a variável criada volta para esta lista. Cada variável
   no card tem atalho para abrir e editar a própria variável (pedido que também apareceu no
@@ -156,7 +166,7 @@ configura o card, não o conteúdo de uma licitação.
 **Fidelidade da pré-visualização.** A prévia reproduz o card real (referência: o node
 35780-8043 do Figma do design system): selo Atualizado, Descartar, Enviar para análise, botão
 de status, responsáveis, ações de ícone, Score, segmentos, Órgão com a tag ME - EPP, Objeto,
-Valor global, a caixa de metadados com as datas à esquerda e "Ver mais", e a tabela de itens
+Valor global, a caixa de propriedades com as datas à esquerda e "Ver mais", e a tabela de itens
 com Lote, Nome, Segmento, Unidades, Valor Unitário e Valor Total, com o total do edital à
 direita do título. O que não é configurável aparece igual para servir de referência; só os
 campos dos quatro grupos respondem aos interruptores e à ordem.

@@ -1,7 +1,7 @@
 // Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
-// com variáveis da organização na grade de metadados e pré-visualização ao lado.
+// com variáveis da organização entre as propriedades e pré-visualização ao lado.
 
-import { Fragment, useLayoutEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
   ArrowDownIcon,
@@ -49,20 +49,41 @@ import {
 import {
   SettingsList,
   SettingsListAdd,
-  SettingsListGroupLabel,
   SettingsListItem,
   SettingsListItemActions,
   SettingsListLockBadge,
   SettingsListName,
 } from "@/components/ui/settings-list"
 
-import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
-import { CAMPOS, GRUPOS_CAMPO, LIC_EXEMPLO, LICS, OPCOES_MAX_ITENS, mover, valorDaLic, type Campo } from "./dados"
+import { Aviso, BotaoIcone, ListaDeVariaveis, Pilula, SeloDeOrigem } from "./comum"
+import {
+  BLOCO_DE_ITENS,
+  CAMPOS,
+  FORMATOS,
+  fmt,
+  LIC_EXEMPLO,
+  LICS,
+  OPCOES_MAX_ITENS,
+  mover,
+  valorDaLic,
+  type Campo,
+  type FormatoCampo,
+} from "./dados"
 import { useConfig } from "./estado"
 
 export function PaginaCard() {
   const { campos, setCampos, maxItens, setMaxItens, auditar, confirmar } = useConfig()
   const [menuAberto, setMenuAberto] = useState(false)
+
+  function alternarLinha(c: Campo) {
+    setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, junto: !x.junto } : x)))
+    auditar("Campos do card", `"${c.nome}" ${c.junto ? "voltou para uma linha própria" : "foi para a mesma linha do campo acima"}`)
+  }
+
+  function trocarFormato(c: Campo, f: FormatoCampo) {
+    setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, f } : x)))
+    auditar("Campos do card", `"${c.nome}" passou a aparecer como ${FORMATOS.find((x) => x[0] === f)?.[1]}`)
+  }
 
   function alternar(c: Campo, on: boolean) {
     setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, on } : x)))
@@ -92,10 +113,17 @@ export function PaginaCard() {
     })
   }
 
+  /** Só faz sentido juntar um destaque a outro destaque que já esteja acima dele. */
+  const podeJuntar = (c: Campo) => {
+    if (c.fixo || c.f !== "destaque" || !c.on) return false
+    const antes = campos.slice(0, campos.indexOf(c))
+    return antes.some((x) => x.f === "destaque" && x.on)
+  }
+
   const item = (c: Campo) => {
-    const itens = c.g === "itens"
+    const itens = c.f === "tabela"
     return (
-      <SettingsListItem key={c.id} id={c.id} group={c.g} movable={!itens} name={c.nome}>
+      <SettingsListItem key={c.id} id={c.id} name={c.nome}>
         {c.sempre ? (
           <span aria-hidden className="flex w-8 flex-none justify-center">
             <CheckIcon className="size-4 text-muted-foreground" />
@@ -109,6 +137,28 @@ export function PaginaCard() {
           />
         )}
         <SettingsListName className={cn(!c.on && "text-muted-foreground", itens && "whitespace-normal")}>{c.nome}</SettingsListName>
+        {podeJuntar(c) && (
+          <Pilula pressed={!!c.junto} onPressedChange={() => alternarLinha(c)} data-settings-list-no-drag>
+            Mesma linha
+          </Pilula>
+        )}
+        {!c.fixo && (
+          <NativeSelect
+            size="sm"
+            value={c.f}
+            aria-label={`Como ${c.nome} aparece no card`}
+            title={`Onde ${c.nome} aparece no card`}
+            className="w-auto flex-none text-foreground"
+            onChange={(e) => trocarFormato(c, e.target.value as FormatoCampo)}
+            data-settings-list-no-drag
+          >
+            {FORMATOS.map(([f, nome]) => (
+              <NativeSelectOption key={f} value={f}>
+                {nome}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        )}
         {c.sempre && (
           <SettingsListLockBadge tooltip="É por ela que a pessoa marca o card para as ações em lote. Dá para mudar a posição, não dá para esconder.">
             Sempre visível
@@ -170,24 +220,19 @@ export function PaginaCard() {
                 auditar("Campos do card", "Reordenou os campos")
               }}
             >
-              {GRUPOS_CAMPO.map(([g, nome, descricao]) => [
-                <SettingsListGroupLabel key={`g-${g}`} description={descricao || undefined}>
-                  {nome}
-                </SettingsListGroupLabel>,
-                ...campos.filter((c) => c.g === g).map(item),
-              ])}
+              {campos.map(item)}
               <Popover open={menuAberto} onOpenChange={setMenuAberto}>
                 <PopoverTrigger asChild>
-                  <SettingsListAdd>Adicionar variável aos metadados</SettingsListAdd>
+                  <SettingsListAdd>Adicionar variável ao card</SettingsListAdd>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-80 p-0">
                   <ListaDeVariaveis
                     excluir={[...campos.map((c) => c.id), "edital", "score"]}
                     onEscolher={(v) => {
                       setMenuAberto(false)
-                      setCampos((l) => [...l, { id: v.k, nome: v.n, g: "meta", on: true, var: true, origem: v.o }])
+                      setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
                       auditar("Campos do card", `Adicionou a variável "${v.n}" ao card`)
-                      toast(`${v.n} entrou no card, no fim dos metadados`)
+                      toast(`${v.n} entrou no card, como propriedade`)
                     }}
                   />
                 </PopoverContent>
@@ -214,6 +259,10 @@ export function PaginaCard() {
 function PreviaDoCard() {
   const { campos, maxItens } = useConfig()
   const L = LICS[LIC_EXEMPLO]
+  const [carregados, setCarregados] = useState(BLOCO_DE_ITENS)
+
+  // trocar a opção recomeça a contagem, senão "Todos" já abriria com o que ficou de antes
+  useEffect(() => setCarregados(BLOCO_DE_ITENS), [maxItens])
 
   const valor = (c: Campo) => {
     if (c.var) return valorDaLic(L, c.id) || "Não encontrado"
@@ -230,13 +279,24 @@ function PreviaDoCard() {
     }
   }
 
-  const topo = campos.filter((c) => c.g === "topo" && c.on)
-  const destaque = campos.filter((c) => c.g === "destaque" && c.on)
-  const datas = campos.filter((c) => c.g === "datas" && c.on)
-  const meta = campos.filter((c) => c.g === "meta" && c.on)
+  const doFormato = (f: FormatoCampo) => campos.filter((c) => c.f === f && c.on)
+  const topo = doFormato("topo")
+  const destaque = doFormato("destaque")
+  const datas = doFormato("data")
+  const meta = doFormato("propriedade")
   const mostrarItens = campos.some((c) => c.id === "itens" && c.on)
-  const temME = campos.some((c) => c.id === "me" && c.on) && L.me
-  const itensVisiveis = maxItens ? L.itens.slice(0, maxItens) : L.itens
+  // ME/EPP só vira tag do órgão quando os dois estão no destaque, um perto do outro
+  const orgaoNoDestaque = campos.find((c) => c.id === "orgao")
+  const meNoDestaque = campos.find((c) => c.id === "me")
+  const temME =
+    !!L.me &&
+    meNoDestaque?.on === true &&
+    meNoDestaque.f === "destaque" &&
+    orgaoNoDestaque?.on === true &&
+    orgaoNoDestaque.f === "destaque"
+  // "Todos os itens" não desenha tudo de uma vez: a tabela rola e carrega em blocos
+  const todos = maxItens === 0
+  const itensVisiveis = L.itens.slice(0, todos ? carregados : maxItens)
   const resto = L.itens.length - itensVisiveis.length
   const nota = Number(L.score.split("/")[0])
 
@@ -329,7 +389,7 @@ function PreviaDoCard() {
         )
       // ME/EPP é uma tag ao lado do órgão; sozinho, vira um selo na própria linha
       case "me":
-        return L.me && !campos.some((x) => x.id === "orgao" && x.on) ? (
+        return L.me && !temME ? (
           <div key={c.id}>
             <SeloME />
           </div>
@@ -366,7 +426,15 @@ function PreviaDoCard() {
         ))}
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
-        {destaque.map(blocoDestaque)}
+        {emLinhas(destaque).map((linha, i) =>
+          linha.length === 1 ? (
+            blocoDestaque(linha[0])
+          ) : (
+            <div key={`linha-${i}`} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
+              {linha.map(blocoDestaque)}
+            </div>
+          )
+        )}
         {(datas.length > 0 || meta.length > 0) && (
           <GradeDePropriedades
             // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
@@ -376,6 +444,16 @@ function PreviaDoCard() {
         )}
         {mostrarItens && (
           <>
+            <div
+              onScroll={(e) => {
+                const el = e.currentTarget
+                if (!todos || resto <= 0) return
+                if (el.scrollHeight - el.scrollTop - el.clientHeight < 80) {
+                  setCarregados((n) => n + BLOCO_DE_ITENS)
+                }
+              }}
+              className={cn(todos && "max-h-90 overflow-y-auto [scrollbar-width:thin]")}
+            >
             <LicitacaoCardItems
               variant="boxed"
               title="Itens com Correspondência"
@@ -398,9 +476,17 @@ function PreviaDoCard() {
                 total: it.total,
               }))}
             />
-            {resto > 0 && (
+            </div>
+            {resto > 0 && !todos && (
               <span className="text-[13px] font-medium text-muted-foreground">
                 Ver mais {resto} {resto === 1 ? "item" : "itens"}
+              </span>
+            )}
+            {todos && (
+              <span className="text-[13px] text-muted-foreground">
+                {resto > 0
+                  ? `Mostrando ${fmt(itensVisiveis.length)} de ${fmt(L.itens.length)}. Role a tabela para carregar mais.`
+                  : `${fmt(L.itens.length)} itens com correspondência`}
               </span>
             )}
           </>
@@ -521,6 +607,16 @@ function ItemMeta({ campo, className }: { campo: LicitacaoCardMetaField; classNa
       </dd>
     </div>
   )
+}
+
+/** Agrupa os destaques em linhas: cada campo com "Mesma linha" gruda no anterior. */
+function emLinhas(campos: Campo[]) {
+  const linhas: Campo[][] = []
+  for (const c of campos) {
+    if (c.junto && linhas.length) linhas[linhas.length - 1].push(c)
+    else linhas.push([c])
+  }
+  return linhas
 }
 
 /** Quebra a lista em linhas de dois, para a grade lateral do card. */
