@@ -128,7 +128,11 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   haveria como devolver um campo para ela.
 - As peças do topo e a tabela de itens só mudam de ordem, nunca de seção: arrastá-las para
   dentro de uma seção é recusado com um aviso dizendo por quê.
-- **Os campos do corpo se organizam no próprio card, arrastando.** Passar o mouse mostra que
+- **Todo campo se organiza no próprio card, arrastando**: as peças do topo, os campos do corpo
+  e o que está dentro das caixas de Datas e Propriedades. Arrastar de uma para outra é o que
+  muda a caixa (e o formato) do campo: tirar "Envio da proposta" das datas e soltar na grade o
+  transforma em propriedade; puxar "ID" da grade para o corpo o transforma em campo do corpo.
+- **No corpo, o arrastar também decide a linha.** Passar o mouse mostra que
   a peça pega; ao arrastar aparecem dois tipos de alvo: o fino, entre duas peças, põe o campo
   na mesma linha; o largo, entre duas linhas, abre linha nova. É assim que se deixa, por
   exemplo, segmentos, órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.
@@ -137,9 +141,8 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   em toque, exige imagem de arraste e não deixa desenhar a barra do alvo com precisão. O alvo
   sai da posição do ponteiro (perto da borda de cima ou de baixo da linha, abre linha nova;
   no meio, entra na linha), em vez de zonas invisíveis que a pessoa precisa acertar.
-- Pelo teclado, com foco no campo: **Alt + setas** move (esquerda e direita dentro da linha,
-  cima e baixo entre linhas) e **Alt + Shift + ↑/↓** junta o campo à linha de cima ou de
-  baixo. Arrastar não pode ser o único caminho.
+- Pelo teclado, com foco no campo: **Alt + ← →** muda de posição e **Alt + ↑ ↓** põe o campo
+  em outra linha. Arrastar não pode ser o único caminho.
 - A lista ao lado continua valendo para ligar, desligar e trocar de seção; o card cuida de
   como o corpo se organiza.
 - **O topo também é configurável.** Ele deixou de ser um bloco fechado e virou sete itens:
@@ -167,6 +170,8 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 - **Quantidade de itens** (feedback da Alice, 18/09): hoje o card mostra até 5 itens com
   correspondência. O admin escolhe 3, 5, 10 ou todos; o que passar do limite fica em
   "Ver mais N itens". O contador mostra sempre o total.
+- Não há mais "Ver mais N itens" embaixo da tabela: quem quer ver tudo escolhe "Todos os
+  itens", e aí a tabela rola por dentro.
 - **"Todos os itens" não desenha tudo de uma vez.** Um edital pode ter centenas de itens, e
   uma tabela de 800 linhas trava o card e a lista inteira. Nessa opção a tabela ganha altura
   própria (360px), rola por dentro e carrega o bloco seguinte (25 itens) quando a rolagem
