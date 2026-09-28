@@ -1,7 +1,16 @@
 // Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
 // com variáveis da organização entre as propriedades e pré-visualização ao lado.
 
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
+import {
+  createContext,
+  Fragment,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 import { toast } from "sonner"
 import {
   ArrowDownIcon,
@@ -197,20 +206,42 @@ export function PaginaCard() {
   }
 
   /**
-   * Arrastar dentro do card: a matriz de linhas é a verdade, e os campos voltam para a lista
-   * na mesma ordem. "Mesma linha" deixou de ser um interruptor e virou o lugar onde se solta.
+   * Uma solta só para o card inteiro: o campo muda de bloco (e de formato) conforme a área
+   * onde caiu, e a posição vem do lugar exato. No corpo, cair no meio de uma linha junta as
+   * peças; cair na borda abre linha nova.
    */
-  function reorganizarDestaques(linhas: Campo[][]) {
-    const ordem = linhas.flatMap((linha) => linha.map((c, i) => ({ ...c, junto: i > 0 })))
+  function soltarNoCard(id: string, alvo: AlvoArrasto) {
     setCampos((l) => {
-      const ocultos = l.filter((c) => c.f === "destaque" && !c.on)
-      const resto = l.filter((c) => c.f !== "destaque")
-      const iPrimeiro = l.findIndex((c) => c.f === "destaque")
-      const antes = resto.filter((c) => l.indexOf(c) < iPrimeiro)
-      const depois = resto.filter((c) => l.indexOf(c) > iPrimeiro)
-      return [...antes, ...ordem, ...ocultos, ...depois]
+      const campo = l.find((c) => c.id === id)
+      if (!campo) return l
+      const visiveis = l.filter((c) => c.f === alvo.area && c.on && c.id !== id)
+      const i = Math.max(0, Math.min(alvo.indice, visiveis.length))
+      const empurrado = visiveis[i]
+      const novo: Campo = {
+        ...campo,
+        f: alvo.area,
+        junto: alvo.area === "destaque" && !alvo.novaLinha && i > 0,
+      }
+      const daArea = [...visiveis.slice(0, i), novo, ...visiveis.slice(i)]
+      // entrar como primeiro de uma linha existente empurra o antigo primeiro para o lado
+      if (alvo.area === "destaque" && !alvo.novaLinha && i === 0 && empurrado) {
+        daArea[1] = { ...empurrado, junto: true }
+      }
+      const ocultos = l.filter((c) => c.f === alvo.area && !c.on && c.id !== id)
+      const resto = l.filter((c) => c.f !== alvo.area && c.id !== id)
+      // a ordem dentro de cada área é o que importa; agrupar mantém tudo previsível
+      const ordemDasAreas: FormatoCampo[] = ["topo", "destaque", "data", "propriedade", "tabela"]
+      const porArea = new Map<FormatoCampo, Campo[]>()
+      for (const f of ordemDasAreas) porArea.set(f, f === alvo.area ? [...daArea, ...ocultos] : [])
+      for (const c of resto) porArea.get(c.f)!.push(c)
+      const nova = ordemDasAreas.flatMap((f) => porArea.get(f)!)
+      if (campo.f !== alvo.area) {
+        auditar("Campos do card", `"${campo.nome}" foi para ${NOME_DO_FORMATO[alvo.area]}`)
+      } else {
+        auditar("Campos do card", `Mudou ${campo.nome} de lugar no card`)
+      }
+      return nova
     })
-    auditar("Campos do card", "Reorganizou os campos do corpo do card")
   }
 
   return (
@@ -267,7 +298,7 @@ export function PaginaCard() {
 
         <SettingsPreview aria-live="polite">
           <SettingsPreviewHeader label="Pré-visualização" />
-          <PreviaDoCard aoReorganizar={reorganizarDestaques} />
+          <PreviaDoCard aoSoltarCampo={soltarNoCard} />
         </SettingsPreview>
       </SettingsSplit>
     </SettingsPage>
@@ -275,7 +306,7 @@ export function PaginaCard() {
 }
 
 /** O card de Recomendadas montado com a configuração atual, no layout do card real. */
-function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) => void }) {
+function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: AlvoArrasto) => void }) {
   const { campos, maxItens } = useConfig()
   const L = LICS[LIC_EXEMPLO]
   const [carregados, setCarregados] = useState(BLOCO_DE_ITENS)
@@ -433,20 +464,27 @@ function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) =>
   }
 
   return (
-    <LicitacaoCardRoot>
+    <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
+      <LicitacaoCardRoot>
       <LicitacaoCardHeader>
-        {topo.map((c, i) => (
-          // sem o número do edital, quem empurra o resto para a direita é a primeira peça
-          <Fragment key={c.id}>{blocoTopo(c, i === 0 && !topo.some((x) => x.id === "edital"))}</Fragment>
-        ))}
+        <FileiraDeCampos
+          area="topo"
+          campos={topo}
+          className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+          classePeca="px-1 py-0.5"
+          render={(c) =>
+            // sem o número do edital, quem empurra o resto para a direita é a primeira peça
+            blocoTopo(c, topo[0]?.id === c.id && !topo.some((x) => x.id === "edital"))
+          }
+        />
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
-        <CorpoArrastavel linhas={emLinhas(destaque)} render={blocoDestaque} aoSoltar={aoReorganizar} />
+        <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
         {(datas.length > 0 || meta.length > 0) && (
           <GradeDePropriedades
-            // no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta
-            datas={meta.length ? emPares(datas.map(campo)) : []}
-            campos={(meta.length ? meta : datas).map(campo)}
+            datas={meta.length ? datas : []}
+            propriedades={meta.length ? meta : datas}
+            comoMeta={campo}
           />
         )}
         {mostrarItens && (
@@ -488,11 +526,6 @@ function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) =>
               }))}
             />
             </div>
-            {resto > 0 && !todos && (
-              <span className="text-[13px] font-medium text-muted-foreground">
-                Ver mais {resto} {resto === 1 ? "item" : "itens"}
-              </span>
-            )}
             {todos && (
               <span className="text-[13px] text-muted-foreground">
                 {resto > 0
@@ -503,7 +536,8 @@ function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) =>
           </>
         )}
       </LicitacaoCardContent>
-    </LicitacaoCardRoot>
+      </LicitacaoCardRoot>
+    </ProvedorDeArrasto>
   )
 }
 
@@ -519,10 +553,12 @@ function PreviaDoCard({ aoReorganizar }: { aoReorganizar: (linhas: Campo[][]) =>
  */
 function GradeDePropriedades({
   datas,
-  campos,
+  propriedades,
+  comoMeta,
 }: {
-  datas: LicitacaoCardMetaField[][]
-  campos: LicitacaoCardMetaField[]
+  datas: Campo[]
+  propriedades: Campo[]
+  comoMeta: (c: Campo) => LicitacaoCardMetaField
 }) {
   const caixaDatas = useRef<HTMLDivElement>(null)
   const rolagem = useRef<HTMLDivElement>(null)
@@ -555,23 +591,19 @@ function GradeDePropriedades({
     }
   }, [])
 
-  const colunas = Math.max(1, ...datas.map((linha) => linha.length))
-
   return (
     <div className="grid w-full items-start gap-2 md:grid-cols-[auto_minmax(0,1fr)]">
       {datas.length > 0 && (
         <div ref={caixaDatas} className="rounded-xl border px-3.5 py-3">
-          <dl
-            aria-label="Datas"
-            className="grid gap-x-8 gap-y-4"
-            style={{ gridTemplateColumns: `repeat(${colunas}, max-content)` }}
-          >
-            {datas.map((linha) =>
-              linha.map((campo, coluna) => (
-                <ItemMeta key={campo.label} campo={campo} className={coluna === 0 ? "col-start-1" : undefined} />
-              ))
-            )}
-          </dl>
+          {/* no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta */}
+          <FileiraDeCampos
+            area="data"
+            campos={datas}
+            rotulo="Datas"
+            className="grid grid-cols-[repeat(2,max-content)] items-start gap-x-6 gap-y-4"
+            classePeca="px-1 py-0.5"
+            render={(c) => <ItemMeta campo={comoMeta(c)} />}
+          />
         </div>
       )}
       <div className="@container relative min-w-0 rounded-xl border px-3.5 py-3">
@@ -581,14 +613,14 @@ function GradeDePropriedades({
           style={alturaMax != null ? { maxHeight: alturaMax } : undefined}
           className={cn(alturaMax != null && "overflow-y-scroll [scrollbar-width:thin]")}
         >
-          <dl
-            aria-label="Informações do edital"
-            className="grid grid-cols-1 gap-x-6 gap-y-4 @sm:grid-cols-2 @3xl:grid-cols-5"
-          >
-            {campos.map((c) => (
-              <ItemMeta key={c.label} campo={c} />
-            ))}
-          </dl>
+          <FileiraDeCampos
+            area="propriedade"
+            campos={propriedades}
+            rotulo="Informações do edital"
+            className="grid grid-cols-1 items-start gap-x-4 gap-y-4 @sm:grid-cols-2 @3xl:grid-cols-5"
+            classePeca="px-1 py-0.5"
+            render={(c) => <ItemMeta campo={comoMeta(c)} />}
+          />
         </div>
         {sobra && noTopo && (
           <button
@@ -652,114 +684,224 @@ function SecaoVazia({ formato }: { formato: FormatoCampo }) {
 }
 
 
+/* ------------------------------------------------------------------ */
+/* Arrastar campos dentro do card                                      */
+/* ------------------------------------------------------------------ */
+
+/** Onde o campo cai: em que área, em que posição, e se abre uma linha nova (só no corpo). */
+type AlvoArrasto = { area: FormatoCampo; indice: number; novaLinha: boolean }
+
+type Arrasto = {
+  arrastando: string | null
+  alvo: AlvoArrasto | null
+  registrar: (area: FormatoCampo, alvoEm: (x: number, y: number) => AlvoArrasto | null) => () => void
+  iniciar: (id: string, e: React.PointerEvent) => void
+  mover: (e: React.PointerEvent) => void
+  soltar: () => void
+  /** Move sem arrastar: é por aqui que o teclado faz o mesmo que o ponteiro. */
+  soltarDireto: (id: string, alvo: AlvoArrasto) => void
+}
+
+const CtxArrasto = createContext<Arrasto | null>(null)
+const usarArrasto = () => useContext(CtxArrasto)
+
 /**
- * Corpo do card com os campos arrastáveis. Passar o mouse mostra que a peça pega; ao arrastar,
- * uma barra mostra onde o campo vai cair: em pé, entre duas peças, é a mesma linha; deitada,
- * entre duas linhas, é linha nova. O alvo sai da posição do ponteiro, não de zonas invisíveis.
+ * Guarda o arrasto do card inteiro. Cada área (topo, corpo, datas, propriedades) se registra
+ * com uma função que responde "se soltar aqui, onde cai?". Assim um campo sai de uma área e
+ * entra em outra, que é o que muda o formato dele.
  *
- * Usa eventos de ponteiro, não o arrastar nativo do HTML: o nativo não roda em toque, exige
- * imagem de arraste e não deixa desenhar a barra com precisão.
+ * Eventos de ponteiro, não o arrastar nativo do HTML: o nativo não pega em toque e não deixa
+ * desenhar a barra do alvo com precisão. As refs são a fonte da verdade porque o ponteiro pode
+ * levantar no mesmo quadro em que mexeu, antes de o estado chegar.
  */
-function CorpoArrastavel({
-  linhas,
-  render,
+function ProvedorDeArrasto({
   aoSoltar,
+  children,
 }: {
-  linhas: Campo[][]
-  render: (c: Campo) => ReactNode
-  aoSoltar: (linhas: Campo[][]) => void
+  aoSoltar: (id: string, alvo: AlvoArrasto) => void
+  children: ReactNode
 }) {
-  type Alvo = { l: number; p: number; novaLinha: boolean }
   const [arrastando, setArrastando] = useState<string | null>(null)
-  const [alvo, setAlvo] = useState<Alvo | null>(null)
+  const [alvo, setAlvo] = useState<AlvoArrasto | null>(null)
+  const areas = useRef(new Map<FormatoCampo, (x: number, y: number) => AlvoArrasto | null>())
   const inicio = useRef<{ id: string; x: number; y: number } | null>(null)
-  // o ponteiro pode levantar no mesmo quadro em que mexeu: quem decide é a ref, não o estado
   const arrastandoRef = useRef<string | null>(null)
-  const alvoRef = useRef<Alvo | null>(null)
-  const refLinhas = useRef<(HTMLDivElement | null)[]>([])
-  const refCampos = useRef<Record<string, HTMLDivElement | null>>({})
+  const alvoRef = useRef<AlvoArrasto | null>(null)
 
-  /** Para onde o campo iria se fosse solto agora, a partir de onde o ponteiro está. */
-  const alvoEm = (x: number, y: number): Alvo | null => {
-    const caixas = linhas.map((_, l) => refLinhas.current[l]?.getBoundingClientRect()).filter(Boolean) as DOMRect[]
-    if (!caixas.length) return null
-    let l = caixas.findIndex((r) => y >= r.top && y <= r.bottom)
-    if (l < 0) l = y < caixas[0].top ? 0 : caixas.length - 1
-    const r = caixas[l]
-    // perto da borda de cima ou de baixo da linha: abre linha nova ali
-    const margem = Math.min(12, Math.max(6, r.height * 0.3))
-    if (y < r.top + margem) return { l, p: 0, novaLinha: true }
-    if (y > r.bottom - margem) return { l: l + 1, p: 0, novaLinha: true }
-    const campos = linhas[l]
-    const p = campos.findIndex((c) => {
-      const rc = refCampos.current[c.id]?.getBoundingClientRect()
-      return rc && x < rc.left + rc.width / 2
-    })
-    return { l, p: p < 0 ? campos.length : p, novaLinha: false }
+  const valor: Arrasto = {
+    arrastando,
+    alvo,
+    registrar: (area, alvoEm) => {
+      areas.current.set(area, alvoEm)
+      return () => areas.current.delete(area)
+    },
+    iniciar: (id, e) => {
+      if (e.button !== 0) return
+      inicio.current = { id, x: e.clientX, y: e.clientY }
+      e.currentTarget.setPointerCapture(e.pointerId)
+    },
+    mover: (e) => {
+      const i = inicio.current
+      if (!i) return
+      if (!arrastandoRef.current && Math.hypot(e.clientX - i.x, e.clientY - i.y) < 4) return
+      if (!arrastandoRef.current) {
+        arrastandoRef.current = i.id
+        setArrastando(i.id)
+      }
+      let novo: AlvoArrasto | null = null
+      for (const alvoEm of areas.current.values()) {
+        novo = alvoEm(e.clientX, e.clientY)
+        if (novo) break
+      }
+      alvoRef.current = novo
+      setAlvo(novo)
+    },
+    soltarDireto: aoSoltar,
+    soltar: () => {
+      const id = arrastandoRef.current
+      const destino = alvoRef.current
+      if (id && destino) aoSoltar(id, destino)
+      inicio.current = null
+      arrastandoRef.current = null
+      alvoRef.current = null
+      setArrastando(null)
+      setAlvo(null)
+    },
   }
 
-  /**
-   * Os alvos são contados na matriz como ela está na tela, mas a inserção acontece depois de
-   * tirar o campo do lugar antigo. Quando isso esvazia uma linha acima do alvo, os índices
-   * abaixo sobem um: é o que os dois ajustes aqui corrigem.
-   */
-  const soltarEm = (id: string, l: number, p: number, novaLinha: boolean) => {
-    const lOrigem = linhas.findIndex((linha) => linha.some((c) => c.id === id))
-    if (lOrigem < 0) return
-    const pOrigem = linhas[lOrigem].findIndex((c) => c.id === id)
-    const campo = linhas[lOrigem][pOrigem]
-    const sumiu = linhas[lOrigem].length === 1
-    const matriz = linhas.map((linha) => linha.filter((c) => c.id !== id)).filter((linha) => linha.length > 0)
-    const li = sumiu && lOrigem < l ? l - 1 : l
-    if (novaLinha) {
-      matriz.splice(Math.max(0, Math.min(li, matriz.length)), 0, [campo])
-    } else {
-      const destino = matriz[Math.max(0, Math.min(li, matriz.length - 1))]
-      if (!destino) return
-      const pi = lOrigem === li && p > pOrigem ? p - 1 : p
-      destino.splice(Math.max(0, Math.min(pi, destino.length)), 0, campo)
-    }
-    aoSoltar(matriz)
-  }
+  return <CtxArrasto.Provider value={valor}>{children}</CtxArrasto.Provider>
+}
 
-  const limpar = () => {
-    inicio.current = null
-    arrastandoRef.current = null
-    alvoRef.current = null
-    setArrastando(null)
-    setAlvo(null)
-  }
-
-  /**
-   * O que o arrastar faz com o mouse, o teclado faz com Alt: as setas movem o campo, e com
-   * Shift ele entra na linha de cima ou de baixo em vez de abrir uma linha nova.
-   */
-  const porTeclado = (e: React.KeyboardEvent, l: number, p: number) => {
+/** Uma peça que pode ser pega. O teclado faz o mesmo com Alt e as setas. */
+function PecaArrastavel({
+  campo,
+  area,
+  indice,
+  className,
+  children,
+}: {
+  campo: Campo
+  area: FormatoCampo
+  /** Posição do campo na área, contada com ele ainda no lugar. */
+  indice: number
+  className?: string
+  children: ReactNode
+}) {
+  const arrasto = usarArrasto()
+  if (!arrasto) return <>{children}</>
+  const pego = arrasto.arrastando === campo.id
+  const aoTeclado = (e: React.KeyboardEvent) => {
     if (!e.altKey || !e.key.startsWith("Arrow")) return
-    const id = linhas[l][p].id
     e.preventDefault()
-    if (e.shiftKey) {
-      if (e.key === "ArrowUp" && l > 0) soltarEm(id, l - 1, linhas[l - 1].length, false)
-      else if (e.key === "ArrowDown" && l < linhas.length - 1) soltarEm(id, l + 1, 0, false)
-      return
-    }
-    if (e.key === "ArrowLeft" && p > 0) soltarEm(id, l, p - 1, false)
-    else if (e.key === "ArrowRight" && p < linhas[l].length - 1) soltarEm(id, l, p + 2, false)
-    else if (e.key === "ArrowUp") soltarEm(id, Math.max(0, l - 1), 0, true)
-    else if (e.key === "ArrowDown") soltarEm(id, l + 1, 0, true)
+    const paraTras = e.key === "ArrowLeft" || e.key === "ArrowUp"
+    const novaLinha = e.key === "ArrowUp" || e.key === "ArrowDown"
+    arrasto.soltarDireto(campo.id, { area, indice: paraTras ? indice - 1 : indice + 1, novaLinha })
   }
+  return (
+    <div
+      data-peca={campo.id}
+      tabIndex={0}
+      role="button"
+      aria-label={`Mover ${campo.nome} no card. Alt com as setas para os lados muda de posição; Alt com as setas para cima e para baixo põe em outra linha.`}
+      onPointerDown={(e) => arrasto.iniciar(campo.id, e)}
+      onPointerMove={arrasto.mover}
+      onPointerUp={arrasto.soltar}
+      onPointerCancel={arrasto.soltar}
+      onKeyDown={aoTeclado}
+      className={cn(
+        "min-w-0 touch-none rounded-md transition-colors select-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        pego ? "cursor-grabbing bg-muted opacity-50" : "cursor-grab",
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
+}
 
-  const barraDeLinha = (l: number) =>
-    alvo?.novaLinha && alvo.l === l ? <div aria-hidden className="h-0.5 rounded-full bg-primary" /> : null
+/** Barra fina que mostra onde o campo vai cair. */
+function BarraDeAlvo({ vertical }: { vertical?: boolean }) {
+  return <div aria-hidden className={cn("rounded-full bg-primary", vertical ? "w-0.5 self-stretch" : "h-0.5 w-full")} />
+}
 
-  const barraNaLinha = (l: number, p: number) =>
-    alvo && !alvo.novaLinha && alvo.l === l && alvo.p === p ? (
-      <div aria-hidden className="w-0.5 self-stretch rounded-full bg-primary" />
-    ) : null
+/**
+ * Registra uma área como destino do arrasto. `itens` é a ordem dos campos visíveis dela;
+ * a posição sai da distância do ponteiro para o centro de cada peça.
+ */
+function useAreaDeSolta(area: FormatoCampo, itens: Campo[], caixa: React.RefObject<HTMLElement | null>) {
+  const arrasto = usarArrasto()
+  const dados = useRef({ itens, caixa })
+  dados.current = { itens, caixa }
+
+  useEffect(() => {
+    if (!arrasto) return
+    return arrasto.registrar(area, (x, y) => {
+      const el = dados.current.caixa.current
+      const r = el?.getBoundingClientRect()
+      if (!r || x < r.left || x > r.right || y < r.top || y > r.bottom) return null
+      const pecas = dados.current.itens
+        .map((c) => ({ c, r: el!.querySelector(`[data-peca="${c.id}"]`)?.getBoundingClientRect() }))
+        .filter((p) => p.r) as { c: Campo; r: DOMRect }[]
+      // mesma linha visual do ponteiro, quando dá; senão, a lista inteira
+      const naLinha = pecas.filter((p) => y >= p.r.top - 4 && y <= p.r.bottom + 4)
+      const alvos = naLinha.length ? naLinha : pecas
+      const antes = alvos.findIndex((p) => x < p.r.left + p.r.width / 2)
+      const escolhido = antes < 0 ? alvos[alvos.length - 1] : alvos[antes]
+      const indice = escolhido
+        ? dados.current.itens.indexOf(escolhido.c) + (antes < 0 ? 1 : 0)
+        : dados.current.itens.length
+      return { area, indice, novaLinha: false }
+    })
+  }, [arrasto, area])
+}
+
+/** O corpo do card: linhas de campos, onde dá para juntar peças ou abrir linha nova. */
+function CorpoDoCard({ linhas, render }: { linhas: Campo[][]; render: (c: Campo) => ReactNode }) {
+  const arrasto = usarArrasto()
+  const caixa = useRef<HTMLDivElement>(null)
+  const refLinhas = useRef<(HTMLDivElement | null)[]>([])
+  const dados = useRef(linhas)
+  dados.current = linhas
+
+  useEffect(() => {
+    if (!arrasto) return
+    return arrasto.registrar("destaque", (x, y) => {
+      const el = caixa.current
+      const r = el?.getBoundingClientRect()
+      if (!el || !r || x < r.left || x > r.right || y < r.top || y > r.bottom) return null
+      const ls = dados.current
+      const plano = ls.flat()
+      const caixas = ls.map((_, i) => refLinhas.current[i]?.getBoundingClientRect()).filter(Boolean) as DOMRect[]
+      if (!caixas.length) return { area: "destaque", indice: 0, novaLinha: true }
+      let l = caixas.findIndex((rc) => y >= rc.top && y <= rc.bottom)
+      if (l < 0) l = y < caixas[0].top ? 0 : caixas.length - 1
+      const rc = caixas[l]
+      // perto da borda de cima ou de baixo da linha: abre linha nova ali
+      const margem = Math.min(12, Math.max(6, rc.height * 0.3))
+      if (y < rc.top + margem) return { area: "destaque", indice: plano.indexOf(ls[l][0]), novaLinha: true }
+      if (y > rc.bottom - margem) {
+        return { area: "destaque", indice: plano.indexOf(ls[l][ls[l].length - 1]) + 1, novaLinha: true }
+      }
+      const campos = ls[l]
+      const antes = campos.findIndex((c) => {
+        const b = el.querySelector(`[data-peca="${c.id}"]`)?.getBoundingClientRect()
+        return b && x < b.left + b.width / 2
+      })
+      const alvoCampo = antes < 0 ? campos[campos.length - 1] : campos[antes]
+      return { area: "destaque", indice: plano.indexOf(alvoCampo) + (antes < 0 ? 1 : 0), novaLinha: false }
+    })
+  }, [arrasto])
+
+  const plano = linhas.flat()
+  const alvo = arrasto?.alvo?.area === "destaque" ? arrasto.alvo : null
+  const barraLinha = (indice: number) =>
+    alvo?.novaLinha && alvo.indice === indice ? <BarraDeAlvo /> : null
+  const barraNaLinha = (indice: number) =>
+    alvo && !alvo.novaLinha && alvo.indice === indice ? <BarraDeAlvo vertical /> : null
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {barraDeLinha(0)}
+    <div ref={caixa} className="flex flex-col gap-1.5">
+      {barraLinha(0)}
       {linhas.map((linha, l) => (
         <Fragment key={linha.map((c) => c.id).join("-")}>
           <div
@@ -768,56 +910,61 @@ function CorpoArrastavel({
             }}
             className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1.5"
           >
-            {linha.map((c, p) => (
-              <Fragment key={c.id}>
-                {barraNaLinha(l, p)}
-                <div
-                  ref={(el) => {
-                    refCampos.current[c.id] = el
-                  }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Mover ${c.nome} no card. Alt com as setas move; Alt e Shift junta na linha de cima ou de baixo.`}
-                  onPointerDown={(e) => {
-                    if (e.button !== 0) return
-                    inicio.current = { id: c.id, x: e.clientX, y: e.clientY }
-                    e.currentTarget.setPointerCapture(e.pointerId)
-                  }}
-                  onPointerMove={(e) => {
-                    const i = inicio.current
-                    if (!i) return
-                    if (!arrastandoRef.current && Math.hypot(e.clientX - i.x, e.clientY - i.y) < 4) return
-                    if (!arrastandoRef.current) {
-                      arrastandoRef.current = i.id
-                      setArrastando(i.id)
-                    }
-                    const novo = alvoEm(e.clientX, e.clientY)
-                    alvoRef.current = novo
-                    setAlvo(novo)
-                  }}
-                  onPointerUp={() => {
-                    const id = arrastandoRef.current
-                    const destino = alvoRef.current
-                    if (id && destino) soltarEm(id, destino.l, destino.p, destino.novaLinha)
-                    limpar()
-                  }}
-                  onPointerCancel={limpar}
-                  onKeyDown={(e) => porTeclado(e, l, p)}
-                  className={cn(
-                    "min-w-0 touch-none rounded-md px-1.5 py-0.5 transition-colors select-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                    arrastando === c.id ? "cursor-grabbing bg-muted opacity-50" : "cursor-grab"
-                  )}
-                >
-                  {render(c)}
-                </div>
-                {p === linha.length - 1 && barraNaLinha(l, p + 1)}
-              </Fragment>
-            ))}
+            {linha.map((c) => {
+              const i = plano.indexOf(c)
+              return (
+                <Fragment key={c.id}>
+                  {barraNaLinha(i)}
+                  <PecaArrastavel campo={c} area="destaque" indice={i} className="px-1.5 py-0.5">
+                    {render(c)}
+                  </PecaArrastavel>
+                  {c === linha[linha.length - 1] && barraNaLinha(i + 1)}
+                </Fragment>
+              )
+            })}
           </div>
-          {barraDeLinha(l + 1)}
+          {barraLinha(plano.indexOf(linha[linha.length - 1]) + 1)}
         </Fragment>
       ))}
     </div>
+  )
+}
+
+/** Uma fileira de campos que só troca de ordem: o topo do card e as duas caixas. */
+function FileiraDeCampos({
+  area,
+  campos,
+  render,
+  className,
+  classePeca,
+  rotulo,
+}: {
+  area: FormatoCampo
+  campos: Campo[]
+  render: (c: Campo) => ReactNode
+  className?: string
+  classePeca?: string
+  /** Quando existe, a fileira é uma lista de definições (as duas caixas de metadados). */
+  rotulo?: string
+}) {
+  const arrasto = usarArrasto()
+  const caixa = useRef<HTMLDivElement>(null)
+  useAreaDeSolta(area, campos, caixa)
+  const alvo = arrasto?.alvo?.area === area ? arrasto.alvo : null
+  const Tag = rotulo ? "dl" : "div"
+
+  return (
+    <Tag ref={caixa as never} aria-label={rotulo} className={className}>
+      {campos.map((c, i) => (
+        <Fragment key={c.id}>
+          {alvo?.indice === i && <BarraDeAlvo vertical />}
+          <PecaArrastavel campo={c} area={area} indice={i} className={classePeca}>
+            {render(c)}
+          </PecaArrastavel>
+          {i === campos.length - 1 && alvo?.indice === i + 1 && <BarraDeAlvo vertical />}
+        </Fragment>
+      ))}
+    </Tag>
   )
 }
 
@@ -828,13 +975,6 @@ function emLinhas(campos: Campo[]) {
     if (c.junto && linhas.length) linhas[linhas.length - 1].push(c)
     else linhas.push([c])
   }
-  return linhas
-}
-
-/** Quebra a lista em linhas de dois, para a grade lateral do card. */
-function emPares(campos: LicitacaoCardMetaField[]) {
-  const linhas: LicitacaoCardMetaField[][] = []
-  for (let i = 0; i < campos.length; i += 2) linhas.push(campos.slice(i, i + 2))
   return linhas
 }
 
