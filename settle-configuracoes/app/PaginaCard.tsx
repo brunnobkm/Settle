@@ -78,6 +78,7 @@ import {
   mover,
   valorDaLic,
   type Campo,
+  type ItemLic,
   type FormatoCampo,
 } from "./dados"
 import { useConfig } from "./estado"
@@ -310,6 +311,11 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
   const { campos, maxItens } = useConfig()
   const L = LICS[LIC_EXEMPLO]
   const [carregados, setCarregados] = useState(BLOCO_DE_ITENS)
+  const { tabelaNoTopo, setTabelaNoTopo } = useConfig()
+  const [alvoDaTabela, setAlvoDaTabela] = useState<"antes" | "depois" | null>(null)
+  const pegouTabela = useRef(false)
+  const refMeta = useRef<HTMLDivElement>(null)
+  const trocarLugarDaTabela = (antes: boolean) => setTabelaNoTopo(antes)
 
   // trocar a opção recomeça a contagem, senão "Todos" já abriria com o que ficou de antes
   useEffect(() => setCarregados(BLOCO_DE_ITENS), [maxItens])
@@ -463,6 +469,62 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
     }
   }
 
+  const blocoDeItens = !mostrarItens ? null : (
+    <div key="itens" className="flex flex-col gap-1.5">
+      <div
+        onScroll={(e) => {
+          const el = e.currentTarget
+          if (!todos || resto <= 0) return
+          if (el.scrollHeight - el.scrollTop - el.clientHeight < 80) setCarregados((n) => n + BLOCO_DE_ITENS)
+        }}
+        className={cn(todos && "max-h-90 overflow-y-auto [scrollbar-width:thin]")}
+      >
+        <TabelaDeItens
+          titulo={
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Mover a tabela de itens no card. Alt com as setas para cima e para baixo."
+              onPointerDown={(e) => {
+                pegouTabela.current = true
+                e.currentTarget.setPointerCapture(e.pointerId)
+              }}
+              onPointerMove={(e) => {
+                if (!pegouTabela.current) return
+                const r = refMeta.current?.getBoundingClientRect()
+                if (!r) return
+                setAlvoDaTabela(e.clientY < r.top + r.height / 2 ? "antes" : "depois")
+              }}
+              onPointerUp={() => {
+                if (alvoDaTabela) trocarLugarDaTabela(alvoDaTabela === "antes")
+                pegouTabela.current = false
+                setAlvoDaTabela(null)
+              }}
+              onKeyDown={(e) => {
+                if (!e.altKey) return
+                if (e.key === "ArrowUp") trocarLugarDaTabela(true)
+                if (e.key === "ArrowDown") trocarLugarDaTabela(false)
+              }}
+              className="cursor-grab touch-none rounded-md px-1 select-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              Itens com Correspondência
+            </span>
+          }
+          total={L.totalItens}
+          quantos={L.itens.length}
+          itens={itensVisiveis}
+        />
+      </div>
+      {todos && (
+        <span className="text-[13px] text-muted-foreground">
+          {resto > 0
+            ? `Mostrando ${fmt(itensVisiveis.length)} de ${fmt(L.itens.length)}. Role a tabela para carregar mais.`
+            : `${fmt(L.itens.length)} itens com correspondência`}
+        </span>
+      )}
+    </div>
+  )
+
   return (
     <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
       <LicitacaoCardRoot>
@@ -480,64 +542,151 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
       </LicitacaoCardHeader>
       <LicitacaoCardContent>
         <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
-        {(datas.length > 0 || meta.length > 0) && (
-          <GradeDePropriedades
-            datas={meta.length ? datas : []}
-            propriedades={meta.length ? meta : datas}
-            comoMeta={campo}
-          />
-        )}
-        {mostrarItens && (
-          <>
-            <div
-              onScroll={(e) => {
-                const el = e.currentTarget
-                if (!todos || resto <= 0) return
-                if (el.scrollHeight - el.scrollTop - el.clientHeight < 80) {
-                  setCarregados((n) => n + BLOCO_DE_ITENS)
-                }
-              }}
-              className={cn(todos && "max-h-90 overflow-y-auto [scrollbar-width:thin]")}
-            >
-            <LicitacaoCardItems
-              variant="boxed"
-              title="Itens com Correspondência"
-              count={L.itens.length}
-              summary={`Total de itens: ${L.totalItens}`}
-              columns={[
-                { key: "lote", label: "Lote", width: 56 },
-                { key: "nome", label: "Nome", className: "whitespace-normal" },
-                { key: "seg", label: "Segmento", width: 112 },
-                { key: "unid", label: "Unidades", width: 88 },
-                { key: "unit", label: "Valor Unitário", align: "right", width: 128 },
-                { key: "total", label: "Valor Total", align: "right", width: 128 },
-              ]}
-              rows={itensVisiveis.map((it) => ({
-                lote: it.lote,
-                nome: it.nome,
-                seg: (
-                  <LicitacaoCardSegment size="sm" className={classeDeSegmento(it.seg)}>
-                    {it.seg}
-                  </LicitacaoCardSegment>
-                ),
-                unid: it.unid,
-                unit: it.unit,
-                total: it.total,
-              }))}
+        {tabelaNoTopo && blocoDeItens}
+        {alvoDaTabela === "antes" && !tabelaNoTopo && <BarraDeAlvo />}
+        <div ref={refMeta}>
+          {(datas.length > 0 || meta.length > 0) && (
+            <GradeDePropriedades
+              datas={meta.length ? datas : []}
+              propriedades={meta.length ? meta : datas}
+              comoMeta={campo}
             />
-            </div>
-            {todos && (
-              <span className="text-[13px] text-muted-foreground">
-                {resto > 0
-                  ? `Mostrando ${fmt(itensVisiveis.length)} de ${fmt(L.itens.length)}. Role a tabela para carregar mais.`
-                  : `${fmt(L.itens.length)} itens com correspondência`}
-              </span>
-            )}
-          </>
-        )}
+          )}
+        </div>
+        {alvoDaTabela === "depois" && tabelaNoTopo && <BarraDeAlvo />}
+        {!tabelaNoTopo && blocoDeItens}
       </LicitacaoCardContent>
       </LicitacaoCardRoot>
     </ProvedorDeArrasto>
+  )
+}
+
+
+/** Larguras das colunas de itens, para a tabela não dançar quando a ordem muda. */
+const LARGURA_COLUNA: Partial<Record<keyof ItemLic, number>> = {
+  lote: 56,
+  seg: 112,
+  unid: 88,
+  unit: 128,
+  total: 128,
+}
+
+/**
+ * Tabela de itens com as colunas na ordem da organização. Arrastar um cabeçalho troca a
+ * ordem: o alvo sai da posição do ponteiro sobre os próprios cabeçalhos, e uma barra mostra
+ * onde a coluna vai entrar. Pelo teclado, Alt com as setas para os lados.
+ */
+function TabelaDeItens({
+  titulo,
+  total,
+  quantos,
+  itens,
+}: {
+  titulo: ReactNode
+  total: number
+  quantos: number
+  itens: ItemLic[]
+}) {
+  const { colunasItens, setColunasItens, auditar } = useConfig()
+  const caixa = useRef<HTMLDivElement>(null)
+  const pega = useRef<number | null>(null)
+  const alvoRef = useRef<number | null>(null)
+  const [alvo, setAlvo] = useState<number | null>(null)
+  const [barra, setBarra] = useState<{ x: number; altura: number } | null>(null)
+
+  const cabecalhos = () =>
+    [...(caixa.current?.querySelectorAll("th") ?? [])].map((th) => th.getBoundingClientRect())
+
+  const mover = (de: number, para: number) => {
+    if (de === para || de + 1 === para) return
+    setColunasItens((l) => {
+      const nova = [...l]
+      const [c] = nova.splice(de, 1)
+      nova.splice(de < para ? para - 1 : para, 0, c)
+      auditar("Campos do card", `Moveu a coluna "${c.nome}" na tabela de itens`)
+      return nova
+    })
+  }
+
+  const porTeclado = (e: React.KeyboardEvent, i: number) => {
+    if (!e.altKey) return
+    if (e.key === "ArrowLeft" && i > 0) {
+      e.preventDefault()
+      mover(i, i - 1)
+    } else if (e.key === "ArrowRight" && i < colunasItens.length - 1) {
+      e.preventDefault()
+      mover(i, i + 2)
+    }
+  }
+
+  return (
+    <div
+      ref={caixa}
+      className="relative"
+      onPointerDown={(e) => {
+        const th = (e.target as HTMLElement).closest("th")
+        if (!th) return
+        const i = [...(th.parentElement?.children ?? [])].indexOf(th)
+        if (i < 0) return
+        pega.current = i
+        ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+      }}
+      onPointerMove={(e) => {
+        if (pega.current == null) return
+        const rs = cabecalhos()
+        const antes = rs.findIndex((r) => e.clientX < r.left + r.width / 2)
+        const i = antes < 0 ? rs.length : antes
+        alvoRef.current = i
+        setAlvo(i)
+        const r = rs[Math.min(i, rs.length - 1)]
+        const raiz = caixa.current!.getBoundingClientRect()
+        setBarra({ x: (i >= rs.length ? r.right : r.left) - raiz.left, altura: raiz.height })
+      }}
+      onPointerUp={() => {
+        if (pega.current != null && alvoRef.current != null) mover(pega.current, alvoRef.current)
+        pega.current = null
+        alvoRef.current = null
+        setAlvo(null)
+        setBarra(null)
+      }}
+    >
+      <LicitacaoCardItems
+        variant="boxed"
+        title={titulo}
+        count={quantos}
+        summary={`Total de itens: ${total}`}
+        columns={colunasItens.map((c) => ({
+          key: c.k,
+          label: c.nome,
+          width: LARGURA_COLUNA[c.k],
+          align: c.k === "unit" || c.k === "total" ? ("right" as const) : undefined,
+          className: cn("cursor-grab select-none", c.k === "nome" && "whitespace-normal"),
+        }))}
+        rows={itens.map((it) => ({
+          ...it,
+          seg: (
+            <LicitacaoCardSegment size="sm" className={classeDeSegmento(it.seg)}>
+              {it.seg}
+            </LicitacaoCardSegment>
+          ),
+        }))}
+      />
+      {/* cabeçalhos com teclado: um botão invisível por coluna, na mesma ordem */}
+      <div className="sr-only">
+        {colunasItens.map((c, i) => (
+          <button key={c.k} type="button" onKeyDown={(e) => porTeclado(e, i)}>
+            Mover a coluna {c.nome}. Alt com as setas para os lados.
+          </button>
+        ))}
+      </div>
+      {barra && alvo != null && (
+        <div
+          aria-hidden
+          style={{ left: barra.x, height: barra.altura }}
+          className="pointer-events-none absolute top-0 w-0.5 rounded-full bg-primary"
+        />
+      )}
+    </div>
   )
 }
 

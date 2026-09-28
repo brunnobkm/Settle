@@ -17,6 +17,7 @@ import {
   ABAS,
   AUDITORIA,
   CAMPOS,
+  COLUNAS_ITENS,
   EMAIL_ASSUNTO,
   EMAIL_CORPO,
   ETAPAS,
@@ -24,6 +25,7 @@ import {
   agora,
   type Aba,
   type Campo,
+  type ColunaItem,
   type Etapa,
   type Motivo,
   type Papel,
@@ -71,6 +73,11 @@ type Estado = {
   setAbaPrev: Atualizar<Partial<Record<TelaAba, string>>>
 
   campos: Campo[]
+  colunasItens: ColunaItem[]
+  setColunasItens: Atualizar<ColunaItem[]>
+  /** A tabela de itens vem antes das caixas de datas e propriedades. */
+  tabelaNoTopo: boolean
+  setTabelaNoTopo: Atualizar<boolean>
   setCampos: Atualizar<Campo[]>
   maxItens: number
   setMaxItens: Atualizar<number>
@@ -114,6 +121,8 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const [abaTela, setAbaTela] = useState<TelaAba>("recomendadas")
   const [abaPrev, setAbaPrev] = useState<Partial<Record<TelaAba, string>>>({})
   const [campos, setCampos] = useState(CAMPOS)
+  const [colunasItens, setColunasItens] = useState(COLUNAS_ITENS)
+  const [tabelaNoTopo, setTabelaNoTopo] = useState(false)
   const [maxItens, setMaxItens] = useState(5)
   const [email, setEmail] = useState<Estado["email"]>({
     assunto: EMAIL_ASSUNTO,
@@ -155,6 +164,10 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       setAbaPrev,
       campos,
       setCampos,
+      colunasItens,
+      setColunasItens,
+      tabelaNoTopo,
+      setTabelaNoTopo,
       maxItens,
       setMaxItens,
       email,
@@ -166,7 +179,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, maxItens, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (

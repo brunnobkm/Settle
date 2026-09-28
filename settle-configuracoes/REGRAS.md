@@ -170,6 +170,11 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
 - **Quantidade de itens** (feedback da Alice, 18/09): hoje o card mostra até 5 itens com
   correspondência. O admin escolhe 3, 5, 10 ou todos; o que passar do limite fica em
   "Ver mais N itens". O contador mostra sempre o total.
+- **A tabela de itens também é configurável, pelo próprio card.** Arrastar um cabeçalho troca
+  a ordem das colunas (Lote, Nome, Segmento, Unidades, Valor Unitário, Valor Total), com uma
+  barra mostrando onde a coluna entra. Arrastar o título "Itens com Correspondência" move o
+  bloco inteiro para antes ou depois da caixa de datas e propriedades. Pelo teclado: Alt com
+  as setas para os lados nas colunas, Alt com as setas para cima e para baixo no título.
 - Não há mais "Ver mais N itens" embaixo da tabela: quem quer ver tudo escolhe "Todos os
   itens", e aí a tabela rola por dentro.
 - **"Todos os itens" não desenha tudo de uma vez.** Um edital pode ter centenas de itens, e

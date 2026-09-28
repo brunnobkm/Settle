@@ -385,6 +385,18 @@ export const CAMPOS: Campo[] = [
 
 export const OPCOES_MAX_ITENS = [3, 5, 10, 0]
 
+/** Colunas da tabela de itens, na ordem padrão da Settle. A organização pode reordenar. */
+export type ColunaItem = { k: keyof ItemLic; nome: string }
+
+export const COLUNAS_ITENS: ColunaItem[] = [
+  { k: "lote", nome: "Lote" },
+  { k: "nome", nome: "Nome" },
+  { k: "seg", nome: "Segmento" },
+  { k: "unid", nome: "Unidades" },
+  { k: "unit", nome: "Valor Unitário" },
+  { k: "total", nome: "Valor Total" },
+]
+
 /**
  * Quantos itens entram por vez quando a organização escolhe "Todos os itens". Um edital com
  * centenas de itens não pode desenhar tudo de uma vez: a tabela ganha altura própria e vai
