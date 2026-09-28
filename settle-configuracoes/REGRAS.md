@@ -133,6 +133,10 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   na mesma linha; o largo, entre duas linhas, abre linha nova. É assim que se deixa, por
   exemplo, segmentos, órgão e objeto lado a lado. A linha quebra sozinha quando não cabe.
   Não há interruptor de "mesma linha": o lugar onde se solta é a configuração.
+- O arrastar é por eventos de ponteiro, não pelo arrastar nativo do HTML: o nativo não pega
+  em toque, exige imagem de arraste e não deixa desenhar a barra do alvo com precisão. O alvo
+  sai da posição do ponteiro (perto da borda de cima ou de baixo da linha, abre linha nova;
+  no meio, entra na linha), em vez de zonas invisíveis que a pessoa precisa acertar.
 - Pelo teclado, com foco no campo: **Alt + setas** move (esquerda e direita dentro da linha,
   cima e baixo entre linhas) e **Alt + Shift + ↑/↓** junta o campo à linha de cima ou de
   baixo. Arrastar não pode ser o único caminho.

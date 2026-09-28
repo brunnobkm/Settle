@@ -653,9 +653,12 @@ function SecaoVazia({ formato }: { formato: FormatoCampo }) {
 
 
 /**
- * Corpo do card com os campos arrastáveis. Passar o mouse mostra que a peça pega; arrastar
- * abre os alvos: os finos, entre duas peças, põem o campo na mesma linha; os largos, entre
- * duas linhas, abrem uma linha nova. Também funciona no teclado, com Alt e as setas.
+ * Corpo do card com os campos arrastáveis. Passar o mouse mostra que a peça pega; ao arrastar,
+ * uma barra mostra onde o campo vai cair: em pé, entre duas peças, é a mesma linha; deitada,
+ * entre duas linhas, é linha nova. O alvo sai da posição do ponteiro, não de zonas invisíveis.
+ *
+ * Usa eventos de ponteiro, não o arrastar nativo do HTML: o nativo não roda em toque, exige
+ * imagem de arraste e não deixa desenhar a barra com precisão.
  */
 function CorpoArrastavel({
   linhas,
@@ -666,8 +669,34 @@ function CorpoArrastavel({
   render: (c: Campo) => ReactNode
   aoSoltar: (linhas: Campo[][]) => void
 }) {
+  type Alvo = { l: number; p: number; novaLinha: boolean }
   const [arrastando, setArrastando] = useState<string | null>(null)
-  const [alvo, setAlvo] = useState<string | null>(null)
+  const [alvo, setAlvo] = useState<Alvo | null>(null)
+  const inicio = useRef<{ id: string; x: number; y: number } | null>(null)
+  // o ponteiro pode levantar no mesmo quadro em que mexeu: quem decide é a ref, não o estado
+  const arrastandoRef = useRef<string | null>(null)
+  const alvoRef = useRef<Alvo | null>(null)
+  const refLinhas = useRef<(HTMLDivElement | null)[]>([])
+  const refCampos = useRef<Record<string, HTMLDivElement | null>>({})
+
+  /** Para onde o campo iria se fosse solto agora, a partir de onde o ponteiro está. */
+  const alvoEm = (x: number, y: number): Alvo | null => {
+    const caixas = linhas.map((_, l) => refLinhas.current[l]?.getBoundingClientRect()).filter(Boolean) as DOMRect[]
+    if (!caixas.length) return null
+    let l = caixas.findIndex((r) => y >= r.top && y <= r.bottom)
+    if (l < 0) l = y < caixas[0].top ? 0 : caixas.length - 1
+    const r = caixas[l]
+    // perto da borda de cima ou de baixo da linha: abre linha nova ali
+    const margem = Math.min(12, Math.max(6, r.height * 0.3))
+    if (y < r.top + margem) return { l, p: 0, novaLinha: true }
+    if (y > r.bottom - margem) return { l: l + 1, p: 0, novaLinha: true }
+    const campos = linhas[l]
+    const p = campos.findIndex((c) => {
+      const rc = refCampos.current[c.id]?.getBoundingClientRect()
+      return rc && x < rc.left + rc.width / 2
+    })
+    return { l, p: p < 0 ? campos.length : p, novaLinha: false }
+  }
 
   /**
    * Os alvos são contados na matriz como ela está na tela, mas a inserção acontece depois de
@@ -691,6 +720,12 @@ function CorpoArrastavel({
       destino.splice(Math.max(0, Math.min(pi, destino.length)), 0, campo)
     }
     aoSoltar(matriz)
+  }
+
+  const limpar = () => {
+    inicio.current = null
+    arrastandoRef.current = null
+    alvoRef.current = null
     setArrastando(null)
     setAlvo(null)
   }
@@ -714,78 +749,72 @@ function CorpoArrastavel({
     else if (e.key === "ArrowDown") soltarEm(id, l + 1, 0, true)
   }
 
-  const alvoLinha = (l: number) => (
-    <div
-      onDragOver={(e) => {
-        e.preventDefault()
-        setAlvo(`linha-${l}`)
-      }}
-      onDragLeave={() => setAlvo(null)}
-      onDrop={() => arrastando && soltarEm(arrastando, l, 0, true)}
-      className={cn(
-        "h-1.5 rounded-full transition-colors",
-        arrastando ? "bg-transparent" : "hidden",
-        alvo === `linha-${l}` && "bg-primary"
-      )}
-    />
-  )
+  const barraDeLinha = (l: number) =>
+    alvo?.novaLinha && alvo.l === l ? <div aria-hidden className="h-0.5 rounded-full bg-primary" /> : null
+
+  const barraNaLinha = (l: number, p: number) =>
+    alvo && !alvo.novaLinha && alvo.l === l && alvo.p === p ? (
+      <div aria-hidden className="w-0.5 self-stretch rounded-full bg-primary" />
+    ) : null
 
   return (
     <div className="flex flex-col gap-1.5">
-      {alvoLinha(0)}
+      {barraDeLinha(0)}
       {linhas.map((linha, l) => (
         <Fragment key={linha.map((c) => c.id).join("-")}>
-          <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1.5">
+          <div
+            ref={(el) => {
+              refLinhas.current[l] = el
+            }}
+            className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1.5"
+          >
             {linha.map((c, p) => (
               <Fragment key={c.id}>
+                {barraNaLinha(l, p)}
                 <div
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    setAlvo(`${l}-${p}`)
+                  ref={(el) => {
+                    refCampos.current[c.id] = el
                   }}
-                  onDragLeave={() => setAlvo(null)}
-                  onDrop={() => arrastando && soltarEm(arrastando, l, p, false)}
-                  className={cn(
-                    "w-1 self-stretch rounded-full transition-colors",
-                    arrastando ? "bg-transparent" : "hidden",
-                    alvo === `${l}-${p}` && "bg-primary"
-                  )}
-                />
-                <div
-                  draggable
                   tabIndex={0}
                   role="button"
                   aria-label={`Mover ${c.nome} no card. Alt com as setas move; Alt e Shift junta na linha de cima ou de baixo.`}
-                  onDragStart={() => setArrastando(c.id)}
-                  onDragEnd={() => {
-                    setArrastando(null)
-                    setAlvo(null)
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return
+                    inicio.current = { id: c.id, x: e.clientX, y: e.clientY }
+                    e.currentTarget.setPointerCapture(e.pointerId)
                   }}
+                  onPointerMove={(e) => {
+                    const i = inicio.current
+                    if (!i) return
+                    if (!arrastandoRef.current && Math.hypot(e.clientX - i.x, e.clientY - i.y) < 4) return
+                    if (!arrastandoRef.current) {
+                      arrastandoRef.current = i.id
+                      setArrastando(i.id)
+                    }
+                    const novo = alvoEm(e.clientX, e.clientY)
+                    alvoRef.current = novo
+                    setAlvo(novo)
+                  }}
+                  onPointerUp={() => {
+                    const id = arrastandoRef.current
+                    const destino = alvoRef.current
+                    if (id && destino) soltarEm(id, destino.l, destino.p, destino.novaLinha)
+                    limpar()
+                  }}
+                  onPointerCancel={limpar}
                   onKeyDown={(e) => porTeclado(e, l, p)}
                   className={cn(
-                    "min-w-0 cursor-grab rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:cursor-grabbing",
-                    arrastando === c.id && "opacity-40"
+                    "min-w-0 touch-none rounded-md px-1.5 py-0.5 transition-colors select-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                    arrastando === c.id ? "cursor-grabbing bg-muted opacity-50" : "cursor-grab"
                   )}
                 >
                   {render(c)}
                 </div>
+                {p === linha.length - 1 && barraNaLinha(l, p + 1)}
               </Fragment>
             ))}
-            <div
-              onDragOver={(e) => {
-                e.preventDefault()
-                setAlvo(`${l}-fim`)
-              }}
-              onDragLeave={() => setAlvo(null)}
-              onDrop={() => arrastando && soltarEm(arrastando, l, linha.length, false)}
-              className={cn(
-                "w-1 self-stretch rounded-full transition-colors",
-                arrastando ? "bg-transparent" : "hidden",
-                alvo === `${l}-fim` && "bg-primary"
-              )}
-            />
           </div>
-          {alvoLinha(l + 1)}
+          {barraDeLinha(l + 1)}
         </Fragment>
       ))}
     </div>
