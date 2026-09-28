@@ -1,5 +1,19 @@
 # Feedbacks das reuniões de 28/09/2026
 
+## Resumo de um minuto
+
+Se você só tem um minuto, é isto:
+
+- **A reunião mandou desfazer três coisas que o protótipo já faz.** Registrar resultado em lote
+  ao remover etapa (item 2), excluir motivo (item 3) e a liberdade de arrastar no card (item
+  10). As três foram construídas a seu pedido, então parei e não mexi em nada.
+- **A ordem de trabalho mudou** (item 1): abas primeiro, motivos de descarte depois, etapas do
+  funil por último. Etapas ficou por último porque mexer nelas quebra o dashboard.
+- **Entrou escopo novo**: o card da lista e o card de dentro da licitação passam a se
+  configurar separados (item 9), e existe um pedido antigo de badge de status da licitação
+  (item 13), que é fora de Configurações.
+- **O resto são onze pontos menores**, quase todos ajustes de texto ou de padrão inicial.
+
 ## Antes de tudo: de que projeto estamos falando
 
 **Settle, área de Configurações da plataforma.** Hoje o cliente não configura quase nada: as
@@ -43,27 +57,29 @@ Os minutos citados abaixo são os das transcrições do Fireflies.
 
 ## Tabela de decisões
 
-| # | Assunto | O que ficou | Precisa de você? |
-|---|---|---|---|
-| 1 | Ordem de trabalho: abas, motivos, etapas | Decidido | Não |
-| 2 | Registrar resultado em lote ao remover etapa | **Remover** | **Sim, contraria pedido seu** |
-| 3 | Excluir motivo | **Vira tudo arquivar** | **Sim, contraria pedido seu** |
-| 4 | Texto do diálogo de remover etapa | Trocar por texto genérico | Não |
-| 5 | Ajuda depois de fechar o card verde | Em aberto | Sim, é escolha de solução |
-| 6 | Motivos diferentes por tela | Em aberto | Sim |
-| 7 | "Sem motivo" como motivo oculto | Em aberto | Sim |
-| 8 | Tela de sem permissão por URL | Em aberto | Não, é execução |
-| 9 | Dois cards: o da lista e o de dentro da licitação | Decidido | Não |
-| 10 | Quanto arrastar permitir no card | **Alice quer menos** | **Sim, contraria pedido seu** |
-| 11 | Criar campo que não é variável | Em aberto, você disse que faria | Não |
-| 12 | Ver itens sem correspondência | Em aberto, você disse que faria | Não |
-| 13 | Badge de status da licitação | Decidido, escopo novo | Não |
-| 14 | Imagem e URL no modelo de e-mail | Em aberto | Não |
-| 15 | Configurações não amarradas a "licitação" | Em aberto, estratégico | Não agora |
+| # | Assunto | Em que tela | O que ficou | O que eu faria se você mandar | Trava? |
+|---|---|---|---|---|---|
+| 1 | Por onde começar | todas | Decidido | Sigo a ordem: abas, motivos, etapas | não |
+| 2 | Resultado em lote ao remover etapa | Etapas do funil | **Remover** | Tiro a última etapa dos destinos; volta ao da V69 | **sim** |
+| 3 | Excluir motivo | Motivos e Etapas | **Só arquivar** | Tiro o excluir; arquivado sem uso some da lista | **sim** |
+| 4 | Texto do diálogo de remover etapa | Etapas do funil | Texto genérico | Troco uma frase | não |
+| 5 | Ajuda depois de fechar o card verde | todas | Em aberto | Ícone de interrogação ou porta para o agente | escolha |
+| 6 | Motivos diferentes por tela | Motivos de descarte | Em aberto | Abrir com a chave desligada e mostrar as duas listas | escolha |
+| 7 | Quando o motivo não é obrigatório | Etapas do funil | Em aberto | Fatia "Sem motivo" ou motivo oculto interno | escolha |
+| 8 | Sem permissão por URL | todas | Em aberto | Tela de sem acesso e o caso da Visão geral | não |
+| 9 | Dois cards separados | Campos do card | Decidido | Alternar dentro da própria tela, sem tab nova | não |
+| 10 | Quanto arrastar permitir | Campos do card | **Alice quer menos** | Travo o topo e limito por área | **sim** |
+| 11 | Criar campo que não é variável | Campos do card | Você disse que faria | Botão de nova propriedade, com tipo | não |
+| 12 | Ver itens sem correspondência | Campos do card | Você disse que faria | Opção na tabela de itens | não |
+| 13 | Badge de status da licitação | fora daqui | Decidido | Projeto novo, não é Configurações | não |
+| 14 | Imagem e URL no e-mail | Modelo de e-mail | Em aberto | Acrescento os dois no editor | não |
+| 15 | Configurações além de licitação | todas | Em aberto | Nada agora, é direção de produto | não |
 
 ---
 
 ## 1. Por onde começar
+
+> Etapas do funil fica por último porque é a única que quebra o dashboard.
 
 **Status:** decidido · **Onde:** Refine, 26:10 a 27:46
 
@@ -82,6 +98,8 @@ Alice propôs (27:12), Larissa, Willian e Pedro concordaram na sequência.
 ---
 
 ## 2. Registrar resultado em lote ao remover uma etapa
+
+> A reunião quer tirar o que a V70 fez: uma licitação por vez tem resultado, não um lote inteiro.
 
 **Status:** decidido na reunião, e contraria o protótipo · **Onde:** Refine, 06:51 a 08:21
 
@@ -104,6 +122,8 @@ de registrar resultado. Volta a ser o que era na V69.
 ---
 
 ## 3. Excluir motivo deixa de existir
+
+> Some o botão de excluir: tudo vira arquivar, e o que nunca foi usado some da lista de arquivados.
 
 **Status:** decidido na reunião, e contraria o protótipo · **Onde:** Refine, 11:38 a 16:44
 
@@ -129,6 +149,8 @@ você mesmo disse (15:19).
 
 ## 4. O texto do diálogo de remover etapa
 
+> Citar "substatus e descrição" dá a entender que são campos da plataforma, e não são.
+
 **Status:** decidido, sem conflito · **Onde:** Refine, 06:10 a 06:39
 
 **O contexto:** ao remover uma etapa com licitações, o diálogo diz hoje "Responsável, substatus
@@ -142,6 +164,8 @@ acrescentou que com muitos campos a modal ficaria cheia demais.
 ---
 
 ## 5. Onde fica a ajuda depois que o card verde é fechado
+
+> O card fecha para sempre e leva o "Saiba mais" junto; falta um caminho permanente.
 
 **Status:** em aberto · **Onde:** Refine, 03:04 a 03:56
 
@@ -160,6 +184,8 @@ FAQ. A segunda depende de conteúdo que ainda não existe.
 ---
 
 ## 6. Motivos diferentes em Recomendadas e em Em andamento
+
+> A chave existe, mas ninguém percebe que a lista muda por tela; a sugestão é abrir já separado.
 
 **Status:** em aberto · **Onde:** Refine, 21:49 a 25:59
 
@@ -182,6 +208,8 @@ uma só e separar depois se der problema, porque juntar depois dá mais trabalho
 
 ## 7. O que acontece quando o motivo não é obrigatório
 
+> Sem motivo escolhido, o gráfico ganha uma fatia "Sem motivo"; a alternativa é um motivo oculto.
+
 **Status:** em aberto · **Onde:** Refine, 08:21 a 11:11
 
 **O contexto:** no protótipo existe uma chave "Exigir motivo ao registrar perda". Desligada, a
@@ -201,6 +229,8 @@ preencher toda vez.
 
 ## 8. Quem não tem permissão e recebe o link
 
+> Link compartilhado com quem não tem acesso precisa de uma tela decente, não de um 404.
+
 **Status:** em aberto, mas é execução · **Onde:** Refine, 17:49 a 19:55 e 50:21 a 51:22
 
 **O contexto:** as URLs das seções de Configurações são visíveis e alguém pode compartilhar.
@@ -213,6 +243,8 @@ Configurações (Alice, 18:59).
 ---
 
 ## 9. São dois cards, e eles se configuram separados
+
+> O card da lista e o card de dentro da licitação são configurações diferentes, na mesma tela.
 
 **Status:** decidido · **Onde:** Semanal, 11:17 a 13:36; Refine, 41:20
 
@@ -234,6 +266,8 @@ ampliou a ideia: o card de Em andamento também entraria.
 
 ## 10. Quanto arrastar permitir
 
+> Alice e Pedro querem menos liberdade do que o protótipo tem hoje: topo fixo e limites por área.
+
 **Status:** em aberto, e contraria o protótipo · **Onde:** Semanal, 13:59 a 15:33; Refine, 43:26
 
 **O contexto:** nas últimas rodadas o protótipo foi ficando cada vez mais livre, a seu pedido.
@@ -254,6 +288,8 @@ claro que a pílula "Mesma linha" que existia antes.
 
 ## 11. Criar um campo que não vem de variável
 
+> Falta a pessoa poder criar um campo próprio, como o substatus, sem passar por Variáveis.
+
 **Status:** em aberto, você disse que faria · **Onde:** Semanal, 17:51 a 19:10; Refine, 45:40
 
 **O contexto:** hoje, para colocar algo novo no card, a pessoa escolhe uma variável já existente
@@ -269,6 +305,8 @@ dar o nome.
 
 ## 12. Ver os itens sem correspondência
 
+> A tabela mostra só os itens que casaram; falta poder ver os outros.
+
 **Status:** em aberto, você disse que faria · **Onde:** Semanal, 16:23
 
 **O contexto:** a tabela dentro do card mostra "Itens com Correspondência", que são os itens do
@@ -280,6 +318,8 @@ também". Você: "bom ponto, vou adicionar isso também".
 ---
 
 ## 13. Badge de status da licitação
+
+> Pedido antigo de cliente: mostrar no card quando a licitação foi suspensa, anulada ou revogada.
 
 **Status:** decidido, escopo novo fora de Configurações · **Onde:** Semanal, 01:37 a 06:34
 
@@ -295,6 +335,8 @@ edital. Falta definir como ele aparece em cada tela (Recomendadas, Em andamento,
 
 ## 14. Modelo de e-mail
 
+> O back já está pronto; falta a interface, e vale incluir imagem e URL.
+
 **Status:** em aberto · **Onde:** Refine, 38:36 a 40:29
 
 **O que disseram:** Willian contou que o template de e-mail já foi feito junto com o CASA e está
@@ -306,6 +348,8 @@ acrescentar.
 ---
 
 ## 15. Configurações além de licitação
+
+> Provocação do Willian: a área não deveria nascer amarrada ao tema licitação.
 
 **Status:** em aberto, estratégico · **Onde:** Refine, 29:25 a 38:14
 
