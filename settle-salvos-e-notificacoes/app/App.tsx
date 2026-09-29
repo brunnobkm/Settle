@@ -1,0 +1,998 @@
+// Salvos para depois + notificações (duplicado de Explorar licitações).
+// Ao salvar, o usuário escolhe só guardar ou guardar e receber atualizações (e de quais
+// tipos). A tela Salvos para depois mostra o que cada licitação acompanha e as novidades;
+// o sino da navbar abre a central de notificações com o que mudou em cada edital.
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  BellIcon,
+  BellRingIcon,
+  BookmarkIcon,
+  BookmarkXIcon,
+  RadioTowerIcon,
+  CheckIcon,
+  CircleHelpIcon,
+  ClockIcon,
+  CopyIcon,
+  FolderIcon,
+  FolderXIcon,
+  LinkIcon,
+  PencilIcon,
+  SearchIcon,
+  Share2Icon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react"
+import { toast } from "sonner"
+
+import { cn } from "@/lib/utils"
+import { AppShell, useAppShell } from "@/components/ui/app-shell"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { NotificationsCenterCount, notificationsCenterTabClassName, notificationsCenterTabsListClassName } from "@/components/ui/notifications-center"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { FilterChip, FilterChipGroup } from "@/components/ui/filter-chip"
+import { LicitacaoCard, LicitacaoCardStatusButton, type LicitacaoCardIconActionProps } from "@/components/ui/licitacao-card"
+import { SearchField, useSearchShortcut } from "@/components/ui/search-field"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useNaoPrototipado } from "@/settle/nao-prototipado"
+import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
+
+import { AlertasDaLicitacao } from "./AlertasDaLicitacao"
+import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
+import { CentralDeNotificacoes, type AbaDaCentral } from "./CentralDeNotificacoes"
+import {
+  ESCOPOS,
+  HOJE,
+  LICITACOES,
+  NOTIFICACOES,
+  PRESETS_DATA,
+  PROXIMAS_NOTIFICACOES,
+  ROTULO_CURTO,
+  TIPOS_DE_ATUALIZACAO,
+  RESPONSAVEIS,
+  ROTULO_ADERENCIA,
+  SEGMENTOS_DO_CARD,
+  VISUALIZACAO_INICIAL,
+  VISUALIZACAO_OBRIGATORIA,
+  VISUALIZACAO_ORGAOS,
+  VISUALIZACOES_INICIAIS,
+  formatarData,
+  lerData,
+  normalizar,
+  textoPadraoDeBusca,
+  type Aderencia,
+  type Filtro,
+  type Licitacao,
+  type Notificacao,
+  type TipoAtualizacao,
+  type Visualizacao,
+} from "./dados"
+
+const DURACAO_SAIDA = 330 // ms: animação do card saindo da lista
+const ATRASO_BUSCA = 450 // ms: simula a busca no servidor (mostra o esqueleto)
+const OPCOES_DE_ESCOPO = ESCOPOS.map((e) => ({ value: e.chave, label: e.rotulo }))
+
+type Tela = "explorar" | "salvos"
+type AbaDeSalvos = "todas" | "novidades" | "acompanhando" | "guardadas"
+
+function pertenceAVisualizacao(l: Licitacao, v: Visualizacao | undefined) {
+  if (!v) return true
+  if (v.aderencia) return v.aderencia.includes(l.aderencia)
+  if (v.chave === VISUALIZACAO_ORGAOS) {
+    const orgaos = v.filtros.find((f) => f.tipo === "lista" && f.rotulo === "Órgão")
+    return orgaos?.tipo === "lista" ? orgaos.valor.includes(l.orgao) : true
+  }
+  return true
+}
+
+export default function App() {
+  useNaoPrototipado()
+
+  const [tela, setTela] = useState<Tela>("explorar")
+  const [licitacoes, setLicitacoes] = useState(LICITACOES)
+  const [abaSalvos, setAbaSalvos] = useState<AbaDeSalvos>("todas")
+  const [destaque, setDestaque] = useState<string | null>(null)
+
+  // popover de salvar/alertas, ancorado no botão clicado
+  const [editando, setEditando] = useState<{ edital: string; ancora: HTMLElement } | null>(null)
+
+  // central de notificações
+  const [notificacoes, setNotificacoes] = useState(NOTIFICACOES)
+  const [centralAberta, setCentralAberta] = useState(false)
+  const [abaCentral, setAbaCentral] = useState<AbaDaCentral>("nao-lidas")
+  const [filtroEdital, setFiltroEdital] = useState<string | null>(null)
+  const proxima = useRef(0)
+  const [selecionadas, setSelecionadas] = useState<string[]>([])
+  const [saindo, setSaindo] = useState<string[]>([])
+  const timersSaida = useRef(new Map<string, number>())
+
+  const [visualizacoes, setVisualizacoes] = useState(VISUALIZACOES_INICIAIS)
+  const [ativa, setAtiva] = useState(VISUALIZACAO_INICIAL)
+  const [novaPendente, setNovaPendente] = useState<string | null>(null)
+  const sequenciaNova = useRef(0)
+
+  const [buscaAberta, setBuscaAberta] = useState(false)
+  const [consulta, setConsulta] = useState("")
+  const [aplicada, setAplicada] = useState("")
+  const [escopos, setEscopos] = useState<string[]>([])
+  const [carregando, setCarregando] = useState(false)
+  const timerBusca = useRef<number | undefined>(undefined)
+
+  const barraRef = useRef<HTMLDivElement>(null)
+  const abasRef = useRef<HTMLDivElement>(null)
+  const acoesRef = useRef<HTMLDivElement>(null)
+  const [disponivel, setDisponivel] = useState(Number.POSITIVE_INFINITY)
+
+  /* ---------------- filtragem ---------------- */
+
+  const q = normalizar(aplicada.trim())
+  const casaBusca = (l: Licitacao) => {
+    if (!q) return true
+    if (!escopos.length) return normalizar(textoPadraoDeBusca(l)).includes(q)
+    return escopos.some((chave) => {
+      const escopo = ESCOPOS.find((e) => e.chave === chave)
+      return escopo ? normalizar(escopo.valor(l)).includes(q) : false
+    })
+  }
+  const fila = licitacoes.filter((l) => !l.salvo)
+  const visualizacaoAtiva = visualizacoes.find((v) => v.chave === ativa)
+  const visiveis = visualizacoes.filter((v) => !v.oculta)
+  const contagens = Object.fromEntries(
+    visualizacoes.map((v) => [v.chave, fila.filter((l) => pertenceAVisualizacao(l, v) && casaBusca(l)).length])
+  )
+  const listaExplorar = fila.filter((l) => pertenceAVisualizacao(l, visualizacaoAtiva) && casaBusca(l))
+  const salvas = licitacoes.filter((l) => l.salvo)
+  const totalSalvos = salvas.length
+
+  const naoLidasDe = (edital: string) => notificacoes.filter((n) => n.edital === edital && !n.lida).length
+  const totalNaoLidas = notificacoes.filter((n) => !n.lida).length
+  const FILTRO_SALVOS: Record<AbaDeSalvos, (l: Licitacao) => boolean> = {
+    todas: () => true,
+    novidades: (l) => naoLidasDe(l.edital) > 0,
+    acompanhando: (l) => l.alertas.length > 0,
+    guardadas: (l) => !l.alertas.length,
+  }
+  const listaSalvos = salvas
+    .filter(FILTRO_SALVOS[abaSalvos])
+    // com novidade primeiro
+    .sort((a, b) => Number(naoLidasDe(b.edital) > 0) - Number(naoLidasDe(a.edital) > 0))
+  const lista = tela === "explorar" ? listaExplorar : listaSalvos
+  const editandoLicitacao = editando ? (licitacoes.find((l) => l.edital === editando.edital) ?? null) : null
+
+  /* ---------------- largura livre para as abas ---------------- */
+
+  useLayoutEffect(() => {
+    const barra = barraRef.current
+    const abas = abasRef.current
+    const acoes = acoesRef.current
+    if (!barra || !abas || !acoes) return
+    const medir = () => {
+      // telas estreitas com a busca aberta: as ações descem para a linha de baixo
+      const quebrou = acoes.offsetTop > abas.offsetTop + 4
+      setDisponivel(quebrou ? barra.clientWidth : barra.clientWidth - acoes.offsetWidth - 16)
+    }
+    medir()
+    const observador = new ResizeObserver(medir)
+    observador.observe(barra)
+    observador.observe(acoes)
+    return () => observador.disconnect()
+  }, [])
+
+  /* ---------------- visualizações ---------------- */
+
+  const ativar = useCallback((chave: string) => setAtiva(chave), [])
+  const novaTratada = useCallback(() => setNovaPendente(null), [])
+
+  function criarVisualizacao() {
+    const chave = `view-${Date.now()}`
+    sequenciaNova.current += 1
+    setVisualizacoes((vs) => [...vs, { chave, rotulo: `Nova visualização ${sequenciaNova.current}`, filtros: [] }])
+    setNovaPendente(chave)
+  }
+
+  function moverVisualizacao(chave: string, alvo: string, posicao: "antes" | "depois") {
+    setVisualizacoes((vs) => {
+      const item = vs.find((v) => v.chave === chave)
+      if (!item || chave === alvo) return vs
+      const resto = vs.filter((v) => v.chave !== chave)
+      const i = resto.findIndex((v) => v.chave === alvo)
+      if (i < 0) return vs
+      resto.splice(posicao === "antes" ? i : i + 1, 0, item)
+      return resto
+    })
+  }
+
+  function renomearVisualizacao(chave: string, rotulo: string) {
+    setVisualizacoes((vs) => vs.map((v) => (v.chave === chave ? { ...v, rotulo } : v)))
+  }
+
+  function duplicarVisualizacao(chave: string) {
+    const origem = visualizacoes.find((v) => v.chave === chave)
+    if (!origem) return
+    const nova: Visualizacao = {
+      chave: `view-${Date.now()}`,
+      rotulo: `${origem.rotulo} (cópia)`,
+      aderencia: origem.aderencia && [...origem.aderencia],
+      // copia os filtros sem compartilhar referência
+      filtros: origem.filtros.map((f) =>
+        f.tipo === "lista" ? { ...f, opcoes: [...f.opcoes], valor: [...f.valor] } : { ...f, valor: { ...f.valor } }
+      ),
+    }
+    setVisualizacoes((vs) => {
+      const i = vs.findIndex((v) => v.chave === chave)
+      return [...vs.slice(0, i + 1), nova, ...vs.slice(i + 1)]
+    })
+    setAtiva(nova.chave)
+    toast(`“${origem.rotulo}” duplicada`, { icon: <CopyIcon className="size-4" /> })
+  }
+
+  function excluirVisualizacao(chave: string) {
+    if (chave === VISUALIZACAO_OBRIGATORIA) {
+      toast("A visualização “Todas” não pode ser excluída", { icon: <Trash2Icon className="size-4" /> })
+      return
+    }
+    if (visiveis.length <= 1) {
+      toast("Não é possível excluir a única visualização", { icon: <Trash2Icon className="size-4" /> })
+      return
+    }
+    const indice = visualizacoes.findIndex((v) => v.chave === chave)
+    const excluida = visualizacoes[indice]
+    if (!excluida) return
+    const eraAtiva = ativa === chave
+    const iVisivel = visiveis.findIndex((v) => v.chave === chave)
+    const vizinha = visiveis[iVisivel - 1] ?? visiveis[iVisivel + 1]
+    setVisualizacoes((vs) => vs.filter((v) => v.chave !== chave))
+    if (eraAtiva && vizinha) setAtiva(vizinha.chave)
+    toast(`“${excluida.rotulo}” excluída`, {
+      icon: <Trash2Icon className="size-4" />,
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          setVisualizacoes((vs) =>
+            vs.some((v) => v.chave === chave) ? vs : [...vs.slice(0, indice), excluida, ...vs.slice(indice)]
+          )
+          if (eraAtiva) setAtiva(chave)
+        },
+      },
+    })
+  }
+
+  function alterarFiltro(indice: number, filtro: Filtro) {
+    setVisualizacoes((vs) =>
+      vs.map((v) => (v.chave === ativa ? { ...v, filtros: v.filtros.map((f, i) => (i === indice ? filtro : f)) } : v))
+    )
+  }
+
+  /* ---------------- busca ---------------- */
+
+  function agendarBusca(texto: string) {
+    window.clearTimeout(timerBusca.current)
+    if (!texto.trim()) {
+      setCarregando(false)
+      setAplicada("")
+      return
+    }
+    setCarregando(true)
+    timerBusca.current = window.setTimeout(() => {
+      setCarregando(false)
+      setAplicada(texto)
+    }, ATRASO_BUSCA)
+  }
+
+  function abrirBusca() {
+    setBuscaAberta(true)
+  }
+
+  function fecharBusca() {
+    window.clearTimeout(timerBusca.current)
+    setBuscaAberta(false)
+    setConsulta("")
+    setEscopos([])
+    setCarregando(false)
+    setAplicada("")
+  }
+
+  function alterarEscopos(novos: string[]) {
+    setEscopos(novos)
+    agendarBusca(consulta)
+  }
+
+  // atalho "/" abre a busca
+  useSearchShortcut(abrirBusca, { enabled: !buscaAberta })
+
+  /* ---------------- salvar para depois ---------------- */
+
+  function aplicar(edital: string, mudanca: Partial<Licitacao>) {
+    const timer = timersSaida.current.get(edital)
+    if (timer) window.clearTimeout(timer)
+    timersSaida.current.delete(edital)
+    setSaindo((s) => s.filter((e) => e !== edital))
+    setLicitacoes((ls) => ls.map((l) => (l.edital === edital ? { ...l, ...mudanca } : l)))
+  }
+
+  // o card sai da lista atual (fade + deslize + recolhe) e só então muda de fila
+  function sairDaLista(edital: string, mudanca: Partial<Licitacao>) {
+    setSaindo((s) => [...s, edital])
+    timersSaida.current.set(
+      edital,
+      window.setTimeout(() => aplicar(edital, mudanca), DURACAO_SAIDA)
+    )
+  }
+
+  function abrirAlertas(l: Licitacao, ancora: HTMLElement) {
+    if (saindo.includes(l.edital)) return
+    setEditando({ edital: l.edital, ancora })
+  }
+
+  function salvar(l: Licitacao, alertas: TipoAtualizacao[]) {
+    setEditando(null)
+    const anterior = { salvo: l.salvo, alertas: l.alertas, salvaEm: l.salvaEm }
+    const desfazer = { label: "Desfazer", onClick: () => aplicar(l.edital, anterior) }
+    if (l.salvo) {
+      aplicar(l.edital, { alertas })
+      toast(alertas.length ? "Alertas atualizados" : "Alertas desligados: licitação só guardada", {
+        icon: alertas.length ? <BellRingIcon className="size-4 text-primary" /> : <BellIcon className="size-4" />,
+        action: desfazer,
+      })
+      return
+    }
+    sairDaLista(l.edital, { salvo: true, alertas, salvaEm: "19/06/2026" })
+    toast(alertas.length ? "Salvo para depois. Você será avisado das atualizações" : "Salvo para depois", {
+      icon: alertas.length ? (
+        <BellRingIcon className="size-4 text-primary" />
+      ) : (
+        <BookmarkIcon className="size-4 fill-current text-primary" />
+      ),
+      action: desfazer,
+    })
+  }
+
+  function remover(l: Licitacao) {
+    setEditando(null)
+    sairDaLista(l.edital, { salvo: false, alertas: [] })
+    toast("Removido de Salvos para depois", {
+      icon: <BookmarkXIcon className="size-4 text-muted-foreground" />,
+      action: { label: "Desfazer", onClick: () => aplicar(l.edital, { salvo: true, alertas: l.alertas }) },
+    })
+  }
+
+  /* ---------------- notificações ---------------- */
+
+  function abrirCentral(edital: string | null = null) {
+    setFiltroEdital(edital)
+    setAbaCentral(edital || totalNaoLidas ? "nao-lidas" : "todas")
+    if (edital && !naoLidasDe(edital)) setAbaCentral("todas")
+    setCentralAberta(true)
+  }
+
+  function marcarLida(id: string, lida: boolean) {
+    setNotificacoes((ns) => ns.map((n) => (n.id === id ? { ...n, lida } : n)))
+  }
+
+  function marcarTodasLidas() {
+    setNotificacoes((ns) => ns.map((n) => (!filtroEdital || n.edital === filtroEdital ? { ...n, lida: true } : n)))
+  }
+
+  function verLicitacao(n: Notificacao) {
+    marcarLida(n.id, true)
+    setCentralAberta(false)
+    setTela("salvos")
+    setAbaSalvos("todas")
+    setDestaque(n.edital)
+    window.setTimeout(() => {
+      document.getElementById(`licitacao-${n.edital}`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 250)
+    window.setTimeout(() => setDestaque(null), 2600)
+  }
+
+  // Protótipo: simula o portal publicando uma atualização. Só vira notificação
+  // se a licitação estiver salva acompanhando aquele tipo.
+  function simularAtualizacao() {
+    const candidatas = PROXIMAS_NOTIFICACOES.filter((p) =>
+      licitacoes.some((l) => l.edital === p.edital && l.salvo && l.alertas.includes(p.tipo))
+    )
+    const escolhida = candidatas[proxima.current % Math.max(candidatas.length, 1)]
+    proxima.current += 1
+    if (!escolhida) {
+      toast("O portal publicou mudanças, mas nenhuma é de um tipo que você acompanha", {
+        icon: <RadioTowerIcon className="size-4 text-muted-foreground" />,
+      })
+      return
+    }
+    const nova: Notificacao = { ...escolhida, id: `sim-${Date.now()}`, lida: false }
+    setNotificacoes((ns) => [nova, ...ns])
+    setLicitacoes((ls) => ls.map((l) => (l.edital === nova.edital ? { ...l, atualizada: "19/06/2026" } : l)))
+    toast(`${ROTULO_CURTO[nova.tipo]} · Edital ${nova.edital}`, {
+      description: nova.titulo,
+      icon: <BellRingIcon className="size-4 text-primary" />,
+      action: { label: "Ver", onClick: () => abrirCentral(nova.edital) },
+    })
+  }
+
+  useEffect(() => {
+    const timers = timersSaida.current
+    return () => timers.forEach((t) => window.clearTimeout(t))
+  }, [])
+
+  /* ---------------- tela ---------------- */
+
+  const quantidade = (n: number) => `${n} ${n === 1 ? "licitação" : "licitações"}`
+  const mensagemResultado = carregando
+    ? "Buscando licitações…"
+    : q
+      ? `Encontramos ${quantidade(lista.length)} com seus filtros`
+      : tela === "salvos"
+        ? `${quantidade(lista.length)} em Salvos para depois`
+        : `${quantidade(lista.length)} em ${visualizacaoAtiva?.rotulo ?? ""}`
+
+  const filtrosAtivos = visualizacaoAtiva?.filtros ?? []
+
+  return (
+    <AppShell
+      workspace={WORKSPACE}
+      groups={menuDaTela(tela, totalSalvos, (t) => {
+        setTela(t)
+        setSelecionadas([])
+        window.scrollTo({ top: 0 })
+      })}
+      user={USUARIO}
+      header={
+        <div className="flex flex-1 items-center gap-3">
+          <span className="text-[15px] font-semibold">{SAUDACAO}</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="relative ml-auto"
+            aria-label={totalNaoLidas ? `Notificações: ${totalNaoLidas} não lidas` : "Notificações"}
+            onClick={() => abrirCentral()}
+          >
+            <BellIcon />
+            {totalNaoLidas > 0 && (
+              <span
+                aria-hidden
+                className="absolute -top-0.5 -right-0.5 flex h-4.25 min-w-4.25 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-none font-bold text-white ring-2 ring-background"
+              >
+                {totalNaoLidas}
+              </span>
+            )}
+          </Button>
+        </div>
+      }
+      hideHeaderOnScroll
+    >
+      <div className="mx-auto max-w-347 px-6 pt-6 pb-16">
+        <h1 className="sr-only">{tela === "salvos" ? "Salvos para depois" : "Explorar licitações"}</h1>
+        <p className="sr-only" aria-live="polite">
+          {mensagemResultado}
+        </p>
+
+        {tela === "salvos" ? (
+          <BarraDeSalvos
+            aba={abaSalvos}
+            onAba={setAbaSalvos}
+            contagens={{
+              todas: salvas.length,
+              novidades: salvas.filter(FILTRO_SALVOS.novidades).length,
+              acompanhando: salvas.filter(FILTRO_SALVOS.acompanhando).length,
+              guardadas: salvas.filter(FILTRO_SALVOS.guardadas).length,
+            }}
+            onSimular={simularAtualizacao}
+          />
+        ) : (
+        /* barra sticky: gruda logo abaixo da navbar e sobe junto quando ela se esconde */
+        <div className="sticky top-16 z-10 mb-2 bg-background py-3.5 transition-transform duration-250 ease-out group-data-[header-hidden=true]/app-shell:-translate-y-16">
+          <div
+            ref={barraRef}
+            className={cn("flex items-center justify-between gap-x-4 gap-y-2 max-sm:flex-wrap", buscaAberta && "max-[1040px]:flex-wrap")}
+          >
+            <div ref={abasRef} className="min-w-0 flex-none">
+              <BarraDeVisualizacoes
+                visualizacoes={visiveis}
+                ativa={ativa}
+                contagens={contagens}
+                disponivel={disponivel}
+                novaPendente={novaPendente}
+                onNovaTratada={novaTratada}
+                onAtivar={ativar}
+                onCriar={criarVisualizacao}
+                onMover={moverVisualizacao}
+                onRenomear={renomearVisualizacao}
+                onCopiarLink={() =>
+                  toast("Link da visualização copiado", { icon: <CheckIcon className="size-4 text-success" /> })
+                }
+                onDuplicar={duplicarVisualizacao}
+                onExcluir={excluirVisualizacao}
+              />
+            </div>
+
+            {/* grupo segmentado de ações */}
+            <div
+              ref={acoesRef}
+              className={cn(
+                "flex flex-none items-center rounded-lg bg-foreground/10",
+                buscaAberta ? "max-[1040px]:basis-full" : "overflow-hidden"
+              )}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                data-nao-prototipado
+                className={cn(
+                  "h-8 rounded-none px-3 text-foreground hover:bg-foreground/5",
+                  buscaAberta && "max-[1040px]:hidden"
+                )}
+              >
+                Filtrar
+                {filtrosAtivos.length > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-xs leading-4.5 font-normal tabular-nums">
+                    {filtrosAtivos.length}
+                  </span>
+                )}
+              </Button>
+              {buscaAberta ? (
+                <SearchField
+                  autoFocus
+                  value={consulta}
+                  onValueChange={(texto) => {
+                    setConsulta(texto)
+                    agendarBusca(texto)
+                  }}
+                  scopes={OPCOES_DE_ESCOPO}
+                  selectedScopes={escopos}
+                  onSelectedScopesChange={alterarEscopos}
+                  onClose={fecharBusca}
+                  labels={{ input: "Buscar licitações" }}
+                  className="w-auto min-w-75 flex-1 rounded-lg border-0 bg-transparent shadow-none dark:bg-transparent"
+                />
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-foreground hover:bg-foreground/5"
+                  onClick={abrirBusca}
+                >
+                  <SearchIcon data-icon="inline-start" />
+                  Buscar
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <SelosDeFiltro key={ativa} filtros={filtrosAtivos} onAlterar={alterarFiltro} />
+        </div>
+        )}
+
+        <section aria-label="Licitações" aria-busy={carregando}>
+          {carregando ? (
+            <div className="flex flex-col gap-4">
+              <CardEsqueleto />
+              <CardEsqueleto />
+            </div>
+          ) : lista.length ? (
+            <ul className="flex flex-col gap-4">
+              {lista.map((l) => {
+                const saindoAgora = saindo.includes(l.edital)
+                // durante a saída o marcador já mostra o novo estado
+                const salvo = l.salvo !== saindoAgora
+                return (
+                  <li
+                    key={l.edital}
+                    id={`licitacao-${l.edital}`}
+                    className={cn(
+                      "grid scroll-mt-40 rounded-lg transition-all duration-300 ease-out",
+                      destaque === l.edital && "ring-2 ring-primary ring-offset-4 ring-offset-background",
+                      saindoAgora
+                        ? "pointer-events-none translate-x-10 scale-[.98] grid-rows-[0fr] opacity-0"
+                        : "grid-rows-[1fr]"
+                    )}
+                  >
+                    <div className={cn("min-h-0", saindoAgora && "overflow-hidden")}>
+                      <CardDaLicitacao
+                        licitacao={l}
+                        salvo={salvo}
+                        selecionada={selecionadas.includes(l.edital)}
+                        onSelecionar={(marcada) =>
+                          setSelecionadas((s) => (marcada ? [...s, l.edital] : s.filter((e) => e !== l.edital)))
+                        }
+                        naoLidas={naoLidasDe(l.edital)}
+                        naTelaDeSalvos={tela === "salvos"}
+                        onAbrirAlertas={(ancora) => abrirAlertas(l, ancora)}
+                        onVerNovidades={() => abrirCentral(l.edital)}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <Empty className="border border-dashed bg-card px-4 py-14">
+              <EmptyHeader>
+                {q ? (
+                  <>
+                    <EmptyTitle className="text-[15px] font-semibold">Nenhuma licitação encontrada</EmptyTitle>
+                    <EmptyDescription>
+                      Não há resultados para “<span className="font-semibold text-foreground">{aplicada.trim()}</span>”.
+                      Tente outro termo.
+                    </EmptyDescription>
+                  </>
+                ) : tela === "salvos" ? (
+                  <>
+                    <EmptyTitle className="text-[15px] font-semibold">
+                      {abaSalvos === "todas" ? "Nenhuma licitação salva" : "Nenhuma licitação nesta aba"}
+                    </EmptyTitle>
+                    <EmptyDescription>
+                      {abaSalvos === "novidades"
+                        ? "Não há atualizações não lidas nas licitações que você acompanha."
+                        : "Use o marcador no card para guardar uma licitação e escolher se quer receber atualizações."}
+                    </EmptyDescription>
+                  </>
+                ) : (
+                  <>
+                    <EmptyTitle className="text-[15px] font-semibold">Nenhuma licitação nesta visualização</EmptyTitle>
+                    <EmptyDescription>As licitações salvas para depois ficam em Salvos para depois.</EmptyDescription>
+                  </>
+                )}
+              </EmptyHeader>
+            </Empty>
+          )}
+        </section>
+      </div>
+
+      <AlertasDaLicitacao
+        licitacao={editandoLicitacao}
+        ancora={editando?.ancora ?? null}
+        onFechar={() => setEditando(null)}
+        onSalvar={(alertas) => editandoLicitacao && salvar(editandoLicitacao, alertas)}
+        onRemover={() => editandoLicitacao && remover(editandoLicitacao)}
+      />
+
+      <CentralDeNotificacoes
+        aberta={centralAberta}
+        onAbertaChange={setCentralAberta}
+        notificacoes={notificacoes}
+        licitacoes={licitacoes}
+        aba={abaCentral}
+        onAba={setAbaCentral}
+        filtroEdital={filtroEdital}
+        onLimparFiltro={() => setFiltroEdital(null)}
+        onLida={marcarLida}
+        onTodasLidas={marcarTodasLidas}
+        onVerLicitacao={verLicitacao}
+      />
+    </AppShell>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Card                                                                */
+/* ------------------------------------------------------------------ */
+
+const ADERENCIA_VISUAL: Record<Aderencia, { variante: "success" | "warning" | "destructive"; Icone: typeof CheckIcon }> = {
+  aderente: { variante: "success", Icone: CheckIcon },
+  duvida: { variante: "warning", Icone: CircleHelpIcon },
+  nao_aderente: { variante: "destructive", Icone: XIcon },
+}
+
+function LinhaDeAderencia({ aderencia, motivo }: { aderencia: Aderencia; motivo: string }) {
+  const { variante, Icone } = ADERENCIA_VISUAL[aderencia]
+  return (
+    <div className="flex flex-wrap items-center gap-2.5">
+      <Badge variant={variante} className="h-6 rounded-md border-current/20 px-2 font-semibold">
+        <Icone data-icon="inline-start" />
+        {ROTULO_ADERENCIA[aderencia]}
+      </Badge>
+      <p className="min-w-0 text-[13px] text-muted-foreground">
+        <span className="font-semibold text-foreground">Motivo:</span> {motivo}
+      </p>
+    </div>
+  )
+}
+
+function CardDaLicitacao({
+  licitacao: l,
+  salvo,
+  selecionada,
+  naoLidas,
+  naTelaDeSalvos,
+  onSelecionar,
+  onAbrirAlertas,
+  onVerNovidades,
+}: {
+  licitacao: Licitacao
+  salvo: boolean
+  selecionada: boolean
+  naoLidas: number
+  naTelaDeSalvos: boolean
+  onSelecionar: (marcada: boolean) => void
+  onAbrirAlertas: (ancora: HTMLElement) => void
+  onVerNovidades: () => void
+}) {
+  const arquivos = l.arquivos ?? 0
+  const acompanhando = salvo && l.alertas.length > 0
+  const acoesDeIcone: (LicitacaoCardIconActionProps & { id: string })[] = [
+    {
+      id: "salvar",
+      label: salvo ? "Salva para depois: editar" : "Salvar para depois",
+      icon: <BookmarkIcon className={cn(salvo && "fill-current")} />,
+      pressed: salvo,
+      "aria-haspopup": "dialog",
+      onClick: (e) => onAbrirAlertas(e.currentTarget),
+    },
+    {
+      id: "notificar",
+      label: acompanhando ? "Recebendo atualizações: editar alertas" : "Receber atualizações",
+      icon: acompanhando ? <BellRingIcon /> : <BellIcon />,
+      pressed: acompanhando,
+      count: naoLidas || undefined,
+      "aria-haspopup": "dialog",
+      onClick: (e) => onAbrirAlertas(e.currentTarget),
+    },
+    {
+      id: "link",
+      label: "Copiar link",
+      icon: <LinkIcon />,
+      onClick: () => toast("Link do edital copiado", { icon: <CheckIcon className="size-4 text-success" /> }),
+    },
+    { id: "compartilhar", label: "Compartilhar", icon: <Share2Icon />, "data-nao-prototipado": true },
+    l.semAnexo
+      ? {
+          id: "arquivos",
+          label: "Sem anexo: este edital ainda não possui arquivo",
+          icon: <FolderXIcon />,
+          tone: "warning",
+          "data-nao-prototipado": true,
+        }
+      : {
+          id: "arquivos",
+          label: `${arquivos} ${arquivos === 1 ? "arquivo anexado" : "arquivos anexados"}`,
+          icon: <FolderIcon />,
+          count: arquivos,
+          "data-nao-prototipado": true,
+        },
+  ]
+
+  return (
+    <LicitacaoCard
+      edital={l.edital}
+      selectable
+      selected={selecionada}
+      onSelectedChange={onSelecionar}
+      actions={
+        <>
+          <Button variant="outline" className="px-3.5 shadow-none" data-nao-prototipado>
+            Descartar
+          </Button>
+          <Button className="px-3.5" data-nao-prototipado>
+            Enviar para análise
+          </Button>
+        </>
+      }
+      status={
+        <LicitacaoCardStatusButton data-nao-prototipado>
+          <PencilIcon data-icon="inline-start" />
+          Em disputa ou Homologação
+        </LicitacaoCardStatusButton>
+      }
+      avatars={RESPONSAVEIS}
+      addAvatarProps={{ "data-nao-prototipado": true }}
+      iconActions={acoesDeIcone}
+      highlight={
+        <div className="flex flex-col gap-2.5">
+          {naTelaDeSalvos && (
+            <LinhaDeAcompanhamento licitacao={l} naoLidas={naoLidas} onVerNovidades={onVerNovidades} />
+          )}
+          <LinhaDeAderencia aderencia={l.aderencia} motivo={l.motivo} />
+        </div>
+      }
+      segments={SEGMENTOS_DO_CARD}
+      orgao={l.orgao}
+      orgaoTag="ME - EPP"
+      objeto={l.objeto}
+      valor={`R$ ${l.valor}`}
+      metaAside={[
+        [
+          { label: "Adicionada", value: l.adicionada },
+          { label: "Atualizada", value: l.atualizada },
+        ],
+        [
+          {
+            label: "Envio da proposta",
+            value: l.envio,
+            tone: "warning",
+            icon: <ClockIcon aria-hidden />,
+            title: `Prazo de envio da proposta: ${l.envio}`,
+          },
+        ],
+      ]}
+      meta={[
+        { label: "ID", value: l.id },
+        { label: "UASG", value: "–" },
+        { label: "Modalidade", value: l.modalidade },
+        { label: "Julgamento", value: l.julgamento },
+        { label: "Estado", value: l.estado },
+        { label: "Cidade", value: l.cidade },
+        { label: "Habitantes", value: l.habitantes },
+        { label: "CAPAG Estadual", value: "–" },
+        { label: "CAPAG Municipal", value: "–" },
+        { label: "Portal de disputa", value: l.portal },
+      ]}
+    />
+  )
+}
+
+/** Na tela de Salvos: o que a licitação acompanha e as atualizações não lidas. */
+function LinhaDeAcompanhamento({
+  licitacao: l,
+  naoLidas,
+  onVerNovidades,
+}: {
+  licitacao: Licitacao
+  naoLidas: number
+  onVerNovidades: () => void
+}) {
+  const tipos = TIPOS_DE_ATUALIZACAO.filter((t) => l.alertas.includes(t.chave))
+  const todos = tipos.length === TIPOS_DE_ATUALIZACAO.length
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-md bg-muted/60 px-2.5 py-1.5 text-[13px]">
+      {tipos.length ? (
+        <span className="flex min-w-0 items-center gap-1.5">
+          <BellRingIcon aria-hidden className="size-3.5 text-primary" />
+          <span className="font-semibold">Acompanhando:</span>
+          <span className="text-muted-foreground">
+            {todos ? "todas as atualizações" : tipos.map((t) => ROTULO_CURTO[t.chave]).join(", ")}
+          </span>
+        </span>
+      ) : (
+        <span className="flex items-center gap-1.5 text-muted-foreground">
+          <BookmarkIcon aria-hidden className="size-3.5" />
+          Só guardada, sem alertas
+        </span>
+      )}
+      {l.salvaEm && <span className="text-xs text-muted-foreground">Salva em {l.salvaEm}</span>}
+      {naoLidas > 0 && (
+        <Button size="xs" variant="outline" className="ml-auto border-warning/40 bg-warning/10 text-warning-strong shadow-none hover:bg-warning/20" onClick={onVerNovidades}>
+          <BellRingIcon data-icon="inline-start" />
+          {naoLidas} {naoLidas === 1 ? "atualização nova" : "atualizações novas"}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+/** Abas da tela Salvos para depois. */
+function BarraDeSalvos({
+  aba,
+  onAba,
+  contagens,
+  onSimular,
+}: {
+  aba: AbaDeSalvos
+  onAba: (aba: AbaDeSalvos) => void
+  contagens: Record<AbaDeSalvos, number>
+  onSimular: () => void
+}) {
+  const ABAS: { valor: AbaDeSalvos; rotulo: string }[] = [
+    { valor: "todas", rotulo: "Todas" },
+    { valor: "novidades", rotulo: "Com atualizações" },
+    { valor: "acompanhando", rotulo: "Acompanhando" },
+    { valor: "guardadas", rotulo: "Só guardadas" },
+  ]
+  return (
+    <div className="sticky top-16 z-10 mb-2 flex flex-wrap items-center justify-between gap-3 bg-background py-3.5 transition-transform duration-250 ease-out group-data-[header-hidden=true]/app-shell:-translate-y-16">
+      <Tabs value={aba} onValueChange={(v) => onAba(v as AbaDeSalvos)}>
+        <TabsList aria-label="Filtrar salvos" className={notificationsCenterTabsListClassName}>
+          {ABAS.map((a) => (
+            <TabsTrigger key={a.valor} value={a.valor} className={notificationsCenterTabClassName}>
+              {a.rotulo}
+              <NotificationsCenterCount>{contagens[a.valor]}</NotificationsCenterCount>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+      <Button variant="outline" size="sm" className="shadow-none" onClick={onSimular}>
+        <RadioTowerIcon data-icon="inline-start" />
+        Simular atualização do portal
+        <Badge variant="secondary" className="ml-1 h-4.5 px-1.5 text-[10px]">
+          Protótipo
+        </Badge>
+      </Button>
+    </div>
+  )
+}
+
+/** Menu da sidebar: Explorar e Salvos trocam de tela aqui mesmo. */
+function menuDaTela(tela: Tela, salvos: number, ir: (t: Tela) => void) {
+  const alvo: Record<string, Tela> = { "Explorar licitações": "explorar", "Salvos para depois": "salvos" }
+  return menuLicitacoes({ salvos }).map((grupo) => ({
+    ...grupo,
+    items: grupo.items.map((item) => {
+      const destino = alvo[item.label]
+      if (!destino) return item
+      const { "data-nao-prototipado": _ignorado, ...resto } = item as typeof item & { "data-nao-prototipado"?: boolean }
+      return {
+        ...resto,
+        href: "#",
+        active: destino === tela,
+        onClick: (e: React.MouseEvent) => {
+          e.preventDefault()
+          if (destino !== tela) ir(destino)
+        },
+      }
+    }),
+  }))
+}
+
+/** Filtros salvos na visualização, como selos ("Órgão: 2 selecionadas ▾"). */
+function SelosDeFiltro({ filtros, onAlterar }: { filtros: Filtro[]; onAlterar: (indice: number, filtro: Filtro) => void }) {
+  const { headerHidden } = useAppShell()
+  if (!filtros.length) return null
+
+  return (
+    <FilterChipGroup
+      aria-label="Filtros da visualização"
+      className={cn(
+        "mt-3 max-h-15 transition-[max-height,opacity,margin] duration-250 ease-out",
+        // rolando para baixo (navbar escondida): os selos recolhem
+        headerHidden && "pointer-events-none mt-0 max-h-0 overflow-hidden opacity-0"
+      )}
+    >
+      {filtros.map((f, i) =>
+        f.tipo === "data" ? (
+          <FilterChip
+            key={f.rotulo}
+            type="date"
+            closeOnScroll
+            label={f.rotulo}
+            presets={PRESETS_DATA[f.modo].map((p) => ({ value: p.chave, label: p.rotulo }))}
+            today={HOJE}
+            disabled={f.modo === "passado" ? { after: HOJE } : { before: HOJE }}
+            formatDate={formatarData}
+            value={{ preset: f.valor.preset, date: f.valor.data ? lerData(f.valor.data) : undefined }}
+            onValueChange={(v) =>
+              onAlterar(i, { ...f, valor: v.preset ? { preset: v.preset } : { data: v.date && formatarData(v.date) } })
+            }
+          />
+        ) : (
+          <FilterChip
+            key={f.rotulo}
+            closeOnScroll
+            label={f.rotulo}
+            options={f.opcoes}
+            value={f.valor}
+            onValueChange={(valor) => onAlterar(i, { ...f, valor })}
+          />
+        )
+      )}
+    </FilterChipGroup>
+  )
+}
+
+// Esqueleto do card enquanto a busca "carrega"
+function CardEsqueleto() {
+  return (
+    <Card aria-hidden className="gap-3.5 rounded-lg py-4.5 [--card-spacing:--spacing(4.5)]">
+      <CardHeader className="flex flex-wrap items-center gap-2.5">
+        <Skeleton className="size-4.5" />
+        <Skeleton className="h-4.5 w-37.5" />
+        <Skeleton className="h-6 w-23 rounded-md" />
+        <Skeleton className="ml-auto h-8.5 w-24 rounded-lg" />
+        <Skeleton className="h-8.5 w-32.5 rounded-lg" />
+        <Skeleton className="h-8.5 w-42.5 rounded-lg" />
+      </CardHeader>
+      <CardContent className="gap-3.5">
+        <div className="flex gap-2.5">
+          <Skeleton className="h-5.5 w-18.5" />
+          <Skeleton className="h-5.5 w-18.5" />
+        </div>
+        <Skeleton className="h-3.5 w-[55%]" />
+        <Skeleton className="h-3.5 w-[92%]" />
+        <Skeleton className="h-3.5 w-[38%]" />
+        <Skeleton className="h-4.5 w-57.5" />
+        <Skeleton className="h-32.5 w-full rounded-md" />
+      </CardContent>
+    </Card>
+  )
+}
