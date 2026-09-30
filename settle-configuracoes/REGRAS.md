@@ -228,7 +228,12 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   nas licitações, e volta a aparecer se ela for posta no card de novo.
 - **As ações ficam numa toolbox à direita das abas**, no padrão da plataforma: "Adicionar
   variável", "Nova propriedade" e "Restaurar padrão da Settle". Elas são ações da área, e
-  ficarem ao lado das abas deixa claro que valem para a tela aberta naquela aba.
+  ficarem ao lado das abas deixa claro que valem para a tela aberta naquela aba. É o mesmo
+  bloco visual da barra "Filtrar · Ordenar · Exportar · Buscar" que a plataforma já usa ao
+  lado das abas das listas: fundo sutil, botões sem contorno. Virou o componente **Toolbar**
+  na Base do design system (`Toolbar`, `ToolbarButton`, `ToolbarSeparator`), porque não
+  existia e toda tela com abas vai precisar dele. Não confundir com `ActionBar`, que é a barra
+  flutuante das ações em lote.
 - Vale para a organização toda. **Em aberto:** permitir que cada pessoa tenha a própria
   visão por cima do padrão (o Linear faz isso por view). Recomendo começar só com o padrão
   da organização.
@@ -254,13 +259,34 @@ em app.settlegov.com, e não montado por semelhança):
   corpo, **sem as caixas de Datas e Propriedades e sem a tabela de itens**: tudo o que aparece
   é linha do corpo (seleção e edital em cima; segmento, órgão, objeto cortado em três linhas,
   Responsável, Substatus, Descrição, Envio da proposta, Cidade e Valor global). Por isso a
-  lista de configuração dessa aba não tem as seções Datas e Propriedades. **Em aberto:** Em
-  andamento também tem as visões Tabela e Calendário, que não são esta configuração.
+  lista de configuração dessa aba não tem as seções Datas e Propriedades. **No quadro a linha
+  do corpo não tem rótulo**, só o valor: o card real escreve "Prefeitura de..." direto, sem
+  "Órgão:" na frente, porque a coluna é estreita.
+- **Em andamento são três visões da mesma lista, e a configuração vale para as três.** A
+  pré-visualização tem as abas Board, Tabela e Calendário, como a plataforma. No quadro os
+  campos viram linhas do card; na Tabela viram colunas, na mesma ordem; no Calendário a
+  licitação aparece no dia do envio da proposta e **só cabem dois campos**, os dois primeiros
+  da ordem. Organizar continua sendo no quadro: é lá que se arrasta. Mostrar as três deixa
+  visível o custo de uma ordem ruim, que no calendário aparece primeiro.
 - **Dentro da licitação**: as ações não ficam no card, ficam no **cabeçalho da página**, ao
   lado do número do edital, que ali é o título. Não há caixa de seleção (não existe ação em
   lote dentro de uma licitação) nem "Enviar para análise" (a licitação já está em análise), e
   entram Checklist e o ícone de comentários. Os itens ficam numa **aba** própria ("Itens,
   Detalhes, Manifestações, Análise Técnica"), não dentro do card.
+- **A prévia dessa aba vem dentro de uma janela de navegador** (barra com a URL
+  `app.settlegov.com/biddings/<id>` e o caminho "Em andamento › Detalhes da licitação"). Sem
+  a moldura ela parecia mais um card solto, e o ponto dessa aba é justamente que ali não é uma
+  lista: é uma página.
+
+**O topo do card**: só a caixa de seleção e o número do edital ficam à esquerda; todo o resto
+fica à direita, e o que não couber na linha quebra continuando à direita. Na configuração, o
+`mr-auto` fica na peça arrastável, não no título dentro dela: o item do flex é a peça.
+
+**As três caixas do card, como em produção**: o corpo numa caixa com borda (segmentos, órgão,
+objeto, valor global); as datas e as propriedades numa caixa só, com divisória vertical entre
+elas e **a coluna de datas empilhada** (Adicionada, Atualizada, Envio da proposta, uma embaixo
+da outra); a tabela de itens numa terceira caixa. Entre o topo e a primeira caixa não há linha:
+o topo fica solto.
 
 **A pré-visualização usa um edital fixo**, o mais completo da lista de exemplo (dois
 segmentos, ME-EPP, itens em lotes e uma variável sem valor). Não há seletor de edital: a tela
