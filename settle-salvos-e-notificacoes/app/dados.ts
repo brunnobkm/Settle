@@ -5,6 +5,8 @@ export type Aderencia = "aderente" | "duvida" | "nao_aderente"
 
 export type Licitacao = {
   edital: string
+  /** Nome curto do órgão, para linhas de uma linha só (notificações). */
+  orgaoCurto: string
   orgao: string
   objeto: string
   valor: string
@@ -43,7 +45,7 @@ export const TIPOS_DE_ATUALIZACAO: { chave: TipoAtualizacao; rotulo: string; des
   { chave: "documento", rotulo: "Novo documento", descricao: "Anexo, planilha ou errata publicada no portal" },
   { chave: "prazo", rotulo: "Mudança de prazo", descricao: "Envio da proposta ou data da disputa alterada" },
   { chave: "status", rotulo: "Mudança de status", descricao: "Suspensa, revogada, anulada, reaberta ou homologada" },
-  { chave: "manifestacao", rotulo: "Esclarecimentos e impugnações", descricao: "Resposta do pregoeiro a pedidos publicados" },
+  { chave: "manifestacao", rotulo: "Avisos, impugnações e esclarecimentos", descricao: "Publicados pelo pregoeiro, com as respostas" },
 ]
 
 export const TODOS_OS_TIPOS = TIPOS_DE_ATUALIZACAO.map((t) => t.chave)
@@ -53,13 +55,38 @@ export const ROTULO_CURTO: Record<TipoAtualizacao, string> = {
   documento: "Novo documento",
   prazo: "Prazo",
   status: "Status",
-  manifestacao: "Esclarecimento",
+  manifestacao: "Manifestação",
+}
+
+/** Abas das notificações (padrão do Figma "Central de notificações" + atualizações do edital). */
+export type Categoria = "atualizacao" | "aviso" | "impugnacao" | "esclarecimento"
+
+export const CATEGORIAS: { chave: Categoria | "todos"; rotulo: string }[] = [
+  { chave: "todos", rotulo: "Todos" },
+  { chave: "atualizacao", rotulo: "Atualizações" },
+  { chave: "aviso", rotulo: "Avisos" },
+  { chave: "impugnacao", rotulo: "Impugnações" },
+  { chave: "esclarecimento", rotulo: "Esclarecimentos" },
+]
+
+export const ROTULO_CATEGORIA: Record<Categoria, string> = {
+  atualizacao: "Atualização",
+  aviso: "Aviso",
+  impugnacao: "Impugnação",
+  esclarecimento: "Esclarecimento",
 }
 
 export type Notificacao = {
   id: string
   edital: string
+  categoria: Categoria
   tipo: TipoAtualizacao
+  /** Texto integral (avisos, impugnações, esclarecimentos): abre em "Visualizar mensagem completa". */
+  mensagem?: string
+  /** Resposta do pregoeiro. */
+  resposta?: string
+  novaResposta?: boolean
+  anexos?: string[]
   /** DD/MM/AAAA às HH:MM */
   quando: string
   titulo: string
@@ -74,6 +101,7 @@ export type Notificacao = {
 export const LICITACOES: Licitacao[] = [
   {
     edital: "90001/2026",
+    orgaoCurto: "PGE-PA",
     orgao: "EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ",
     objeto:
       "Licitação para fornecimento de computadores desktop, notebooks, monitores e periféricos para atender a rede municipal de ensino. Inclui instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.",
@@ -96,6 +124,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "88234/2026",
+    orgaoCurto: "Prefeitura de Campinas",
     orgao: "PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI",
     objeto:
       "Aquisição de equipamentos de rede, switches gerenciáveis, roteadores e infraestrutura de cabeamento estruturado para modernização do data center municipal, com suporte e garantia de 48 meses.",
@@ -119,6 +148,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "90455/2025",
+    orgaoCurto: "SESA-CE",
     orgao: "SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ",
     objeto:
       "Registro de preços para aquisição de mobiliário hospitalar, macas, camas e equipamentos médico-hospitalares destinados às unidades de pronto atendimento do estado, com entrega parcelada.",
@@ -142,6 +172,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "73/2026",
+    orgaoCurto: "Prefeitura de Sorocaba",
     orgao: "PREFEITURA MUNICIPAL DE SOROCABA",
     objeto:
       "Contratação de empresa para serviços de manutenção predial preventiva e corretiva, incluindo instalações elétricas, hidráulicas e pequenas reformas nos prédios administrativos do município.",
@@ -165,6 +196,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "204/2025",
+    orgaoCurto: "SEC-BA",
     orgao: "SECRETARIA DE EDUCAÇÃO DO ESTADO DA BAHIA",
     objeto:
       "Registro de preços para aquisição de gêneros alimentícios e merenda escolar destinados às unidades da rede estadual de ensino, com entrega programada ao longo do ano letivo.",
@@ -188,6 +220,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "112/2026",
+    orgaoCurto: "TJMG",
     orgao: "TRIBUNAL DE JUSTIÇA DO ESTADO DE MINAS GERAIS",
     objeto:
       "Registro de preços para aquisição de notebooks corporativos, estações de acoplamento e monitores de 24 polegadas para as comarcas do interior, com garantia de 60 meses on-site.",
@@ -212,6 +245,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "45/2026",
+    orgaoCurto: "Sanepar",
     orgao: "COMPANHIA DE SANEAMENTO DO PARANÁ - SANEPAR",
     objeto:
       "Contratação de solução de monitoramento de rede com licenças de software, appliances e serviço de implantação para as unidades regionais, por 36 meses.",
@@ -236,6 +270,7 @@ export const LICITACOES: Licitacao[] = [
   },
   {
     edital: "318/2026",
+    orgaoCurto: "Prefeitura do Recife",
     orgao: "PREFEITURA MUNICIPAL DE RECIFE - SECRETARIA DE ADMINISTRAÇÃO",
     objeto:
       "Aquisição de equipamentos de videomonitoramento urbano, câmeras IP, servidores de gravação e licenças de VMS para o Centro de Operações da cidade.",
@@ -398,6 +433,7 @@ export const NOTIFICACOES: Notificacao[] = [
   {
     id: "n1",
     edital: "112/2026",
+    categoria: "atualizacao",
     tipo: "retificacao",
     quando: "18/06/2026 às 16:42",
     titulo: "Edital retificado: exigência de certificação removida",
@@ -409,6 +445,7 @@ export const NOTIFICACOES: Notificacao[] = [
   {
     id: "n2",
     edital: "112/2026",
+    categoria: "atualizacao",
     tipo: "prazo",
     quando: "18/06/2026 às 16:42",
     titulo: "Envio da proposta adiado",
@@ -418,6 +455,7 @@ export const NOTIFICACOES: Notificacao[] = [
   {
     id: "n3",
     edital: "45/2026",
+    categoria: "atualizacao",
     tipo: "status",
     quando: "17/06/2026 às 09:15",
     titulo: "Licitação suspensa pelo órgão",
@@ -428,15 +466,47 @@ export const NOTIFICACOES: Notificacao[] = [
   {
     id: "n4",
     edital: "112/2026",
+    categoria: "esclarecimento",
     tipo: "manifestacao",
-    quando: "14/06/2026 às 11:03",
-    titulo: "Pregoeiro respondeu a um pedido de esclarecimento",
-    impacto: "A resposta confirma que a garantia pode ser prestada por assistência credenciada.",
+    quando: "19/06/2026 às 11:42",
+    titulo: "Pedido de esclarecimento sobre a garantia on-site",
+    mensagem:
+      "Prezados, em relação ao item 9.2 do termo de referência, solicitamos esclarecer se a garantia on-site de 60 meses pode ser prestada por assistência técnica credenciada pelo fabricante nas comarcas onde a licitante não possui filial, ou se é exigido atendimento com equipe própria.",
+    resposta:
+      "A garantia poderá ser prestada por assistência técnica credenciada pelo fabricante, desde que comprovado o credenciamento no momento da assinatura da ata e mantidos os prazos de atendimento do item 9.4.",
+    novaResposta: true,
+    lida: false,
+  },
+  {
+    id: "n6",
+    edital: "112/2026",
+    categoria: "aviso",
+    tipo: "manifestacao",
+    quando: "19/06/2026 às 09:30",
+    titulo: "Aviso do pregoeiro: sessão pública mantida",
+    mensagem:
+      "Comunicamos que, em razão da retificação publicada em 18/06/2026, a sessão pública fica mantida para 03/07/2026 às 09h30, no portal compras.mg.gov.br. As propostas já cadastradas deverão ser revisadas pelas licitantes à luz do novo item 7.3.",
+    lida: false,
+  },
+  {
+    id: "n7",
+    edital: "45/2026",
+    categoria: "impugnacao",
+    tipo: "manifestacao",
+    quando: "16/06/2026 às 15:05",
+    titulo: "Pedido de impugnação ao instrumento editalício",
+    mensagem:
+      "A empresa impugnante requer a exclusão da exigência de appliance de um único fabricante (item 4.1), por restringir a competitividade, e a aceitação de soluções equivalentes que atendam às especificações de desempenho descritas no Anexo I.",
+    resposta:
+      "Impugnação acolhida parcialmente. O certame será suspenso para revisão do item 4.1 e posterior republicação do edital.",
+    novaResposta: true,
+    anexos: ["Impugnacao_Empresa_X.pdf", "Decisao_Pregoeiro_45-2026.pdf"],
     lida: true,
   },
   {
     id: "n5",
     edital: "45/2026",
+    categoria: "atualizacao",
     tipo: "documento",
     quando: "13/06/2026 às 18:20",
     titulo: "Novo anexo publicado: planilha de quantitativos",
@@ -449,8 +519,9 @@ export const NOTIFICACOES: Notificacao[] = [
 export const PROXIMAS_NOTIFICACOES: Omit<Notificacao, "id" | "lida">[] = [
   {
     edital: "45/2026",
+    categoria: "atualizacao",
     tipo: "status",
-    quando: "19/06/2026 às 10:08",
+    quando: "19/06/2026 às 11:48",
     titulo: "Licitação reaberta com novo edital",
     mudanca: { campo: "Status no portal", de: "Suspensa", para: "Aberta para participação" },
     impacto: "Reaberta após a suspensão. Confira o edital republicado antes do novo prazo.",
@@ -458,6 +529,7 @@ export const PROXIMAS_NOTIFICACOES: Omit<Notificacao, "id" | "lida">[] = [
   },
   {
     edital: "318/2026",
+    categoria: "atualizacao",
     tipo: "prazo",
     quando: "19/06/2026 às 10:31",
     titulo: "Data da disputa antecipada",
@@ -465,6 +537,7 @@ export const PROXIMAS_NOTIFICACOES: Omit<Notificacao, "id" | "lida">[] = [
   },
   {
     edital: "112/2026",
+    categoria: "atualizacao",
     tipo: "documento",
     quando: "19/06/2026 às 11:12",
     titulo: "Errata publicada no portal",
@@ -504,4 +577,36 @@ export const MOTIVOS_REVERSIVEIS: Record<string, string> = {
   "Documentação técnica restritiva/direcionado": "Uma impugnação pode levar à retificação do edital.",
   "Certificação que não temos": "Uma retificação pode flexibilizar a exigência.",
   "Valor abaixo do desejado": "O edital pode ser republicado com outro valor.",
+}
+
+/* ------------------------------------------------------------------ */
+/* Tempo relativo ("Há 18 minutos")                                    */
+/* ------------------------------------------------------------------ */
+
+/** "Agora" do protótipo. */
+export const AGORA = new Date(2026, 5, 19, 12, 0)
+
+export const lerQuando = (q: string) => {
+  const [data, hora] = q.split(" às ")
+  const [d, m, a] = data.split("/").map(Number)
+  const [h, min] = hora.split(":").map(Number)
+  return new Date(a, m - 1, d, h, min)
+}
+
+export function tempoRelativo(quando: string) {
+  const minutos = Math.max(0, Math.round((AGORA.getTime() - lerQuando(quando).getTime()) / 60000))
+  if (minutos < 1) return "Agora"
+  if (minutos < 60) return `Há ${minutos} ${minutos === 1 ? "minuto" : "minutos"}`
+  const horas = Math.floor(minutos / 60)
+  if (horas < 24) return `Há ${horas} ${horas === 1 ? "hora" : "horas"}`
+  const dias = Math.floor(horas / 24)
+  if (dias < 7) return dias === 1 ? "Ontem" : `Há ${dias} dias`
+  return quando.split(" às ")[0]
+}
+
+/** "PE 112/2026 · TJMG" */
+export function tituloDoEdital(l: Licitacao | undefined, edital: string) {
+  if (!l) return edital
+  const sigla = l.modalidade.startsWith("Pregão") ? "PE" : l.modalidade.startsWith("Concorrência") ? "CC" : ""
+  return `${sigla} ${edital} · ${l.orgaoCurto}`.trim()
 }

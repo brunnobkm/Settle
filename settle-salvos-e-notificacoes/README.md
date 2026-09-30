@@ -28,11 +28,32 @@ atualizações de editais descartados" (Design), pedido da Alice.
 - **Estado visível:** sino preenchido quando ligado; número sobre o sino com as não lidas.
 - Pode ser configurado ou desativado a qualquer momento, com Desfazer no aviso.
 
+### Padrão visual (Figma "Central de notificações")
+
+Base: arquivo Platform, página "Central de notificações" (node 923-13801): dialog e widget
+"Notificações do edital" e modal da mensagem completa. Aplicado no dropdown do sino e na central:
+- **Abas por categoria com contagem:** Todos · Atualizações · Avisos · Impugnações · Esclarecimentos.
+  "Atualizações" é a categoria nova (retificação, documento, prazo, status); as outras três vêm do Figma.
+- **Item:** selo do tipo, "Nova resposta" quando o pregoeiro respondeu, título "PE 112/2026 · TJMG"
+  (só na central; no dropdown o edital já é o contexto), mensagem truncada em 3 linhas,
+  **"Visualizar mensagem completa"** (abre o modal com mensagem, resposta do pregoeiro e anexos),
+  tempo relativo ("Há 18 minutos"). Bolinha vermelha = não lida; no hover, marcar como lida/não lida.
+- Para atualizações, o item mostra o campo com antes → agora e, na central, a leitura de impacto da IA.
+- Ordem: mais recentes primeiro.
+- **Estados:** carregando (esqueleto ao abrir), vazio ("Nenhuma notificação encontrada") e erro
+  ("Não foi possível carregar" + "Tentar novamente"). No protótipo, o seletor "Estado das
+  notificações" em Salvos força vazio ou erro.
+- **Cabeçalho da central:** "Notificações" + contador vermelho de não lidas, busca (edital, órgão,
+  texto), filtro (Só não lidas, Com resposta), marcar todas como lidas, preferências e fechar,
+  todos com tooltip.
+- O **widget** do Figma (lista embutida no módulo da licitação) corresponde ao sino no header da
+  licitação aberta: mesma lista, mesmo comportamento.
+
 ### Onde a notificação chega
 Toda atualização de uma licitação com sino ligado chega nos **dois lugares**:
 1. No **sino da licitação** (contador no card e no header da licitação).
-2. Na **central de notificações** (sino da navbar, com o total de não lidas): abas Não lidas e
-   Todas; cada item mostra tipo, edital, órgão, antes/agora, leitura de impacto da IA, documento
+2. Na **central de notificações** (sino da navbar, com o total de não lidas): abas por
+   categoria; cada item mostra tipo, edital, órgão, antes/agora, leitura de impacto da IA, documento
    novo, "Ver licitação" e marcar como lida/não lida. Pode filtrar
    por edital (chip removível).
 
