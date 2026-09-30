@@ -83,9 +83,13 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   descarte: acontece quando a licitação chega na etapa de saída. Por isso os **motivos de perda
   ficam na seção 5, Etapas do funil**, junto da etapa em que o resultado é registrado. As regras
   de lista (renomear, arquivar, pedir descrição) são as mesmas nos dois lugares.
-- Uma lista de motivos de descarte. Recomendação: unificar Recomendadas e Em andamento
-  por padrão (interruptor ligado) e permitir, desligando, escolher motivo a motivo em qual tela
-  ele aparece. Guarda-se sempre uma lista só; a diferença é um atributo do motivo.
+- **Uma lista só, e cada motivo diz onde aparece** (decisão de 30/09). Existia um interruptor
+  "Mesma lista em Recomendadas e Em andamento", ligado por padrão, que escondia as pílulas de
+  tela. Ele saiu: a escolha de tela agora está sempre visível em cada motivo, porque era uma
+  configuração a mais para chegar numa decisão que a pessoa toma motivo a motivo, e porque com
+  ele ligado ninguém descobria que dava para separar (a Larissa levantou isso no refine, e a
+  Alice sugeriu abrir com ele desligado; tirar resolve os dois). Guarda-se sempre uma lista só;
+  a tela é um atributo do motivo.
 - Um motivo precisa aparecer em pelo menos uma das telas.
 - **Só existe arquivar** (refine de 28/09). Não há excluir: a pessoa não precisa entender a
   diferença, e ninguém apaga um motivo de que o histórico depende. Motivo já usado sai das

@@ -59,8 +59,6 @@ type Estado = {
   setMotivos: Atualizar<Motivo[]>
   motivoTab: TipoMotivo
   setMotivoTab: Atualizar<TipoMotivo>
-  unificar: boolean
-  setUnificar: Atualizar<boolean>
   exigirMotivo: boolean
   setExigirMotivo: Atualizar<boolean>
   exigirMotivoPerda: boolean
@@ -116,7 +114,6 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const [etapas, setEtapas] = useState(ETAPAS)
   const [motivos, setMotivos] = useState(MOTIVOS)
   const [motivoTab, setMotivoTab] = useState<TipoMotivo>("descarte")
-  const [unificar, setUnificar] = useState(true)
   const [exigirMotivo, setExigirMotivo] = useState(true)
   // hoje a plataforma sempre exige motivo para registrar "Perdeu"; o switch é proposta nova
   const [exigirMotivoPerda, setExigirMotivoPerda] = useState(true)
@@ -165,8 +162,6 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       setMotivos,
       motivoTab,
       setMotivoTab,
-      unificar,
-      setUnificar,
       exigirMotivo,
       setExigirMotivo,
       exigirMotivoPerda,
@@ -196,7 +191,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (

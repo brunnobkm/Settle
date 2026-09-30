@@ -27,7 +27,7 @@ import { useConfig } from "./estado"
 import { ListaMotivos } from "./ListaMotivos"
 
 export function PaginaMotivos() {
-  const { setMotivos, unificar, setUnificar, exigirMotivo, setExigirMotivo, auditar } = useConfig()
+  const { setMotivos, exigirMotivo, setExigirMotivo, auditar } = useConfig()
 
   function alternarEscopo(x: Motivo, k: "rec" | "and") {
     if (x[k] && !(k === "rec" ? x.and : x.rec)) {
@@ -41,9 +41,10 @@ export function PaginaMotivos() {
   return (
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
-        Aqui você gerencia a lista de motivos que aparece para a pessoa quando ela descarta uma licitação em
-        Recomendadas ou Em andamento. O motivo escolhido fica na licitação: aparece no filtro de Descartadas e no
-        gráfico "Motivos de descarte" do dashboard. Por isso um motivo já usado é arquivado, nunca apagado.
+        Aqui você gerencia a lista de motivos que aparece quando alguém descarta uma licitação. Em cada motivo, as
+        pílulas dizem em quais telas ele aparece: Recomendadas, Em andamento ou nas duas. O motivo escolhido fica na
+        licitação, aparece no filtro de Descartadas e no gráfico "Motivos de descarte" do dashboard, e é por isso que
+        um motivo já usado é arquivado, nunca apagado.
       </Aviso>
 
       <SettingsSection>
@@ -65,26 +66,13 @@ export function PaginaMotivos() {
               }}
             />
           </SettingsRow>
-          <SettingsRow>
-            <SettingsRowContent>
-              <SettingsRowTitle id="t-unificar">Mesma lista em Recomendadas e Em andamento</SettingsRowTitle>
-              <SettingsRowDescription>Desligue para escolher, motivo a motivo, em qual das duas telas ele aparece.</SettingsRowDescription>
-            </SettingsRowContent>
-            <Switch
-              aria-labelledby="t-unificar"
-              checked={unificar}
-              onCheckedChange={(v) => {
-                setUnificar(v)
-                auditar("Motivos", v ? "Unificou as listas de descarte" : "Separou os motivos por tela")
-              }}
-            />
-          </SettingsRow>
         </SettingsBox>
       </SettingsSection>
 
       <SettingsPageDescription className="mb-2.5">
-        Marque <b className="font-semibold text-foreground">Pede descrição</b> nos motivos em que a pessoa precisa
-        explicar o porquê, como já acontece em Outros.
+        Em cada motivo, escolha as telas em que ele aparece e marque{" "}
+        <b className="font-semibold text-foreground">Pede descrição</b> quando a pessoa precisa explicar o porquê, como
+        já acontece em Outros.
       </SettingsPageDescription>
 
       <ListaMotivos
@@ -95,18 +83,17 @@ export function PaginaMotivos() {
         usoPassado="descartadas com este motivo"
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard"
         reservados={["Outros"]}
-        extras={(x) =>
-          !unificar && (
-            <div role="group" aria-label={`Onde "${x.nome}" aparece`} className="flex flex-none gap-1">
-              <Pilula pressed={x.rec} onPressedChange={() => alternarEscopo(x, "rec")}>
-                Recomendadas
-              </Pilula>
-              <Pilula pressed={x.and} onPressedChange={() => alternarEscopo(x, "and")}>
-                Em andamento
-              </Pilula>
-            </div>
-          )
-        }
+        extras={(x) => (
+          // sem chave de "mesma lista": cada motivo sempre diz em quais telas aparece
+          <div role="group" aria-label={`Onde "${x.nome}" aparece`} className="flex flex-none gap-1">
+            <Pilula pressed={x.rec} onPressedChange={() => alternarEscopo(x, "rec")}>
+              Recomendadas
+            </Pilula>
+            <Pilula pressed={x.and} onPressedChange={() => alternarEscopo(x, "and")}>
+              Em andamento
+            </Pilula>
+          </div>
+        )}
         fixo={
           <SettingsListItem id="outros" group="fixa" locked>
             <SettingsListName className="flex-none">Outros</SettingsListName>
