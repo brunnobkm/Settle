@@ -43,7 +43,8 @@ import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
 import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
-import { CentralDeNotificacoes, type AbaDaCentral } from "./CentralDeNotificacoes"
+import { CentralDeNotificacoes } from "./CentralDeNotificacoes"
+import type { EstadoDaLista } from "./ListaDeNotificacoes"
 import { DialogoDeDescarte } from "./DialogoDeDescarte"
 import { SinoDaLicitacao } from "./SinoDaLicitacao"
 import {
@@ -108,7 +109,7 @@ export default function App() {
   // central de notificações
   const [notificacoes, setNotificacoes] = useState(NOTIFICACOES)
   const [centralAberta, setCentralAberta] = useState(false)
-  const [abaCentral, setAbaCentral] = useState<AbaDaCentral>("nao-lidas")
+  const [estadoProto, setEstadoProto] = useState<EstadoDaLista>("normal")
   const [filtroEdital, setFiltroEdital] = useState<string | null>(null)
   const proxima = useRef(0)
   const [selecionadas, setSelecionadas] = useState<string[]>([])
@@ -402,8 +403,6 @@ export default function App() {
 
   function abrirCentral(edital: string | null = null) {
     setFiltroEdital(edital)
-    setAbaCentral(edital || totalNaoLidas ? "nao-lidas" : "todas")
-    if (edital && !naoLidasDe(edital)) setAbaCentral("todas")
     setCentralAberta(true)
   }
 
@@ -529,6 +528,8 @@ export default function App() {
               guardadas: salvas.filter(FILTRO_SALVOS.guardadas).length,
             }}
             onSimular={simularAtualizacao}
+            estado={estadoProto}
+            onEstado={setEstadoProto}
           />
         ) : (
         /* barra sticky: gruda logo abaixo da navbar e sobe junto quando ela se esconde */
@@ -700,6 +701,8 @@ export default function App() {
         onFechar={fecharSino}
         onAtivar={(tipos) => editandoLicitacao && ativarNotificacoes(editandoLicitacao, tipos)}
         onDesativar={() => editandoLicitacao && desativarNotificacoes(editandoLicitacao)}
+        estado={estadoProto}
+        onLida={marcarLida}
       />
 
       <DialogoDeDescarte
@@ -715,8 +718,7 @@ export default function App() {
         onAbertaChange={setCentralAberta}
         notificacoes={notificacoes}
         licitacoes={licitacoes}
-        aba={abaCentral}
-        onAba={setAbaCentral}
+        estado={estadoProto}
         filtroEdital={filtroEdital}
         onLimparFiltro={() => setFiltroEdital(null)}
         onLida={marcarLida}
@@ -936,11 +938,15 @@ function BarraDeSalvos({
   onAba,
   contagens,
   onSimular,
+  estado,
+  onEstado,
 }: {
   aba: AbaDeSalvos
   onAba: (aba: AbaDeSalvos) => void
   contagens: Record<AbaDeSalvos, number>
   onSimular: () => void
+  estado: EstadoDaLista
+  onEstado: (e: EstadoDaLista) => void
 }) {
   const ABAS: { valor: AbaDeSalvos; rotulo: string }[] = [
     { valor: "todas", rotulo: "Todas" },
@@ -960,6 +966,19 @@ function BarraDeSalvos({
           ))}
         </TabsList>
       </Tabs>
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        Estado das notificações
+        <select
+          value={estado}
+          onChange={(e) => onEstado(e.target.value as EstadoDaLista)}
+          className="h-8 rounded-md border bg-background px-2 text-[13px] text-foreground"
+        >
+          <option value="normal">Normal</option>
+          <option value="vazio">Vazio</option>
+          <option value="erro">Erro</option>
+        </select>
+      </label>
       <Button variant="outline" size="sm" className="shadow-none" onClick={onSimular}>
         <RadioTowerIcon data-icon="inline-start" />
         Simular atualização do portal
@@ -967,6 +986,7 @@ function BarraDeSalvos({
           Protótipo
         </Badge>
       </Button>
+      </div>
     </div>
   )
 }

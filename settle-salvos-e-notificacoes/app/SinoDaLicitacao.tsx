@@ -7,15 +7,14 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowLeftIcon, BellOffIcon, SettingsIcon } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+import { ListaDeNotificacoes, type EstadoDaLista } from "./ListaDeNotificacoes"
 import {
-  ROTULO_CURTO,
   TIPOS_DE_ATUALIZACAO,
   TODOS_OS_TIPOS,
   type Licitacao,
@@ -31,6 +30,8 @@ export function SinoDaLicitacao({
   onFechar,
   onAtivar,
   onDesativar,
+  estado,
+  onLida,
 }: {
   aberto: boolean
   /** Continua preenchida depois de fechar, para a animação de saída. */
@@ -42,6 +43,8 @@ export function SinoDaLicitacao({
   onFechar: (lidas: string[]) => void
   onAtivar: (tipos: TipoAtualizacao[]) => void
   onDesativar: () => void
+  estado: EstadoDaLista
+  onLida: (id: string, lida: boolean) => void
 }) {
   const ancoraRef = useRef<HTMLElement | null>(null)
   ancoraRef.current = ancora
@@ -49,10 +52,19 @@ export function SinoDaLicitacao({
   const ligado = !!licitacao?.alertas.length
   const [configurando, setConfigurando] = useState(false)
   const [tipos, setTipos] = useState<TipoAtualizacao[]>(TODOS_OS_TIPOS)
+  const [carregando, setCarregando] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+
+  function carregar() {
+    window.clearTimeout(timer.current)
+    setCarregando(true)
+    timer.current = window.setTimeout(() => setCarregando(false), 450)
+  }
 
   useEffect(() => {
     if (!licitacao || !aberto) return
     setConfigurando(!licitacao.alertas.length) // primeiro clique: configurar
+    if (licitacao.alertas.length) carregar()
     setTipos(licitacao.alertas.length ? licitacao.alertas : TODOS_OS_TIPOS)
   }, [aberto, licitacao?.edital]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -61,7 +73,7 @@ export function SinoDaLicitacao({
   return (
     <Popover open={aberto && !!licitacao} onOpenChange={(abrir) => !abrir && fechar()}>
       <PopoverAnchor virtualRef={ancoraRef as React.RefObject<HTMLElement>} />
-      <PopoverContent align="end" className="w-96 gap-0 p-0">
+      <PopoverContent align="end" className="w-100 gap-0 p-0">
         {licitacao &&
           (configurando ? (
             <Configuracao
@@ -81,6 +93,10 @@ export function SinoDaLicitacao({
               notificacoes={notificacoes}
               onConfigurar={() => setConfigurando(true)}
               onDesativar={onDesativar}
+              carregando={carregando}
+              estado={estado}
+              onTentarNovamente={carregar}
+              onLida={onLida}
             />
           ))}
       </PopoverContent>
@@ -180,17 +196,26 @@ function Configuracao({
 }
 
 function ListaDaLicitacao({
+  licitacao,
   notificacoes,
   onConfigurar,
   onDesativar,
+  carregando,
+  estado,
+  onTentarNovamente,
+  onLida,
 }: {
   licitacao: Licitacao
   notificacoes: Notificacao[]
   onConfigurar: () => void
   onDesativar: () => void
+  carregando: boolean
+  estado: EstadoDaLista
+  onTentarNovamente: () => void
+  onLida: (id: string, lida: boolean) => void
 }) {
   return (
-    <div>
+    <div className="flex flex-col">
       <div className="flex items-center gap-1 border-b py-2 pr-2 pl-4">
         <h2 className="flex-1 text-sm font-semibold">Notificações do edital</h2>
         <AcaoComDica dica="Configurar notificações" onClick={onConfigurar}>
@@ -200,41 +225,16 @@ function ListaDaLicitacao({
           <BellOffIcon />
         </AcaoComDica>
       </div>
-
-      {notificacoes.length ? (
-        <ul className="max-h-90 divide-y overflow-y-auto">
-          {notificacoes.map((n) => (
-            <li key={n.id} className="px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                {!n.lida && (
-                  <span className="size-2 shrink-0 rounded-full bg-destructive" title="Não lida">
-                    <span className="sr-only">Não lida</span>
-                  </span>
-                )}
-                <Badge
-                  variant={n.tipo === "retificacao" || n.tipo === "status" ? "warning" : "secondary"}
-                  className="h-5 rounded-md text-[11px]"
-                >
-                  {ROTULO_CURTO[n.tipo]}
-                </Badge>
-                <span className="ml-auto text-xs text-muted-foreground tabular-nums">{n.quando}</span>
-              </div>
-              <p className="mt-1 text-[13px] font-medium">{n.titulo}</p>
-              {n.mudanca && (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {n.mudanca.campo}: <span className="line-through">{n.mudanca.de}</span> →{" "}
-                  <span className="font-medium text-foreground">{n.mudanca.para}</span>
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
-          Nenhuma atualização ainda. Você será avisado quando o portal publicar mudanças.
-        </p>
-      )}
-
+      <ListaDeNotificacoes
+        compacta
+        notificacoes={notificacoes}
+        licitacoes={[licitacao]}
+        carregando={carregando}
+        estado={estado}
+        vazio="Nenhuma notificação ainda. Você será avisado quando o portal publicar mudanças."
+        onTentarNovamente={onTentarNovamente}
+        onLida={onLida}
+      />
     </div>
   )
 }
