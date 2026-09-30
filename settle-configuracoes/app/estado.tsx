@@ -16,7 +16,7 @@ import {
 import {
   ABAS,
   AUDITORIA,
-  CAMPOS,
+  camposDaTela,
   COLUNAS_ITENS,
   EMAIL_ASSUNTO,
   EMAIL_CORPO,
@@ -25,6 +25,7 @@ import {
   agora,
   type Aba,
   type Campo,
+  type TelaDoCard,
   type ColunaItem,
   type Etapa,
   type Motivo,
@@ -73,6 +74,8 @@ type Estado = {
   setAbaPrev: Atualizar<Partial<Record<TelaAba, string>>>
 
   campos: Campo[]
+  telaDoCard: TelaDoCard
+  setTelaDoCard: Atualizar<TelaDoCard>
   colunasItens: ColunaItem[]
   setColunasItens: Atualizar<ColunaItem[]>
   /** A tabela de itens vem antes das caixas de datas e propriedades. */
@@ -120,7 +123,19 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const [abas, setAbas] = useState(ABAS)
   const [abaTela, setAbaTela] = useState<TelaAba>("recomendadas")
   const [abaPrev, setAbaPrev] = useState<Partial<Record<TelaAba, string>>>({})
-  const [campos, setCampos] = useState(CAMPOS)
+  // cada tela tem a sua configuração de card; `campos` é sempre a da tela aberta
+  const [telaDoCard, setTelaDoCard] = useState<TelaDoCard>("recomendadas")
+  const [camposPorTela, setCamposPorTela] = useState<Record<TelaDoCard, Campo[]>>({
+    recomendadas: camposDaTela("recomendadas"),
+    andamento: camposDaTela("andamento"),
+    workspace: camposDaTela("workspace"),
+  })
+  const campos = camposPorTela[telaDoCard]
+  const setCampos: Atualizar<Campo[]> = (valor) =>
+    setCamposPorTela((m) => ({
+      ...m,
+      [telaDoCard]: typeof valor === "function" ? (valor as (a: Campo[]) => Campo[])(m[telaDoCard]) : valor,
+    }))
   const [colunasItens, setColunasItens] = useState(COLUNAS_ITENS)
   const [tabelaNoTopo, setTabelaNoTopo] = useState(false)
   const [maxItens, setMaxItens] = useState(5)
@@ -164,6 +179,8 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       setAbaPrev,
       campos,
       setCampos,
+      telaDoCard,
+      setTelaDoCard,
       colunasItens,
       setColunasItens,
       tabelaNoTopo,
@@ -179,7 +196,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, unificar, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (

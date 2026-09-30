@@ -16,9 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   SettingsBox,
@@ -71,18 +69,12 @@ export function useFocoNoNome() {
 }
 
 export function PaginaEtapas() {
-  const { etapas, setEtapas, motivos, exigirMotivoPerda, setExigirMotivoPerda, auditar, desauditar } = useConfig()
+  const { etapas, setEtapas, exigirMotivoPerda, setExigirMotivoPerda, auditar, desauditar } = useConfig()
   const focar = useFocoNoNome()
   // a etapa continua guardada depois de fechar, para o diálogo sair animado com o conteúdo
   const [remocao, setRemocao] = useState<Etapa | null>(null)
   const [confirmando, setConfirmando] = useState(false)
   const [destino, setDestino] = useState("")
-  // quando o destino é a última etapa, a remoção também registra o resultado das licitações,
-  // do mesmo jeito que o registro em lote de Em andamento: um resultado para todas
-  const [resultado, setResultado] = useState<"ganhou" | "perdeu">("ganhou")
-  const [motivoPerda, setMotivoPerda] = useState("")
-  const [comentario, setComentario] = useState("")
-  const [erroMotivo, setErroMotivo] = useState(false)
 
   function renomear(e: Etapa, v: string) {
     if (etapas.some((x) => x.id !== e.id && x.nome.toLowerCase() === v.toLowerCase())) {
@@ -116,25 +108,10 @@ export function PaginaEtapas() {
   function aplicarRemocao(e: Etapa, destinoId: string | null) {
     const antes = etapas
     const d = destinoId ? etapas.find((x) => x.id === destinoId) : undefined
-    const registra = d?.tipo === "saida" && e.qtd > 0
-    const comoFicam = registra
-      ? resultado === "ganhou"
-        ? "Ganhou"
-        : `Perdeu${motivoPerda ? `, motivo "${nomeDoMotivo(motivoPerda)}"` : " sem motivo"}`
-      : ""
     setEtapas((l) => l.filter((x) => x.id !== e.id).map((x) => (d && x.id === d.id ? { ...x, qtd: x.qtd + e.qtd } : x)))
-    auditar(
-      "Etapas do funil",
-      `Removeu "${e.nome}"` +
-        (d && e.qtd ? `, ${e.qtd} licitações movidas para "${d.nome}"` : "") +
-        (registra ? ` e registradas como ${comoFicam}` : "")
-    )
+    auditar("Etapas do funil", `Removeu "${e.nome}"` + (d && e.qtd ? `, ${e.qtd} licitações movidas para "${d.nome}"` : ""))
     avisarComDesfazer(
-      registra
-        ? `Etapa removida. ${fmt(e.qtd)} licitações foram para ${d!.nome} como ${comoFicam}`
-        : d && e.qtd
-          ? `Etapa removida. ${fmt(e.qtd)} licitações foram para ${d.nome}`
-          : "Etapa removida",
+      d && e.qtd ? `Etapa removida. ${fmt(e.qtd)} licitações foram para ${d.nome}` : "Etapa removida",
       () => {
         setEtapas(antes)
         desauditar()
@@ -145,21 +122,12 @@ export function PaginaEtapas() {
   function remover(e: Etapa) {
     // padrão: a etapa anterior
     const i = etapas.indexOf(e)
-    setDestino(etapas[i - 1]?.id ?? etapas.find((x) => x.id !== e.id)!.id)
-    setResultado("ganhou")
-    setMotivoPerda("")
-    setComentario("")
-    setErroMotivo(false)
+    setDestino(etapas[i - 1]?.id ?? etapas.find((x) => x.id !== e.id && x.tipo !== "saida")!.id)
     setRemocao(e)
     setConfirmando(true)
   }
 
   const etapaSaida = etapas.find((x) => x.tipo === "saida")
-  const motivosDePerda = motivos.filter((m) => m.tipo === "perda" && !m.arq)
-  const nomeDoMotivo = (id: string) => motivos.find((m) => m.id === id)?.nome ?? ""
-  // destino é a última etapa: a remoção precisa registrar o resultado junto
-  const vaiRegistrar = !!remocao && remocao.qtd > 0 && destino === etapaSaida?.id
-  const faltaMotivo = vaiRegistrar && resultado === "perdeu" && !motivoPerda && exigirMotivoPerda
 
   const pedido: PedidoDeConfirmacao | null = !confirmando || !remocao ? null : remocao.qtd
     ? {
@@ -167,19 +135,12 @@ export function PaginaEtapas() {
         corpo: (
           <p>
             {fmt(remocao.qtd)} {remocao.qtd === 1 ? "licitação está" : "licitações estão"} nesta etapa. Escolha para onde{" "}
-            {remocao.qtd === 1 ? "ela vai" : "elas vão"}. Responsável, substatus e descrição continuam iguais.
+            {remocao.qtd === 1 ? "ela vai" : "elas vão"}. Os demais campos continuam iguais.
           </p>
         ),
-        acao: vaiRegistrar ? "Remover e registrar" : "Remover e mover",
+        acao: "Remover e mover",
         perigo: true,
-        ok: () => {
-          if (faltaMotivo) {
-            setErroMotivo(true)
-            toast.error(`Selecione um motivo para registrar o resultado como "Perdeu a licitação".`)
-            return false
-          }
-          aplicarRemocao(remocao, destino)
-        },
+        ok: () => aplicarRemocao(remocao, destino),
       }
     : {
         titulo: `Remover "${remocao.nome}"?`,
@@ -322,7 +283,7 @@ export function PaginaEtapas() {
               Mover licitações para
               <NativeSelect value={destino} onChange={(ev) => setDestino(ev.target.value)} className="w-full font-normal">
                 {etapas
-                  .filter((x) => x.id !== remocao.id)
+                  .filter((x) => x.id !== remocao.id && x.tipo !== "saida")
                   .map((x) => (
                     <NativeSelectOption key={x.id} value={x.id}>
                       {x.nome}
@@ -332,73 +293,10 @@ export function PaginaEtapas() {
               </NativeSelect>
             </label>
 
-            {vaiRegistrar && (
-              <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-muted/40 p-3">
-                <p className="text-[13px] font-semibold">
-                  Resultado {remocao.qtd === 1 ? "desta licitação" : `destas ${fmt(remocao.qtd)} licitações`}
-                </p>
-                <p className="text-[12.5px] leading-[19px] text-muted-foreground">
-                  Em {etapaSaida?.nome} toda licitação precisa ter um resultado de conclusão.{" "}
-                  {remocao.qtd === 1
-                    ? "Para mover esta licitação, escolha uma das opções abaixo."
-                    : `Para mover as ${fmt(remocao.qtd)}, escolha uma das opções abaixo: a mesma vale para todas.`}
-                </p>
-                <RadioGroup
-                  value={resultado}
-                  onValueChange={(v) => {
-                    setResultado(v as "ganhou" | "perdeu")
-                    setMotivoPerda("")
-                    setComentario("")
-                  }}
-                  className="gap-2"
-                >
-                  <label className="flex items-center gap-2 text-[13px]">
-                    <RadioGroupItem value="ganhou" /> Ganhou a licitação
-                  </label>
-                  <label className="flex items-center gap-2 text-[13px]">
-                    <RadioGroupItem value="perdeu" /> Perdeu a licitação
-                  </label>
-                </RadioGroup>
-                {resultado === "perdeu" && (
-                  <>
-                    <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
-                      Motivo da perda
-                      <NativeSelect
-                        value={motivoPerda}
-                        onChange={(ev) => {
-                          setMotivoPerda(ev.target.value)
-                          setErroMotivo(false)
-                        }}
-                        aria-invalid={erroMotivo}
-                        aria-describedby={erroMotivo ? "erro-motivo" : undefined}
-                        className="w-full font-normal"
-                      >
-                        <NativeSelectOption value="">
-                          {exigirMotivoPerda ? "Selecione um motivo" : "Sem motivo"}
-                        </NativeSelectOption>
-                        {motivosDePerda.map((m) => (
-                          <NativeSelectOption key={m.id} value={m.id}>
-                            {m.nome}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
-                      {erroMotivo && (
-                        <span id="erro-motivo" role="alert" className="text-[12.5px] font-normal text-destructive">
-                          Selecione um motivo para registrar o resultado como "Perdeu a licitação".
-                        </span>
-                      )}
-                    </label>
-                    <Textarea
-                      value={comentario}
-                      onChange={(ev) => setComentario(ev.target.value)}
-                      aria-label="Comentário"
-                      placeholder="Adicione um comentário opcional"
-                      className="min-h-20 resize-none"
-                    />
-                  </>
-                )}
-              </div>
-            )}
+            <p className="text-[12.5px] leading-[19px] text-muted-foreground">
+              {etapaSaida?.nome} não entra na lista: lá o resultado é informado licitação por licitação, então não dá
+              para mandar um lote de uma vez.
+            </p>
           </div>
         )}
       </Confirmacao>

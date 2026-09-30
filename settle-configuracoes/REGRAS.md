@@ -87,10 +87,16 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   por padrão (interruptor ligado) e permitir, desligando, escolher motivo a motivo em qual tela
   ele aparece. Guarda-se sempre uma lista só; a diferença é um atributo do motivo.
 - Um motivo precisa aparecer em pelo menos uma das telas.
-- **Motivo já usado é arquivado, nunca excluído.** Sai das novas escolhas, continua nas
-  licitações que o usaram, no filtro de Descartadas e no dashboard. Pode ser restaurado.
-- Motivo nunca usado pode ser excluído. Como toda exclusão da plataforma, passa por um
-  diálogo de confirmação, e depois ainda tem desfazer no aviso.
+- **Só existe arquivar** (refine de 28/09). Não há excluir: a pessoa não precisa entender a
+  diferença, e ninguém apaga um motivo de que o histórico depende. Motivo já usado sai das
+  novas escolhas, continua nas licitações que o usaram, no filtro de Descartadas e no
+  dashboard, e pode ser restaurado.
+- **Arquivado sem nenhuma licitação não aparece em Arquivados.** Não há histórico a preservar,
+  então some da tela: na prática é o antigo excluir, sem o nome e sem a explicação. O aviso com
+  Desfazer continua, para o caso de engano. Acima da lista de Arquivados fica escrito que ali
+  só estão os motivos que já têm licitação.
+- O diálogo de confirmação muda conforme o caso: com licitações, explica que elas continuam
+  como estão; sem nenhuma, diz que nada se perde e que ele não fica guardado.
 - **Nome repetido é recusado**, como já acontece em abas e etapas: o campo volta ao valor
   anterior e explica no aviso. Vale contra os motivos ativos, contra os arquivados ("Restaure
   X em Arquivados") e contra "Outros", que é da plataforma. Motivo novo já nasce com nome
@@ -192,6 +198,13 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   visão por cima do padrão (o Linear faz isso por view). Recomendo começar só com o padrão
   da organização.
 - **Em aberto:** Em andamento e Descartadas herdam essa configuração ou têm a sua?
+
+**Três cards, três configurações.** O mesmo módulo aparece na lista de Recomendadas, na de Em
+andamento e dentro da licitação (o workspace), e cada um guarda a sua configuração. A troca fica
+numa barra dentro da própria tela, não numa aba nova na navegação: era o pedido da Alice, para a
+área não virar uma tela por lugar. Dentro da licitação o card não tem a primeira linha, porque
+as ações ficam no cabeçalho da página; por isso lá a lista não mostra as peças do topo.
+"Restaurar padrão" vale só para a tela aberta.
 
 **A pré-visualização usa um edital fixo**, o mais completo da lista de exemplo (dois
 segmentos, ME-EPP, itens em lotes e uma variável sem valor). Não há seletor de edital: a tela
@@ -348,15 +361,13 @@ Casos que podem dar problema, e a regra proposta:
    segundos. Etapa vazia também passa pela confirmação, só sem a escolha de destino.
 2. **Mover por remoção para a Entrada.** Não roda os agentes de novo. Agente só dispara em
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
-3. **Remover mandando as licitações para a última etapa: o diálogo registra o resultado.**
-   Conferido no bundle `workflow` (`useBiddings.updateBiddingStage`): mover para Resultados
-   Finais **sempre** abre o diálogo "Resultado da Licitação", e o que é gravado é
-   `FINAL_RESULTS_WON` ou `FINAL_RESULTS_LOST`; não há caminho que ponha uma licitação lá sem
-   resultado, e de lá ela **não volta** ("Licitações em 'Resultados Finais' não podem ser
-   movidas"). O mesmo diálogo já serve à seleção múltipla ("Informe o resultado para N
-   licitações"), com **um resultado para todas**. A remoção de etapa segue esse precedente:
-   escolhido o destino de saída, o diálogo mostra Ganhou/Perdeu, o motivo (quando Perdeu) e um
-   comentário opcional, e a ação vira "Remover e registrar".
+3. **A última etapa não entra na lista de destinos** (refine de 28/09). Chegar em Resultados
+   Finais exige informar o resultado, e cada licitação pode ter o seu: mandar um lote com um
+   resultado só seria errado, e listar uma a uma dentro da remoção não se sustenta ("imagina,
+   tem 40 licitações"). O diálogo explica por que ela não está lá. Quem precisa fechar essas
+   licitações usa o registro em lote de Em andamento, que já existe. Conferido no bundle
+   `workflow` (`useBiddings.updateBiddingStage`): mover para Resultados Finais **sempre** abre o
+   diálogo "Resultado da Licitação", e de lá a licitação **não volta**.
 4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
    tema). A cor é só visual, para reconhecer a etapa em Em andamento: nada depende dela,
    e duas etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio. Hoje as cores

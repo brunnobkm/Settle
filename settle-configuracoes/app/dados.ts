@@ -352,6 +352,22 @@ export type Campo = {
   origem?: OrigemVar
 }
 
+/**
+ * O mesmo módulo de card aparece em três lugares, e cada um tem a sua configuração: na lista
+ * de Recomendadas, na de Em andamento e dentro da licitação (o workspace). Lá dentro as ações
+ * ficam no cabeçalho da página, então o card não tem a primeira linha.
+ */
+export type TelaDoCard = "recomendadas" | "andamento" | "workspace"
+
+export const TELAS_DO_CARD: [TelaDoCard, string][] = [
+  ["recomendadas", "Recomendadas"],
+  ["andamento", "Em andamento"],
+  ["workspace", "Dentro da licitação"],
+]
+
+export const camposDaTela = (tela: TelaDoCard) =>
+  tela === "workspace" ? CAMPOS.filter((c) => c.f !== "topo") : CAMPOS
+
 export const CAMPOS: Campo[] = [
   { fixo: true, sempre: true, id: "selecao", nome: "Seleção do card", f: "topo", on: true },
   { fixo: true, id: "edital", nome: "Número do edital", f: "topo", on: true },

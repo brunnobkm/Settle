@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react"
 import { toast } from "sonner"
-import { ArchiveIcon, Trash2Icon } from "lucide-react"
+import { ArchiveIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -63,7 +63,8 @@ export function ListaMotivos({
   const focar = useFocoNoNome()
 
   const lista = motivos.filter((x) => x.tipo === tipo && !x.arq)
-  const arquivados = motivos.filter((x) => x.tipo === tipo && x.arq)
+  // arquivado sem nenhuma licitação não aparece: não há histórico para preservar
+  const arquivados = motivos.filter((x) => x.tipo === tipo && x.arq && x.uso > 0)
   const atualizar = (id: string, f: (m: Motivo) => Motivo) => setMotivos((l) => l.map((x) => (x.id === id ? f(x) : x)))
 
   /** Devolve a mensagem do conflito, ou undefined quando o nome está livre. */
@@ -98,32 +99,19 @@ export function ListaMotivos({
     toast(x.uso ? `Nome salvo. As ${fmt(x.uso)} licitações com este motivo passam a mostrar o novo nome` : "Nome salvo")
   }
 
+  /**
+   * Só existe arquivar (decisão do refine de 28/09). Quem nunca foi usado some da lista e não
+   * aparece em Arquivados, porque não há nada a preservar; quem já foi usado fica lá para
+   * restaurar. Para a pessoa, é uma ação só, e ninguém precisa entender a diferença.
+   */
   function tirar(x: Motivo) {
     if (bloquearUltimo && lista.length === 1) {
       toast(bloquearUltimo)
       return
     }
-    if (!x.uso) {
-      confirmar({
-        titulo: `Excluir "${x.nome}"?`,
-        corpo: <p>Ele sai da lista para novos {acao}. Como nunca foi usado, nada se perde: nenhuma licitação fica sem motivo.</p>,
-        acao: "Excluir motivo",
-        perigo: true,
-        ok: () => {
-          const i = motivos.indexOf(x)
-          setMotivos((l) => l.filter((m) => m.id !== x.id))
-          auditar(area, `Excluiu "${x.nome}"`)
-          avisarComDesfazer("Motivo excluído", () => {
-            setMotivos((l) => [...l.slice(0, i), x, ...l.slice(i)])
-            desauditar()
-          })
-        },
-      })
-      return
-    }
     confirmar({
       titulo: `Arquivar "${x.nome}"?`,
-      corpo: (
+      corpo: x.uso ? (
         <>
           <p>Ele deixa de aparecer na lista para novos {acao}.</p>
           <p>
@@ -131,12 +119,21 @@ export function ListaMotivos({
             aparecendo {onde}. Dá para restaurar o motivo quando quiser.
           </p>
         </>
+      ) : (
+        <p>
+          Ele deixa de aparecer na lista para novos {acao}. Como nenhuma licitação usou este motivo, nada se perde e ele
+          não fica guardado em Arquivados.
+        </p>
       ),
       acao: "Arquivar",
       ok: () => {
+        const antes = motivos
         atualizar(x.id, (m) => ({ ...m, arq: true }))
         auditar(area, `Arquivou "${x.nome}"`)
-        toast("Motivo arquivado")
+        avisarComDesfazer("Motivo arquivado", () => {
+          setMotivos(antes)
+          desauditar()
+        })
       },
     })
   }
@@ -187,16 +184,16 @@ export function ListaMotivos({
               <MetaComDica dica={dicaUso}>{x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}</MetaComDica>
               <SettingsListItemActions>
                 <BotaoIcone
-                  rotulo={`${x.uso ? "Arquivar" : "Excluir"} ${x.nome}`}
+                  rotulo={`Arquivar ${x.nome}`}
                   dica={
                     x.uso
-                      ? `Não dá para excluir: ${fmt(x.uso)} licitações já foram ${usoPassado} e perderiam esse registro. Arquivar só tira o motivo da lista de opções, sem mexer nelas.`
-                      : "Dá para excluir: nenhuma licitação usou este motivo, então nada se perde."
+                      ? `Arquivar: sai da lista de opções, e as ${fmt(x.uso)} licitações ${usoPassado} continuam com ele.`
+                      : "Arquivar: sai da lista de opções. Como nenhuma licitação usou, nada fica guardado."
                   }
                   perigo
                   onClick={() => tirar(x)}
                 >
-                  {x.uso ? <ArchiveIcon /> : <Trash2Icon />}
+                  <ArchiveIcon />
                 </BotaoIcone>
               </SettingsListItemActions>
             </SettingsListItem>
@@ -210,8 +207,8 @@ export function ListaMotivos({
         <SettingsSection className="mt-6">
           <SettingsSectionTitle>Arquivados</SettingsSectionTitle>
           <SettingsSectionDescription>
-            Não aparecem na lista para novos {acao}, mas continuam valendo no que já aconteceu: as licitações {usoPassado}
-            seguem com eles, e seguem aparecendo {onde}.
+            Aqui ficam só os motivos que já têm licitação. Eles não aparecem na lista para novos {acao}, mas continuam
+            valendo no que já aconteceu: as licitações {usoPassado} seguem com eles, e seguem aparecendo {onde}.
           </SettingsSectionDescription>
           <SettingsBox>
             <SettingsList>
