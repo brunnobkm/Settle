@@ -195,13 +195,19 @@ export function SeloDeOrigem({ origem }: { origem: OrigemVar }) {
  */
 export function ListaDeVariaveis({
   excluir = [],
+  variaveis = VARS,
   onEscolher,
+  onCriar,
 }: {
   excluir?: string[]
+  /** Catálogo a listar. Campos da licitação passa o catálogo real de Variáveis. */
+  variaveis?: Variavel[]
   onEscolher: (v: Variavel) => void
+  /** O que fazer em "Criar variável". Sem isso, vai para a página de Variáveis. */
+  onCriar?: () => void
 }) {
   const grupo = (origem: OrigemVar, titulo: string) => {
-    const vs = VARS.filter((v) => v.o === origem && !excluir.includes(v.k))
+    const vs = variaveis.filter((v) => v.o === origem && !excluir.includes(v.k))
     if (!vs.length) return null
     return (
       <CommandGroup heading={titulo} className="**:[[cmdk-group-heading]]:text-[11px] **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:tracking-wide **:[[cmdk-group-heading]]:uppercase">
@@ -234,7 +240,10 @@ export function ListaDeVariaveis({
           <CommandItem
             forceMount
             value="Criar variável"
-            onSelect={() => (window.location.hash = "variaveis?nova=1")}
+            // adiado pelo mesmo motivo do item de variável: o Enter não pode vazar para o gatilho
+            onSelect={() =>
+              window.setTimeout(() => (onCriar ? onCriar() : (window.location.hash = "variaveis?nova=1")), 0)
+            }
             className="font-semibold text-primary data-selected:text-primary"
           >
             Criar variável

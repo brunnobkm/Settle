@@ -16,11 +16,12 @@ import {
   ArrowDownIcon,
   BookmarkIcon,
   CheckIcon,
-  ExternalLinkIcon,
   FolderIcon,
   GaugeIcon,
   GlobeIcon,
   Link2Icon,
+  MessageSquareIcon,
+  PencilIcon,
   PlusIcon,
   Share2Icon,
   Trash2Icon,
@@ -49,6 +50,7 @@ import {
 } from "@/components/ui/licitacao-card"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -68,6 +70,8 @@ import {
 } from "@/components/ui/settings-list"
 
 import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
+import { FORMATO_VAR } from "./agentes/dados"
+import { useAgentes } from "./agentes/estado"
 import {
   BLOCO_DE_ITENS,
   camposDaTela,
@@ -87,11 +91,20 @@ import {
   type TipoDeCampo,
   type ItemLic,
   type FormatoCampo,
+  type Variavel,
 } from "./dados"
 import { useConfig } from "./estado"
 
 export function PaginaCard() {
   const { campos, setCampos, maxItens, setMaxItens, telaDoCard, setTelaDoCard, auditar, confirmar } = useConfig()
+  // as variáveis do card são as mesmas de Variáveis: é lá que elas são criadas e editadas
+  const { cfg, abrirModal } = useAgentes()
+  const catalogo: Variavel[] = Object.entries(cfg.vars).map(([k, v]) => ({
+    k,
+    n: v.nome,
+    o: v.settle ? "settle" : "minha",
+    tipo: FORMATO_VAR[v.tipo].t.toLowerCase(),
+  }))
   const [menuAberto, setMenuAberto] = useState(false)
   const [novaAberta, setNovaAberta] = useState(false)
   const [nomeNovo, setNomeNovo] = useState("")
@@ -131,9 +144,43 @@ export function PaginaCard() {
     auditar("Campos da licitação", `${on ? "Mostrou" : "Ocultou"} "${c.nome}"`)
   }
 
+  /**
+   * Tirar do card é diferente de excluir: a variável continua existindo em Variáveis e a
+   * propriedade continua com o que já foi preenchido. O diálogo diz isso, porque tirar um
+   * campo do card muda a tela de todo mundo da organização.
+   */
   function tirar(c: Campo) {
-    setCampos((l) => l.filter((x) => x.id !== c.id))
-    auditar("Campos da licitação", `Tirou a variável "${c.nome}" do card`)
+    const ondeAparece = TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]
+    confirmar({
+      titulo: `Tirar "${c.nome}" do card?`,
+      corpo: c.propria ? (
+        <>
+          <p>
+            Ela some do card de {ondeAparece} para todas as pessoas da organização, e ninguém preenche mais esse campo
+            por aqui.
+          </p>
+          <p>
+            O que já foi preenchido continua guardado na licitação e volta a aparecer se você puser a propriedade no
+            card de novo.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>Ela some do card de {ondeAparece} para todas as pessoas da organização.</p>
+          <p>
+            A variável continua existindo em Variáveis, continua sendo buscada no edital e continua disponível em
+            Filtrar e Ordenar. Para parar de buscá-la, é em Variáveis que se mexe.
+          </p>
+        </>
+      ),
+      acao: "Tirar do card",
+      perigo: true,
+      ok: () => {
+        setCampos((l) => l.filter((x) => x.id !== c.id))
+        auditar("Campos da licitação", `Tirou "${c.nome}" do card de ${ondeAparece}`)
+        toast(`${c.nome} saiu do card`)
+      },
+    })
   }
 
   /** Campo criado aqui mesmo: não vem do catálogo de Variáveis, a pessoa preenche na licitação. */
@@ -186,32 +233,34 @@ export function PaginaCard() {
             data-settings-list-no-drag
           />
         )}
-        <SettingsListName className={cn(!c.on && "text-muted-foreground", itens && "whitespace-normal")}>{c.nome}</SettingsListName>
+        {/* o nome trunca com reticências: em duas linhas a linha da lista cresce e desalinha */}
+        <SettingsListName className={cn(!c.on && "text-muted-foreground")}>{c.nome}</SettingsListName>
         {c.sempre && (
           <SettingsListLockBadge tooltip="É por ela que a pessoa marca o card para as ações em lote. Dá para mudar a posição, não dá para esconder.">
             Sempre visível
           </SettingsListLockBadge>
         )}
         {itens && (
-          <label className="flex flex-none items-center gap-2 text-[13px] text-muted-foreground">
-            Mostrar até
-            <NativeSelect
-              size="sm"
-              value={maxItens}
-              className="text-foreground"
-              onChange={(e) => {
-                const n = Number(e.target.value)
-                setMaxItens(n)
-                auditar("Campos da licitação", `Passou a mostrar ${n ? `até ${n}` : "todos os"} itens no card`)
-              }}
-            >
+          // sem o rótulo "Mostrar até" escrito: ele vira o nome acessível e o campo ocupa o mínimo
+          <Select
+            value={String(maxItens)}
+            onValueChange={(v) => {
+              const n = Number(v)
+              setMaxItens(n)
+              auditar("Campos da licitação", `Passou a mostrar ${n ? `até ${n}` : "todos os"} itens no card`)
+            }}
+          >
+            <SelectTrigger size="sm" aria-label="Mostrar até quantos itens" className="flex-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
               {OPCOES_MAX_ITENS.map((n) => (
-                <NativeSelectOption key={n} value={n}>
-                  {n ? `${n} itens` : "Todos os itens"}
-                </NativeSelectOption>
+                <SelectItem key={n} value={String(n)}>
+                  {n ? `Até ${n} itens` : "Todos os itens"}
+                </SelectItem>
               ))}
-            </NativeSelect>
-          </label>
+            </SelectContent>
+          </Select>
         )}
         {c.propria && (
           <>
@@ -219,7 +268,12 @@ export function PaginaCard() {
               {c.tipo}
             </Badge>
             <SettingsListItemActions>
-              <BotaoIcone rotulo={`Tirar ${c.nome} do card`} perigo onClick={() => tirar(c)}>
+              <BotaoIcone
+                rotulo={`Tirar ${c.nome} do card`}
+                dica="Tirar do card: o que já foi preenchido nas licitações continua guardado."
+                perigo
+                onClick={() => tirar(c)}
+              >
                 <Trash2Icon />
               </BotaoIcone>
             </SettingsListItemActions>
@@ -229,12 +283,24 @@ export function PaginaCard() {
           <>
             <SeloDeOrigem origem={c.origem} />
             <SettingsListItemActions>
-              <BotaoIcone rotulo={`Abrir a variável ${c.nome}`} dica="Abrir a variável para consultar ou editar" asChild>
-                <a href="#variaveis">
-                  <ExternalLinkIcon />
-                </a>
+              {/* abre a mesma janela de Variáveis, sem sair daqui: o card é só onde ela aparece */}
+              <BotaoIcone
+                rotulo={`Editar a variável ${c.nome}`}
+                dica={
+                  c.origem === "settle"
+                    ? "Editar variável: abre a variável da Settle para consultar o que ela busca."
+                    : "Editar variável: abre a variável para mudar o que ela busca no edital."
+                }
+                onClick={() => abrirModal({ tipo: "variavel", k: c.id })}
+              >
+                <PencilIcon />
               </BotaoIcone>
-              <BotaoIcone rotulo={`Tirar ${c.nome} do card`} perigo onClick={() => tirar(c)}>
+              <BotaoIcone
+                rotulo={`Tirar ${c.nome} do card`}
+                dica="Tirar do card: ela some daqui, mas continua existindo em Variáveis."
+                perigo
+                onClick={() => tirar(c)}
+              >
                 <Trash2Icon />
               </BotaoIcone>
             </SettingsListItemActions>
@@ -290,97 +356,112 @@ export function PaginaCard() {
         são os três lugares onde a licitação aparece. Vale para todas as pessoas da organização, e os campos escondidos
         continuam disponíveis em Filtrar e Ordenar.
       </Aviso>
-      {/* mesma mecânica de Abas das listas: cada aba é um lugar onde o mesmo módulo aparece */}
-      <Tabs value={telaDoCard} onValueChange={(v) => setTelaDoCard(v as TelaDoCard)} className="mb-3.5">
-        <TabsList aria-label="Onde o card aparece" className="max-w-full justify-start overflow-x-auto">
-          {TELAS_DO_CARD.map(([t, nome]) => (
-            <TabsTrigger key={t} value={t} className="px-3">
-              {nome}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {/*
+        Abas com a toolbox ao lado, como no resto da plataforma: as abas dizem onde o card
+        aparece e a toolbox junta as ações daquela área, em vez de espalhá-las pela página.
+      */}
+      <div className="mb-3.5 flex flex-wrap items-center gap-2">
+        <Tabs value={telaDoCard} onValueChange={(v) => setTelaDoCard(v as TelaDoCard)} className="min-w-0 flex-1">
+          <TabsList aria-label="Onde o card aparece" className="max-w-full justify-start overflow-x-auto">
+            {TELAS_DO_CARD.map(([t, nome]) => (
+              <TabsTrigger key={t} value={t} className="px-3">
+                {nome}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <div
+          role="toolbar"
+          aria-label={`Ações dos campos de ${TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]}`}
+          className="flex flex-none items-center gap-1"
+        >
+          <Popover open={menuAberto} onOpenChange={setMenuAberto}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <PlusIcon />
+                Adicionar variável
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <ListaDeVariaveis
+                variaveis={catalogo}
+                excluir={campos.map((c) => c.id)}
+                onCriar={() => {
+                  setMenuAberto(false)
+                  abrirModal({ tipo: "variavel", k: null })
+                }}
+                onEscolher={(v) => {
+                  setMenuAberto(false)
+                  setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
+                  auditar("Campos da licitação", `Adicionou a variável "${v.n}" ao card`)
+                  toast(`${v.n} entrou no card, como propriedade`)
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          <Popover open={novaAberta} onOpenChange={setNovaAberta}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <PlusIcon />
+                Nova propriedade
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72">
+              <form
+                className="flex flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  criarPropriedade()
+                }}
+              >
+                <p className="text-[13px] leading-[19px] text-muted-foreground">
+                  Um campo que a sua organização preenche na licitação, sem vir de variável. É o caso do substatus.
+                </p>
+                <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                  Nome
+                  <Input
+                    value={nomeNovo}
+                    onChange={(e) => setNomeNovo(e.target.value)}
+                    placeholder="Substatus, Responsável técnico…"
+                    className="font-normal"
+                    autoFocus
+                  />
+                </label>
+                <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                  Tipo
+                  <NativeSelect
+                    value={tipoNovo}
+                    onChange={(e) => setTipoNovo(e.target.value as TipoDeCampo)}
+                    className="w-full font-normal"
+                  >
+                    {TIPOS_DE_CAMPO.map((t) => (
+                      <NativeSelectOption key={t} value={t}>
+                        {t}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                </label>
+                <Button type="submit" size="sm" className="self-end">
+                  Criar propriedade
+                </Button>
+              </form>
+            </PopoverContent>
+          </Popover>
+          <Button variant="outline" size="sm" onClick={restaurarPadrao}>
+            Restaurar padrão da Settle
+          </Button>
+        </div>
+      </div>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Popover open={menuAberto} onOpenChange={setMenuAberto}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <PlusIcon />
-                  Adicionar variável
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-80 p-0">
-                <ListaDeVariaveis
-                  excluir={[...campos.map((c) => c.id), "edital", "score"]}
-                  onEscolher={(v) => {
-                    setMenuAberto(false)
-                    setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
-                    auditar("Campos da licitação", `Adicionou a variável "${v.n}" ao card`)
-                    toast(`${v.n} entrou no card, como propriedade`)
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-            <Popover open={novaAberta} onOpenChange={setNovaAberta}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <PlusIcon />
-                  Nova propriedade
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-72">
-                <form
-                  className="flex flex-col gap-3"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    criarPropriedade()
-                  }}
-                >
-                  <p className="text-[13px] leading-[19px] text-muted-foreground">
-                    Um campo que a sua organização preenche na licitação, sem vir de variável. É o caso do substatus.
-                  </p>
-                  <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
-                    Nome
-                    <Input
-                      value={nomeNovo}
-                      onChange={(e) => setNomeNovo(e.target.value)}
-                      placeholder="Substatus, Responsável técnico…"
-                      className="font-normal"
-                      autoFocus
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
-                    Tipo
-                    <NativeSelect
-                      value={tipoNovo}
-                      onChange={(e) => setTipoNovo(e.target.value as TipoDeCampo)}
-                      className="w-full font-normal"
-                    >
-                      {TIPOS_DE_CAMPO.map((t) => (
-                        <NativeSelectOption key={t} value={t}>
-                          {t}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  </label>
-                  <Button type="submit" size="sm" className="self-end">
-                    Criar propriedade
-                  </Button>
-                </form>
-              </PopoverContent>
-            </Popover>
-            <Button variant="outline" size="sm" className="ml-auto" onClick={restaurarPadrao}>
-              Restaurar padrão da Settle
-            </Button>
-          </div>
           <SettingsBox>
             <SettingsList
               labels={{ moveHandle: (n) => `Mover o campo ${n ?? ""}. Use as setas para cima e para baixo.` }}
               onMove={soltar}
             >
               {campos.filter((c) => c.f === "topo" || c.f === "destaque").map(item)}
-              {SECOES.map(([f, nome, descricao]) => {
+              {/* o card do quadro não tem as duas caixas de metadados: lá tudo é linha do corpo */}
+              {(telaDoCard === "andamento" ? [] : SECOES).map(([f, nome, descricao]) => {
                 const doGrupo = campos.filter((c) => c.f === f)
                 return [
                   <SettingsListGroupLabel key={`s-${f}`} description={descricao}>
@@ -405,7 +486,8 @@ export function PaginaCard() {
 
 /** O card de Recomendadas montado com a configuração atual, no layout do card real. */
 function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: AlvoArrasto) => void }) {
-  const { campos, maxItens } = useConfig()
+  const { campos, maxItens, telaDoCard } = useConfig()
+  const { cfg } = useAgentes()
   const L = LICS[LIC_EXEMPLO]
   const [carregados, setCarregados] = useState(BLOCO_DE_ITENS)
   const { tabelaNoTopo, setTabelaNoTopo } = useConfig()
@@ -420,8 +502,13 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
   const valor = (c: Campo) => {
     // campo próprio nasce sem dado: quem preenche é a pessoa, na licitação
     if (c.propria) return "Não informado"
-    if (c.var) return valorDaLic(L, c.id) || "Não encontrado"
-    const fixos: Record<string, string> = { substatus: "Selecionar Substatus", descricao: "Adicionar Descrição" }
+    // sem valor no edital de exemplo, a prévia mostra o que a variável devolve quando não acha
+    if (c.var) return valorDaLic(L, c.id) || cfg.vars[c.id]?.padrao || "Não encontrado"
+    const fixos: Record<string, string> = {
+      responsavel: "Selecionar Responsável",
+      substatus: "Selecionar Substatus",
+      descricao: "Adicionar Descrição",
+    }
     return fixos[c.id] ?? (valorDaLic(L, c.id) || "-")
   }
   const campo = (c: Campo): LicitacaoCardMetaField => {
@@ -434,6 +521,8 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
     }
   }
 
+  const noQuadro = telaDoCard === "andamento"
+  const noWorkspace = telaDoCard === "workspace"
   const doFormato = (f: FormatoCampo) => campos.filter((c) => c.f === f && c.on)
   const topo = doFormato("topo")
   const destaque = doFormato("destaque")
@@ -506,10 +595,18 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
               { label: "Copiar link", icon: <Link2Icon /> },
               { label: "Compartilhar", icon: <Share2Icon /> },
               { label: "Arquivos", icon: <FolderIcon /> },
+              // comentário só existe dentro da licitação: nas listas não há onde comentar
+              ...(telaDoCard === "workspace" ? [{ label: "Comentários", icon: <MessageSquareIcon /> }] : []),
             ].map((a) => (
               <LicitacaoCardIconAction key={a.label} {...a} />
             ))}
           </LicitacaoCardIconActions>
+        )
+      case "checklist":
+        return (
+          <Button key={c.id} variant="outline" size="sm" asChild>
+            <span>Checklist</span>
+          </Button>
         )
       case "score":
         return (
@@ -563,7 +660,10 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
       default:
         return (
           <LicitacaoCardDescription key={c.id}>
-            <LicitacaoCardField label={c.nome}>{valorDaLic(L, c.id)}</LicitacaoCardField>
+            {/* no quadro o objeto é cortado em três linhas: a coluna é estreita e o card, curto */}
+            <LicitacaoCardField label={c.nome} className={cn(noQuadro && c.id === "objeto" && "line-clamp-3")}>
+              {valor(c)}
+            </LicitacaoCardField>
           </LicitacaoCardDescription>
         )
     }
@@ -625,26 +725,68 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
     </div>
   )
 
+  const fileiraDoTopo = (
+    <FileiraDeCampos
+      area="topo"
+      campos={topo}
+      className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+      classePeca="px-1 py-0.5"
+      render={(c) =>
+        // sem o número do edital, quem empurra o resto para a direita é a primeira peça
+        blocoTopo(c, topo[0]?.id === c.id && !topo.some((x) => x.id === "edital"))
+      }
+    />
+  )
+
+  // dentro da licitação os itens não ficam no card: ficam numa aba, ao lado das outras
+  const itensNoLugar =
+    noWorkspace && blocoDeItens ? (
+      <div className="flex flex-col gap-2.5">
+        <div role="tablist" aria-label="Abas da licitação" className="flex gap-4 border-b text-sm">
+          {["Itens", "Detalhes", "Manifestações", "Análise Técnica"].map((t, i) => (
+            <span
+              key={t}
+              role="tab"
+              aria-selected={i === 0}
+              className={cn(
+                "-mb-px border-b-2 pb-2",
+                i === 0 ? "border-primary font-semibold text-foreground" : "border-transparent text-muted-foreground"
+              )}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        {blocoDeItens}
+      </div>
+    ) : (
+      blocoDeItens
+    )
+
   return (
     <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
-      <LicitacaoCardRoot>
-      {topo.length > 0 && (
-      <LicitacaoCardHeader>
-        <FileiraDeCampos
-          area="topo"
-          campos={topo}
-          className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-          classePeca="px-1 py-0.5"
-          render={(c) =>
-            // sem o número do edital, quem empurra o resto para a direita é a primeira peça
-            blocoTopo(c, topo[0]?.id === c.id && !topo.some((x) => x.id === "edital"))
-          }
-        />
-      </LicitacaoCardHeader>
+      {/* dentro da licitação as ações ficam no cabeçalho da página, com o edital como título */}
+      {noWorkspace && topo.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-3">
+          <span className="text-base leading-6 font-semibold">Edital {L.edital}</span>
+          {fileiraDoTopo}
+        </div>
       )}
+      {/* no quadro de Em andamento o card é uma coluna estreita, não a largura da lista */}
+      <div className={cn(noQuadro && "max-w-85")}>
+      <LicitacaoCardRoot>
+      {!noWorkspace && topo.length > 0 && <LicitacaoCardHeader>{fileiraDoTopo}</LicitacaoCardHeader>}
       <LicitacaoCardContent>
-        <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
-        {tabelaNoTopo && blocoDeItens}
+        {/* no card das listas o corpo fica numa caixa com borda; no quadro ele é o card inteiro */}
+        {destaque.length > 0 &&
+          (noQuadro ? (
+            <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
+          ) : (
+            <div className="rounded-xl border px-3.5 py-3">
+              <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
+            </div>
+          ))}
+        {tabelaNoTopo && itensNoLugar}
         {alvoDaTabela === "antes" && !tabelaNoTopo && <BarraDeAlvo />}
         <div ref={refMeta}>
           {(datas.length > 0 || meta.length > 0) && (
@@ -656,9 +798,10 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
           )}
         </div>
         {alvoDaTabela === "depois" && tabelaNoTopo && <BarraDeAlvo />}
-        {!tabelaNoTopo && blocoDeItens}
+        {!tabelaNoTopo && itensNoLugar}
       </LicitacaoCardContent>
       </LicitacaoCardRoot>
+      </div>
     </ProvedorDeArrasto>
   )
 }
@@ -843,9 +986,9 @@ function GradeDePropriedades({
   }, [])
 
   return (
-    <div className="grid w-full items-start gap-2 md:grid-cols-[auto_minmax(0,1fr)]">
+    <div className="grid w-full items-start overflow-hidden rounded-xl border md:grid-cols-[auto_minmax(0,1fr)]">
       {datas.length > 0 && (
-        <div ref={caixaDatas} className="rounded-xl border px-3.5 py-3">
+        <div ref={caixaDatas} className="px-3.5 py-3 max-md:border-b md:border-r">
           {/* no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta */}
           <FileiraDeCampos
             area="data"
@@ -857,7 +1000,7 @@ function GradeDePropriedades({
           />
         </div>
       )}
-      <div className="@container relative min-w-0 rounded-xl border px-3.5 py-3">
+      <div className="@container relative min-w-0 px-3.5 py-3">
         <div
           ref={rolagem}
           onScroll={(e) => setNoTopo(e.currentTarget.scrollTop <= 4)}

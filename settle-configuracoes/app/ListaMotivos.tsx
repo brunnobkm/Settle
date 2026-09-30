@@ -179,7 +179,10 @@ export function ListaMotivos({
                     Pede descrição
                   </Pilula>
                 </TooltipTrigger>
-                <TooltipContent>Ao escolher este motivo, a pessoa precisa escrever o porquê</TooltipContent>
+                <TooltipContent>
+                  Pede descrição: depois de escolher este motivo, a pessoa ainda precisa escrever o porquê num campo
+                  de texto.
+                </TooltipContent>
               </Tooltip>
               {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
               <MetaComDica dica={dicaUso}>{x.uso ? emLicitacoes(x.uso) : "nunca usado"}</MetaComDica>

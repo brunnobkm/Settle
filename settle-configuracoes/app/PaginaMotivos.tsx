@@ -53,7 +53,11 @@ export function PaginaMotivos() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-exigir">Exigir motivo ao descartar</SettingsRowTitle>
               <SettingsRowDescription>
-                Ligado, quem descarta precisa escolher um motivo para concluir. Desligado, o motivo vira opcional.
+                Ligado, quem descarta precisa escolher um motivo da lista para concluir. Desligado, dá para descartar
+                sem escolher nenhum. Esta chave decide se <b className="font-semibold text-foreground">escolher</b> é
+                obrigatório. <b className="font-semibold text-foreground">Escrever</b> o porquê é outra coisa: quem
+                decide isso é a chave <b className="font-semibold text-foreground">Pede descrição</b>, que fica em cada
+                motivo da lista abaixo, porque só alguns motivos precisam de explicação.
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -71,8 +75,8 @@ export function PaginaMotivos() {
 
       <SettingsPageDescription className="mb-2.5">
         Em cada motivo, escolha as telas em que ele aparece e marque{" "}
-        <b className="font-semibold text-foreground">Pede descrição</b> quando a pessoa precisa explicar o porquê, como
-        já acontece em Outros.
+        <b className="font-semibold text-foreground">Pede descrição</b> quando escolher o motivo não basta e a pessoa
+        precisa escrever o porquê num campo de texto, como já acontece em Outros.
       </SettingsPageDescription>
 
       <ListaMotivos

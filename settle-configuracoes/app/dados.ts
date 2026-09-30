@@ -373,8 +373,8 @@ export const TELAS_DO_CARD: [TelaDoCard, string][] = [
   ["workspace", "Dentro da licitação"],
 ]
 
-export const camposDaTela = (tela: TelaDoCard) =>
-  tela === "workspace" ? CAMPOS.filter((c) => c.f !== "topo") : CAMPOS
+export const camposDaTela = (tela: TelaDoCard): Campo[] =>
+  (tela === "andamento" ? CAMPOS_ANDAMENTO : tela === "workspace" ? CAMPOS_WORKSPACE : CAMPOS).map((c) => ({ ...c }))
 
 export const CAMPOS: Campo[] = [
   { fixo: true, sempre: true, id: "selecao", nome: "Seleção do card", f: "topo", on: true },
@@ -405,6 +405,40 @@ export const CAMPOS: Campo[] = [
   { id: "substatus", nome: "Substatus", f: "propriedade", on: true },
   { id: "descricao", nome: "Descrição", f: "propriedade", on: true },
   { fixo: true, id: "itens", nome: "Itens com correspondência", f: "tabela", on: true },
+]
+
+/**
+ * Em andamento o card é uma coluna do quadro: estreito, sem a grade de propriedades e sem a
+ * tabela de itens. Tudo o que aparece é uma linha do corpo, e o que a pessoa completa ali
+ * (responsável, substatus, descrição) fica junto dos dados da licitação.
+ */
+export const CAMPOS_ANDAMENTO: Campo[] = [
+  { fixo: true, sempre: true, id: "selecao", nome: "Seleção do card", f: "topo", on: true },
+  { fixo: true, id: "edital", nome: "Número do edital", f: "topo", on: true },
+  { id: "segmento", nome: "Segmento", f: "destaque", on: true },
+  { id: "orgao", nome: "Órgão", f: "destaque", on: true },
+  { id: "objeto", nome: "Objeto", f: "destaque", on: true },
+  { id: "responsavel", nome: "Responsável", f: "destaque", on: true },
+  { id: "substatus", nome: "Substatus", f: "destaque", on: true },
+  { id: "descricao", nome: "Descrição", f: "destaque", on: true },
+  { id: "envio", nome: "Envio da proposta", f: "destaque", on: true },
+  { id: "cidade", nome: "Cidade", f: "destaque", on: true },
+  { id: "valor", nome: "Valor global", f: "destaque", on: true },
+]
+
+/**
+ * Dentro da licitação as ações não ficam no card: ficam no cabeçalho da página, ao lado do
+ * número do edital, que é o título. Por isso não há caixa de seleção (não existe ação em lote
+ * aqui) nem "Enviar para análise" (a licitação já está em análise), e os itens ficam numa aba
+ * própria, não dentro do card.
+ */
+export const CAMPOS_WORKSPACE: Campo[] = [
+  { fixo: true, id: "descartar", nome: "Descartar", f: "topo", on: true },
+  { fixo: true, id: "responsaveis", nome: "Responsáveis", f: "topo", on: true },
+  { fixo: true, id: "acoes", nome: "Ações de ícone", f: "topo", on: true },
+  { fixo: true, id: "checklist", nome: "Checklist", f: "topo", on: true },
+  { fixo: true, id: "score", nome: "Score", f: "topo", on: true },
+  ...CAMPOS.filter((c) => c.f !== "topo").map((c) => ({ ...c })),
 ]
 
 export const OPCOES_MAX_ITENS = [3, 5, 10, 0]
