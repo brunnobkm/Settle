@@ -2,6 +2,10 @@
 
 ## Resumo de um minuto
 
+> **Atualizado em 30/09:** os itens 2, 3, 4 e 9 já foram implementados (V77). O item 10 ficou
+> como está: você decidiu manter o arrastar livre, contra a sugestão do refine. O que sobra
+> está na lista do fim deste documento.
+
 Se você só tem um minuto, é isto:
 
 - **A reunião mandou desfazer três coisas que o protótipo já faz.** Registrar resultado em lote
@@ -60,15 +64,15 @@ Os minutos citados abaixo são os das transcrições do Fireflies.
 | # | Assunto | Em que tela | O que ficou | O que eu faria se você mandar | Trava? |
 |---|---|---|---|---|---|
 | 1 | Por onde começar | todas | Decidido | Sigo a ordem: abas, motivos, etapas | não |
-| 2 | Resultado em lote ao remover etapa | Etapas do funil | **Remover** | Tiro a última etapa dos destinos; volta ao da V69 | **sim** |
-| 3 | Excluir motivo | Motivos e Etapas | **Só arquivar** | Tiro o excluir; arquivado sem uso some da lista | **sim** |
-| 4 | Texto do diálogo de remover etapa | Etapas do funil | Texto genérico | Troco uma frase | não |
+| 2 | Resultado em lote ao remover etapa | Etapas do funil | **Remover** | ✅ feito em 30/09 (V77) | não |
+| 3 | Excluir motivo | Motivos e Etapas | **Só arquivar** | ✅ feito em 30/09 (V77) | não |
+| 4 | Texto do diálogo de remover etapa | Etapas do funil | Texto genérico | ✅ feito em 30/09 (V77) | não |
 | 5 | Ajuda depois de fechar o card verde | todas | Em aberto | Ícone de interrogação ou porta para o agente | escolha |
 | 6 | Motivos diferentes por tela | Motivos de descarte | Em aberto | Abrir com a chave desligada e mostrar as duas listas | escolha |
 | 7 | Quando o motivo não é obrigatório | Etapas do funil | Em aberto | Fatia "Sem motivo" ou motivo oculto interno | escolha |
 | 8 | Sem permissão por URL | todas | Em aberto | Tela de sem acesso e o caso da Visão geral | não |
-| 9 | Dois cards separados | Campos do card | Decidido | Alternar dentro da própria tela, sem tab nova | não |
-| 10 | Quanto arrastar permitir | Campos do card | **Alice quer menos** | Travo o topo e limito por área | **sim** |
+| 9 | Cards separados (são três) | Campos do card | Decidido | ✅ feito em 30/09 (V77), com Em andamento junto | não |
+| 10 | Quanto arrastar permitir | Campos do card | **Alice quer menos** | ❌ mantido livre, decisão sua de 30/09 | não |
 | 11 | Criar campo que não é variável | Campos do card | Você disse que faria | Botão de nova propriedade, com tipo | não |
 | 12 | Ver itens sem correspondência | Campos do card | Você disse que faria | Opção na tabela de itens | não |
 | 13 | Badge de status da licitação | fora daqui | Decidido | Projeto novo, não é Configurações | não |
@@ -361,14 +365,25 @@ variáveis. Não muda nada no protótipo agora; é para ter em mente quando o pr
 
 ---
 
-## O que eu preciso que você decida
+## O que ficou decidido em 30/09
 
-Três coisas, e só elas, travam o próximo passo. As três contrariam pedidos seus das rodadas
-anteriores, por isso não mexi em nada:
+- **Item 2:** a última etapa sai da lista de destinos ao remover uma etapa. Feito.
+- **Item 3:** só arquivar, e arquivado sem licitação some da lista. Feito.
+- **Item 4:** texto genérico no diálogo de remover etapa. Feito.
+- **Item 9:** três cards com configuração própria (Recomendadas, Em andamento e dentro da
+  licitação), alternando dentro da própria tela. Feito.
+- **Item 10:** **arrastar continua livre.** Sua decisão, contra a sugestão da Alice e do Pedro.
 
-1. **Registro de resultado em lote** (item 2): tiro, como ficou na reunião?
-2. **Excluir motivo** (item 3): passo tudo para arquivar?
-3. **Arrastar** (item 10): travo o topo e limito por área, ou mantenho a liberdade atual?
+## O que ainda está aberto
 
-O resto dá para eu ir fazendo na ordem que a reunião definiu: abas, motivos de descarte, e
-etapas do funil por último.
+Nenhum deles trava nada, são escolhas suas quando quiser:
+
+- **5** ajuda permanente depois de fechar o card verde
+- **6** abrir com a chave "mesma lista" desligada e mostrar as duas listas na prévia
+- **7** "sem motivo" como motivo oculto em vez da fatia no gráfico
+- **8** tela de sem permissão por URL e o caso da Visão geral
+- **11** criar campo que não vem de variável
+- **12** ver os itens sem correspondência
+- **14** imagem e URL no modelo de e-mail
+- **1, 13, 15** ordem de trabalho, badge de status e domínio além de licitação: não são ajustes
+  de tela

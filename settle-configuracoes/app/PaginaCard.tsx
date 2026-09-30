@@ -68,7 +68,7 @@ import {
 import { Aviso, BotaoIcone, ListaDeVariaveis, SeloDeOrigem } from "./comum"
 import {
   BLOCO_DE_ITENS,
-  CAMPOS,
+  camposDaTela,
   CLASSE_CHIP_SEGMENTO,
   corDoSegmento,
   fmt,
@@ -76,15 +76,17 @@ import {
   LICS,
   OPCOES_MAX_ITENS,
   mover,
+  TELAS_DO_CARD,
   valorDaLic,
   type Campo,
+  type TelaDoCard,
   type ItemLic,
   type FormatoCampo,
 } from "./dados"
 import { useConfig } from "./estado"
 
 export function PaginaCard() {
-  const { campos, setCampos, maxItens, setMaxItens, auditar, confirmar } = useConfig()
+  const { campos, setCampos, maxItens, setMaxItens, telaDoCard, setTelaDoCard, auditar, confirmar } = useConfig()
   const [menuAberto, setMenuAberto] = useState(false)
 
   /**
@@ -131,13 +133,13 @@ export function PaginaCard() {
       titulo: "Restaurar os campos padrão?",
       corpo: (
         <p>
-          O card volta a mostrar os campos da Settle na ordem original. Variáveis adicionadas saem do card, mas continuam
-          existindo em Variáveis.
+          O card de {TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]} volta a mostrar os campos da Settle na ordem
+          original. As outras telas não mudam. Variáveis adicionadas saem do card, mas continuam existindo em Variáveis.
         </p>
       ),
       acao: "Restaurar",
       ok: () => {
-        setCampos(CAMPOS)
+        setCampos(camposDaTela(telaDoCard))
         auditar("Campos do card", "Restaurou o padrão da Settle")
         toast("Campos restaurados")
       },
@@ -248,12 +250,28 @@ export function PaginaCard() {
   return (
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
-        Aqui você escolhe o que aparece no card de Recomendadas e em que ordem. Vale para todas as pessoas da
-        organização. Os campos escondidos continuam disponíveis em Filtrar e Ordenar.
+        Aqui você escolhe o que aparece no card e em que ordem. Cada tela tem a sua configuração: escolha a tela na
+        barra abaixo. Vale para todas as pessoas da organização, e os campos escondidos continuam disponíveis em
+        Filtrar e Ordenar.
       </Aviso>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
+            <label className="flex items-center gap-2 text-[13px] text-muted-foreground">
+              Card de
+              <NativeSelect
+                size="sm"
+                value={telaDoCard}
+                className="w-auto text-foreground"
+                onChange={(e) => setTelaDoCard(e.target.value as TelaDoCard)}
+              >
+                {TELAS_DO_CARD.map(([t, nome]) => (
+                  <NativeSelectOption key={t} value={t}>
+                    {nome}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </label>
             <Popover open={menuAberto} onOpenChange={setMenuAberto}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -298,7 +316,7 @@ export function PaginaCard() {
         </div>
 
         <SettingsPreview aria-live="polite">
-          <SettingsPreviewHeader label="Pré-visualização" />
+          <SettingsPreviewHeader label={`Pré-visualização · ${TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]}`} />
           <PreviaDoCard aoSoltarCampo={soltarNoCard} />
         </SettingsPreview>
       </SettingsSplit>
@@ -528,6 +546,7 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
   return (
     <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
       <LicitacaoCardRoot>
+      {topo.length > 0 && (
       <LicitacaoCardHeader>
         <FileiraDeCampos
           area="topo"
@@ -540,6 +559,7 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
           }
         />
       </LicitacaoCardHeader>
+      )}
       <LicitacaoCardContent>
         <CorpoDoCard linhas={emLinhas(destaque)} render={blocoDestaque} />
         {tabelaNoTopo && blocoDeItens}
