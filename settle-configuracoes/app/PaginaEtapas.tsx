@@ -293,9 +293,10 @@ export function PaginaEtapas() {
               </NativeSelect>
             </label>
 
+            {/* o refine de 28/09 tirou a etapa de saída daqui: são duas decisões diferentes */}
             <p className="text-[12.5px] leading-[19px] text-muted-foreground">
-              {etapaSaida?.nome} não entra na lista: lá o resultado é informado licitação por licitação, então não dá
-              para mandar um lote de uma vez.
+              {etapaSaida?.nome} fica de fora. Aqui você está arrumando o funil, e lá cada licitação precisa de um
+              resultado próprio, ganhou ou perdeu. Esse registro continua sendo feito em Em andamento.
             </p>
           </div>
         )}

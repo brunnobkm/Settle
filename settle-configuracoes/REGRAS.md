@@ -361,13 +361,17 @@ Casos que podem dar problema, e a regra proposta:
    segundos. Etapa vazia também passa pela confirmação, só sem a escolha de destino.
 2. **Mover por remoção para a Entrada.** Não roda os agentes de novo. Agente só dispara em
    entrada por "Enviar para análise" (evento), não por mudança de coluna em massa.
-3. **A última etapa não entra na lista de destinos** (refine de 28/09). Chegar em Resultados
-   Finais exige informar o resultado, e cada licitação pode ter o seu: mandar um lote com um
-   resultado só seria errado, e listar uma a uma dentro da remoção não se sustenta ("imagina,
-   tem 40 licitações"). O diálogo explica por que ela não está lá. Quem precisa fechar essas
-   licitações usa o registro em lote de Em andamento, que já existe. Conferido no bundle
-   `workflow` (`useBiddings.updateBiddingStage`): mover para Resultados Finais **sempre** abre o
-   diálogo "Resultado da Licitação", e de lá a licitação **não volta**.
+3. **A última etapa não entra na lista de destinos** (refine de 28/09). O motivo não é técnico,
+   é de escopo: **remover etapa e registrar resultado são duas decisões diferentes**. Remover
+   etapa é arrumação do funil, feita de uma vez para um monte de licitações. Resultado é uma
+   decisão individual, e das pesadas: cada licitação ganhou ou perdeu, e quando perdeu ainda tem
+   motivo. Alice: "as três licitações de vez, cada uma pode ter resultado diferente". Pedro
+   sugeriu dois destinos (ganhou e perdeu), e ela respondeu que aí precisaria decidir uma a uma
+   dentro do diálogo, o que não se sustenta com 40 licitações. Juntar as duas coisas transforma
+   a arrumação do funil numa ação de fechamento em massa, que é o contrário do que a plataforma
+   faz hoje.
+   Para o dev: mover para Resultados Finais **sempre** abre o diálogo "Resultado da Licitação"
+   (`useBiddings.updateBiddingStage` no bundle `workflow`), e de lá a licitação **não volta**.
 4. **Cor da etapa.** A bolinha ao lado do nome abre a paleta (9 cores nomeadas, as mesmas do
    tema). A cor é só visual, para reconhecer a etapa em Em andamento: nada depende dela,
    e duas etapas podem repetir a cor. A etapa nova nasce com uma cor do rodízio. Hoje as cores
