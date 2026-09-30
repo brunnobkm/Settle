@@ -42,8 +42,8 @@ export function ListaMotivos({
   tipo: TipoMotivo
   /** Área usada na Auditoria. */
   area: string
-  /** Tooltip do número de usos, no "i" ao lado dele. */
-  dicaUso: string
+  /** Tooltip do número de usos, no "i" ao lado dele. Função quando depende do motivo. */
+  dicaUso: ReactNode | ((x: Motivo) => ReactNode)
   /** O que a pessoa faz com o motivo: "descartes", "registros de perda". */
   acao: string
   /** Como as licitações que já usaram o motivo são descritas: "descartadas com este motivo". */
@@ -83,7 +83,7 @@ export function ListaMotivos({
     auditar(area, `"${x.nome}" ${x.desc ? "deixou de pedir" : "passou a pedir"} descrição`)
     toast(
       x.desc
-        ? "Descrição passou a ser opcional neste motivo"
+        ? "Descrição voltou a ser opcional neste motivo"
         : "A partir de agora, quem escolher este motivo precisa escrever o porquê"
     )
   }
@@ -147,7 +147,18 @@ export function ListaMotivos({
   function adicionar() {
     let nome = "Novo motivo"
     for (let i = 2; nomeOcupado(nome); i++) nome = `Novo motivo ${i}`
-    const n: Motivo = { id: novoId("n"), nome, uso: 0, rec: true, and: true, tipo, arq: false, desc: false }
+    const n: Motivo = {
+      id: novoId("n"),
+      nome,
+      uso: 0,
+      usoRec: 0,
+      usoAnd: 0,
+      rec: true,
+      and: true,
+      tipo,
+      arq: false,
+      desc: false,
+    }
     setMotivos((l) => {
       const ultimo = l.filter((y) => y.tipo === tipo && !y.arq).pop()
       const idx = ultimo ? l.indexOf(ultimo) : l.length - 1
@@ -176,16 +187,18 @@ export function ListaMotivos({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Pilula pressed={x.desc} onPressedChange={() => alternarDescricao(x)}>
-                    Pede descrição
+                    Descrição obrigatória
                   </Pilula>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Pede descrição: depois de escolher este motivo, a pessoa ainda precisa escrever o porquê num campo
-                  de texto.
+                  O campo de descrição existe em todos os motivos e é opcional. Ligado aqui, quem escolher este motivo
+                  não conclui sem escrever o porquê.
                 </TooltipContent>
               </Tooltip>
               {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
-              <MetaComDica dica={dicaUso}>{x.uso ? emLicitacoes(x.uso) : "nunca usado"}</MetaComDica>
+              <MetaComDica dica={typeof dicaUso === "function" ? dicaUso(x) : dicaUso}>
+                {x.uso ? emLicitacoes(x.uso) : "nunca usado"}
+              </MetaComDica>
               <SettingsListItemActions>
                 <BotaoIcone
                   rotulo={`Arquivar ${x.nome}`}

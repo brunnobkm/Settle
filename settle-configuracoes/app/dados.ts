@@ -117,12 +117,19 @@ export type Motivo = {
   id: string
   nome: string
   uso: number
+  /**
+   * Quantas dessas licitações foram descartadas em cada tela. O total é a soma das duas, e
+   * é essa conta que a pessoa precisa ver antes de tirar o motivo de uma delas (caso levantado
+   * pelo Willian em 30/09: "412" escondia que 200 eram de Em andamento).
+   */
+  usoRec: number
+  usoAnd: number
   /** Aparece em Recomendadas / Em andamento (quando as listas não são unificadas). */
   rec: boolean
   and: boolean
   tipo: TipoMotivo
   arq: boolean
-  /** Pede descrição ao ser escolhido. */
+  /** Descrição obrigatória: o campo existe em todos, aqui ele deixa de ser opcional. */
   desc: boolean
 }
 
@@ -155,20 +162,29 @@ const PERDA: [string, number][] = [
 ]
 
 export const MOTIVOS: Motivo[] = [
-  ...DESCARTE.map(([nome, uso, rec, and], i): Motivo => ({
-    id: `d${i}`,
-    nome,
-    uso,
-    rec,
-    and,
-    tipo: "descarte",
-    arq: false,
-    desc: i === 4,
-  })),
+  ...DESCARTE.map(([nome, uso, rec, and], i): Motivo => {
+    // nos dois escopos o uso se divide; num só, tudo veio de lá
+    const emAndamento = rec && and ? Math.round(uso * 0.485) : and ? uso : 0
+    return {
+      id: `d${i}`,
+      nome,
+      uso,
+      usoRec: uso - emAndamento,
+      usoAnd: emAndamento,
+      rec,
+      and,
+      tipo: "descarte",
+      arq: false,
+      desc: i === 4,
+    }
+  }),
+  // perda não tem escopo de tela: o resultado é registrado num lugar só
   ...PERDA.map(([nome, uso], i): Motivo => ({
     id: `p${i}`,
     nome,
     uso,
+    usoRec: 0,
+    usoAnd: uso,
     rec: false,
     and: true,
     tipo: "perda",
