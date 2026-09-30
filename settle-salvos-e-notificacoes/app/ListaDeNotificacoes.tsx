@@ -34,12 +34,29 @@ import {
 
 export type EstadoDaLista = "normal" | "vazio" | "erro"
 
+const TITULO_PLACEHOLDER = "PE 00/0000 · Órgão"
+
+/** Conteúdo genérico: mostra a estrutura sem sugerir regras de conteúdo que ainda não foram definidas. */
+function comoPlaceholder(n: Notificacao): Notificacao {
+  return {
+    ...n,
+    titulo: "Título da notificação",
+    mensagem: n.mensagem && "Texto da notificação. Aqui aparece o conteúdo publicado, truncado em até três linhas na lista.",
+    resposta: n.resposta && "Texto da resposta.",
+    mudanca: n.mudanca && { campo: "Campo alterado", de: "Valor anterior", para: "Valor novo" },
+    impacto: n.impacto && "Resumo do impacto da atualização.",
+    documento: n.documento && "Documento.pdf",
+    anexos: n.anexos?.map((_, i) => `Anexo ${i + 1}.pdf`),
+  }
+}
+
 export function ListaDeNotificacoes({
   notificacoes,
   licitacoes,
   carregando,
   estado = "normal",
   compacta = false,
+  placeholder = false,
   vazio,
   onTentarNovamente,
   onLida,
@@ -52,6 +69,8 @@ export function ListaDeNotificacoes({
   estado?: EstadoDaLista
   /** No dropdown do sino: menos espaço, sem "Ver licitação". */
   compacta?: boolean
+  /** Conteúdo genérico nos itens (estrutura sem texto real). */
+  placeholder?: boolean
   vazio?: string
   onTentarNovamente: () => void
   onLida: (id: string, lida: boolean) => void
@@ -61,7 +80,7 @@ export function ListaDeNotificacoes({
   const [aberta, setAberta] = useState<Notificacao | null>(null)
 
   // mais recentes primeiro
-  const itens = estado === "vazio" ? [] : [...notificacoes].sort((a, b) => lerQuando(b.quando).getTime() - lerQuando(a.quando).getTime())
+  const itens = estado === "vazio" ? [] : [...notificacoes].map((n) => (placeholder ? comoPlaceholder(n) : n)).sort((a, b) => lerQuando(b.quando).getTime() - lerQuando(a.quando).getTime())
   const contagem = (c: Categoria | "todos") => (c === "todos" ? itens.length : itens.filter((n) => n.categoria === c).length)
   const lista = aba === "todos" ? itens : itens.filter((n) => n.categoria === aba)
 
@@ -105,6 +124,7 @@ export function ListaDeNotificacoes({
                 notificacao={n}
                 licitacao={licitacoes.find((l) => l.edital === n.edital)}
                 compacta={compacta}
+                placeholder={placeholder}
                 onLida={(lida) => onLida(n.id, lida)}
                 onAbrir={() => {
                   setAberta(n)
@@ -124,6 +144,7 @@ export function ListaDeNotificacoes({
       <MensagemCompleta
         notificacao={aberta}
         licitacao={aberta ? licitacoes.find((l) => l.edital === aberta.edital) : undefined}
+        placeholder={placeholder}
         onFechar={() => setAberta(null)}
       />
     </div>
@@ -134,6 +155,7 @@ function ItemDeNotificacao({
   notificacao: n,
   licitacao,
   compacta,
+  placeholder,
   onLida,
   onAbrir,
   onVerLicitacao,
@@ -141,6 +163,7 @@ function ItemDeNotificacao({
   notificacao: Notificacao
   licitacao?: Licitacao
   compacta: boolean
+  placeholder: boolean
   onLida: (lida: boolean) => void
   onAbrir: () => void
   onVerLicitacao?: () => void
@@ -186,7 +209,7 @@ function ItemDeNotificacao({
         <TooltipContent>{n.lida ? "Marcar como não lida" : "Marcar como lida"}</TooltipContent>
       </Tooltip>
 
-      {!compacta && <p className="mt-1.5 text-[13px] font-semibold">{tituloDoEdital(licitacao, n.edital)}</p>}
+      {!compacta && <p className="mt-1.5 text-[13px] font-semibold">{placeholder ? TITULO_PLACEHOLDER : tituloDoEdital(licitacao, n.edital)}</p>}
       <p className={cn("text-[13px]", compacta ? "mt-1.5 font-medium" : "mt-0.5 text-muted-foreground")}>
         {n.mensagem ? <span className="line-clamp-3">{n.mensagem}</span> : n.titulo}
       </p>
@@ -239,10 +262,12 @@ function ItemDeNotificacao({
 function MensagemCompleta({
   notificacao: n,
   licitacao,
+  placeholder,
   onFechar,
 }: {
   notificacao: Notificacao | null
   licitacao?: Licitacao
+  placeholder: boolean
   onFechar: () => void
 }) {
   return (
@@ -257,7 +282,7 @@ function MensagemCompleta({
                 </Badge>
                 <span className="text-xs text-muted-foreground">{n.quando}</span>
               </div>
-              <DialogTitle>{tituloDoEdital(licitacao, n.edital)}</DialogTitle>
+              <DialogTitle>{placeholder ? TITULO_PLACEHOLDER : tituloDoEdital(licitacao, n.edital)}</DialogTitle>
               <DialogDescription>{n.titulo}</DialogDescription>
             </DialogHeader>
             <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto text-sm leading-relaxed">

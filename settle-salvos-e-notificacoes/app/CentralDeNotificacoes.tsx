@@ -182,6 +182,7 @@ export function CentralDeNotificacoes({
         )}
 
         <ListaDeNotificacoes
+          placeholder
           notificacoes={lista}
           licitacoes={licitacoes}
           carregando={carregando}
