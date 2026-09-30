@@ -106,7 +106,7 @@ export function BotaoIcone({
   )
 }
 
-/** Pílula liga/desliga (onde o motivo aparece, "Pede descrição"). */
+/** Pílula liga/desliga (onde o motivo aparece, "Descrição obrigatória"). */
 export function Pilula({ className, children, ...props }: ComponentProps<typeof Toggle>) {
   return (
     <Toggle

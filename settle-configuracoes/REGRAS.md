@@ -112,17 +112,35 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 - Renomear muda o nome em todas as licitações que já usaram (o vínculo é por ID). Se a
   intenção for outro significado, o certo é arquivar e criar um novo; a tela avisa quantas
   licitações serão afetadas.
-- "Outros" é fixo e sempre pede descrição.
+- "Outros" é fixo e tem descrição obrigatória.
 - **São duas perguntas diferentes, e a tela precisa dizer isso.** "Exigir motivo ao descartar"
   é um interruptor da organização e decide se **escolher** um motivo da lista é obrigatório
-  para concluir o descarte. **Pede descrição** é por motivo e decide se, depois de escolhido,
-  a pessoa ainda precisa **escrever** o porquê num campo de texto. Um é sobre escolher, o
-  outro é sobre escrever, e eles se combinam: dá para não exigir motivo nenhum e, ainda
-  assim, ter um motivo que pede descrição quando alguém o escolhe.
-- **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
-  escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
+  para concluir o descarte. **Descrição obrigatória** é por motivo e decide se, depois de
+  escolhido, a pessoa ainda precisa **escrever** o porquê. Um é sobre escolher, o outro é
+  sobre escrever, e eles se combinam: dá para não exigir motivo nenhum e, ainda assim, ter um
+  motivo que exige descrição quando alguém o escolhe.
+- **A chave se chamava "Pede descrição" e virou "Descrição obrigatória"** (Willian, 30/09): na
+  plataforma o campo de descrição já existe em todos os motivos e é opcional, e as pessoas de
+  fato escrevem em motivos diferentes. "Pede descrição" dava a entender que a chave fazia o
+  campo aparecer. Ela não cria o campo: só tira o "opcional" dele naquele motivo.
+- **Descrição obrigatória** (feedback da Alice, 18/09): qualquer motivo pode exigir que a
+  pessoa escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
   É por motivo porque só alguns precisam de explicação: "Fora do segmento" se explica
   sozinho, "Outros" não.
+
+**Tirar um motivo de uma tela é um arquivamento parcial, e a tela precisa mostrar isso**
+(Willian, 30/09). O contador de um motivo é a soma das duas telas: "412 licitações" escondia
+que 200 delas foram descartadas em Em andamento e 212 em Recomendadas. Duas consequências:
+
+- O "i" do contador **abre a conta por tela** sempre que o motivo tem licitação nas duas.
+- **Desligar uma tela que já tem licitação pede confirmação**, com o número daquela tela e a
+  regra de sempre: o que já aconteceu não muda. As licitações seguem com o motivo, no filtro
+  de Descartadas e no gráfico do dashboard, e pôr de volta traz tudo. Ligar não pede nada, e
+  desligar uma tela sem nenhuma licitação também não: ali não há o que preservar.
+- Na interface isso **não se chama "arquivado"**. Arquivados é outra seção e só recebe motivo
+  arquivado inteiro; usar a mesma palavra faria a pessoa procurar lá e não achar. Internamente
+  pode ser um arquivamento por escopo, desde que o histórico não mude, que religar volte ao
+  estado anterior e que o escopo volte como estava quando um motivo arquivado for restaurado.
 
 **Como avisar que falta o motivo, nas duas listas.** Hoje a plataforma faz de dois jeitos: o
 descarte (`DiscardReasonDialog`) deixa o botão clicável e, ao confirmar sem motivo, marca o
@@ -419,7 +437,7 @@ observação. O motivo é **obrigatório só quando é Perdeu** ("Selecione um m
 o resultado como 'Perdeu a licitação'"), e a lista de motivos de perda é buscada separada da
 lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não em Motivos.
 
-- Mesmas regras de lista do descarte: renomear, reordenar, "pede descrição", arquivar quando já
+- Mesmas regras de lista do descarte: renomear, reordenar, "descrição obrigatória", arquivar quando já
   foi usado, excluir (com confirmação) quando nunca foi, nome repetido recusado.
 - **Exigir motivo ao registrar perda** é um switch (proposta nova; hoje a plataforma sempre
   exige). Ligado é o padrão. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
