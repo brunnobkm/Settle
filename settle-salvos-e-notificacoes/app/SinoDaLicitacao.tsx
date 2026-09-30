@@ -1,16 +1,18 @@
 // Sino da licitação (no card e, na plataforma, no header da licitação aberta).
 // Desligado: o clique abre a configuração (quais atualizações avisar).
-// Ligado: o clique abre as atualizações daquela licitação, com Configurar e Desativar.
+// Ligado: o clique abre as notificações daquela licitação; no topo, Configurar e Desativar
+// (atalho). Configurar troca o conteúdo, com Voltar à esquerda do título.
 // Abre ancorado no botão clicado.
 
 import { useEffect, useRef, useState } from "react"
-import { BellOffIcon, SettingsIcon } from "lucide-react"
+import { ArrowLeftIcon, BellOffIcon, SettingsIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import {
   ROTULO_CURTO,
@@ -29,7 +31,6 @@ export function SinoDaLicitacao({
   onFechar,
   onAtivar,
   onDesativar,
-  onVerNaCentral,
 }: {
   aberto: boolean
   /** Continua preenchida depois de fechar, para a animação de saída. */
@@ -41,7 +42,6 @@ export function SinoDaLicitacao({
   onFechar: (lidas: string[]) => void
   onAtivar: (tipos: TipoAtualizacao[]) => void
   onDesativar: () => void
-  onVerNaCentral: () => void
 }) {
   const ancoraRef = useRef<HTMLElement | null>(null)
   ancoraRef.current = ancora
@@ -81,7 +81,6 @@ export function SinoDaLicitacao({
               notificacoes={notificacoes}
               onConfigurar={() => setConfigurando(true)}
               onDesativar={onDesativar}
-              onVerNaCentral={onVerNaCentral}
             />
           ))}
       </PopoverContent>
@@ -113,12 +112,21 @@ function Configuracao({
         if (!semTipo) onAtivar()
       }}
     >
-      <div className="border-b px-4 pt-3.5 pb-3">
-        <h2 className="text-sm font-semibold">{ligado ? "Configurar notificações" : "Receber notificações desta licitação?"}</h2>
-        <p className="mt-0.5 text-[13px] text-muted-foreground">
-          Edital {edital}. Avisamos aqui no sino e na central de notificações.
-        </p>
-      </div>
+      {ligado ? (
+        <div className="flex items-center gap-1.5 border-b px-2 py-2">
+          <Button type="button" variant="ghost" size="icon-sm" aria-label="Voltar" onClick={onCancelar}>
+            <ArrowLeftIcon />
+          </Button>
+          <h2 className="text-sm font-semibold">Configurar notificações</h2>
+        </div>
+      ) : (
+        <div className="border-b px-4 pt-3.5 pb-3">
+          <h2 className="text-sm font-semibold">Receber notificações desta licitação?</h2>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">
+            Edital {edital}. Avisamos aqui no sino e na central de notificações.
+          </p>
+        </div>
+      )}
 
       <fieldset className="px-4 pt-2.5 pb-2">
         <div className="mb-1 flex items-center justify-between">
@@ -158,9 +166,11 @@ function Configuracao({
       </fieldset>
 
       <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
-        <Button type="button" variant="outline" size="sm" onClick={onCancelar}>
-          {ligado ? "Voltar" : "Agora não"}
-        </Button>
+        {!ligado && (
+          <Button type="button" variant="outline" size="sm" onClick={onCancelar}>
+            Agora não
+          </Button>
+        )}
         <Button type="submit" size="sm" disabled={semTipo}>
           {ligado ? "Salvar" : "Ativar notificações"}
         </Button>
@@ -170,32 +180,25 @@ function Configuracao({
 }
 
 function ListaDaLicitacao({
-  licitacao: l,
   notificacoes,
   onConfigurar,
   onDesativar,
-  onVerNaCentral,
 }: {
   licitacao: Licitacao
   notificacoes: Notificacao[]
   onConfigurar: () => void
   onDesativar: () => void
-  onVerNaCentral: () => void
 }) {
-  const acompanha = TIPOS_DE_ATUALIZACAO.filter((t) => l.alertas.includes(t.chave))
   return (
     <div>
-      <div className="flex items-start gap-2 border-b px-4 pt-3.5 pb-3">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold">Atualizações do edital {l.edital}</h2>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            Avisando sobre:{" "}
-            {acompanha.length === TODOS_OS_TIPOS.length ? "todas" : acompanha.map((t) => ROTULO_CURTO[t.chave]).join(", ")}
-          </p>
-        </div>
-        <Button variant="ghost" size="icon-sm" aria-label="Configurar notificações" onClick={onConfigurar}>
+      <div className="flex items-center gap-1 border-b py-2 pr-2 pl-4">
+        <h2 className="flex-1 text-sm font-semibold">Notificações do edital</h2>
+        <AcaoComDica dica="Configurar notificações" onClick={onConfigurar}>
           <SettingsIcon />
-        </Button>
+        </AcaoComDica>
+        <AcaoComDica dica="Desativar notificações" onClick={onDesativar}>
+          <BellOffIcon />
+        </AcaoComDica>
       </div>
 
       {notificacoes.length ? (
@@ -232,15 +235,19 @@ function ListaDaLicitacao({
         </p>
       )}
 
-      <div className="flex items-center gap-2 border-t px-4 py-2.5">
-        <Button variant="ghost" size="sm" className="-ml-2 text-muted-foreground" onClick={onDesativar}>
-          <BellOffIcon data-icon="inline-start" />
-          Desativar
-        </Button>
-        <Button variant="outline" size="sm" className="ml-auto shadow-none" onClick={onVerNaCentral}>
-          Ver na central
-        </Button>
-      </div>
     </div>
+  )
+}
+
+function AcaoComDica({ dica, onClick, children }: { dica: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label={dica} className="text-muted-foreground" onClick={onClick}>
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{dica}</TooltipContent>
+    </Tooltip>
   )
 }

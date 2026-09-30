@@ -19,8 +19,12 @@ atualizações de editais descartados" (Design), pedido da Alice.
 - **Desligado, primeiro clique:** abre "Receber notificações desta licitação?" com os tipos de
   atualização (todos marcados por padrão): retificação do edital, novo documento, mudança de prazo,
   mudança de status, esclarecimentos e impugnações. Botões "Agora não" e "Ativar notificações".
-- **Ligado, clique:** abre o dropdown com as atualizações **daquela licitação** (tipo, data, o que
-  mudou), com Configurar (engrenagem), Desativar e "Ver na central". Ao fechar, as exibidas viram lidas.
+- **Ligado, clique:** abre o dropdown **"Notificações do edital"** com as atualizações daquela
+  licitação (tipo, data, o que mudou). Ao fechar, as exibidas viram lidas.
+  - No topo, à direita do título: **engrenagem** (tooltip "Configurar notificações") e **sino
+    cortado** (tooltip "Desativar notificações"), atalho rápido para desligar. Sem rodapé.
+  - Configurar troca o conteúdo: **Voltar (seta) no topo, à esquerda do título "Configurar
+    notificações"**, tipos de atualização e botão Salvar.
 - **Estado visível:** sino preenchido quando ligado; número sobre o sino com as não lidas.
 - Pode ser configurado ou desativado a qualquer momento, com Desfazer no aviso.
 
@@ -29,8 +33,8 @@ Toda atualização de uma licitação com sino ligado chega nos **dois lugares**
 1. No **sino da licitação** (contador no card e no header da licitação).
 2. Na **central de notificações** (sino da navbar, com o total de não lidas): abas Não lidas e
    Todas; cada item mostra tipo, edital, órgão, antes/agora, leitura de impacto da IA, documento
-   novo, "Ver licitação" e marcar como lida/não lida. Aberta pelo "Ver na central" de uma licitação,
-   filtra só aquele edital.
+   novo, "Ver licitação" e marcar como lida/não lida. Pode filtrar
+   por edital (chip removível).
 
 Lida é uma só: ler em um lugar marca como lida no outro.
 
