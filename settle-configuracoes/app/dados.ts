@@ -22,7 +22,7 @@ export const NOMES: Record<Rota, string> = {
   etapas: "Etapas do funil",
   abas: "Abas das listas",
   motivos: "Motivos de descarte",
-  card: "Campos do card",
+  card: "Campos da licitação",
   email: "Modelo de e-mail",
   equipe: "Equipe",
   permissoes: "Permissões",
@@ -350,7 +350,15 @@ export type Campo = {
   /** Variável adicionada pela organização (ou da Settle) à grade de metadados. */
   var?: boolean
   origem?: OrigemVar
+  /** Campo criado aqui mesmo, que a pessoa preenche na licitação (não vem de variável). */
+  propria?: boolean
+  /** Tipo do campo próprio, escolhido na hora de criar. */
+  tipo?: TipoDeCampo
 }
+
+/** Tipos de um campo próprio. Os mesmos formatos que as variáveis usam. */
+export const TIPOS_DE_CAMPO = ["Texto", "Número", "Data", "Sim ou não", "Moeda"] as const
+export type TipoDeCampo = (typeof TIPOS_DE_CAMPO)[number]
 
 /**
  * O mesmo módulo de card aparece em três lugares, e cada um tem a sua configuração: na lista

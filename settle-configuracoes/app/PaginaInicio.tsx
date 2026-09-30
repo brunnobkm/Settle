@@ -123,8 +123,8 @@ export function PaginaInicio() {
           />
           <Linha
             href="#card"
-            titulo="Campos do card"
-            descricao="Quais informações aparecem no card de Recomendadas e em que ordem"
+            titulo="Campos da licitação"
+            descricao="O que aparece da licitação em Recomendadas, Em andamento e no workspace"
             valor={`${visiveis} de ${campos.length} visíveis`}
           />
           <Linha
@@ -210,8 +210,8 @@ export function PaginaInicio() {
           <Levantado titulo="Substatus">
             Hoje o card tem "Selecionar Substatus" (ex.: Encaminhar e-mail, Esperando aprovação). A lista é do cliente.
           </Levantado>
-          <Levantado titulo="Campos do card em Em andamento e colunas da Tabela">
-            Mesmo mecanismo de Campos do card, outra tela. Decidir se herdam de Recomendadas.
+          <Levantado titulo="Colunas da Tabela em Em andamento">
+            O card de Em andamento já tem aba própria em Campos da licitação. Falta decidir as colunas da Tabela.
           </Levantado>
           <Levantado titulo="Segmentos">Software, Produtos: rótulo que aparece no card e filtra as recomendadas.</Levantado>
           <Levantado titulo="Perfil de recomendação">
