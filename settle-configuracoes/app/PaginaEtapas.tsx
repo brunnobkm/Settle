@@ -262,7 +262,6 @@ export function PaginaEtapas() {
         <ListaMotivos
           tipo="perda"
           area="Etapas do funil"
-          usos="perdas"
           bloquearUltimo={
             exigirMotivoPerda
               ? "Com motivo obrigatório, a lista precisa ter pelo menos um motivo. Desligue a exigência antes de tirar o último."

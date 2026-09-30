@@ -24,10 +24,12 @@ import { fmt, mover, novoId, type Motivo, type TipoMotivo } from "./dados"
 import { useConfig } from "./estado"
 import { useFocoNoNome } from "./PaginaEtapas"
 
+/** "1 licitação" ou "412 licitações": a mesma unidade em descarte e em perda. */
+const emLicitacoes = (n: number) => `${fmt(n)} ${n === 1 ? "licitação" : "licitações"}`
+
 export function ListaMotivos({
   tipo,
   area,
-  usos,
   dicaUso,
   acao,
   usoPassado,
@@ -40,8 +42,6 @@ export function ListaMotivos({
   tipo: TipoMotivo
   /** Área usada na Auditoria. */
   area: string
-  /** Como o uso é contado na linha: "descartes", "perdas". */
-  usos: string
   /** Tooltip do número de usos, no "i" ao lado dele. */
   dicaUso: string
   /** O que a pessoa faz com o motivo: "descartes", "registros de perda". */
@@ -181,7 +181,8 @@ export function ListaMotivos({
                 </TooltipTrigger>
                 <TooltipContent>Ao escolher este motivo, a pessoa precisa escrever o porquê</TooltipContent>
               </Tooltip>
-              <MetaComDica dica={dicaUso}>{x.uso ? `${fmt(x.uso)} ${usos}` : "nunca usado"}</MetaComDica>
+              {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
+              <MetaComDica dica={dicaUso}>{x.uso ? emLicitacoes(x.uso) : "nunca usado"}</MetaComDica>
               <SettingsListItemActions>
                 <BotaoIcone
                   rotulo={`Arquivar ${x.nome}`}
@@ -216,7 +217,7 @@ export function ListaMotivos({
                 <SettingsListItem key={x.id} id={x.id} variant="archived" handle={false}>
                   <SettingsListName>{x.nome}</SettingsListName>
                   <SettingsListItemMeta>
-                    {fmt(x.uso)} {usos}
+                    {emLicitacoes(x.uso)}
                   </SettingsListItemMeta>
                   <Button variant="outline" size="sm" onClick={() => restaurar(x)}>
                     Restaurar

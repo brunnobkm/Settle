@@ -97,6 +97,10 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   só estão os motivos que já têm licitação.
 - O diálogo de confirmação muda conforme o caso: com licitações, explica que elas continuam
   como estão; sem nenhuma, diz que nada se perde e que ele não fica guardado.
+- **O contador da linha fala de licitações**, não de descartes nem de perdas (Alice, refine
+  28/09: "eu também padronizaria ali licitações"). É a unidade que a pessoa conhece, e serve
+  igual nas duas listas: "412 licitações", "1 licitação", "nunca usado". O que aquele número
+  conta continua explicado no "i" ao lado.
 - **Nome repetido é recusado**, como já acontece em abas e etapas: o campo volta ao valor
   anterior e explica no aviso. Vale contra os motivos ativos, contra os arquivados ("Restaure
   X em Arquivados") e contra "Outros", que é da plataforma. Motivo novo já nasce com nome
