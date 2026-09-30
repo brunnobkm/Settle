@@ -34,19 +34,22 @@ import {
 
 export type EstadoDaLista = "normal" | "vazio" | "erro"
 
-const TITULO_PLACEHOLDER = "PE 00/0000 · Órgão"
+const TITULO_PLACEHOLDER = "Lorem ipsum 00/0000 · Dolor sit"
 
-/** Conteúdo genérico: mostra a estrutura sem sugerir regras de conteúdo que ainda não foram definidas. */
+const LOREM =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+
+/** Conteúdo em lorem ipsum: mostra a estrutura sem sugerir regras de conteúdo que ainda não foram definidas. */
 function comoPlaceholder(n: Notificacao): Notificacao {
   return {
     ...n,
-    titulo: "Título da notificação",
-    mensagem: n.mensagem && "Texto da notificação. Aqui aparece o conteúdo publicado, truncado em até três linhas na lista.",
-    resposta: n.resposta && "Texto da resposta.",
-    mudanca: n.mudanca && { campo: "Campo alterado", de: "Valor anterior", para: "Valor novo" },
-    impacto: n.impacto && "Resumo do impacto da atualização.",
-    documento: n.documento && "Documento.pdf",
-    anexos: n.anexos?.map((_, i) => `Anexo ${i + 1}.pdf`),
+    titulo: "Lorem ipsum dolor sit amet",
+    mensagem: n.mensagem && LOREM,
+    resposta: n.resposta && "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    mudanca: n.mudanca && { campo: "Lorem ipsum", de: "Dolor sit", para: "Amet consectetur" },
+    impacto: n.impacto && "Consectetur adipiscing elit, sed do eiusmod tempor.",
+    documento: n.documento && "lorem-ipsum.pdf",
+    anexos: n.anexos?.map((_, i) => `lorem-ipsum-${i + 1}.pdf`),
   }
 }
 
