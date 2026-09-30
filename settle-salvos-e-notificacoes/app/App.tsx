@@ -991,14 +991,15 @@ function BarraDeSalvos({
   )
 }
 
-/** Menu da sidebar: Explorar e Salvos trocam de tela aqui mesmo. */
+/** Menu da sidebar: Explorar e Salvos trocam de tela aqui mesmo; os outros itens mostram "não prototipada". */
 function menuDaTela(tela: Tela, salvos: number, ir: (t: Tela) => void) {
   const alvo: Record<string, Tela> = { "Explorar licitações": "explorar", "Salvos para depois": "salvos" }
   return menuLicitacoes({ salvos }).map((grupo) => ({
     ...grupo,
     items: grupo.items.map((item) => {
       const destino = alvo[item.label]
-      if (!destino) return item
+      // o resto do menu não sai deste projeto (antes Recomendadas levava a outro protótipo)
+      if (!destino) return { ...item, href: "#", onClick: undefined, "data-nao-prototipado": true }
       const { "data-nao-prototipado": _ignorado, ...resto } = item as typeof item & { "data-nao-prototipado"?: boolean }
       return {
         ...resto,
