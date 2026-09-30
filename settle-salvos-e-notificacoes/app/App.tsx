@@ -700,11 +700,6 @@ export default function App() {
         onFechar={fecharSino}
         onAtivar={(tipos) => editandoLicitacao && ativarNotificacoes(editandoLicitacao, tipos)}
         onDesativar={() => editandoLicitacao && desativarNotificacoes(editandoLicitacao)}
-        onVerNaCentral={() => {
-          const edital = editandoLicitacao?.edital ?? null
-          fecharSino([])
-          abrirCentral(edital)
-        }}
       />
 
       <DialogoDeDescarte
