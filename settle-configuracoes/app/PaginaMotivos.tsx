@@ -90,7 +90,6 @@ export function PaginaMotivos() {
       <ListaMotivos
         tipo="descarte"
         area="Motivos"
-        usos="descartes"
         dicaUso="Quantas licitações já foram descartadas com este motivo."
         acao="descartes"
         usoPassado="descartadas com este motivo"

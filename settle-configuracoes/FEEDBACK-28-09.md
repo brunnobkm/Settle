@@ -382,6 +382,9 @@ Nenhum deles trava nada, são escolhas suas quando quiser:
 - **6** abrir com a chave "mesma lista" desligada e mostrar as duas listas na prévia
 - **7** "sem motivo" como motivo oculto em vez da fatia no gráfico
 - **8** tela de sem permissão por URL e o caso da Visão geral
+- **16** contador das listas de motivo em "licitações" ✅ feito em 30/09 (V79). Alice, 21:21:
+  "eu também padronizaria ali licitações"; você: "no lugar de 412 descartes, seria 412
+  licitações". Este item tinha escapado do consolidado.
 - **11** criar campo que não vem de variável
 - **12** ver os itens sem correspondência
 - **14** imagem e URL no modelo de e-mail
