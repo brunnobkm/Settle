@@ -100,29 +100,6 @@ export type Notificacao = {
 
 export const LICITACOES: Licitacao[] = [
   {
-    edital: "90001/2026",
-    orgaoCurto: "PGE-PA",
-    orgao: "EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ",
-    objeto:
-      "Licitação para fornecimento de computadores desktop, notebooks, monitores e periféricos para atender a rede municipal de ensino. Inclui instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.",
-    valor: "47.284.499,63",
-    id: "1078513",
-    modalidade: "Pregão - Eletrônico",
-    julgamento: "Menor preço por item",
-    estado: "PA",
-    cidade: "Belém",
-    habitantes: "1.303.403",
-    portal: "compras.saobernado.sp…",
-    adicionada: "04/02/2026",
-    atualizada: "12/02/2026",
-    envio: "13/02/2026",
-    semAnexo: true,
-    aderencia: "aderente",
-    motivo: "Objeto casa com o segmento de TI (computadores, notebooks e periféricos).",
-    salvo: false,
-    alertas: [],
-  },
-  {
     edital: "88234/2026",
     orgaoCurto: "Prefeitura de Campinas",
     orgao: "PREFEITURA MUNICIPAL DE CAMPINAS - SECRETARIA DE TI",
@@ -145,6 +122,29 @@ export const LICITACOES: Licitacao[] = [
     motivo: "Equipamentos de rede e cabeamento dentro do escopo de infraestrutura.",
     salvo: false,
     alertas: ["prazo", "status"],
+  },
+  {
+    edital: "90001/2026",
+    orgaoCurto: "PGE-PA",
+    orgao: "EPA - PROCURADORIA GERAL DO ESTADO DO PARÁ",
+    objeto:
+      "Licitação para fornecimento de computadores desktop, notebooks, monitores e periféricos para atender a rede municipal de ensino. Inclui instalação, configuração e garantia de 36 meses com suporte on-site. Entrega em 47 unidades escolares.",
+    valor: "47.284.499,63",
+    id: "1078513",
+    modalidade: "Pregão - Eletrônico",
+    julgamento: "Menor preço por item",
+    estado: "PA",
+    cidade: "Belém",
+    habitantes: "1.303.403",
+    portal: "compras.saobernado.sp…",
+    adicionada: "04/02/2026",
+    atualizada: "12/02/2026",
+    envio: "13/02/2026",
+    semAnexo: true,
+    aderencia: "aderente",
+    motivo: "Objeto casa com o segmento de TI (computadores, notebooks e periféricos).",
+    salvo: false,
+    alertas: [],
   },
   {
     edital: "90455/2025",
@@ -430,6 +430,26 @@ export const textoPadraoDeBusca = (l: Licitacao) =>
 /* ------------------------------------------------------------------ */
 
 export const NOTIFICACOES: Notificacao[] = [
+  {
+    id: "c1",
+    edital: "88234/2026",
+    categoria: "atualizacao",
+    tipo: "prazo",
+    quando: "19/06/2026 às 10:20",
+    titulo: "Envio da proposta adiado",
+    mudanca: { campo: "Envio da proposta", de: "21/02/2026", para: "06/03/2026" },
+    lida: false,
+  },
+  {
+    id: "c2",
+    edital: "88234/2026",
+    categoria: "atualizacao",
+    tipo: "status",
+    quando: "18/06/2026 às 17:05",
+    titulo: "Licitação reaberta após suspensão",
+    mudanca: { campo: "Status no portal", de: "Suspensa", para: "Aberta para participação" },
+    lida: false,
+  },
   {
     id: "n1",
     edital: "112/2026",

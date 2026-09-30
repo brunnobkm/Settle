@@ -49,6 +49,10 @@ Base: arquivo Platform, página "Central de notificações" (node 923-13801): di
 - O **widget** do Figma (lista embutida no módulo da licitação) corresponde ao sino no header da
   licitação aberta: mesma lista, mesmo comportamento.
 
+- **Sheet da central com conteúdo placeholder** ("PE 00/0000 · Órgão", "Título da notificação",
+  "Texto da notificação…", "Campo alterado: Valor anterior → Valor novo"): mostra a estrutura sem
+  sugerir regras de conteúdo, que não são o objetivo desta tarefa.
+
 ### Onde a notificação chega
 Toda atualização de uma licitação com sino ligado chega nos **dois lugares**:
 1. No **sino da licitação** (contador no card e no header da licitação).

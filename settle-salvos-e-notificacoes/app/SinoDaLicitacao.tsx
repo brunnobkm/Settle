@@ -77,7 +77,6 @@ export function SinoDaLicitacao({
         {licitacao &&
           (configurando ? (
             <Configuracao
-              edital={licitacao.edital}
               ligado={ligado}
               tipos={tipos}
               onTipos={setTipos}
@@ -105,14 +104,12 @@ export function SinoDaLicitacao({
 }
 
 function Configuracao({
-  edital,
   ligado,
   tipos,
   onTipos,
   onCancelar,
   onAtivar,
 }: {
-  edital: string
   ligado: boolean
   tipos: TipoAtualizacao[]
   onTipos: (t: TipoAtualizacao[]) => void
@@ -139,7 +136,7 @@ function Configuracao({
         <div className="border-b px-4 pt-3.5 pb-3">
           <h2 className="text-sm font-semibold">Receber notificações desta licitação?</h2>
           <p className="mt-0.5 text-[13px] text-muted-foreground">
-            Edital {edital}. Avisamos aqui no sino e na central de notificações.
+            Iremos avisar aqui no sino e na central de notificações.
           </p>
         </div>
       )}
