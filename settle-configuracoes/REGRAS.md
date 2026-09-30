@@ -139,6 +139,10 @@ que 200 delas foram descartadas em Em andamento e 212 em Recomendadas. Duas cons
   A confirmação aparece mesmo quando aquela tela não tem nenhuma licitação, com o texto
   ajustado ("não há histórico a preservar"): a mesma ação não pode às vezes perguntar e às
   vezes não, senão a pessoa não entende a regra e desconfia do que fez.
+- **O gráfico "Motivos de descarte" é de barras ao longo do tempo, não de pizza** (conferido em
+  produção, em Dashboards, 30/09). Textos que falavam em "ganha uma fatia" estavam errados: o
+  certo é "passa a mostrar". E a seção chama-se **Dashboards**, no plural, então é "em
+  Dashboards", não "do dashboard".
 - **Vocabulário**: a chave se "ativa" e se "desativa", nunca "liga" e "desliga". Um motivo é
   "arquivado", um campo é "removido do card", e nenhum dos dois é "tirado". As licitações são
   "descartadas por este motivo" (não "com este motivo") e, depois do arquivamento, "seguem com
@@ -446,14 +450,14 @@ lista de descarte. Por isso ela é configurada aqui, embaixo das etapas, e não 
 - Mesmas regras de lista do descarte: renomear, reordenar, "descrição obrigatória", arquivar quando já
   foi usado, excluir (com confirmação) quando nunca foi, nome repetido recusado.
 - **Exigir motivo ao registrar perda** é um switch (proposta nova; hoje a plataforma sempre
-  exige). Ligado é o padrão. Desligado, o motivo vira opcional e o gráfico "Motivos de perda"
-  ganha uma fatia "Sem motivo". **Como a plataforma valida hoje** (conferido no bundle
+  exige). Ativado é o padrão. Desativado, o motivo vira opcional e o gráfico "Motivos de perda"
+  passa a mostrar "Sem motivo". **Como a plataforma valida hoje** (conferido no bundle
   `workflow`, diálogo "Resultado da Licitação"): com "Perdeu a licitação" marcado e nenhum
   motivo escolhido, o botão de confirmar fica `disabled`; o comentário é opcional.
-- **O switch faz uma coisa só: deixar de obrigar.** Desligado, a pessoa consegue concluir o
+- **O switch faz uma coisa só: deixar de obrigar.** Desativado, a pessoa consegue concluir o
   registro sem escolher motivo; a lista continua na tela, continua editável e quem quiser
   continua escolhendo um. Nada é apagado nem escondido. Os dois efeitos colaterais: o gráfico
-  ganha a fatia "Sem motivo" e a trava do último motivo deixa de valer.
+  passa a mostrar "Sem motivo" e a trava do último motivo deixa de valer.
 - **Com a exigência ligada, o último motivo da lista não pode sair.** Arquivar ou excluir é
   recusado com o aviso de desligar a exigência antes. Sem essa trava a pessoa ficaria sem
   como registrar "Perdeu": aqui não existe "Outros" fixo como no descarte.
