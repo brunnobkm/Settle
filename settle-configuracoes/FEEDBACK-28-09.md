@@ -68,7 +68,7 @@ Os minutos citados abaixo são os das transcrições do Fireflies.
 | 3 | Excluir motivo | Motivos e Etapas | **Só arquivar** | ✅ feito em 30/09 (V77) | não |
 | 4 | Texto do diálogo de remover etapa | Etapas do funil | Texto genérico | ✅ feito em 30/09 (V77) | não |
 | 5 | Ajuda depois de fechar o card verde | todas | Em aberto | Ícone de interrogação ou porta para o agente | escolha |
-| 6 | Motivos diferentes por tela | Motivos de descarte | Em aberto | Abrir com a chave desligada e mostrar as duas listas | escolha |
+| 6 | Motivos diferentes por tela | Motivos de descarte | Em aberto | ✅ chave removida em 30/09 (V81); falta só a prévia com as duas listas | não |
 | 7 | Quando o motivo não é obrigatório | Etapas do funil | Em aberto | Fatia "Sem motivo" ou motivo oculto interno | escolha |
 | 8 | Sem permissão por URL | todas | Em aberto | Tela de sem acesso e o caso da Visão geral | não |
 | 9 | Cards separados (são três) | Campos do card | Decidido | ✅ feito em 30/09 (V77), com Em andamento junto | não |
@@ -380,7 +380,9 @@ Nenhum deles trava nada, são escolhas suas quando quiser:
 
 - **5** ajuda permanente depois de fechar o card verde, e a base de FAQ que o agente usaria
   para responder (refine 03:41)
-- **6** abrir com a chave "mesma lista" desligada e mostrar as duas listas na prévia
+- **6** a chave "mesma lista" foi **removida** em 30/09 (V81): as pílulas de tela ficam sempre
+  visíveis em cada motivo. Continua em aberto só a segunda parte da sugestão, mostrar as duas
+  listas na pré-visualização
 - **7** "sem motivo" como motivo oculto em vez da fatia no gráfico
 - **8** tela de sem permissão por URL e o caso da Visão geral
 - **16** contador das listas de motivo em "licitações" ✅ feito em 30/09 (V79). Alice, 21:21:
