@@ -113,9 +113,16 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
   intenção for outro significado, o certo é arquivar e criar um novo; a tela avisa quantas
   licitações serão afetadas.
 - "Outros" é fixo e sempre pede descrição.
+- **São duas perguntas diferentes, e a tela precisa dizer isso.** "Exigir motivo ao descartar"
+  é um interruptor da organização e decide se **escolher** um motivo da lista é obrigatório
+  para concluir o descarte. **Pede descrição** é por motivo e decide se, depois de escolhido,
+  a pessoa ainda precisa **escrever** o porquê num campo de texto. Um é sobre escolher, o
+  outro é sobre escrever, e eles se combinam: dá para não exigir motivo nenhum e, ainda
+  assim, ter um motivo que pede descrição quando alguém o escolhe.
 - **Pede descrição** (feedback da Alice, 18/09): qualquer motivo pode exigir que a pessoa
   escreva o porquê ao escolhê-lo. Ligar não afeta os descartes já feitos sem descrição.
-- Interruptor "Exigir motivo ao descartar".
+  É por motivo porque só alguns precisam de explicação: "Fora do segmento" se explica
+  sozinho, "Outros" não.
 
 **Como avisar que falta o motivo, nas duas listas.** Hoje a plataforma faz de dois jeitos: o
 descarte (`DiscardReasonDialog`) deixa o botão clicável e, ao confirmar sem motivo, marca o
@@ -195,7 +202,10 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   uma tabela de 800 linhas trava o card e a lista inteira. Nessa opção a tabela ganha altura
   própria (360px), rola por dentro e carrega o bloco seguinte (25 itens) quando a rolagem
   chega perto do fim. O rodapé diz "Mostrando N de M. Role a tabela para carregar mais." e,
-  no fim, só o total. Nas opções 3, 5 e 10 nada disso aparece: continua o "Ver mais N itens".
+  no fim, só o total. Nas opções 3, 5 e 10 nada disso aparece: a tabela mostra o que couber.
+- **"Mostrar até" é um campo compacto**, não um rótulo escrito: o nome fica só para o leitor de
+  tela e o campo mostra "Até 5 itens". A linha da tabela de itens é a mais cheia da lista, e o
+  nome "Itens com correspondência" trunca com reticências em vez de quebrar em duas linhas.
 - **Propriedade criada na hora.** Além de puxar uma variável do catálogo, dá para criar um campo
   próprio ali mesmo: nome e tipo (Texto, Número, Data, Sim ou não, Moeda). É o caso do substatus,
   que a pessoa preenche na licitação e não vem de variável nenhuma (Alice, semanal de 28/09:
@@ -203,11 +213,22 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   Notion). Na lista, a propriedade própria mostra o tipo e pode ser removida. Nome repetido no
   mesmo card é recusado.
 - **Variáveis como propriedade** (feedback da Alice, 18/09): qualquer variável da organização
-  ou da Settle pode entrar no card, inclusive as de checklist (prazo de impugnação, local
-  de entrega). O botão Adicionar lista o catálogo inteiro e tem "Criar variável", que leva
-  à central de Agentes e variáveis; a variável criada volta para esta lista. Cada variável
-  no card tem atalho para abrir e editar a própria variável (pedido que também apareceu no
-  teste com usuários: clicar na variável e editar de onde se está).
+  ou da Settle pode entrar no card. A lista do botão Adicionar é o catálogo real de
+  **Variáveis** (as mesmas que os agentes usam), não uma cópia: é lá que elas nascem e é lá
+  que se muda o que elas buscam. "Criar variável" abre a janela de criar sem sair daqui.
+- **Editar variável abre a janela, não leva para outra página.** Na linha, cada variável tem o
+  selo de origem ("Minha variável" ou "Variável Settle") e dois botões: **Editar variável**,
+  que abre a mesma janela de Variáveis (nome, o que procurar no edital, formato, onde
+  procurar), e **Tirar do card**. Era um link para a página de Variáveis e virou janela porque
+  a pessoa está configurando o card: mandá-la para outra tela faz perder o lugar.
+- **Tirar do card pede confirmação, com o impacto escrito.** Vale para variável e para
+  propriedade própria, porque a mudança é para a organização inteira. O texto diz o que não
+  se perde: a variável continua existindo em Variáveis, continua sendo buscada no edital e
+  continua em Filtrar e Ordenar; a propriedade própria continua com o que já foi preenchido
+  nas licitações, e volta a aparecer se ela for posta no card de novo.
+- **As ações ficam numa toolbox à direita das abas**, no padrão da plataforma: "Adicionar
+  variável", "Nova propriedade" e "Restaurar padrão da Settle". Elas são ações da área, e
+  ficarem ao lado das abas deixa claro que valem para a tela aberta naquela aba.
 - Vale para a organização toda. **Em aberto:** permitir que cada pessoa tenha a própria
   visão por cima do padrão (o Linear faz isso por view). Recomendo começar só com o padrão
   da organização.
@@ -220,9 +241,26 @@ navegação: era o pedido da Alice, para a área não virar uma tela por lugar.
 
 **O nome da seção deixou de ser "Campos do card"**, porque ela não trata só do card: trata do que
 a licitação mostra em cada lugar, incluindo as propriedades e a tabela de itens. Agora é **Campos
-da licitação**. Dentro da licitação o card não tem a primeira linha, porque
-as ações ficam no cabeçalho da página; por isso lá a lista não mostra as peças do topo.
-"Restaurar padrão" vale só para a tela aberta.
+da licitação**. "Restaurar padrão" vale só para a tela aberta.
+
+**Cada aba mostra o componente que existe de verdade naquele lugar** (conferido em produção,
+em app.settlegov.com, e não montado por semelhança):
+
+- **Recomendadas**: o card cheio. Primeira linha com seleção, número do edital, Descartar,
+  Enviar para análise, responsáveis, ações de ícone e Score; corpo numa caixa com borda
+  (segmentos, Órgão com ME - EPP, Objeto, Valor global); as datas e as propriedades numa caixa
+  só, divididas ao meio; a tabela de itens embutida no fim.
+- **Em andamento**: o card do quadro, que é uma coluna do Kanban. Estreito, sem a caixa do
+  corpo, **sem as caixas de Datas e Propriedades e sem a tabela de itens**: tudo o que aparece
+  é linha do corpo (seleção e edital em cima; segmento, órgão, objeto cortado em três linhas,
+  Responsável, Substatus, Descrição, Envio da proposta, Cidade e Valor global). Por isso a
+  lista de configuração dessa aba não tem as seções Datas e Propriedades. **Em aberto:** Em
+  andamento também tem as visões Tabela e Calendário, que não são esta configuração.
+- **Dentro da licitação**: as ações não ficam no card, ficam no **cabeçalho da página**, ao
+  lado do número do edital, que ali é o título. Não há caixa de seleção (não existe ação em
+  lote dentro de uma licitação) nem "Enviar para análise" (a licitação já está em análise), e
+  entram Checklist e o ícone de comentários. Os itens ficam numa **aba** própria ("Itens,
+  Detalhes, Manifestações, Análise Técnica"), não dentro do card.
 
 **A pré-visualização usa um edital fixo**, o mais completo da lista de exemplo (dois
 segmentos, ME-EPP, itens em lotes e uma variável sem valor). Não há seletor de edital: a tela

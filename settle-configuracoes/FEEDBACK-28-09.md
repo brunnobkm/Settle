@@ -371,7 +371,11 @@ variáveis. Não muda nada no protótipo agora; é para ter em mente quando o pr
 - **Item 3:** só arquivar, e arquivado sem licitação some da lista. Feito.
 - **Item 4:** texto genérico no diálogo de remover etapa. Feito.
 - **Item 9:** três cards com configuração própria (Recomendadas, Em andamento e dentro da
-  licitação), alternando dentro da própria tela. Feito.
+  licitação), alternando dentro da própria tela. Feito. Em V82 cada aba passou a mostrar o
+  componente que existe mesmo naquele lugar, conferido em produção: Em andamento é o card
+  estreito do quadro, sem as caixas de Datas e Propriedades e sem a tabela de itens; dentro da
+  licitação as ações ficam no cabeçalho da página (sem seleção e sem "Enviar para análise",
+  com Checklist e comentários) e os itens ficam numa aba.
 - **Item 10:** **arrastar continua livre.** Sua decisão, contra a sugestão da Alice e do Pedro.
 
 ## O que ainda está aberto
