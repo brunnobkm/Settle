@@ -1,7 +1,9 @@
 // Salvos para depois + notificações (duplicado de Explorar licitações).
-// Ao salvar, o usuário escolhe só guardar ou guardar e receber atualizações (e de quais
-// tipos). A tela Salvos para depois mostra o que cada licitação acompanha e as novidades;
-// o sino da navbar abre a central de notificações com o que mudou em cada edital.
+// Salvar para depois continua sendo um clique. O sino do card é separado: no primeiro
+// clique configura quais atualizações avisar; ligado, mostra as atualizações daquela
+// licitação (com Configurar e Desativar). Descartar desliga as notificações, a não ser
+// que o usuário marque "Continuar recebendo atualizações" no diálogo de descarte.
+// O sino da navbar abre a central de notificações com tudo junto.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
@@ -40,9 +42,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
-import { AlertasDaLicitacao } from "./AlertasDaLicitacao"
 import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
 import { CentralDeNotificacoes, type AbaDaCentral } from "./CentralDeNotificacoes"
+import { DialogoDeDescarte } from "./DialogoDeDescarte"
+import { SinoDaLicitacao } from "./SinoDaLicitacao"
 import {
   ESCOPOS,
   HOJE,
@@ -52,6 +55,7 @@ import {
   PROXIMAS_NOTIFICACOES,
   ROTULO_CURTO,
   TIPOS_DE_ATUALIZACAO,
+  TODOS_OS_TIPOS,
   RESPONSAVEIS,
   ROTULO_ADERENCIA,
   SEGMENTOS_DO_CARD,
@@ -76,7 +80,7 @@ const ATRASO_BUSCA = 450 // ms: simula a busca no servidor (mostra o esqueleto)
 const OPCOES_DE_ESCOPO = ESCOPOS.map((e) => ({ value: e.chave, label: e.rotulo }))
 
 type Tela = "explorar" | "salvos"
-type AbaDeSalvos = "todas" | "novidades" | "acompanhando" | "guardadas"
+type AbaDeSalvos = "todas" | "novidades" | "notificando" | "guardadas"
 
 function pertenceAVisualizacao(l: Licitacao, v: Visualizacao | undefined) {
   if (!v) return true
@@ -96,8 +100,10 @@ export default function App() {
   const [abaSalvos, setAbaSalvos] = useState<AbaDeSalvos>("todas")
   const [destaque, setDestaque] = useState<string | null>(null)
 
-  // popover de salvar/alertas, ancorado no botão clicado
+  // sino da licitação (popover ancorado no botão clicado) e diálogo de descarte
   const [editando, setEditando] = useState<{ edital: string; ancora: HTMLElement } | null>(null)
+  const [sinoAberto, setSinoAberto] = useState(false)
+  const [descartando, setDescartando] = useState<string | null>(null)
 
   // central de notificações
   const [notificacoes, setNotificacoes] = useState(NOTIFICACOES)
@@ -137,14 +143,14 @@ export default function App() {
       return escopo ? normalizar(escopo.valor(l)).includes(q) : false
     })
   }
-  const fila = licitacoes.filter((l) => !l.salvo)
+  const fila = licitacoes.filter((l) => !l.salvo && !l.descartada)
   const visualizacaoAtiva = visualizacoes.find((v) => v.chave === ativa)
   const visiveis = visualizacoes.filter((v) => !v.oculta)
   const contagens = Object.fromEntries(
     visualizacoes.map((v) => [v.chave, fila.filter((l) => pertenceAVisualizacao(l, v) && casaBusca(l)).length])
   )
   const listaExplorar = fila.filter((l) => pertenceAVisualizacao(l, visualizacaoAtiva) && casaBusca(l))
-  const salvas = licitacoes.filter((l) => l.salvo)
+  const salvas = licitacoes.filter((l) => l.salvo && !l.descartada)
   const totalSalvos = salvas.length
 
   const naoLidasDe = (edital: string) => notificacoes.filter((n) => n.edital === edital && !n.lida).length
@@ -152,7 +158,7 @@ export default function App() {
   const FILTRO_SALVOS: Record<AbaDeSalvos, (l: Licitacao) => boolean> = {
     todas: () => true,
     novidades: (l) => naoLidasDe(l.edital) > 0,
-    acompanhando: (l) => l.alertas.length > 0,
+    notificando: (l) => l.alertas.length > 0,
     guardadas: (l) => !l.alertas.length,
   }
   const listaSalvos = salvas
@@ -161,6 +167,7 @@ export default function App() {
     .sort((a, b) => Number(naoLidasDe(b.edital) > 0) - Number(naoLidasDe(a.edital) > 0))
   const lista = tela === "explorar" ? listaExplorar : listaSalvos
   const editandoLicitacao = editando ? (licitacoes.find((l) => l.edital === editando.edital) ?? null) : null
+  const descartandoLicitacao = descartando ? (licitacoes.find((l) => l.edital === descartando) ?? null) : null
 
   /* ---------------- largura livre para as abas ---------------- */
 
@@ -322,40 +329,72 @@ export default function App() {
     )
   }
 
-  function abrirAlertas(l: Licitacao, ancora: HTMLElement) {
+  function alternarSalvo(l: Licitacao) {
     if (saindo.includes(l.edital)) return
-    setEditando({ edital: l.edital, ancora })
-  }
-
-  function salvar(l: Licitacao, alertas: TipoAtualizacao[]) {
-    setEditando(null)
-    const anterior = { salvo: l.salvo, alertas: l.alertas, salvaEm: l.salvaEm }
-    const desfazer = { label: "Desfazer", onClick: () => aplicar(l.edital, anterior) }
-    if (l.salvo) {
-      aplicar(l.edital, { alertas })
-      toast(alertas.length ? "Alertas atualizados" : "Alertas desligados: licitação só guardada", {
-        icon: alertas.length ? <BellRingIcon className="size-4 text-primary" /> : <BellIcon className="size-4" />,
-        action: desfazer,
-      })
-      return
-    }
-    sairDaLista(l.edital, { salvo: true, alertas, salvaEm: "19/06/2026" })
-    toast(alertas.length ? "Salvo para depois. Você será avisado das atualizações" : "Salvo para depois", {
-      icon: alertas.length ? (
-        <BellRingIcon className="size-4 text-primary" />
-      ) : (
+    const salvar = !l.salvo
+    sairDaLista(l.edital, { salvo: salvar, salvaEm: salvar ? "19/06/2026" : undefined })
+    toast(salvar ? "Salvo para depois" : "Removido de Salvos para depois", {
+      icon: salvar ? (
         <BookmarkIcon className="size-4 fill-current text-primary" />
+      ) : (
+        <BookmarkXIcon className="size-4 text-muted-foreground" />
       ),
-      action: desfazer,
+      action: { label: "Desfazer", onClick: () => aplicar(l.edital, { salvo: l.salvo, salvaEm: l.salvaEm }) },
     })
   }
 
-  function remover(l: Licitacao) {
-    setEditando(null)
-    sairDaLista(l.edital, { salvo: false, alertas: [] })
-    toast("Removido de Salvos para depois", {
-      icon: <BookmarkXIcon className="size-4 text-muted-foreground" />,
-      action: { label: "Desfazer", onClick: () => aplicar(l.edital, { salvo: true, alertas: l.alertas }) },
+  /* ---------------- sino da licitação ---------------- */
+
+  function abrirSino(l: Licitacao, ancora: HTMLElement) {
+    if (saindo.includes(l.edital)) return
+    setEditando({ edital: l.edital, ancora })
+    setSinoAberto(true)
+  }
+
+  function ativarNotificacoes(l: Licitacao, alertas: TipoAtualizacao[]) {
+    const eraLigado = l.alertas.length > 0
+    aplicar(l.edital, { alertas })
+    if (!eraLigado) {
+      setSinoAberto(false)
+      toast("Notificações ativadas", {
+        description: `Edital ${l.edital}. Avisaremos no sino e na central.`,
+        icon: <BellRingIcon className="size-4 text-primary" />,
+        action: { label: "Desfazer", onClick: () => aplicar(l.edital, { alertas: [] }) },
+      })
+    } else {
+      toast("Notificações atualizadas", { icon: <BellRingIcon className="size-4 text-primary" /> })
+    }
+  }
+
+  function desativarNotificacoes(l: Licitacao) {
+    setSinoAberto(false)
+    aplicar(l.edital, { alertas: [] })
+    toast("Notificações desativadas", {
+      description: `Edital ${l.edital}`,
+      icon: <BellIcon className="size-4 text-muted-foreground" />,
+      action: { label: "Desfazer", onClick: () => aplicar(l.edital, { alertas: l.alertas }) },
+    })
+  }
+
+  function fecharSino(lidas: string[]) {
+    setSinoAberto(false)
+    if (lidas.length) setNotificacoes((ns) => ns.map((n) => (lidas.includes(n.id) ? { ...n, lida: true } : n)))
+  }
+
+  /* ---------------- descarte ---------------- */
+
+  function descartar(l: Licitacao, continuarNotificando: boolean) {
+    setDescartando(null)
+    const alertas = continuarNotificando ? (l.alertas.length ? l.alertas : TODOS_OS_TIPOS) : []
+    sairDaLista(l.edital, { descartada: true, alertas })
+    toast("Licitação descartada", {
+      description: continuarNotificando
+        ? "Você continua recebendo as atualizações desta licitação."
+        : l.alertas.length
+          ? "As notificações desta licitação foram desativadas."
+          : undefined,
+      icon: <Trash2Icon className="size-4 text-muted-foreground" />,
+      action: { label: "Desfazer", onClick: () => aplicar(l.edital, { descartada: false, alertas: l.alertas }) },
     })
   }
 
@@ -378,8 +417,18 @@ export default function App() {
 
   function verLicitacao(n: Notificacao) {
     marcarLida(n.id, true)
+    const l = licitacoes.find((x) => x.edital === n.edital)
+    if (l?.descartada) {
+      toast("Esta página ainda não foi prototipada.", { description: "A licitação está em Descartadas." })
+      return
+    }
     setCentralAberta(false)
-    setTela("salvos")
+    if (!l?.salvo) {
+      setTela("explorar")
+      setAtiva("Todas")
+    } else {
+      setTela("salvos")
+    }
     setAbaSalvos("todas")
     setDestaque(n.edital)
     window.setTimeout(() => {
@@ -389,10 +438,10 @@ export default function App() {
   }
 
   // Protótipo: simula o portal publicando uma atualização. Só vira notificação
-  // se a licitação estiver salva acompanhando aquele tipo.
+  // se o sino da licitação estiver ligado para aquele tipo (inclusive descartadas que o usuário pediu para acompanhar).
   function simularAtualizacao() {
     const candidatas = PROXIMAS_NOTIFICACOES.filter((p) =>
-      licitacoes.some((l) => l.edital === p.edital && l.salvo && l.alertas.includes(p.tipo))
+      licitacoes.some((l) => l.edital === p.edital && l.alertas.includes(p.tipo))
     )
     const escolhida = candidatas[proxima.current % Math.max(candidatas.length, 1)]
     proxima.current += 1
@@ -476,7 +525,7 @@ export default function App() {
             contagens={{
               todas: salvas.length,
               novidades: salvas.filter(FILTRO_SALVOS.novidades).length,
-              acompanhando: salvas.filter(FILTRO_SALVOS.acompanhando).length,
+              notificando: salvas.filter(FILTRO_SALVOS.notificando).length,
               guardadas: salvas.filter(FILTRO_SALVOS.guardadas).length,
             }}
             onSimular={simularAtualizacao}
@@ -599,7 +648,9 @@ export default function App() {
                         }
                         naoLidas={naoLidasDe(l.edital)}
                         naTelaDeSalvos={tela === "salvos"}
-                        onAbrirAlertas={(ancora) => abrirAlertas(l, ancora)}
+                        onAlternarSalvo={() => alternarSalvo(l)}
+                        onAbrirSino={(ancora) => abrirSino(l, ancora)}
+                        onDescartar={() => setDescartando(l.edital)}
                         onVerNovidades={() => abrirCentral(l.edital)}
                       />
                     </div>
@@ -641,12 +692,27 @@ export default function App() {
         </section>
       </div>
 
-      <AlertasDaLicitacao
+      <SinoDaLicitacao
+        aberto={sinoAberto}
         licitacao={editandoLicitacao}
         ancora={editando?.ancora ?? null}
-        onFechar={() => setEditando(null)}
-        onSalvar={(alertas) => editandoLicitacao && salvar(editandoLicitacao, alertas)}
-        onRemover={() => editandoLicitacao && remover(editandoLicitacao)}
+        notificacoes={editandoLicitacao ? notificacoes.filter((n) => n.edital === editandoLicitacao.edital) : []}
+        onFechar={fecharSino}
+        onAtivar={(tipos) => editandoLicitacao && ativarNotificacoes(editandoLicitacao, tipos)}
+        onDesativar={() => editandoLicitacao && desativarNotificacoes(editandoLicitacao)}
+        onVerNaCentral={() => {
+          const edital = editandoLicitacao?.edital ?? null
+          fecharSino([])
+          abrirCentral(edital)
+        }}
+      />
+
+      <DialogoDeDescarte
+        licitacao={descartandoLicitacao}
+        onFechar={() => setDescartando(null)}
+        onDescartar={({ continuarNotificando }) =>
+          descartandoLicitacao && descartar(descartandoLicitacao, continuarNotificando)
+        }
       />
 
       <CentralDeNotificacoes
@@ -698,7 +764,9 @@ function CardDaLicitacao({
   naoLidas,
   naTelaDeSalvos,
   onSelecionar,
-  onAbrirAlertas,
+  onAlternarSalvo,
+  onAbrirSino,
+  onDescartar,
   onVerNovidades,
 }: {
   licitacao: Licitacao
@@ -707,28 +775,33 @@ function CardDaLicitacao({
   naoLidas: number
   naTelaDeSalvos: boolean
   onSelecionar: (marcada: boolean) => void
-  onAbrirAlertas: (ancora: HTMLElement) => void
+  onAlternarSalvo: () => void
+  onAbrirSino: (ancora: HTMLElement) => void
+  onDescartar: () => void
   onVerNovidades: () => void
 }) {
   const arquivos = l.arquivos ?? 0
-  const acompanhando = salvo && l.alertas.length > 0
+  const notificando = l.alertas.length > 0
   const acoesDeIcone: (LicitacaoCardIconActionProps & { id: string })[] = [
     {
       id: "salvar",
-      label: salvo ? "Salva para depois: editar" : "Salvar para depois",
+      label: salvo ? "Remover de Salvos para depois" : "Salvar para depois",
       icon: <BookmarkIcon className={cn(salvo && "fill-current")} />,
       pressed: salvo,
-      "aria-haspopup": "dialog",
-      onClick: (e) => onAbrirAlertas(e.currentTarget),
+      onClick: onAlternarSalvo,
     },
     {
       id: "notificar",
-      label: acompanhando ? "Recebendo atualizações: editar alertas" : "Receber atualizações",
-      icon: acompanhando ? <BellRingIcon /> : <BellIcon />,
-      pressed: acompanhando,
+      label: notificando
+        ? naoLidas
+          ? `Notificações: ${naoLidas} ${naoLidas === 1 ? "atualização nova" : "atualizações novas"}`
+          : "Notificações ativadas: ver atualizações"
+        : "Ativar notificações",
+      icon: notificando ? <BellRingIcon /> : <BellIcon />,
+      pressed: notificando,
       count: naoLidas || undefined,
       "aria-haspopup": "dialog",
-      onClick: (e) => onAbrirAlertas(e.currentTarget),
+      onClick: (e) => onAbrirSino(e.currentTarget),
     },
     {
       id: "link",
@@ -762,7 +835,7 @@ function CardDaLicitacao({
       onSelectedChange={onSelecionar}
       actions={
         <>
-          <Button variant="outline" className="px-3.5 shadow-none" data-nao-prototipado>
+          <Button variant="outline" className="px-3.5 shadow-none" onClick={onDescartar}>
             Descartar
           </Button>
           <Button className="px-3.5" data-nao-prototipado>
@@ -840,7 +913,7 @@ function LinhaDeAcompanhamento({
       {tipos.length ? (
         <span className="flex min-w-0 items-center gap-1.5">
           <BellRingIcon aria-hidden className="size-3.5 text-primary" />
-          <span className="font-semibold">Acompanhando:</span>
+          <span className="font-semibold">Notificações:</span>
           <span className="text-muted-foreground">
             {todos ? "todas as atualizações" : tipos.map((t) => ROTULO_CURTO[t.chave]).join(", ")}
           </span>
@@ -848,7 +921,7 @@ function LinhaDeAcompanhamento({
       ) : (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <BookmarkIcon aria-hidden className="size-3.5" />
-          Só guardada, sem alertas
+          Notificações desativadas
         </span>
       )}
       {l.salvaEm && <span className="text-xs text-muted-foreground">Salva em {l.salvaEm}</span>}
@@ -877,8 +950,8 @@ function BarraDeSalvos({
   const ABAS: { valor: AbaDeSalvos; rotulo: string }[] = [
     { valor: "todas", rotulo: "Todas" },
     { valor: "novidades", rotulo: "Com atualizações" },
-    { valor: "acompanhando", rotulo: "Acompanhando" },
-    { valor: "guardadas", rotulo: "Só guardadas" },
+    { valor: "notificando", rotulo: "Com notificações" },
+    { valor: "guardadas", rotulo: "Sem notificações" },
   ]
   return (
     <div className="sticky top-16 z-10 mb-2 flex flex-wrap items-center justify-between gap-3 bg-background py-3.5 transition-transform duration-250 ease-out group-data-[header-hidden=true]/app-shell:-translate-y-16">

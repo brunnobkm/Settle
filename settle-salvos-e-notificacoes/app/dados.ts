@@ -24,8 +24,10 @@ export type Licitacao = {
   motivo: string
   /** Na fila de "Salvos para depois" (sai desta lista). */
   salvo: boolean
-  /** Atualizações que geram aviso. Vazio: só guardada, sem alertas. */
+  /** Notificações ligadas pelo sino: tipos de atualização. Vazio: desligadas. */
   alertas: TipoAtualizacao[]
+  /** Descartada (sai das listas). Descartar desliga as notificações, a não ser que o usuário peça para continuar. */
+  descartada?: boolean
   /** Quando foi salva (DD/MM/AAAA). */
   salvaEm?: string
 }
@@ -113,7 +115,7 @@ export const LICITACOES: Licitacao[] = [
     aderencia: "aderente",
     motivo: "Equipamentos de rede e cabeamento dentro do escopo de infraestrutura.",
     salvo: false,
-    alertas: [],
+    alertas: ["prazo", "status"],
   },
   {
     edital: "90455/2025",
@@ -469,3 +471,37 @@ export const PROXIMAS_NOTIFICACOES: Omit<Notificacao, "id" | "lida">[] = [
     documento: "Errata_01_Edital_112-2026.pdf",
   },
 ]
+
+/* ------------------------------------------------------------------ */
+/* Descarte                                                            */
+/* ------------------------------------------------------------------ */
+
+// Motivos de descarte de hoje (mesma lista de settle-configuracoes).
+export const MOTIVOS_DE_DESCARTE = [
+  "Não atende requisitos técnicos",
+  "Valor abaixo do desejado",
+  "Prazo inadequado para elaboração proposta",
+  "Falta de capacidade técnica/operacional",
+  "Conflito de interesse",
+  "Documentação técnica restritiva/direcionado",
+  "Fora da área que quer atuar",
+  "Minha empresa não atende esse produto / serviço",
+  "Órgão indesejado",
+  "Valor indesejado",
+  "Região indesejada",
+  "Prazo muito próximo",
+  "Duplicado",
+  "Revenda",
+  "Certificação que não temos",
+  "Outros",
+]
+
+/** Motivos que uma atualização do edital pode desfazer: o diálogo sugere continuar acompanhando. */
+export const MOTIVOS_REVERSIVEIS: Record<string, string> = {
+  "Não atende requisitos técnicos": "Uma retificação pode mudar os requisitos.",
+  "Prazo inadequado para elaboração proposta": "O órgão pode adiar o envio da proposta.",
+  "Prazo muito próximo": "O órgão pode adiar o envio da proposta.",
+  "Documentação técnica restritiva/direcionado": "Uma impugnação pode levar à retificação do edital.",
+  "Certificação que não temos": "Uma retificação pode flexibilizar a exigência.",
+  "Valor abaixo do desejado": "O edital pode ser republicado com outro valor.",
+}
