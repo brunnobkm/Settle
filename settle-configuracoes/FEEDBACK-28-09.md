@@ -378,14 +378,21 @@ variáveis. Não muda nada no protótipo agora; é para ter em mente quando o pr
 
 Nenhum deles trava nada, são escolhas suas quando quiser:
 
-- **5** ajuda permanente depois de fechar o card verde
+- **5** ajuda permanente depois de fechar o card verde, e a base de FAQ que o agente usaria
+  para responder (refine 03:41)
 - **6** abrir com a chave "mesma lista" desligada e mostrar as duas listas na prévia
 - **7** "sem motivo" como motivo oculto em vez da fatia no gráfico
 - **8** tela de sem permissão por URL e o caso da Visão geral
 - **16** contador das listas de motivo em "licitações" ✅ feito em 30/09 (V79). Alice, 21:21:
   "eu também padronizaria ali licitações"; você: "no lugar de 412 descartes, seria 412
   licitações". Este item tinha escapado do consolidado.
-- **11** criar campo que não vem de variável
+- **17** a regra do motivo "Outros" (refine 21:27): hoje ele é obrigatório, sempre disponível e
+  sempre pede descrição. Você mesmo disse que dá para mudar essa regra se quisermos. Ninguém
+  decidiu nada.
+- **18** padronizar o tom dos avisos temporários (refine 20:07): você comentou que começou a
+  padronizar toda mensagem de dica no card verde. Vale virar regra escrita, para as próximas
+  telas nascerem iguais.
+- **11** criar campo que não vem de variável ✅ feito em 30/09 (V80)
 - **12** ver os itens sem correspondência
 - **14** imagem e URL no modelo de e-mail
 - **1, 13, 15** ordem de trabalho, badge de status e domínio além de licitação: não são ajustes

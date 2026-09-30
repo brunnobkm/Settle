@@ -124,7 +124,7 @@ etapa, e por isso os textos da tela falam da regra ("precisa escolher um motivo 
 concluir"), não do mecanismo. **O botão desabilitado do registro de perda é para corrigir.**
 - Hoje existem 15 motivos de descarte (incluindo Outros).
 
-## 3. Campos do card de Recomendadas
+## 3. Campos da licitação
 
 - **A lista tem duas seções, e só duas: Datas e Propriedades.** São as duas caixas de verdade
   do card, e por isso são as únicas que valem como seção na configuração. Todo o resto (as
@@ -192,6 +192,12 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   própria (360px), rola por dentro e carrega o bloco seguinte (25 itens) quando a rolagem
   chega perto do fim. O rodapé diz "Mostrando N de M. Role a tabela para carregar mais." e,
   no fim, só o total. Nas opções 3, 5 e 10 nada disso aparece: continua o "Ver mais N itens".
+- **Propriedade criada na hora.** Além de puxar uma variável do catálogo, dá para criar um campo
+  próprio ali mesmo: nome e tipo (Texto, Número, Data, Sim ou não, Moeda). É o caso do substatus,
+  que a pessoa preenche na licitação e não vem de variável nenhuma (Alice, semanal de 28/09:
+  "ele deveria poder criar campos que não são variáveis"; refine, 45:40: a ideia no formato do
+  Notion). Na lista, a propriedade própria mostra o tipo e pode ser removida. Nome repetido no
+  mesmo card é recusado.
 - **Variáveis como propriedade** (feedback da Alice, 18/09): qualquer variável da organização
   ou da Settle pode entrar no card, inclusive as de checklist (prazo de impugnação, local
   de entrega). O botão Adicionar lista o catálogo inteiro e tem "Criar variável", que leva
@@ -203,10 +209,14 @@ concluir"), não do mecanismo. **O botão desabilitado do registro de perda é p
   da organização.
 - **Em aberto:** Em andamento e Descartadas herdam essa configuração ou têm a sua?
 
-**Três cards, três configurações.** O mesmo módulo aparece na lista de Recomendadas, na de Em
-andamento e dentro da licitação (o workspace), e cada um guarda a sua configuração. A troca fica
-numa barra dentro da própria tela, não numa aba nova na navegação: era o pedido da Alice, para a
-área não virar uma tela por lugar. Dentro da licitação o card não tem a primeira linha, porque
+**Três lugares, três configurações.** O mesmo módulo aparece na lista de Recomendadas, na de Em
+andamento e dentro da licitação (o workspace), e cada um guarda a sua configuração. A troca é por
+**abas dentro da própria tela**, no mesmo padrão de Abas das listas, não por uma página nova na
+navegação: era o pedido da Alice, para a área não virar uma tela por lugar.
+
+**O nome da seção deixou de ser "Campos do card"**, porque ela não trata só do card: trata do que
+a licitação mostra em cada lugar, incluindo as propriedades e a tabela de itens. Agora é **Campos
+da licitação**. Dentro da licitação o card não tem a primeira linha, porque
 as ações ficam no cabeçalho da página; por isso lá a lista não mostra as peças do topo.
 "Restaurar padrão" vale só para a tela aberta.
 

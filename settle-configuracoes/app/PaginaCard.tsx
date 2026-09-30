@@ -1,5 +1,5 @@
-// Campos do card de Recomendadas: mostrar/ocultar e ordenar dentro de quatro grupos,
-// com variáveis da organização entre as propriedades e pré-visualização ao lado.
+// Campos da licitação: o que aparece nos três lugares onde a licitação é mostrada (card de
+// Recomendadas, card de Em andamento e módulo dentro da licitação), com prévia ao lado.
 
 import {
   createContext,
@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   LicitacaoCardAvatars,
   LicitacaoCardContent,
@@ -48,6 +49,7 @@ import {
 } from "@/components/ui/licitacao-card"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import {
   SettingsBox,
@@ -76,10 +78,13 @@ import {
   LICS,
   OPCOES_MAX_ITENS,
   mover,
+  novoId,
   TELAS_DO_CARD,
+  TIPOS_DE_CAMPO,
   valorDaLic,
   type Campo,
   type TelaDoCard,
+  type TipoDeCampo,
   type ItemLic,
   type FormatoCampo,
 } from "./dados"
@@ -88,6 +93,9 @@ import { useConfig } from "./estado"
 export function PaginaCard() {
   const { campos, setCampos, maxItens, setMaxItens, telaDoCard, setTelaDoCard, auditar, confirmar } = useConfig()
   const [menuAberto, setMenuAberto] = useState(false)
+  const [novaAberta, setNovaAberta] = useState(false)
+  const [nomeNovo, setNomeNovo] = useState("")
+  const [tipoNovo, setTipoNovo] = useState<TipoDeCampo>("Texto")
 
   /**
    * Arrastar é o que muda a seção: o campo assume o formato de quem estava no lugar onde ele
@@ -111,7 +119,7 @@ export function PaginaCard() {
       return nova.map((x) => (x.id === deId ? { ...x, f: destino, junto: destino === "destaque" ? x.junto : false } : x))
     })
     auditar(
-      "Campos do card",
+      "Campos da licitação",
       destino === campo.f
         ? "Reordenou os campos"
         : `"${campo.nome}" foi para ${NOME_DO_FORMATO[destino]}`
@@ -120,12 +128,28 @@ export function PaginaCard() {
 
   function alternar(c: Campo, on: boolean) {
     setCampos((l) => l.map((x) => (x.id === c.id ? { ...x, on } : x)))
-    auditar("Campos do card", `${on ? "Mostrou" : "Ocultou"} "${c.nome}"`)
+    auditar("Campos da licitação", `${on ? "Mostrou" : "Ocultou"} "${c.nome}"`)
   }
 
   function tirar(c: Campo) {
     setCampos((l) => l.filter((x) => x.id !== c.id))
-    auditar("Campos do card", `Tirou a variável "${c.nome}" do card`)
+    auditar("Campos da licitação", `Tirou a variável "${c.nome}" do card`)
+  }
+
+  /** Campo criado aqui mesmo: não vem do catálogo de Variáveis, a pessoa preenche na licitação. */
+  function criarPropriedade() {
+    const nome = nomeNovo.trim()
+    if (!nome) return
+    if (campos.some((c) => c.nome.toLowerCase() === nome.toLowerCase())) {
+      toast("Já existe um campo com esse nome neste card")
+      return
+    }
+    setCampos((l) => [...l, { id: novoId("p"), nome, f: "propriedade", on: true, propria: true, tipo: tipoNovo }])
+    auditar("Campos da licitação", `Criou a propriedade "${nome}" (${tipoNovo})`)
+    toast(`${nome} entrou como propriedade`)
+    setNomeNovo("")
+    setTipoNovo("Texto")
+    setNovaAberta(false)
   }
 
   function restaurarPadrao() {
@@ -140,7 +164,7 @@ export function PaginaCard() {
       acao: "Restaurar",
       ok: () => {
         setCampos(camposDaTela(telaDoCard))
-        auditar("Campos do card", "Restaurou o padrão da Settle")
+        auditar("Campos da licitação", "Restaurou o padrão da Settle")
         toast("Campos restaurados")
       },
     })
@@ -178,7 +202,7 @@ export function PaginaCard() {
               onChange={(e) => {
                 const n = Number(e.target.value)
                 setMaxItens(n)
-                auditar("Campos do card", `Passou a mostrar ${n ? `até ${n}` : "todos os"} itens no card`)
+                auditar("Campos da licitação", `Passou a mostrar ${n ? `até ${n}` : "todos os"} itens no card`)
               }}
             >
               {OPCOES_MAX_ITENS.map((n) => (
@@ -188,6 +212,18 @@ export function PaginaCard() {
               ))}
             </NativeSelect>
           </label>
+        )}
+        {c.propria && (
+          <>
+            <Badge variant="secondary" className="flex-none rounded-full bg-muted font-medium text-muted-foreground">
+              {c.tipo}
+            </Badge>
+            <SettingsListItemActions>
+              <BotaoIcone rotulo={`Tirar ${c.nome} do card`} perigo onClick={() => tirar(c)}>
+                <Trash2Icon />
+              </BotaoIcone>
+            </SettingsListItemActions>
+          </>
         )}
         {c.var && c.origem && (
           <>
@@ -239,9 +275,9 @@ export function PaginaCard() {
       for (const c of resto) porArea.get(c.f)!.push(c)
       const nova = ordemDasAreas.flatMap((f) => porArea.get(f)!)
       if (campo.f !== alvo.area) {
-        auditar("Campos do card", `"${campo.nome}" foi para ${NOME_DO_FORMATO[alvo.area]}`)
+        auditar("Campos da licitação", `"${campo.nome}" foi para ${NOME_DO_FORMATO[alvo.area]}`)
       } else {
-        auditar("Campos do card", `Mudou ${campo.nome} de lugar no card`)
+        auditar("Campos da licitação", `Mudou ${campo.nome} de lugar no card`)
       }
       return nova
     })
@@ -250,28 +286,23 @@ export function PaginaCard() {
   return (
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
-        Aqui você escolhe o que aparece no card e em que ordem. Cada tela tem a sua configuração: escolha a tela na
-        barra abaixo. Vale para todas as pessoas da organização, e os campos escondidos continuam disponíveis em
-        Filtrar e Ordenar.
+        Aqui você escolhe o que aparece da licitação e em que ordem. Cada lugar tem a sua configuração: as abas abaixo
+        são os três lugares onde a licitação aparece. Vale para todas as pessoas da organização, e os campos escondidos
+        continuam disponíveis em Filtrar e Ordenar.
       </Aviso>
+      {/* mesma mecânica de Abas das listas: cada aba é um lugar onde o mesmo módulo aparece */}
+      <Tabs value={telaDoCard} onValueChange={(v) => setTelaDoCard(v as TelaDoCard)} className="mb-3.5">
+        <TabsList aria-label="Onde o card aparece" className="max-w-full justify-start overflow-x-auto">
+          {TELAS_DO_CARD.map(([t, nome]) => (
+            <TabsTrigger key={t} value={t} className="px-3">
+              {nome}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-[13px] text-muted-foreground">
-              Card de
-              <NativeSelect
-                size="sm"
-                value={telaDoCard}
-                className="w-auto text-foreground"
-                onChange={(e) => setTelaDoCard(e.target.value as TelaDoCard)}
-              >
-                {TELAS_DO_CARD.map(([t, nome]) => (
-                  <NativeSelectOption key={t} value={t}>
-                    {nome}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            </label>
             <Popover open={menuAberto} onOpenChange={setMenuAberto}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -285,10 +316,58 @@ export function PaginaCard() {
                   onEscolher={(v) => {
                     setMenuAberto(false)
                     setCampos((l) => [...l, { id: v.k, nome: v.n, f: "propriedade", on: true, var: true, origem: v.o }])
-                    auditar("Campos do card", `Adicionou a variável "${v.n}" ao card`)
+                    auditar("Campos da licitação", `Adicionou a variável "${v.n}" ao card`)
                     toast(`${v.n} entrou no card, como propriedade`)
                   }}
                 />
+              </PopoverContent>
+            </Popover>
+            <Popover open={novaAberta} onOpenChange={setNovaAberta}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <PlusIcon />
+                  Nova propriedade
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72">
+                <form
+                  className="flex flex-col gap-3"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    criarPropriedade()
+                  }}
+                >
+                  <p className="text-[13px] leading-[19px] text-muted-foreground">
+                    Um campo que a sua organização preenche na licitação, sem vir de variável. É o caso do substatus.
+                  </p>
+                  <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                    Nome
+                    <Input
+                      value={nomeNovo}
+                      onChange={(e) => setNomeNovo(e.target.value)}
+                      placeholder="Substatus, Responsável técnico…"
+                      className="font-normal"
+                      autoFocus
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                    Tipo
+                    <NativeSelect
+                      value={tipoNovo}
+                      onChange={(e) => setTipoNovo(e.target.value as TipoDeCampo)}
+                      className="w-full font-normal"
+                    >
+                      {TIPOS_DE_CAMPO.map((t) => (
+                        <NativeSelectOption key={t} value={t}>
+                          {t}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  </label>
+                  <Button type="submit" size="sm" className="self-end">
+                    Criar propriedade
+                  </Button>
+                </form>
               </PopoverContent>
             </Popover>
             <Button variant="outline" size="sm" className="ml-auto" onClick={restaurarPadrao}>
@@ -339,6 +418,8 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
   useEffect(() => setCarregados(BLOCO_DE_ITENS), [maxItens])
 
   const valor = (c: Campo) => {
+    // campo próprio nasce sem dado: quem preenche é a pessoa, na licitação
+    if (c.propria) return "Não informado"
     if (c.var) return valorDaLic(L, c.id) || "Não encontrado"
     const fixos: Record<string, string> = { substatus: "Selecionar Substatus", descricao: "Adicionar Descrição" }
     return fixos[c.id] ?? (valorDaLic(L, c.id) || "-")
@@ -382,7 +463,8 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
         return (
           <span
             aria-hidden
-            className={cn("size-4.5 flex-none rounded-[5px] border border-input", empurra && "mr-auto")}
+            // block: dentro da peça arrastável o span não é mais filho de um flex, e inline ignora o tamanho
+            className={cn("block size-4.5 flex-none rounded-[5px] border border-input", empurra && "mr-auto")}
           />
         )
       case "edital":
@@ -623,7 +705,7 @@ function TabelaDeItens({
       const nova = [...l]
       const [c] = nova.splice(de, 1)
       nova.splice(de < para ? para - 1 : para, 0, c)
-      auditar("Campos do card", `Moveu a coluna "${c.nome}" na tabela de itens`)
+      auditar("Campos da licitação", `Moveu a coluna "${c.nome}" na tabela de itens`)
       return nova
     })
   }
