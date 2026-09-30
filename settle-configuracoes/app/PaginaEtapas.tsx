@@ -243,8 +243,9 @@ export function PaginaEtapas() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-perda">Exigir motivo ao registrar perda</SettingsRowTitle>
               <SettingsRowDescription>
-                Ativado, quem registra "Perdeu" precisa escolher um motivo para concluir. Desativado, o motivo vira
-                opcional e o gráfico "Motivos de perda" ganha uma fatia "Sem motivo".
+                Quando você ativa essa opção, quem registra "Perdeu" precisa escolher um motivo para concluir. Se
+                deixar desativado, o motivo vira opcional e o gráfico "Motivos de perda", em Dashboards, passa a
+                mostrar "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -270,7 +271,7 @@ export function PaginaEtapas() {
           dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda."
           acao="registros de perda"
           usoPassado="registradas como perdidas por este motivo"
-          onde="no resultado dessas licitações e no gráfico “Motivos de perda” do dashboard"
+          onde="no resultado dessas licitações e no gráfico “Motivos de perda”, em Dashboards"
         />
       </SettingsSection>
 

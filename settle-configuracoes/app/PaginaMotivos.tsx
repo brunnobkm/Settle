@@ -61,7 +61,7 @@ export function PaginaMotivos() {
           {naTela > 0 ? (
             <p>
               As {fmt(naTela)} licitações descartadas por este motivo em {tela} seguem iguais: continuam com o motivo
-              registrado, no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard. Dá para ativar de
+              registrado, no filtro de Descartadas e no gráfico “Motivos de descarte”, em Dashboards. Dá para ativar de
               novo quando quiser.
             </p>
           ) : (
@@ -86,7 +86,7 @@ export function PaginaMotivos() {
       <Aviso tom="marca" fechavel>
         Aqui você gerencia a lista de motivos que aparece quando alguém descarta uma licitação. Em cada motivo, as
         pílulas dizem em quais telas ele aparece: Recomendadas, Em andamento ou nas duas. O motivo escolhido fica na
-        licitação, aparece no filtro de Descartadas e no gráfico "Motivos de descarte" do dashboard, e é por isso que
+        licitação, aparece no filtro de Descartadas e no gráfico "Motivos de descarte", em Dashboards, e é por isso que
         um motivo já usado é arquivado, nunca apagado.
       </Aviso>
 
@@ -102,8 +102,9 @@ export function PaginaMotivos() {
                 em Etapas do funil: é a mesma ideia em duas telas.
               */}
               <SettingsRowDescription>
-                Ativado, quem descarta precisa escolher um motivo para concluir. Desativado, o motivo vira opcional e o
-                gráfico "Motivos de descarte" ganha uma fatia "Sem motivo".
+                Quando você ativa essa opção, quem descarta precisa escolher um motivo para concluir. Se deixar
+                desativado, o motivo vira opcional e o gráfico "Motivos de descarte", em Dashboards, passa a mostrar
+                "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -142,7 +143,7 @@ export function PaginaMotivos() {
         )}
         acao="descartes"
         usoPassado="descartadas por este motivo"
-        onde="no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard"
+        onde="no filtro de Descartadas e no gráfico “Motivos de descarte”, em Dashboards"
         reservados={["Outros"]}
         extras={(x) => (
           // sem chave de "mesma lista": cada motivo sempre diz em quais telas aparece
