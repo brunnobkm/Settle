@@ -133,10 +133,16 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 que 200 delas foram descartadas em Em andamento e 212 em Recomendadas. Duas consequências:
 
 - O "i" do contador **abre a conta por tela** sempre que o motivo tem licitação nas duas.
-- **Desligar uma tela que já tem licitação pede confirmação**, com o número daquela tela e a
-  regra de sempre: o que já aconteceu não muda. As licitações seguem com o motivo, no filtro
-  de Descartadas e no gráfico do dashboard, e pôr de volta traz tudo. Ligar não pede nada, e
-  desligar uma tela sem nenhuma licitação também não: ali não há o que preservar.
+- **Desativar uma tela sempre pede confirmação**, com o número daquela tela e a regra de
+  sempre: o que já aconteceu não muda. As licitações seguem com o motivo registrado, no filtro
+  de Descartadas e no gráfico do dashboard, e ativar de novo traz tudo. Ativar não pede nada.
+  A confirmação aparece mesmo quando aquela tela não tem nenhuma licitação, com o texto
+  ajustado ("não há histórico a preservar"): a mesma ação não pode às vezes perguntar e às
+  vezes não, senão a pessoa não entende a regra e desconfia do que fez.
+- **Vocabulário**: a chave se "ativa" e se "desativa", nunca "liga" e "desliga". Um motivo é
+  "arquivado", um campo é "removido do card", e nenhum dos dois é "tirado". As licitações são
+  "descartadas por este motivo" (não "com este motivo") e, depois do arquivamento, "seguem com
+  o motivo registrado" (não "continuam com ele").
 - Na interface isso **não se chama "arquivado"**. Arquivados é outra seção e só recebe motivo
   arquivado inteiro; usar a mesma palavra faria a pessoa procurar lá e não achar. Internamente
   pode ser um arquivamento por escopo, desde que o histórico não mude, que religar volte ao

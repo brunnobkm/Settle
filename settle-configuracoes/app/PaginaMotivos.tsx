@@ -39,32 +39,44 @@ export function PaginaMotivos() {
     const tela = NOME_DA_TELA[k]
     const aplicar = () => {
       setMotivos((l) => l.map((m) => (m.id === x.id ? { ...m, [k]: !m[k] } : m)))
-      auditar("Motivos", x[k] ? `Tirou "${x.nome}" de ${tela}` : `Pôs "${x.nome}" em ${tela}`)
+      auditar("Motivos", x[k] ? `Desativou "${x.nome}" em ${tela}` : `Ativou "${x.nome}" em ${tela}`)
     }
-    const naTela = k === "rec" ? x.usoRec : x.usoAnd
-    // ligar não tira nada de ninguém; desligar uma tela que já tem licitação, sim
-    if (!x[k] || naTela === 0) {
+    // ativar não muda nada do que já aconteceu e segue direto
+    if (!x[k]) {
       aplicar()
+      toast(`${x.nome} passou a aparecer em ${tela}`)
       return
     }
+    // desativar sempre confirma, mesmo sem licitação: a mesma ação não pode às vezes perguntar
+    // e às vezes não, senão a pessoa não entende a regra
+    const naTela = k === "rec" ? x.usoRec : x.usoAnd
     const outra = NOME_DA_TELA[k === "rec" ? "and" : "rec"]
     confirmar({
-      titulo: `Tirar "${x.nome}" de ${tela}?`,
+      titulo: `Desativar "${x.nome}" em ${tela}?`,
       corpo: (
         <>
           <p>
             Ele deixa de aparecer na lista de quem descarta em {tela}. Em {outra} nada muda.
           </p>
-          <p>
-            As {fmt(naTela)} licitações já descartadas com ele em {tela} continuam iguais: seguem com o motivo, no
-            filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard. Dá para pôr de volta quando quiser.
-          </p>
+          {naTela > 0 ? (
+            <p>
+              As {fmt(naTela)} licitações descartadas por este motivo em {tela} seguem iguais: continuam com o motivo
+              registrado, no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard. Dá para ativar de
+              novo quando quiser.
+            </p>
+          ) : (
+            <p>
+              Nenhuma licitação foi descartada por este motivo em {tela}, então não há histórico a preservar. Dá para
+              ativar de novo quando quiser.
+            </p>
+          )}
         </>
       ),
-      acao: `Tirar de ${tela}`,
+      // só "Desativar": o botão já está debaixo do título, que diz em qual tela
+      acao: "Desativar",
       ok: () => {
         aplicar()
-        toast(`${x.nome} saiu de ${tela}`)
+        toast(`${x.nome} deixou de aparecer em ${tela}`)
       },
     })
   }
@@ -84,11 +96,12 @@ export function PaginaMotivos() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-exigir">Exigir motivo ao descartar</SettingsRowTitle>
               <SettingsRowDescription>
-                Ligado, quem descarta precisa escolher um motivo da lista para concluir. Desligado, dá para descartar
-                sem escolher nenhum. Esta chave decide se <b className="font-semibold text-foreground">escolher</b> é
-                obrigatório. <b className="font-semibold text-foreground">Escrever</b> o porquê é outra coisa: quem
-                decide isso é a chave <b className="font-semibold text-foreground">Descrição obrigatória</b>, que fica
-                em cada motivo da lista abaixo, porque só alguns motivos precisam de explicação.
+                Ativado, quem descarta precisa escolher um motivo da lista para concluir. Desativado, dá para
+                descartar sem escolher nenhum. Esta chave decide se{" "}
+                <b className="font-semibold text-foreground">escolher</b> é obrigatório.{" "}
+                <b className="font-semibold text-foreground">Escrever</b> o porquê é outra coisa: quem decide isso é a
+                chave <b className="font-semibold text-foreground">Descrição obrigatória</b>, que fica em cada motivo
+                da lista abaixo, porque só alguns motivos precisam de explicação.
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -115,7 +128,7 @@ export function PaginaMotivos() {
         area="Motivos"
         dicaUso={(x) => (
           <>
-            Quantas licitações já foram descartadas com este motivo.
+            Quantas licitações já foram descartadas por este motivo.
             {x.usoRec > 0 && x.usoAnd > 0 && (
               <>
                 {" "}
@@ -125,7 +138,7 @@ export function PaginaMotivos() {
           </>
         )}
         acao="descartes"
-        usoPassado="descartadas com este motivo"
+        usoPassado="descartadas por este motivo"
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte” do dashboard"
         reservados={["Outros"]}
         extras={(x) => (

@@ -148,14 +148,14 @@ export function PaginaCard() {
   }
 
   /**
-   * Tirar do card é diferente de excluir: a variável continua existindo em Variáveis e a
-   * propriedade continua com o que já foi preenchido. O diálogo diz isso, porque tirar um
+   * Remover do card é diferente de excluir: a variável continua existindo em Variáveis e a
+   * propriedade continua com o que já foi preenchido. O diálogo diz isso, porque remover um
    * campo do card muda a tela de todo mundo da organização.
    */
-  function tirar(c: Campo) {
+  function remover(c: Campo) {
     const ondeAparece = TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]
     confirmar({
-      titulo: `Tirar "${c.nome}" do card?`,
+      titulo: `Remover "${c.nome}" do card?`,
       corpo: c.propria ? (
         <>
           <p>
@@ -176,11 +176,11 @@ export function PaginaCard() {
           </p>
         </>
       ),
-      acao: "Tirar do card",
+      acao: "Remover do card",
       perigo: true,
       ok: () => {
         setCampos((l) => l.filter((x) => x.id !== c.id))
-        auditar("Campos da licitação", `Tirou "${c.nome}" do card de ${ondeAparece}`)
+        auditar("Campos da licitação", `Removeu "${c.nome}" do card de ${ondeAparece}`)
         toast(`${c.nome} saiu do card`)
       },
     })
@@ -272,10 +272,10 @@ export function PaginaCard() {
             </Badge>
             <SettingsListItemActions>
               <BotaoIcone
-                rotulo={`Tirar ${c.nome} do card`}
-                dica="Tirar do card: o que já foi preenchido nas licitações continua guardado."
+                rotulo={`Remover ${c.nome} do card`}
+                dica="Remover do card: o que já foi preenchido nas licitações continua guardado."
                 perigo
-                onClick={() => tirar(c)}
+                onClick={() => remover(c)}
               >
                 <Trash2Icon />
               </BotaoIcone>
@@ -299,10 +299,10 @@ export function PaginaCard() {
                 <PencilIcon />
               </BotaoIcone>
               <BotaoIcone
-                rotulo={`Tirar ${c.nome} do card`}
-                dica="Tirar do card: ela some daqui, mas continua existindo em Variáveis."
+                rotulo={`Remover ${c.nome} do card`}
+                dica="Remover do card: ela some daqui, mas continua existindo em Variáveis."
                 perigo
-                onClick={() => tirar(c)}
+                onClick={() => remover(c)}
               >
                 <Trash2Icon />
               </BotaoIcone>
