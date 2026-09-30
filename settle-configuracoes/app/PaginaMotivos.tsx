@@ -95,13 +95,15 @@ export function PaginaMotivos() {
           <SettingsRow>
             <SettingsRowContent>
               <SettingsRowTitle id="t-exigir">Exigir motivo ao descartar</SettingsRowTitle>
+              {/*
+                A descrição do interruptor explica só o interruptor. A diferença entre esta chave
+                (escolher) e a "Descrição obrigatória" (escrever) fica na linha que apresenta a
+                lista, logo abaixo, onde ela é útil. E o texto é o mesmo do interruptor de perda,
+                em Etapas do funil: é a mesma ideia em duas telas.
+              */}
               <SettingsRowDescription>
-                Ativado, quem descarta precisa escolher um motivo da lista para concluir. Desativado, dá para
-                descartar sem escolher nenhum. Esta chave decide se{" "}
-                <b className="font-semibold text-foreground">escolher</b> é obrigatório.{" "}
-                <b className="font-semibold text-foreground">Escrever</b> o porquê é outra coisa: quem decide isso é a
-                chave <b className="font-semibold text-foreground">Descrição obrigatória</b>, que fica em cada motivo
-                da lista abaixo, porque só alguns motivos precisam de explicação.
+                Ativado, quem descarta precisa escolher um motivo para concluir. Desativado, o motivo vira opcional e o
+                gráfico "Motivos de descarte" ganha uma fatia "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
             <Switch
@@ -117,10 +119,11 @@ export function PaginaMotivos() {
         </SettingsBox>
       </SettingsSection>
 
+      {/* o detalhe de que o campo existe em todos e é opcional fica no tooltip da própria pílula */}
       <SettingsPageDescription className="mb-2.5">
-        Em cada motivo, escolha as telas em que ele aparece e marque{" "}
-        <b className="font-semibold text-foreground">Descrição obrigatória</b> nos motivos em que escolher não basta.
-        O campo de descrição existe em todos e é opcional; a chave só faz dele obrigatório, como já acontece em Outros.
+        Em cada motivo, escolha em quais telas ele aparece. Marque{" "}
+        <b className="font-semibold text-foreground">Descrição obrigatória</b> nos motivos em que escolher não basta e
+        a pessoa precisa escrever o porquê, como em “Outros”.
       </SettingsPageDescription>
 
       <ListaMotivos
