@@ -243,7 +243,7 @@ export function PaginaEtapas() {
             <SettingsRowContent>
               <SettingsRowTitle id="t-perda">Exigir motivo ao registrar perda</SettingsRowTitle>
               <SettingsRowDescription>
-                Ligado, quem registra "Perdeu" precisa escolher um motivo para concluir. Desligado, o motivo vira
+                Ativado, quem registra "Perdeu" precisa escolher um motivo para concluir. Desativado, o motivo vira
                 opcional e o gráfico "Motivos de perda" ganha uma fatia "Sem motivo".
               </SettingsRowDescription>
             </SettingsRowContent>
@@ -264,12 +264,12 @@ export function PaginaEtapas() {
           area="Etapas do funil"
           bloquearUltimo={
             exigirMotivoPerda
-              ? "Com motivo obrigatório, a lista precisa ter pelo menos um motivo. Desligue a exigência antes de tirar o último."
+              ? "Com motivo obrigatório, a lista precisa ter pelo menos um motivo. Desative a exigência antes de arquivar o último."
               : undefined
           }
           dicaUso="Em quantas licitações este motivo já foi usado ao registrar uma perda."
           acao="registros de perda"
-          usoPassado="registradas como perdidas com este motivo"
+          usoPassado="registradas como perdidas por este motivo"
           onde="no resultado dessas licitações e no gráfico “Motivos de perda” do dashboard"
         />
       </SettingsSection>

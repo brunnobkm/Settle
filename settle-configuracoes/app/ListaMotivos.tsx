@@ -52,7 +52,7 @@ export function ListaMotivos({
   onde: string
   /** Nomes que a lista não pode usar porque já são de um motivo fixo (ex.: "Outros"). */
   reservados?: string[]
-  /** Quando existe, impede tirar o último motivo da lista e explica o porquê no toast. */
+  /** Quando existe, impede arquivar o último motivo da lista e explica o porquê no toast. */
   bloquearUltimo?: string
   /** Conteúdo extra na linha de cada motivo (ex.: escopo por tela no descarte). */
   extras?: (x: Motivo) => ReactNode
@@ -104,7 +104,7 @@ export function ListaMotivos({
    * aparece em Arquivados, porque não há nada a preservar; quem já foi usado fica lá para
    * restaurar. Para a pessoa, é uma ação só, e ninguém precisa entender a diferença.
    */
-  function tirar(x: Motivo) {
+  function arquivar(x: Motivo) {
     if (bloquearUltimo && lista.length === 1) {
       toast(bloquearUltimo)
       return
@@ -115,8 +115,8 @@ export function ListaMotivos({
         <>
           <p>Ele deixa de aparecer na lista para novos {acao}.</p>
           <p>
-            Nada muda no que já aconteceu: as {fmt(x.uso)} licitações {usoPassado} continuam com ele, e continuam
-            aparecendo {onde}. Dá para restaurar o motivo quando quiser.
+            Nada muda no que já aconteceu: as {fmt(x.uso)} licitações {usoPassado} seguem com o motivo registrado, e
+            continuam aparecendo {onde}. Dá para restaurar o motivo quando quiser.
           </p>
         </>
       ) : (
@@ -191,8 +191,8 @@ export function ListaMotivos({
                   </Pilula>
                 </TooltipTrigger>
                 <TooltipContent>
-                  O campo de descrição existe em todos os motivos e é opcional. Ligado aqui, quem escolher este motivo
-                  não conclui sem escrever o porquê.
+                  O campo de descrição existe em todos os motivos e é opcional. Ativado aqui, quem escolher este
+                  motivo não conclui sem escrever o porquê.
                 </TooltipContent>
               </Tooltip>
               {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
@@ -204,11 +204,11 @@ export function ListaMotivos({
                   rotulo={`Arquivar ${x.nome}`}
                   dica={
                     x.uso
-                      ? `Arquivar: sai da lista de opções, e as ${fmt(x.uso)} licitações ${usoPassado} continuam com ele.`
+                      ? `Arquivar: sai da lista de opções, e as ${fmt(x.uso)} licitações ${usoPassado} seguem com o motivo registrado.`
                       : "Arquivar: sai da lista de opções. Como nenhuma licitação usou, nada fica guardado."
                   }
                   perigo
-                  onClick={() => tirar(x)}
+                  onClick={() => arquivar(x)}
                 >
                   <ArchiveIcon />
                 </BotaoIcone>
