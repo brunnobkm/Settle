@@ -52,7 +52,7 @@ export function CentralDeNotificacoes({
   const doEscopo = notificacoes.filter((n) => !filtroEdital || n.edital === filtroEdital)
   const naoLidas = doEscopo.filter((n) => !n.lida)
   const lista = aba === "nao-lidas" ? naoLidas : doEscopo
-  const acompanhando = licitacoes.filter((l) => l.salvo && l.alertas.length).length
+  const acompanhando = licitacoes.filter((l) => l.alertas.length).length
 
   return (
     <Sheet open={aberta} onOpenChange={onAbertaChange}>
@@ -122,7 +122,7 @@ export function CentralDeNotificacoes({
                     <EmptyDescription>
                       {acompanhando
                         ? "Quando o portal publicar mudanças nas licitações que você acompanha, elas aparecem aqui."
-                        : "Salve uma licitação escolhendo “Guardar e receber atualizações” para ser avisado aqui."}
+                        : "Ative o sino de uma licitação para ser avisado aqui quando o edital mudar."}
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>
@@ -165,6 +165,11 @@ function ItemDeNotificacao({
           {ROTULO_CURTO[n.tipo]}
         </Badge>
         <span className="text-[13px] font-semibold">Edital {n.edital}</span>
+        {licitacao?.descartada && (
+          <Badge variant="outline" className="h-5 rounded-md text-[11px] text-muted-foreground">
+            Descartada
+          </Badge>
+        )}
         <span className="ml-auto text-xs text-muted-foreground tabular-nums">{n.quando}</span>
       </NotificationsCenterItemHeader>
       {licitacao && <NotificationsCenterItemMeta className="truncate">{licitacao.orgao}</NotificationsCenterItemMeta>}
