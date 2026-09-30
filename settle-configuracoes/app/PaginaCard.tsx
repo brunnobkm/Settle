@@ -20,6 +20,7 @@ import {
   GaugeIcon,
   GlobeIcon,
   Link2Icon,
+  LockIcon,
   MessageSquareIcon,
   PencilIcon,
   PlusIcon,
@@ -51,7 +52,9 @@ import {
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Toolbar, ToolbarButton, ToolbarSeparator } from "@/components/ui/toolbar"
 import { Switch } from "@/components/ui/switch"
 import {
   SettingsBox,
@@ -370,17 +373,14 @@ export function PaginaCard() {
             ))}
           </TabsList>
         </Tabs>
-        <div
-          role="toolbar"
-          aria-label={`Ações dos campos de ${TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]}`}
-          className="flex flex-none items-center gap-1"
-        >
+        {/* a barra de ações da plataforma: mesmo bloco visual das abas, do design system */}
+        <Toolbar aria-label={`Ações dos campos de ${TELAS_DO_CARD.find(([t]) => t === telaDoCard)?.[1]}`}>
           <Popover open={menuAberto} onOpenChange={setMenuAberto}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
+              <ToolbarButton>
                 <PlusIcon />
                 Adicionar variável
-              </Button>
+              </ToolbarButton>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
               <ListaDeVariaveis
@@ -401,10 +401,10 @@ export function PaginaCard() {
           </Popover>
           <Popover open={novaAberta} onOpenChange={setNovaAberta}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
+              <ToolbarButton>
                 <PlusIcon />
                 Nova propriedade
-              </Button>
+              </ToolbarButton>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72">
               <form
@@ -447,10 +447,9 @@ export function PaginaCard() {
               </form>
             </PopoverContent>
           </Popover>
-          <Button variant="outline" size="sm" onClick={restaurarPadrao}>
-            Restaurar padrão da Settle
-          </Button>
-        </div>
+          <ToolbarSeparator />
+          <ToolbarButton onClick={restaurarPadrao}>Restaurar padrão da Settle</ToolbarButton>
+        </Toolbar>
       </div>
       <SettingsSplit>
         <div className="flex min-w-0 flex-col gap-2">
@@ -523,6 +522,8 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
 
   const noQuadro = telaDoCard === "andamento"
   const noWorkspace = telaDoCard === "workspace"
+  // Em andamento tem três visões da mesma lista; a configuração de campos vale para as três
+  const [visao, setVisao] = useState<Visao>("board")
   const doFormato = (f: FormatoCampo) => campos.filter((c) => c.f === f && c.on)
   const topo = doFormato("topo")
   const destaque = doFormato("destaque")
@@ -546,19 +547,19 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
 
   // O título fica à esquerda e empurra o resto para a direita (mr-auto); as peças seguintes
   // aparecem na ordem da lista. Tudo aqui é ilustrativo: a pré-visualização não executa ações.
-  const blocoTopo = (c: Campo, empurra = false) => {
+  const blocoTopo = (c: Campo) => {
     switch (c.id) {
       case "selecao":
         return (
           <span
             aria-hidden
             // block: dentro da peça arrastável o span não é mais filho de um flex, e inline ignora o tamanho
-            className={cn("block size-4.5 flex-none rounded-[5px] border border-input", empurra && "mr-auto")}
+            className="block size-4.5 flex-none rounded-[5px] border border-input"
           />
         )
       case "edital":
         return (
-          <LicitacaoCardTitle key={c.id} prefix="Edital" className="mr-auto">
+          <LicitacaoCardTitle key={c.id} prefix="Edital">
             <b>{L.edital}</b>
           </LicitacaoCardTitle>
         )
@@ -646,27 +647,65 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
       case "orgao":
         return (
           <LicitacaoCardDescription key={c.id}>
-            <LicitacaoCardField label={c.nome} tag={temME ? <SeloME /> : undefined}>
-              {valorDaLic(L, c.id)}
-            </LicitacaoCardField>
+            {linhaDoCorpo(c, { tag: temME ? <SeloME /> : undefined })}
           </LicitacaoCardDescription>
         )
       case "valor":
-        return (
+        return noQuadro ? (
+          <LicitacaoCardDescription key={c.id}>{linhaDoCorpo(c, { forte: true })}</LicitacaoCardDescription>
+        ) : (
           <LicitacaoCardValue key={c.id} label={c.nome}>
             {L.valor}
           </LicitacaoCardValue>
         )
       default:
-        return (
-          <LicitacaoCardDescription key={c.id}>
-            {/* no quadro o objeto é cortado em três linhas: a coluna é estreita e o card, curto */}
-            <LicitacaoCardField label={c.nome} className={cn(noQuadro && c.id === "objeto" && "line-clamp-3")}>
-              {valor(c)}
-            </LicitacaoCardField>
-          </LicitacaoCardDescription>
-        )
+        return <LicitacaoCardDescription key={c.id}>{linhaDoCorpo(c)}</LicitacaoCardDescription>
     }
+  }
+
+  /**
+   * Uma linha do corpo. No card do quadro ela não tem rótulo, só o valor: a coluna é estreita
+   * e o card real de Em andamento escreve "Prefeitura de..." direto, sem "Órgão:" na frente.
+   */
+  function linhaDoCorpo(c: Campo, { forte, tag }: { forte?: boolean; tag?: ReactNode } = {}) {
+    // o objeto é cortado em três linhas no quadro: a coluna é estreita e o card, curto
+    const classe = cn(forte && "font-semibold", noQuadro && c.id === "objeto" && "line-clamp-3")
+    if (!noQuadro) {
+      return (
+        <LicitacaoCardField label={c.nome} tag={tag} className={classe}>
+          {valor(c)}
+        </LicitacaoCardField>
+      )
+    }
+    return (
+      <p className={cn("text-sm leading-[21px]", classe)}>
+        {valor(c)}
+        {tag != null && <> {tag}</>}
+      </p>
+    )
+  }
+
+  /** O texto de um campo, para onde só cabe texto (o dia do calendário). */
+  const textoDoCampo = (c: Campo) =>
+    c.id === "edital" ? `Edital ${L.edital}` : c.id === "segmento" ? L.segs.join(", ") : String(valor(c))
+
+  /** A célula da visão Tabela: o mesmo valor do card, com as peças que têm forma própria. */
+  const celulaDaTabela = (c: Campo): ReactNode => {
+    if (c.id === "selecao") return <span className="block size-4.5 rounded-[5px] border border-input" />
+    if (c.id === "edital") return <b>{L.edital}</b>
+    if (c.id === "segmento") {
+      return (
+        <span className="flex flex-wrap gap-1">
+          {L.segs.map((nome) => (
+            <LicitacaoCardSegment key={nome} size="sm" className={classeDeSegmento(nome)}>
+              {nome}
+            </LicitacaoCardSegment>
+          ))}
+        </span>
+      )
+    }
+    if (c.id === "me") return L.me ? <SeloME /> : "-"
+    return valor(c)
   }
 
   const blocoDeItens = !mostrarItens ? null : (
@@ -725,16 +764,21 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
     </div>
   )
 
+  // no dia do calendário só cabe texto: as peças de ação e o score ficam de fora
+  const comTexto = [...topo, ...destaque].filter((c) => !SEM_TEXTO.has(c.id))
+  // o edital fecha o grupo da esquerda; sem ele, é a primeira peça que fecha
+  const separaOTopo = topo.some((x) => x.id === "edital") ? "edital" : topo[0]?.id
   const fileiraDoTopo = (
     <FileiraDeCampos
       area="topo"
       campos={topo}
-      className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-      classePeca="px-1 py-0.5"
-      render={(c) =>
-        // sem o número do edital, quem empurra o resto para a direita é a primeira peça
-        blocoTopo(c, topo[0]?.id === c.id && !topo.some((x) => x.id === "edital"))
-      }
+      // justify-end: no card real só a seleção e o edital ficam à esquerda (mr-auto no edital),
+      // e tudo o mais fica à direita, inclusive o que sobra para a segunda linha
+      className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2"
+      // o mr-auto tem que ficar na peça, que é o item do flex, e não no título dentro dela:
+      // é o que deixa só a seleção e o edital à esquerda e joga todo o resto para a direita
+      classePeca={(c) => cn("px-1 py-0.5", c.id === separaOTopo && "mr-auto")}
+      render={(c) => blocoTopo(c)}
     />
   )
 
@@ -763,18 +807,8 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
       blocoDeItens
     )
 
-  return (
-    <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
-      {/* dentro da licitação as ações ficam no cabeçalho da página, com o edital como título */}
-      {noWorkspace && topo.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-3">
-          <span className="text-base leading-6 font-semibold">Edital {L.edital}</span>
-          {fileiraDoTopo}
-        </div>
-      )}
-      {/* no quadro de Em andamento o card é uma coluna estreita, não a largura da lista */}
-      <div className={cn(noQuadro && "max-w-85")}>
-      <LicitacaoCardRoot>
+  const oCard = (
+    <LicitacaoCardRoot>
       {!noWorkspace && topo.length > 0 && <LicitacaoCardHeader>{fileiraDoTopo}</LicitacaoCardHeader>}
       <LicitacaoCardContent>
         {/* no card das listas o corpo fica numa caixa com borda; no quadro ele é o card inteiro */}
@@ -800,9 +834,159 @@ function PreviaDoCard({ aoSoltarCampo }: { aoSoltarCampo: (id: string, alvo: Alv
         {alvoDaTabela === "depois" && tabelaNoTopo && <BarraDeAlvo />}
         {!tabelaNoTopo && itensNoLugar}
       </LicitacaoCardContent>
-      </LicitacaoCardRoot>
-      </div>
+    </LicitacaoCardRoot>
+  )
+
+  // Em andamento tem três visões da mesma lista, e os campos ligados valem para as três:
+  // no quadro viram linhas do card, na tabela viram colunas e no calendário sobram duas.
+  const doQuadro = (
+    <div className="flex flex-col gap-3">
+      <Tabs value={visao} onValueChange={(v) => setVisao(v as Visao)}>
+        <TabsList aria-label="Como Em andamento é visto">
+          {VISOES.map(([v, nome]) => (
+            <TabsTrigger key={v} value={v} className="px-3">
+              {nome}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+      {visao === "board" && <div className="max-w-85">{oCard}</div>}
+      {visao === "tabela" && <TabelaDeLicitacoes campos={[...topo, ...destaque]} celula={celulaDaTabela} />}
+      {visao === "calendario" && <CalendarioDeLicitacoes campos={comTexto} texto={textoDoCampo} lic={L} />}
+      <p className="text-[13px] leading-[19px] text-muted-foreground">
+        {visao === "board"
+          ? "Arraste os campos no card para mudar a ordem. Ela é a mesma nas três visões."
+          : visao === "tabela"
+            ? "As colunas são os mesmos campos, na ordem do quadro. Organize no quadro."
+            : "No calendário só cabem dois campos por dia: os dois primeiros da ordem do quadro. A data é o envio da proposta."}
+      </p>
+    </div>
+  )
+
+  return (
+    <ProvedorDeArrasto aoSoltar={aoSoltarCampo}>
+      {noQuadro ? (
+        doQuadro
+      ) : noWorkspace ? (
+        // uma janela de navegador em volta: ali não é um card numa lista, é uma página
+        <MolduraDeNavegador url={`app.settlegov.com/biddings/${valorDaLic(L, "id") || "1908424"}`}>
+          <nav aria-label="Caminho" className="mb-3 text-[13px] text-muted-foreground">
+            Em andamento <span aria-hidden>›</span>{" "}
+            <span className="text-foreground">Detalhes da licitação · {valorDaLic(L, "id")}</span>
+          </nav>
+          {/* as ações da licitação ficam no cabeçalho da página, com o edital como título */}
+          {topo.length > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-3">
+              <span className="text-base leading-6 font-semibold">Edital {L.edital}</span>
+              {fileiraDoTopo}
+            </div>
+          )}
+          {oCard}
+        </MolduraDeNavegador>
+      ) : (
+        oCard
+      )}
     </ProvedorDeArrasto>
+  )
+}
+
+/** Peças que são ação ou selo, e por isso não viram texto no calendário. */
+const SEM_TEXTO = new Set(["selecao", "descartar", "analise", "responsaveis", "acoes", "checklist", "score"])
+
+/** Visões de Em andamento, na ordem em que a plataforma mostra. */
+type Visao = "board" | "tabela" | "calendario"
+const VISOES: [Visao, string][] = [
+  ["board", "Board"],
+  ["tabela", "Tabela"],
+  ["calendario", "Calendário"],
+]
+
+/**
+ * Moldura de janela de navegador. Dentro da licitação a pessoa não está olhando um card numa
+ * lista: está numa página. Sem a moldura, a pré-visualização parecia mais um card solto.
+ */
+function MolduraDeNavegador({ url, children }: { url: string; children: ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl border">
+      <div className="flex items-center gap-2 border-b bg-muted px-3 py-2">
+        <span aria-hidden className="flex flex-none gap-1.25">
+          <i className="size-2.5 rounded-full bg-foreground/15" />
+          <i className="size-2.5 rounded-full bg-foreground/15" />
+          <i className="size-2.5 rounded-full bg-foreground/15" />
+        </span>
+        <span className="ml-1 flex min-w-0 flex-1 items-center gap-1.5 rounded-md bg-background px-2.5 py-1 text-xs text-muted-foreground">
+          <LockIcon aria-hidden className="size-3 flex-none" />
+          <span className="truncate">{url}</span>
+        </span>
+      </div>
+      <div className="bg-background p-4">{children}</div>
+    </div>
+  )
+}
+
+/** A visão Tabela de Em andamento: cada campo ligado vira uma coluna, na ordem do quadro. */
+function TabelaDeLicitacoes({ campos, celula }: { campos: Campo[]; celula: (c: Campo) => ReactNode }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {campos.map((c) => (
+              <TableHead key={c.id} className="whitespace-nowrap">
+                {c.id === "selecao" ? <span className="sr-only">Seleção</span> : c.nome}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            {campos.map((c) => (
+              <TableCell key={c.id} className="max-w-60 align-top">
+                <span className="line-clamp-3">{celula(c)}</span>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+/**
+ * A visão Calendário de Em andamento: a licitação aparece no dia do envio da proposta, e no
+ * espaço de um dia só cabem dois campos. É o lugar onde a ordem escolhida mais aperta.
+ */
+function CalendarioDeLicitacoes({ campos, texto, lic }: { campos: Campo[]; texto: (c: Campo) => string; lic: (typeof LICS)[number] }) {
+  const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+  const numeros = [28, 29, 30, 1, 2, 3, 4]
+  const noDia = Number((lic.envio || "02/10/2026").slice(0, 2))
+  const resumo = campos.slice(0, 2).map(texto).join(" · ")
+
+  return (
+    <div className="overflow-hidden rounded-xl border">
+      <div className="grid grid-cols-7 border-b bg-muted/50 text-[11px] font-semibold text-muted-foreground">
+        {dias.map((d) => (
+          <span key={d} className="truncate px-2 py-1.5">
+            {d}
+          </span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {numeros.map((n, i) => (
+          <div key={n} className={cn("min-h-22 p-1.5", i < 6 && "border-r", "border-b last:border-b-0")}>
+            <span className={cn("block text-right text-[11px]", n === noDia ? "font-semibold text-foreground" : "text-muted-foreground")}>
+              {n === 1 ? "1 de Outubro" : n}
+            </span>
+            {n === noDia && resumo && (
+              <span className="mt-1 flex items-center gap-1 text-[11px] leading-4">
+                <i aria-hidden className="size-1.5 flex-none rounded-full bg-primary" />
+                <span className="truncate">{resumo}</span>
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -989,12 +1173,12 @@ function GradeDePropriedades({
     <div className="grid w-full items-start overflow-hidden rounded-xl border md:grid-cols-[auto_minmax(0,1fr)]">
       {datas.length > 0 && (
         <div ref={caixaDatas} className="px-3.5 py-3 max-md:border-b md:border-r">
-          {/* no card real as datas vêm em pares: Adicionada e Atualizada, depois Envio da proposta */}
+          {/* no card real a coluna de datas é empilhada: Adicionada, Atualizada, Envio da proposta */}
           <FileiraDeCampos
             area="data"
             campos={datas}
             rotulo="Datas"
-            className="grid grid-cols-[repeat(2,max-content)] items-start gap-x-6 gap-y-4"
+            className="grid grid-cols-1 items-start gap-y-4"
             classePeca="px-1 py-0.5"
             render={(c) => <ItemMeta campo={comoMeta(c)} />}
           />
@@ -1337,7 +1521,8 @@ function FileiraDeCampos({
   campos: Campo[]
   render: (c: Campo) => ReactNode
   className?: string
-  classePeca?: string
+  /** Classe de cada peça. Função quando uma peça precisa de classe própria (o mr-auto do topo). */
+  classePeca?: string | ((c: Campo, i: number) => string | undefined)
   /** Quando existe, a fileira é uma lista de definições (as duas caixas de metadados). */
   rotulo?: string
 }) {
@@ -1352,7 +1537,12 @@ function FileiraDeCampos({
       {campos.map((c, i) => (
         <Fragment key={c.id}>
           {alvo?.indice === i && <BarraDeAlvo vertical />}
-          <PecaArrastavel campo={c} area={area} indice={i} className={classePeca}>
+          <PecaArrastavel
+            campo={c}
+            area={area}
+            indice={i}
+            className={typeof classePeca === "function" ? classePeca(c, i) : classePeca}
+          >
             {render(c)}
           </PecaArrastavel>
           {i === campos.length - 1 && alvo?.indice === i + 1 && <BarraDeAlvo vertical />}
