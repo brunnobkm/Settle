@@ -121,9 +121,9 @@ export function PaginaMotivos() {
 
       {/* o detalhe de que o campo existe em todos e é opcional fica no tooltip da própria pílula */}
       <SettingsPageDescription className="mb-2.5">
-        Em cada motivo, escolha em quais telas ele aparece. Marque{" "}
-        <b className="font-semibold text-foreground">Descrição obrigatória</b> nos motivos em que escolher não basta e
-        a pessoa precisa escrever o porquê, como em “Outros”.
+        Em cada motivo, selecione as telas em que ele aparece. Marque a opção{" "}
+        <b className="font-semibold text-foreground">Descrição obrigatória</b> nos casos em que a escolha não é
+        suficiente e a pessoa precisa explicar o porquê, como em “Outros”.
       </SettingsPageDescription>
 
       <ListaMotivos
