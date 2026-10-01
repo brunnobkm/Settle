@@ -71,7 +71,7 @@ export function ListaDeNotificacoes({
   carregando: boolean
   /** Protótipo: força vazio ou erro. */
   estado?: EstadoDaLista
-  /** No dropdown do sino: menos espaço, sem "Ver licitação". */
+  /** No dropdown do sino: menos espaço. */
   compacta?: boolean
   /** Conteúdo genérico nos itens (estrutura sem texto real). */
   placeholder?: boolean
@@ -256,7 +256,7 @@ function ItemDeNotificacao({
           )}
           {onVerLicitacao && (
             <Button size="xs" variant="outline" className="shadow-none" onClick={onVerLicitacao}>
-              Ver licitação
+              {n.documento ? "Abrir documento" : compacta ? "Ver no card" : "Ver na licitação"}
             </Button>
           )}
         </div>
