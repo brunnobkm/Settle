@@ -345,25 +345,22 @@ export const ORGAOS = [
   "SECRETARIA DE ESTADO DA SAÚDE DO CEARÁ",
 ]
 
-// "Todas" e "Órgãos favoritos" estão ocultas por enquanto (como na versão HTML).
+// Abas de Recomendadas, iguais às de produção. O protótipo filtra por lista de editais.
 export const VISUALIZACOES_INICIAIS: Visualizacao[] = [
-  { chave: "Todas", rotulo: "Todas", filtros: [], oculta: true },
-  {
-    chave: VISUALIZACAO_ORGAOS,
-    rotulo: "Órgãos favoritos",
-    oculta: true,
-    filtros: [
-      { rotulo: "Órgão", tipo: "lista", opcoes: ORGAOS, valor: [ORGAOS[0], ORGAOS[1]] },
-      { rotulo: "Estado", tipo: "lista", opcoes: ESTADOS, valor: ["PA", "SP"] },
-      { rotulo: "Cidade", tipo: "lista", opcoes: CIDADES, valor: ["Belém", "Campinas"] },
-    ],
-  },
-  // Relevantes = aderentes + dúvidas; Provável ruído = não aderentes
-  { chave: "Relevantes", rotulo: "Relevantes", filtros: [], aderencia: ["aderente", "duvida"] },
-  { chave: "Provável ruído", rotulo: "Provável ruído", filtros: [], aderencia: ["nao_aderente"] },
+  { chave: "Todas", rotulo: "Todas", filtros: [] },
+  { chave: "Ativas", rotulo: "Ativas", filtros: [] },
+  { chave: "Chegou hoje", rotulo: "Chegou hoje", filtros: [] },
+  { chave: "Vencendo em breve", rotulo: "Vencendo em breve", filtros: [] },
 ]
 
-export const VISUALIZACAO_INICIAL = "Relevantes"
+/** Editais de cada aba (protótipo). Todas: sem filtro. */
+export const EDITAIS_DA_ABA: Record<string, string[]> = {
+  Ativas: ["88234/2026", "90001/2026", "73/2026", "90455/2025"],
+  "Chegou hoje": ["88234/2026"],
+  "Vencendo em breve": ["88234/2026", "73/2026"],
+}
+
+export const VISUALIZACAO_INICIAL = "Todas"
 
 export const PRESETS_DATA = {
   passado: [

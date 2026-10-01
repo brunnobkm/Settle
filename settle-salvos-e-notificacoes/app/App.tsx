@@ -5,7 +5,7 @@
 // que o usuário marque "Continuar recebendo atualizações" no diálogo de descarte.
 // O sino da navbar abre a central de notificações com tudo junto.
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   BellIcon,
   BellRingIcon,
@@ -14,7 +14,6 @@ import {
   RadioTowerIcon,
   CheckIcon,
   ClockIcon,
-  CopyIcon,
   FolderIcon,
   FolderXIcon,
   LinkIcon,
@@ -40,7 +39,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, SAUDACAO, USUARIO, WORKSPACE } from "@/settle/navegacao"
 
-import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
 import { CentralDeNotificacoes } from "./CentralDeNotificacoes"
 import type { EstadoDaLista } from "./ListaDeNotificacoes"
 import { DialogoDeDescarte } from "./DialogoDeDescarte"
@@ -60,8 +58,7 @@ import {
   RESPONSAVEIS,
   SEGMENTOS_DO_CARD,
   VISUALIZACAO_INICIAL,
-  VISUALIZACAO_OBRIGATORIA,
-  VISUALIZACAO_ORGAOS,
+  EDITAIS_DA_ABA,
   VISUALIZACOES_INICIAIS,
   formatarData,
   lerData,
@@ -82,13 +79,8 @@ type Tela = "explorar" | "salvos"
 type AbaDeSalvos = "todas" | "novidades" | "notificando" | "guardadas"
 
 function pertenceAVisualizacao(l: Licitacao, v: Visualizacao | undefined) {
-  if (!v) return true
-  if (v.aderencia) return v.aderencia.includes(l.aderencia)
-  if (v.chave === VISUALIZACAO_ORGAOS) {
-    const orgaos = v.filtros.find((f) => f.tipo === "lista" && f.rotulo === "Órgão")
-    return orgaos?.tipo === "lista" ? orgaos.valor.includes(l.orgao) : true
-  }
-  return true
+  const editais = v && EDITAIS_DA_ABA[v.chave]
+  return editais ? editais.includes(l.edital) : true
 }
 
 export default function App() {
@@ -117,8 +109,6 @@ export default function App() {
 
   const [visualizacoes, setVisualizacoes] = useState(VISUALIZACOES_INICIAIS)
   const [ativa, setAtiva] = useState(VISUALIZACAO_INICIAL)
-  const [novaPendente, setNovaPendente] = useState<string | null>(null)
-  const sequenciaNova = useRef(0)
 
   const [buscaAberta, setBuscaAberta] = useState(false)
   const [consulta, setConsulta] = useState("")
@@ -127,10 +117,6 @@ export default function App() {
   const [carregando, setCarregando] = useState(false)
   const timerBusca = useRef<number | undefined>(undefined)
 
-  const barraRef = useRef<HTMLDivElement>(null)
-  const abasRef = useRef<HTMLDivElement>(null)
-  const acoesRef = useRef<HTMLDivElement>(null)
-  const [disponivel, setDisponivel] = useState(Number.POSITIVE_INFINITY)
 
   /* ---------------- filtragem ---------------- */
 
@@ -169,103 +155,7 @@ export default function App() {
   const editandoLicitacao = editando ? (licitacoes.find((l) => l.edital === editando.edital) ?? null) : null
   const descartandoLicitacao = descartando ? (licitacoes.find((l) => l.edital === descartando) ?? null) : null
 
-  /* ---------------- largura livre para as abas ---------------- */
-
-  useLayoutEffect(() => {
-    const barra = barraRef.current
-    const abas = abasRef.current
-    const acoes = acoesRef.current
-    if (!barra || !abas || !acoes) return
-    const medir = () => {
-      // telas estreitas com a busca aberta: as ações descem para a linha de baixo
-      const quebrou = acoes.offsetTop > abas.offsetTop + 4
-      setDisponivel(quebrou ? barra.clientWidth : barra.clientWidth - acoes.offsetWidth - 16)
-    }
-    medir()
-    const observador = new ResizeObserver(medir)
-    observador.observe(barra)
-    observador.observe(acoes)
-    return () => observador.disconnect()
-  }, [])
-
-  /* ---------------- visualizações ---------------- */
-
-  const ativar = useCallback((chave: string) => setAtiva(chave), [])
-  const novaTratada = useCallback(() => setNovaPendente(null), [])
-
-  function criarVisualizacao() {
-    const chave = `view-${Date.now()}`
-    sequenciaNova.current += 1
-    setVisualizacoes((vs) => [...vs, { chave, rotulo: `Nova visualização ${sequenciaNova.current}`, filtros: [] }])
-    setNovaPendente(chave)
-  }
-
-  function moverVisualizacao(chave: string, alvo: string, posicao: "antes" | "depois") {
-    setVisualizacoes((vs) => {
-      const item = vs.find((v) => v.chave === chave)
-      if (!item || chave === alvo) return vs
-      const resto = vs.filter((v) => v.chave !== chave)
-      const i = resto.findIndex((v) => v.chave === alvo)
-      if (i < 0) return vs
-      resto.splice(posicao === "antes" ? i : i + 1, 0, item)
-      return resto
-    })
-  }
-
-  function renomearVisualizacao(chave: string, rotulo: string) {
-    setVisualizacoes((vs) => vs.map((v) => (v.chave === chave ? { ...v, rotulo } : v)))
-  }
-
-  function duplicarVisualizacao(chave: string) {
-    const origem = visualizacoes.find((v) => v.chave === chave)
-    if (!origem) return
-    const nova: Visualizacao = {
-      chave: `view-${Date.now()}`,
-      rotulo: `${origem.rotulo} (cópia)`,
-      aderencia: origem.aderencia && [...origem.aderencia],
-      // copia os filtros sem compartilhar referência
-      filtros: origem.filtros.map((f) =>
-        f.tipo === "lista" ? { ...f, opcoes: [...f.opcoes], valor: [...f.valor] } : { ...f, valor: { ...f.valor } }
-      ),
-    }
-    setVisualizacoes((vs) => {
-      const i = vs.findIndex((v) => v.chave === chave)
-      return [...vs.slice(0, i + 1), nova, ...vs.slice(i + 1)]
-    })
-    setAtiva(nova.chave)
-    toast(`“${origem.rotulo}” duplicada`, { icon: <CopyIcon className="size-4" /> })
-  }
-
-  function excluirVisualizacao(chave: string) {
-    if (chave === VISUALIZACAO_OBRIGATORIA) {
-      toast("A visualização “Todas” não pode ser excluída", { icon: <Trash2Icon className="size-4" /> })
-      return
-    }
-    if (visiveis.length <= 1) {
-      toast("Não é possível excluir a única visualização", { icon: <Trash2Icon className="size-4" /> })
-      return
-    }
-    const indice = visualizacoes.findIndex((v) => v.chave === chave)
-    const excluida = visualizacoes[indice]
-    if (!excluida) return
-    const eraAtiva = ativa === chave
-    const iVisivel = visiveis.findIndex((v) => v.chave === chave)
-    const vizinha = visiveis[iVisivel - 1] ?? visiveis[iVisivel + 1]
-    setVisualizacoes((vs) => vs.filter((v) => v.chave !== chave))
-    if (eraAtiva && vizinha) setAtiva(vizinha.chave)
-    toast(`“${excluida.rotulo}” excluída`, {
-      icon: <Trash2Icon className="size-4" />,
-      action: {
-        label: "Desfazer",
-        onClick: () => {
-          setVisualizacoes((vs) =>
-            vs.some((v) => v.chave === chave) ? vs : [...vs.slice(0, indice), excluida, ...vs.slice(indice)]
-          )
-          if (eraAtiva) setAtiva(chave)
-        },
-      },
-    })
-  }
+  /* ---------------- abas ---------------- */
 
   function alterarFiltro(indice: number, filtro: Filtro) {
     setVisualizacoes((vs) =>
@@ -515,7 +405,14 @@ export default function App() {
       hideHeaderOnScroll
     >
       <div className="mx-auto max-w-347 px-6 pt-6 pb-16">
-        <h1 className="sr-only">{tela === "salvos" ? "Salvos para depois" : "Explorar licitações"}</h1>
+        {tela === "salvos" ? (
+          <h1 className="sr-only">Salvos para depois</h1>
+        ) : (
+          <header className="mb-2">
+            <p className="text-3xl font-normal">Encontramos {quantidade(contagens["Ativas"] ?? 0).replace("licitação", "licitação ativa").replace("licitações", "licitações ativas")}</p>
+            <h1 className="mt-1.5 text-5xl leading-[1.04] font-bold tracking-[-0.5px]">Selecione quais deseja analisar</h1>
+          </header>
+        )}
         <p className="sr-only" aria-live="polite">
           {mensagemResultado}
         </p>
@@ -537,33 +434,26 @@ export default function App() {
         ) : (
         /* barra sticky: gruda logo abaixo da navbar e sobe junto quando ela se esconde */
         <div className="sticky top-16 z-10 mb-2 bg-background py-3.5 transition-transform duration-250 ease-out group-data-[header-hidden=true]/app-shell:-translate-y-16">
-          <div
-            ref={barraRef}
-            className={cn("flex items-center justify-between gap-x-4 gap-y-2 max-sm:flex-wrap", buscaAberta && "max-[1040px]:flex-wrap")}
-          >
-            <div ref={abasRef} className="min-w-0 flex-none">
-              <BarraDeVisualizacoes
-                visualizacoes={visiveis}
-                ativa={ativa}
-                contagens={contagens}
-                disponivel={disponivel}
-                novaPendente={novaPendente}
-                onNovaTratada={novaTratada}
-                onAtivar={ativar}
-                onCriar={criarVisualizacao}
-                onMover={moverVisualizacao}
-                onRenomear={renomearVisualizacao}
-                onCopiarLink={() =>
-                  toast("Link da visualização copiado", { icon: <CheckIcon className="size-4 text-success" /> })
-                }
-                onDuplicar={duplicarVisualizacao}
-                onExcluir={excluirVisualizacao}
-              />
-            </div>
+          <div className={cn("flex items-center justify-between gap-x-4 gap-y-2 max-sm:flex-wrap", buscaAberta && "max-[1040px]:flex-wrap")}>
+            <Tabs value={ativa} onValueChange={setAtiva} className="min-w-0">
+              <TabsList aria-label="Abas de licitações" className="h-auto max-w-full overflow-x-auto">
+                {visiveis.map((v) => (
+                  <TabsTrigger
+                    key={v.chave}
+                    value={v.chave}
+                    className="h-7.5 flex-none gap-1.5 rounded-lg px-3 hover:bg-background/60 hover:text-foreground"
+                  >
+                    <span>{v.rotulo}</span>
+                    <span className="rounded-md bg-foreground/10 px-1.5 py-px text-xs leading-4 font-medium text-foreground tabular-nums">
+                      {contagens[v.chave]}
+                    </span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
             {/* grupo segmentado de ações */}
             <div
-              ref={acoesRef}
               className={cn(
                 "flex flex-none items-center rounded-lg bg-foreground/10",
                 buscaAberta ? "max-[1040px]:basis-full" : "overflow-hidden"
@@ -585,6 +475,17 @@ export default function App() {
                   </span>
                 )}
               </Button>
+              {["Ordenar", "Exportar"].map((r) => (
+                <Button
+                  key={r}
+                  variant="ghost"
+                  size="sm"
+                  data-nao-prototipado
+                  className={cn("h-8 rounded-none px-3 text-foreground hover:bg-foreground/5", buscaAberta && "max-[1040px]:hidden")}
+                >
+                  {r}
+                </Button>
+              ))}
               {buscaAberta ? (
                 <SearchField
                   autoFocus
@@ -984,7 +885,7 @@ function BarraDeSalvos({
 
 /** Menu da sidebar: Explorar e Salvos trocam de tela aqui mesmo; os outros itens mostram "não prototipada". */
 function menuDaTela(tela: Tela, salvos: number, ir: (t: Tela) => void) {
-  const alvo: Record<string, Tela> = { "Explorar licitações": "explorar", "Salvos para depois": "salvos" }
+  const alvo: Record<string, Tela> = { Recomendadas: "explorar", "Salvos para depois": "salvos" }
   return menuLicitacoes({ salvos }).map((grupo) => ({
     ...grupo,
     items: grupo.items.map((item) => {
