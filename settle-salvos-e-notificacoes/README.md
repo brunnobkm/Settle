@@ -102,3 +102,4 @@ O nome do documento novo (no sino, na central e nos anexos da mensagem completa)
 
 ## Tela inicial = Recomendadas
 A tela inicial segue Recomendadas de produção: item Recomendadas ativo na sidebar, "Encontramos N licitações ativas" / "Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e Filtrar · Ordenar · Exportar · Buscar. As abas filtram por editais definidos em `EDITAIS_DA_ABA` (dados.ts). Explorar licitações passou a ser não prototipada.
+Cada aba mostra seus filtros padrão como selos abaixo da barra (e o número no Filtrar), iguais a settle-melhoria-deixar-os-filtros-aplicados-mais-visivel: Ativas (Situação: Ativas), Chegou hoje (Data de adição: 19/06/2026), Vencendo em breve (Envio da proposta: Próximos 7 dias).
