@@ -932,6 +932,8 @@ function LinhaDeAcompanhamento({
   )
 }
 
+const MOSTRAR_CONTROLES_DE_PROTOTIPO = false
+
 /** Abas da tela Salvos para depois. */
 function BarraDeSalvos({
   aba,
@@ -966,6 +968,9 @@ function BarraDeSalvos({
           ))}
         </TabsList>
       </Tabs>
+      {/* Controles só de protótipo (estado da lista e simular atualização): escondidos para a
+          apresentação. Para usar, troque MOSTRAR_CONTROLES_DE_PROTOTIPO para true. */}
+      {MOSTRAR_CONTROLES_DE_PROTOTIPO && (
       <div className="ml-auto flex flex-wrap items-center gap-2">
       <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
         Estado das notificações
@@ -987,6 +992,7 @@ function BarraDeSalvos({
         </Badge>
       </Button>
       </div>
+      )}
     </div>
   )
 }

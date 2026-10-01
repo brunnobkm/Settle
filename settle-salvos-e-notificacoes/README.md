@@ -49,9 +49,8 @@ Base: arquivo Platform, página "Central de notificações" (node 923-13801): di
 - O **widget** do Figma (lista embutida no módulo da licitação) corresponde ao sino no header da
   licitação aberta: mesma lista, mesmo comportamento.
 
-- **Conteúdo em lorem ipsum** na central e no dropdown do sino (título, mensagem, antes/agora,
-  impacto, documentos e modal): mostra a estrutura sem sugerir regras de conteúdo, que não são o
-  objetivo desta tarefa. Selos de categoria, contagens e tempo relativo continuam reais.
+- **Conteúdo real** nos três cenários pedidos pela Alice (documento novo, data e status), também
+  no primeiro card de Explorar (Edital 88234/2026), para a apresentação ao cliente.
 
 ### Onde a notificação chega
 Toda atualização de uma licitação com sino ligado chega nos **dois lugares**:
@@ -93,3 +92,7 @@ Lida é uma só: ler em um lugar marca como lida no outro.
 - **Simular atualização do portal** (botão de protótipo em Salvos): gera uma notificação só para
   licitações com sino ligado para aquele tipo.
 - O detalhe da licitação (header com sino) não está prototipado aqui.
+
+## Controles de protótipo
+"Estado das notificações" (Normal, Vazio, Erro) e "Simular atualização do portal" estão escondidos
+para a apresentação. Para mostrar de novo: `MOSTRAR_CONTROLES_DE_PROTOTIPO = true` em `app/App.tsx`.
