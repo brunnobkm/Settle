@@ -7,4 +7,4 @@
 //   git rev-list --count origin/main -- settle-atualizacoes-de-editais settle-salvos-e-notificacoes
 //
 // some 1 ao resultado e troque aqui.
-export const VERSAO = 15
+export const VERSAO = 16

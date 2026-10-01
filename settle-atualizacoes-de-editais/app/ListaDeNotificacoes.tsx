@@ -247,16 +247,16 @@ function ItemDeNotificacao({
         </p>
       )}
 
-      {(n.mensagem || onVerLicitacao) && (
+      {(n.mensagem || (onVerLicitacao && n.documento)) && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {n.mensagem && (
             <Button size="xs" onClick={onAbrir}>
               Visualizar mensagem completa
             </Button>
           )}
-          {onVerLicitacao && (
+          {onVerLicitacao && n.documento && (
             <Button size="xs" variant="outline" className="shadow-none" onClick={onVerLicitacao}>
-              {n.documento ? "Abrir documento" : compacta ? "Ver no card" : "Ver na licitação"}
+              Abrir documento
             </Button>
           )}
         </div>

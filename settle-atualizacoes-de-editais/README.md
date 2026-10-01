@@ -107,12 +107,9 @@ O nome do documento novo (no sino, na central e nos anexos da mensagem completa)
 A tela inicial segue Recomendadas de produção: item Recomendadas ativo na sidebar, "Encontramos N licitações ativas" / "Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e Filtrar · Ordenar · Exportar · Buscar. As abas filtram por editais definidos em `EDITAIS_DA_ABA` (dados.ts). Explorar licitações passou a ser não prototipada.
 Cada aba mostra seus filtros padrão como selos abaixo da barra (e o número no Filtrar), iguais a settle-melhoria-deixar-os-filtros-aplicados-mais-visivel: Ativas (Situação: Ativas), Chegou hoje (Data de adição: 19/06/2026), Vencendo em breve (Envio da proposta: Próximos 7 dias).
 
-## Levar ao lugar da mudança (pedido da Alice, 01/10)
-"Uma coisa é avisar, outra é mostrar onde mudou." Cada notificação (no sino do card e na central)
-tem uma ação que leva ao lugar da atualização:
+## O que cada notificação faz (pedido da Alice, 01/10)
+"Uma coisa é avisar, outra é mostrar onde mudou." Só onde a informação não está no card:
 - **Documento novo ou retificado** → "Abrir documento": sheet "Arquivos da licitação" com o arquivo.
-- **Prazo** → "Ver no card" / "Ver na licitação": rola até o card, mostra o aviso da mudança no topo
-  do card e destaca o campo "Envio da proposta" (nova data, antiga riscada).
-- **Status** → idem, destacando o botão de status do card (o anterior no tooltip).
-- **Aviso, impugnação, esclarecimento** → "Visualizar mensagem completa".
-O destaque fica até o usuário fechar o aviso (X).
+- **Prazo e status** → só comunicam (antes → agora na notificação). A informação já está no card.
+- Cenários do protótipo: os três pedidos pela Alice (documento novo, data, status). Os exemplos de
+  aviso, impugnação e esclarecimento foram retirados.
