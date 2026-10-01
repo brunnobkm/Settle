@@ -113,4 +113,4 @@ Cada aba mostra seus filtros padrão como selos abaixo da barra (e o número no 
 - **Prazo e status** → só comunicam (antes → agora na notificação). A informação já está no card.
 - Cenários do protótipo: os três pedidos pela Alice (documento novo, data, status). Os exemplos de
   aviso, impugnação e esclarecimento foram retirados.
-- Abas da lista: só aparecem as categorias que têm notificação (Todos sempre). Hoje: Todos e Atualizações.
+- Sem abas na central e no sino do card: lista única, mais recentes primeiro (abas por categoria removidas em 01/10).
