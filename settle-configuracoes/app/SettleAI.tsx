@@ -181,6 +181,21 @@ const POR_ROTA: Record<Rota, { resumo: string; sugestoes: Sugestao[] }> = {
       SOBRE_AGENTE,
     ],
   },
+  notificacoes: {
+    resumo:
+      "Aqui você decide de que quer ser avisado e por onde. É a única seção que é sua, não da organização.",
+    sugestoes: [
+      {
+        p: "Isso muda a configuração do meu time?",
+        r: "Não. Notificações é por pessoa: o que você escolhe aqui vale só para você, e ninguém sobrescreve ninguém.",
+      },
+      {
+        p: "E o sino de cada licitação, continua valendo?",
+        r: "Continua. O sino liga e desliga o caso específico, por cima do que está aqui. Esta tela é o padrão, o sino é a exceção.",
+      },
+      SOBRE_AGENTE,
+    ],
+  },
   equipe: {
     resumo: "Aqui ficam as pessoas da organização e o papel de cada uma.",
     sugestoes: [

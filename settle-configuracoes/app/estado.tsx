@@ -21,10 +21,15 @@ import {
   EMAIL_ASSUNTO,
   EMAIL_CORPO,
   ETAPAS,
+  MATRIZ_NOTIF,
   MOTIVOS,
   agora,
   type Aba,
+  type AoDescartar,
   type Campo,
+  type FreqEmail,
+  type MatrizNotif,
+  type PadraoNovas,
   type TelaDoCard,
   type ColunaItem,
   type Etapa,
@@ -68,6 +73,19 @@ type Estado = {
    */
   outrosExigeDesc: boolean
   setOutrosExigeDesc: Atualizar<boolean>
+
+  /*
+    Notificações. Diferente de todo o resto desta área, é configuração da pessoa, não da
+    organização: duas pessoas do mesmo time podem querer coisas opostas aqui.
+  */
+  notif: MatrizNotif
+  setNotif: Atualizar<MatrizNotif>
+  padraoNovas: PadraoNovas
+  setPadraoNovas: Atualizar<PadraoNovas>
+  aoDescartar: AoDescartar
+  setAoDescartar: Atualizar<AoDescartar>
+  freqEmail: FreqEmail
+  setFreqEmail: Atualizar<FreqEmail>
   exigirMotivoPerda: boolean
   setExigirMotivoPerda: Atualizar<boolean>
 
@@ -152,6 +170,12 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   const [audit, setAudit] = useState(AUDITORIA)
   const [iaAberta, setIaAberta] = useState(false)
   const [outrosExigeDesc, setOutrosExigeDesc] = useState(true)
+  const [notif, setNotif] = useState<MatrizNotif>(() =>
+    Object.fromEntries(Object.entries(MATRIZ_NOTIF).map(([k, v]) => [k, { ...v }]))
+  )
+  const [padraoNovas, setPadraoNovas] = useState<PadraoNovas>("acompanhadas")
+  const [aoDescartar, setAoDescartar] = useState<AoDescartar>("perguntar")
+  const [freqEmail, setFreqEmail] = useState<FreqEmail>("diario")
   const [pedido, setPedido] = useState<PedidoDeConfirmacao | null>(null)
 
   const auditar = useCallback((area: string, txt: string) => {
@@ -197,11 +221,20 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       desauditar,
       outrosExigeDesc,
       setOutrosExigeDesc,
+      notif,
+      setNotif,
+      padraoNovas,
+      setPadraoNovas,
+      aoDescartar,
+      setAoDescartar,
+      freqEmail,
+      setFreqEmail,
       confirmar: setPedido,
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, exigirMotivo, exigirMotivoPerda, outrosExigeDesc, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, exigirMotivo, exigirMotivoPerda, outrosExigeDesc,
+      notif, padraoNovas, aoDescartar, freqEmail, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (

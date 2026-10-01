@@ -28,6 +28,7 @@ para a mesma página):
 | Motivos de perda | Diálogo de registrar o resultado, Gerenciar motivos (leva a Etapas do funil) |
 | Campos do card | Recomendadas, Ordenar, Personalizar campos do card |
 | Modelo de e-mail | Modal Compartilhar licitação, Editar modelo de e-mail |
+| Notificações | Central de notificações (sino da navbar), engrenagem de preferências |
 
 Por que as duas coisas: a área central é onde o admin descobre o que pode mudar; o atalho é
 onde ele percebe que precisa mudar. O Linear faz igual (Settings central, mais "Edit statuses"
@@ -37,6 +38,11 @@ no próprio board).
 
 Usa as quatro funções que já existem (Visualizador, Editor restrito, Editor completo,
 Administrador). **Configuração da organização é só Administrador.**
+
+**Notificações é a exceção: é do usuário, não da organização.** Todo papel vê a seção e tem a
+sua própria configuração. Por isso ela fica num grupo separado na navegação ("Você"), acima dos
+grupos da organização: a separação na navegação é o que faz a pessoa entender, antes de mexer,
+que ali ela não está decidindo pelo time.
 
 - Negado por padrão. Quem não é admin não vê a seção de organização nem os atalhos.
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
@@ -708,3 +714,91 @@ devs; a Nova versão da plataforma aponta para cá.
 - **Perfil de recomendação**: regiões, faixa de valor, órgãos favoritos, termos.
 - **Notificações**: o que avisa quem.
 - **Agentes e variáveis**: agora moram aqui, na seção 6.
+
+## 8. Notificações
+
+Seção pedida para dar um lugar único ao que hoje se decide licitação por licitação. O que já
+existe está prototipado em `settle-salvos-e-notificacoes`: o **sino da licitação** (a pessoa liga
+e escolhe os tipos), a **central** (sino da navbar) e **"Continuar recebendo atualizações"** no
+diálogo de descarte. O README de lá já listava "preferências gerais (engrenagem da central, ainda
+não prototipada)" como pendência: é esta seção.
+
+**É configuração do usuário.** Duas pessoas do mesmo time podem querer coisas opostas aqui, e
+nenhuma sobrescreve a outra. A tela diz isso no card do topo, em vez de deixar a pessoa descobrir
+depois, e a navegação separa pelo grupo "Você".
+
+### Eventos × canais
+
+- Tabela de verdade: **linhas são os tipos de atualização**, agrupados em "Atualizações do edital"
+  (retificação, novo documento, mudança de prazo, mudança de status) e "Manifestações" (avisos,
+  impugnações, esclarecimentos). **Colunas são os canais**: card da licitação (o sino), central de
+  notificações e e-mail. Cada cruzamento é um switch.
+- Os tipos são os que a Settle acompanha no portal: **não dá para criar um tipo novo**. Isso está
+  escrito na tela, senão a primeira pergunta é "onde eu adiciono".
+- **Padrão da Settle:** tudo ligado no produto (card e central) e e-mail só em retificação e
+  mudança de prazo, que são os dois que mudam a decisão de participar. E-mail em tudo vira ruído,
+  e quem recebe ruído desliga o conjunto, inclusive o que importava.
+- **Linha inteira desligada é escolha válida** ("não quero saber desse tipo"), e a tela explica o
+  que isso significa em vez de impedir. Não há trava de mínimo: a mesma razão da trava que saiu de
+  Motivos, ninguém gosta de descobrir regra esbarrando nela.
+- O nome de cada tipo tem um "i" com o que dispara aquele evento, e cada coluna tem um "i" com
+  onde a notificação aparece.
+- **Em aberto:** o protótipo de notificações diz que toda atualização chega **nos dois lugares**
+  (sino e central) e que "lida é uma só". Aqui card e central são colunas separadas, então dá para
+  ter uma sem a outra. Se o produto quiser manter os dois sempre juntos, as duas colunas viram uma
+  ("No produto") e a tabela fica com dois canais.
+
+### Quais licitações notificam você
+
+Três escolhas excludentes, da mais silenciosa para a mais barulhenta:
+
+1. **Só quando eu ativar o sino.** É o comportamento de hoje.
+2. **Quando eu salvar ou enviar para análise.** A licitação em que a pessoa demonstrou interesse
+   passa a notificar sozinha; Recomendadas fica de fora. É o padrão da tela, por ser o meio-termo.
+3. **Em toda licitação que chega em Recomendadas.** A exceção é essa: inclui o que ainda não foi
+   olhado, e é a opção que mais gera notificação. A tela diz isso na própria opção.
+
+- **O sino da licitação continua valendo e vence esta escolha.** Aqui é o padrão, o sino é a
+  exceção caso a caso. Sem essa regra a pessoa mexeria aqui e não entenderia por que uma licitação
+  específica continua (ou deixou de) avisar.
+- A mudança vale para as próximas licitações; as de agora ficam como estão. **Em aberto:** oferecer
+  aplicar às que já existem, que é uma ação em lote e precisa de confirmação com número.
+
+### Ao descartar
+
+Três opções: **desligar**, **perguntar no diálogo** (padrão) ou **manter**. "Perguntar" é o que o
+protótipo de notificações já faz: o diálogo de descarte mostra "Continuar recebendo atualizações",
+desmarcado, e sugere marcar quando o motivo é um que uma atualização pode desfazer
+(`MOTIVOS_REVERSIVEIS`). Quem escolhe "desligar" ou "manter" deixa de ver a opção no diálogo: a
+decisão já está tomada, e repetir a pergunta é ruído.
+
+O texto da seção explica o porquê de a opção existir: descartar não apaga a licitação, ela vai para
+Descartadas e o edital continua mudando lá.
+
+### E-mail
+
+- **Frequência:** na hora (um e-mail por atualização) ou no resumo diário.
+- **O resumo entra no e-mail que a Settle já manda de manhã, às 7h**, com as licitações
+  encontradas, em um bloco próprio. É um e-mail por dia, não dois. Criar um segundo e-mail diário
+  da Settle seria a forma mais rápida de a pessoa marcar os dois como spam.
+- Quando nenhum tipo está com a coluna E-mail ligada, a seção inteira aparece desabilitada, com o
+  selo "Desligado" e o motivo escrito. Ela não some: sumir faria a pessoa procurar onde se escolhe
+  a frequência.
+- **Em aberto:** não encontrei a régua do e-mail das 7h escrita em lugar nenhum do repositório.
+  Assumi que é o e-mail de licitações encontradas (o mesmo cujo modelo se edita na seção "Modelo de
+  e-mail", que a Settle AI já descreve como o e-mail que sai "naquele dia"). **Confirmar o horário
+  e se ele é mesmo diário.**
+
+### O que ficou em aberto
+
+- **Nada nesta seção é da organização hoje.** Se o administrador precisar impor um mínimo (por
+  exemplo, desligar o canal de e-mail para todo mundo), o padrão da casa já existe: selo
+  "Definido pela organização" na linha e o controle desabilitado, como o "Motivo padrão" em
+  Motivos. Não inventei esse caso agora porque ninguém pediu.
+- **Aprovações de agentes não entram aqui.** Esta seção é sobre o que muda na licitação. A fila de
+  Aprovações tem contador próprio na navegação, e se ela também precisar notificar, entra como um
+  grupo novo na tabela, não como tipo solto.
+- **Push e mobile** ficam de fora: não existe app, e inventar um canal que não existe atrapalha a
+  leitura da tabela.
+- **Silenciar por período** (férias, fim de semana) não foi pedido e não entrou. É o pedido mais
+  provável depois que a seção for usada.
