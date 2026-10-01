@@ -224,7 +224,6 @@ function ListaDaLicitacao({
       </div>
       <ListaDeNotificacoes
         compacta
-        placeholder
         notificacoes={notificacoes}
         licitacoes={[licitacao]}
         carregando={carregando}
