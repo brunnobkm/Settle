@@ -7,6 +7,8 @@ import { toast } from "sonner"
 import { ArchiveIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { SettingsBox, SettingsSection, SettingsSectionDescription, SettingsSectionTitle } from "@/components/ui/settings-page"
 import {
@@ -24,6 +26,17 @@ import { fmt, mover, novoId, type Motivo, type TipoMotivo } from "./dados"
 import { useConfig } from "./estado"
 import { useFocoNoNome } from "./PaginaEtapas"
 
+/**
+ * Larguras das colunas na variante "colunas" (a proposta em comparação). Ficam aqui porque o
+ * cabeçalho, que é montado na página, precisa usar exatamente as mesmas.
+ */
+export const COL = {
+  tela: "w-32",
+  desc: "w-44",
+  uso: "w-28",
+  acao: "w-9",
+}
+
 /** "1 licitação" ou "412 licitações": a mesma unidade em descarte e em perda. */
 const emLicitacoes = (n: number) => `${fmt(n)} ${n === 1 ? "licitação" : "licitações"}`
 
@@ -38,6 +51,8 @@ export function ListaMotivos({
   bloquearUltimo,
   extras,
   fixo,
+  variante = "pilulas",
+  cabecalho,
 }: {
   tipo: TipoMotivo
   /** Área usada na Auditoria. */
@@ -58,9 +73,17 @@ export function ListaMotivos({
   extras?: (x: Motivo) => ReactNode
   /** Item fixo no fim da lista (ex.: "Outros" no descarte). */
   fixo?: ReactNode
+  /**
+   * "pilulas" é como a tela está hoje. "colunas" é a proposta em comparação: cada chave vira
+   * um switch numa coluna de largura fixa, com os rótulos no cabeçalho em vez de em cada linha.
+   */
+  variante?: "pilulas" | "colunas"
+  /** Linha de cabeçalho da variante "colunas", montada na página com as mesmas larguras. */
+  cabecalho?: ReactNode
 }) {
   const { motivos, setMotivos, auditar, desauditar, confirmar } = useConfig()
   const focar = useFocoNoNome()
+  const emColunas = variante === "colunas"
 
   const lista = motivos.filter((x) => x.tipo === tipo && !x.arq)
   // arquivado sem nenhuma licitação não aparece: não há histórico para preservar
@@ -171,6 +194,7 @@ export function ListaMotivos({
   return (
     <>
       <SettingsBox>
+        {cabecalho}
         <SettingsList
           labels={{ moveHandle: (n) => `Mover o motivo ${n ?? ""}. Use as setas para cima e para baixo.` }}
           onMove={(de, para) => setMotivos((l) => mover(l, de, para))}
@@ -186,17 +210,35 @@ export function ListaMotivos({
               {extras?.(x)}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Pilula pressed={x.desc} onPressedChange={() => alternarDescricao(x)}>
-                    Descrição obrigatória
-                  </Pilula>
+                  {emColunas ? (
+                    // desativado, e não escondido, quando o motivo não aparece em nenhuma tela:
+                    // sumir faria parecer que a configuração se perdeu
+                    <span className={cn("flex flex-none", COL.desc)}>
+                      <Switch
+                        checked={x.desc}
+                        disabled={!x.rec && !x.and}
+                        aria-label={`Descrição obrigatória em ${x.nome}`}
+                        onCheckedChange={() => alternarDescricao(x)}
+                        data-settings-list-no-drag
+                      />
+                    </span>
+                  ) : (
+                    <Pilula pressed={x.desc} onPressedChange={() => alternarDescricao(x)}>
+                      Descrição obrigatória
+                    </Pilula>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent>
-                  O campo de descrição existe em todos os motivos e é opcional. Ativado aqui, quem escolher este
-                  motivo não conclui sem escrever o porquê.
+                  {!emColunas || x.rec || x.and
+                    ? "O campo de descrição existe em todos os motivos e é opcional. Ativado aqui, quem escolher este motivo não conclui sem escrever o porquê."
+                    : "Este motivo não aparece em nenhuma tela, então ninguém pode escolhê-lo. Ative uma das telas para poder exigir a descrição."}
                 </TooltipContent>
               </Tooltip>
               {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
-              <MetaComDica dica={typeof dicaUso === "function" ? dicaUso(x) : dicaUso}>
+              <MetaComDica
+                dica={typeof dicaUso === "function" ? dicaUso(x) : dicaUso}
+                className={emColunas ? cn(COL.uso, "justify-end") : undefined}
+              >
                 {x.uso ? emLicitacoes(x.uso) : "nunca usado"}
               </MetaComDica>
               <SettingsListItemActions>
