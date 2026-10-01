@@ -346,11 +346,27 @@ export const ORGAOS = [
 ]
 
 // Abas de Recomendadas, iguais às de produção. O protótipo filtra por lista de editais.
+// Filtros padrão de cada aba (viram selos abaixo da barra), os mesmos de
+// settle-melhoria-deixar-os-filtros-aplicados-mais-visivel.
+const SITUACAO = ["Ativas", "Em disputa", "Homologação", "Encerradas", "Descartadas"]
+
 export const VISUALIZACOES_INICIAIS: Visualizacao[] = [
   { chave: "Todas", rotulo: "Todas", filtros: [] },
-  { chave: "Ativas", rotulo: "Ativas", filtros: [] },
-  { chave: "Chegou hoje", rotulo: "Chegou hoje", filtros: [] },
-  { chave: "Vencendo em breve", rotulo: "Vencendo em breve", filtros: [] },
+  {
+    chave: "Ativas",
+    rotulo: "Ativas",
+    filtros: [{ rotulo: "Situação", tipo: "lista", opcoes: SITUACAO, valor: ["Ativas"] }],
+  },
+  {
+    chave: "Chegou hoje",
+    rotulo: "Chegou hoje",
+    filtros: [{ rotulo: "Data de adição", tipo: "data", modo: "passado", valor: { data: "19/06/2026" } }],
+  },
+  {
+    chave: "Vencendo em breve",
+    rotulo: "Vencendo em breve",
+    filtros: [{ rotulo: "Envio da proposta", tipo: "data", modo: "futuro", valor: { preset: "7d" } }],
+  },
 ]
 
 /** Editais de cada aba (protótipo). Todas: sem filtro. */
