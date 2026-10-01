@@ -202,7 +202,7 @@ const ROTULO_DA_OPCAO: Record<OpcaoExport, string> = {
   hoje: "Adicionadas hoje",
   periodo: "Adicionadas em um período",
   filtrado: "Todas da lista",
-  etapa: "Por etapa do fluxo",
+  etapa: "Só algumas etapas",
   lote: "Marcadas por você",
 }
 
@@ -270,16 +270,18 @@ export function ModalExportar({
     ...(opcao === "etapa" ? [["Etapas", nomesDasEtapas.join(", ") || "Nenhuma"] as [string, string]] : []),
   ]
 
-  const semRecorte = contexto.aba === "Todas" && !contexto.busca && !contexto.filtros.length
+  const kanban = contexto.tela === "kanban"
+  const semRecorte = (kanban || contexto.aba === "Todas") && !contexto.busca && !contexto.filtros.length
+  const lista = kanban ? "em andamento" : "na lista"
 
   function motivoDoBloqueio() {
     if (periodoInvalido) return "A data final não pode ser anterior à inicial."
     if (opcao === "etapa" && !etapas.length) return "Escolha pelo menos uma etapa."
     if (total === 0) {
-      if (opcao === "hoje") return "Nenhuma licitação desta lista entrou hoje."
-      if (opcao === "periodo") return "Nenhuma licitação desta lista entrou nesse período."
+      if (opcao === "hoje") return `Nenhuma licitação entrou ${lista} hoje.`
+      if (opcao === "periodo") return `Nenhuma licitação entrou ${lista} nesse período.`
       if (opcao === "etapa") return "As etapas escolhidas estão vazias com os filtros aplicados."
-      return "Esta lista está vazia. Mude a aba, a busca ou os filtros para exportar."
+      return kanban ? "Nenhuma licitação em andamento com esses filtros. Mude os filtros para exportar." : "Esta lista está vazia. Mude a aba, a busca ou os filtros para exportar."
     }
     return null
   }
@@ -311,7 +313,9 @@ export function ModalExportar({
           <DialogDescription>
             {lote
               ? "O arquivo traz só as licitações que você marcou."
-              : "O arquivo traz as licitações desta lista, com a aba, a busca e os filtros que estão aplicados agora."}
+              : kanban
+                ? "O arquivo traz as licitações em andamento, com os filtros que estão aplicados agora."
+                : "O arquivo traz as licitações desta lista, com a aba, a busca e os filtros que estão aplicados agora."}
           </DialogDescription>
         </DialogHeader>
 
@@ -319,11 +323,11 @@ export function ModalExportar({
           <RadioGroup value={opcao} onValueChange={escolher} className="gap-2" aria-label="O que exportar">
             <Opcao
               valor="filtrado"
-              titulo="Todas da lista"
-              descricao="Inclui as que ainda não apareceram na rolagem."
+              titulo={kanban ? "Todas as etapas" : "Todas da lista"}
+              descricao={kanban ? "Todas as colunas do Kanban." : "Inclui as que ainda não apareceram na rolagem."}
             />
             {mostrarOpcaoEtapa && contexto.etapas && (
-              <Opcao valor="etapa" titulo="Por etapa do fluxo" descricao="Escolha uma ou mais colunas do Kanban.">
+              <Opcao valor="etapa" titulo="Só algumas etapas" descricao="Escolha uma ou mais colunas do Kanban.">
                 {opcao === "etapa" && (
                   <fieldset className="mt-2.5 ml-6.5 grid gap-1.5 sm:grid-cols-2">
                     <legend className="sr-only">Etapas</legend>
@@ -341,8 +345,8 @@ export function ModalExportar({
                 )}
               </Opcao>
             )}
-            <Opcao valor="hoje" titulo="Adicionadas hoje" descricao="Só as que entraram na lista hoje." />
-            <Opcao valor="periodo" titulo="Adicionadas em um período" descricao="Só as que entraram na lista entre duas datas.">
+            <Opcao valor="hoje" titulo="Adicionadas hoje" descricao={`Só as que entraram ${lista} hoje.`} />
+            <Opcao valor="periodo" titulo="Adicionadas em um período" descricao={`Só as que entraram ${lista} entre duas datas.`}>
               {opcao === "periodo" && <CampoPeriodo de={de} ate={ate} onDe={setDe} onAte={setAte} />}
             </Opcao>
           </RadioGroup>
@@ -358,7 +362,15 @@ export function ModalExportar({
             {!lote && semRecorte && (
               <>
                 <dt className="sr-only">Filtros</dt>
-                <dd className="col-span-2 text-muted-foreground">Todas as recomendadas, sem busca e sem filtros.</dd>
+                <dd className="col-span-2 text-muted-foreground">
+                  {opcao !== "filtrado"
+                    ? kanban
+                      ? "Sem filtros."
+                      : "Sem busca e sem filtros."
+                    : kanban
+                      ? "Todas as licitações em andamento, sem filtros."
+                      : "Todas as recomendadas, sem busca e sem filtros."}
+                </dd>
               </>
             )}
             {!lote &&
