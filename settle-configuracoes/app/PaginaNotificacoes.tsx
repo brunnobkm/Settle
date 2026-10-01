@@ -3,7 +3,8 @@
 //
 // O que existe hoje está em settle-salvos-e-notificacoes: o sino por licitação, a central
 // (sino da navbar) e "Continuar recebendo atualizações" no descarte. Lá a escolha é licitação
-// por licitação; aqui ela é feita uma vez e vale para todas. Regras em ../REGRAS.md.
+// por licitação, feita por quem usa; aqui é o padrão da organização, que vale para todas as
+// licitações e todas as pessoas. Regras em ../REGRAS.md.
 
 import { toast } from "sonner"
 
@@ -109,17 +110,17 @@ export function PaginaNotificacoes() {
   return (
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
-        <b>Esta configuração é sua, não da organização.</b> O que você escolhe aqui vale só para as
-        suas notificações: outra pessoa do time pode querer o contrário, e ninguém sobrescreve
-        ninguém. Nas outras seções de Configurações é o inverso, o administrador decide por todos.
+        Aqui você define de que a Settle avisa e por onde. Como nas outras seções, vale para todas
+        as pessoas da organização. O sino de cada licitação continua existindo: ele é a exceção que
+        quem usa liga ou desliga num caso específico, por cima do que estiver definido aqui.
       </Aviso>
 
       <SettingsSection>
-        <SettingsSectionTitle>Do que você quer ser avisado</SettingsSectionTitle>
+        <SettingsSectionTitle>De que a Settle avisa</SettingsSectionTitle>
         <SettingsSectionDescription>
           Cada linha é um tipo de atualização e cada coluna é um lugar onde ela pode chegar. Vale
-          para as licitações que notificam você, e quais são elas é a seção seguinte. Os tipos são
-          os que a Settle acompanha no portal: não dá para criar um novo.
+          para as licitações que notificam, e quais são elas é a seção seguinte. Os tipos são os que
+          a Settle acompanha no portal: não dá para criar um novo.
         </SettingsSectionDescription>
         {/* overflow-visible: com o overflow-hidden da caixa o cabeçalho sticky não gruda */}
         <SettingsBox className="overflow-visible">
@@ -152,26 +153,26 @@ export function PaginaNotificacoes() {
         {EVENTOS_NOTIF.some((e) => CANAIS_NOTIF.every(([c]) => !notif[e.id][c])) && (
           <SettingsPageDescription className="mt-2.5">
             Um tipo com as três colunas desligadas não avisa em lugar nenhum. A atualização continua
-            acontecendo na licitação, você é que não fica sabendo.
+            acontecendo na licitação, e ninguém do time fica sabendo.
           </SettingsPageDescription>
         )}
       </SettingsSection>
 
       <SettingsSection className="mt-7">
-        <SettingsSectionTitle>Quais licitações notificam você</SettingsSectionTitle>
+        <SettingsSectionTitle>Quais licitações notificam</SettingsSectionTitle>
         <SettingsSectionDescription>
-          Hoje a Settle só avisa das licitações em que você liga o sino, uma a uma. Aqui você escolhe
-          se isso continua assim ou se algumas passam a notificar sozinhas. O sino de cada licitação
-          continua valendo: ele liga e desliga o caso específico, por cima desta escolha.
+          Hoje a Settle só avisa das licitações em que alguém liga o sino, uma a uma. Aqui você
+          escolhe se isso continua assim ou se algumas passam a notificar sozinhas, para todo mundo
+          que acompanha a licitação.
         </SettingsSectionDescription>
         <Escolhas
-          nome="Quais licitações notificam você"
+          nome="Quais licitações notificam"
           opcoes={PADRAO_NOVAS}
           valor={padraoNovas}
           onChange={(v) => {
             setPadraoNovas(v)
             auditar("Notificações", `Licitações novas: ${PADRAO_NOVAS.find(([k]) => k === v)?.[1]}`)
-            toast("Vale para as próximas licitações. As de agora continuam como estão")
+            toast("Vale para as próximas licitações da organização. As de agora continuam como estão")
           }}
         />
       </SettingsSection>
@@ -207,8 +208,8 @@ export function PaginaNotificacoes() {
         <SettingsSectionDescription>
           {temEmail ? (
             <>
-              Vale para os {ligadosEm("email")} tipos com a coluna E-mail ligada na tabela acima. O
-              e-mail vai para o endereço da sua conta.
+              Vale para os {ligadosEm("email")} tipos com a coluna E-mail ligada na tabela acima. Cada
+              pessoa recebe no endereço da própria conta, sobre as licitações que acompanha.
             </>
           ) : (
             <>

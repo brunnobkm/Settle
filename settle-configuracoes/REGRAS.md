@@ -39,10 +39,11 @@ no próprio board).
 Usa as quatro funções que já existem (Visualizador, Editor restrito, Editor completo,
 Administrador). **Configuração da organização é só Administrador.**
 
-**Notificações é a exceção: é do usuário, não da organização.** Todo papel vê a seção e tem a
-sua própria configuração. Por isso ela fica num grupo separado na navegação ("Você"), acima dos
-grupos da organização: a separação na navegação é o que faz a pessoa entender, antes de mexer,
-que ali ela não está decidindo pelo time.
+Notificações segue a mesma regra: **é configuração da organização, só Administrador**, e fica no
+grupo Licitações, depois de Modelo de e-mail. A primeira versão desta seção foi feita como
+configuração do usuário, com um grupo "Você" na navegação; **em 02/10 isso foi revertido**, porque
+a seção tem o mesmo objetivo das outras e quem gerencia é o administrador. O que continua sendo da
+pessoa é o **sino da licitação**, que já existe no produto.
 
 - Negado por padrão. Quem não é admin não vê a seção de organização nem os atalhos.
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
@@ -723,9 +724,15 @@ e escolhe os tipos), a **central** (sino da navbar) e **"Continuar recebendo atu
 diálogo de descarte. O README de lá já listava "preferências gerais (engrenagem da central, ainda
 não prototipada)" como pendência: é esta seção.
 
-**É configuração do usuário.** Duas pessoas do mesmo time podem querer coisas opostas aqui, e
-nenhuma sobrescreve a outra. A tela diz isso no card do topo, em vez de deixar a pessoa descobrir
-depois, e a navegação separa pelo grupo "Você".
+**É configuração da organização** (decidido em 02/10), como todas as outras seções: o
+administrador define e vale para o time inteiro. **O sino da licitação continua sendo a exceção
+individual**: quem usa liga ou desliga uma licitação específica, por cima deste padrão. O card do
+topo diz as duas coisas, porque é a primeira dúvida de quem chega aqui.
+
+**Tensão conhecida:** e-mail chega na caixa de entrada de uma pessoa, e a frequência ser decidida
+pelo time é o ponto mais discutível desta seção. Ficou assim por coerência com o resto de
+Configurações. Se aparecer reclamação, o caminho é a frequência virar a única coisa individual,
+não a seção inteira.
 
 ### Eventos × canais
 
@@ -752,11 +759,11 @@ depois, e a navegação separa pelo grupo "Você".
 
 Três escolhas excludentes, da mais silenciosa para a mais barulhenta:
 
-1. **Só quando eu ativar o sino.** É o comportamento de hoje.
-2. **Quando eu salvar ou enviar para análise.** A licitação em que a pessoa demonstrou interesse
-   passa a notificar sozinha; Recomendadas fica de fora. É o padrão da tela, por ser o meio-termo.
-3. **Em toda licitação que chega em Recomendadas.** A exceção é essa: inclui o que ainda não foi
-   olhado, e é a opção que mais gera notificação. A tela diz isso na própria opção.
+1. **Só com o sino ligado na licitação.** É o comportamento de hoje.
+2. **Ao salvar ou enviar para análise.** A licitação em que o time demonstrou interesse passa a
+   notificar sozinha; Recomendadas fica de fora. É o padrão da tela, por ser o meio-termo.
+3. **Em toda licitação que chega em Recomendadas.** A exceção é essa: inclui o que ninguém olhou
+   ainda, e é a opção que mais gera notificação. A tela diz isso na própria opção.
 
 - **O sino da licitação continua valendo e vence esta escolha.** Aqui é o padrão, o sino é a
   exceção caso a caso. Sem essa regra a pessoa mexeria aqui e não entenderia por que uma licitação
@@ -791,10 +798,10 @@ Descartadas e o edital continua mudando lá.
 
 ### O que ficou em aberto
 
-- **Nada nesta seção é da organização hoje.** Se o administrador precisar impor um mínimo (por
-  exemplo, desligar o canal de e-mail para todo mundo), o padrão da casa já existe: selo
-  "Definido pela organização" na linha e o controle desabilitado, como o "Motivo padrão" em
-  Motivos. Não inventei esse caso agora porque ninguém pediu.
+- **Quanto cada pessoa pode mudar por cima do padrão.** Hoje a única exceção individual é o sino
+  da licitação, que já existe. Se no futuro alguém precisar de mais (por exemplo, desligar o
+  e-mail só para si), o padrão da casa é a seção continuar da organização e a parte individual
+  aparecer em outro lugar, nas preferências da conta, e não misturada aqui.
 - **Aprovações de agentes não entram aqui.** Esta seção é sobre o que muda na licitação. A fila de
   Aprovações tem contador próprio na navegação, e se ela também precisar notificar, entra como um
   grupo novo na tabela, não como tipo solto.

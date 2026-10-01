@@ -131,8 +131,6 @@ function Configuracoes() {
       ],
     },
     { items: [{ ...item("inicio", SettingsIcon), label: "Visão geral" }] },
-    /* Notificações é do usuário, não da organização: grupo próprio, e todo papel tem o seu */
-    { label: "Você", items: [item("notificacoes", BellIcon)] },
     ...(isAdmin
       ? [
           {
@@ -143,6 +141,7 @@ function Configuracoes() {
               item("motivos", TextAlignStartIcon),
               item("card", SquareMenuIcon),
               item("email", MailIcon),
+              item("notificacoes", BellIcon),
             ],
           },
           {
