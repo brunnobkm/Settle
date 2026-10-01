@@ -53,7 +53,7 @@ import {
   type TipoEtapa,
 } from "./dados"
 import { Confirmacao, useConfig, type PedidoDeConfirmacao } from "./estado"
-import { ListaMotivos } from "./ListaMotivos"
+import { COL, ListaMotivos } from "./ListaMotivos"
 
 /** Foca e seleciona o nome do item recém-criado. */
 export function useFocoNoNome() {
@@ -262,6 +262,16 @@ export function PaginaEtapas() {
 
         <ListaMotivos
           tipo="perda"
+          // mesmo formato de Motivos de descarte: a chave é um switch, com o rótulo no cabeçalho
+          cabecalho={
+            <div className="flex items-center gap-2.5 border-b bg-muted/40 py-2 pr-2.5 pl-3 text-[12px] font-semibold text-muted-foreground">
+              <span aria-hidden className="w-4 flex-none" />
+              <span className="min-w-0 flex-1">Motivo</span>
+              <span className={cn("flex-none", COL.desc)}>Descrição obrigatória</span>
+              <span className={cn("flex-none text-right", COL.uso)}>Licitações</span>
+              <span aria-hidden className={cn("flex-none", COL.acao)} />
+            </div>
+          }
           area="Etapas do funil"
           bloquearUltimo={
             exigirMotivoPerda

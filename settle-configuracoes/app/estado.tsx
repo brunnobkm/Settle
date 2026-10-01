@@ -61,6 +61,13 @@ type Estado = {
   setMotivoTab: Atualizar<TipoMotivo>
   exigirMotivo: boolean
   setExigirMotivo: Atualizar<boolean>
+  /**
+   * "Outros" exige descrição. Virou chave editável em 01/10 (Willian, no #product-tech): em
+   * produção o comentário é opcional em todos os motivos, inclusive no "Outros", então obrigar
+   * sempre era uma regra que só existia no desenho.
+   */
+  outrosExigeDesc: boolean
+  setOutrosExigeDesc: Atualizar<boolean>
   exigirMotivoPerda: boolean
   setExigirMotivoPerda: Atualizar<boolean>
 
@@ -144,6 +151,7 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
   })
   const [audit, setAudit] = useState(AUDITORIA)
   const [iaAberta, setIaAberta] = useState(false)
+  const [outrosExigeDesc, setOutrosExigeDesc] = useState(true)
   const [pedido, setPedido] = useState<PedidoDeConfirmacao | null>(null)
 
   const auditar = useCallback((area: string, txt: string) => {
@@ -187,11 +195,13 @@ export function EstadoProvider({ children }: { children: ReactNode }) {
       audit,
       auditar,
       desauditar,
+      outrosExigeDesc,
+      setOutrosExigeDesc,
       confirmar: setPedido,
       iaAberta,
       setIaAberta,
     }),
-    [papel, etapas, motivos, motivoTab, exigirMotivo, exigirMotivoPerda, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
+    [papel, etapas, motivos, motivoTab, exigirMotivo, exigirMotivoPerda, outrosExigeDesc, abas, abaTela, abaPrev, campos, telaDoCard, colunasItens, tabelaNoTopo, maxItens, email, audit, auditar, desauditar, iaAberta]
   )
 
   return (
