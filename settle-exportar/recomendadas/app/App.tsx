@@ -383,12 +383,8 @@ function Recomendadas() {
                 </>
               ) : (
                 <>
-                  <span>
-                    As <strong className="font-semibold tabular-nums">{cards.length}</strong> licitações carregadas na tela estão
-                    selecionadas.
-                  </span>
                   <Button variant="link" size="sm" className="h-auto p-0 text-[13px]" onClick={() => setTodasDoFiltro(true)}>
-                    Selecionar todas as {total.toLocaleString("pt-BR")} do filtro
+                    Selecionar todas as {total.toLocaleString("pt-BR")} do filtro?
                   </Button>
                 </>
               )}
