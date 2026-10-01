@@ -14,19 +14,12 @@ import {
   SettingsRowTitle,
   SettingsSection,
 } from "@/components/ui/settings-page"
-import {
-  SettingsListItem,
-  SettingsListItemDescription,
-  SettingsListLockBadge,
-  SettingsListName,
-} from "@/components/ui/settings-list"
-
-import { useState } from "react"
+import { SettingsListItem, SettingsListLockBadge, SettingsListName } from "@/components/ui/settings-list"
 
 import { cn } from "@/lib/utils"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
-import { Aviso, Pilula } from "./comum"
+import { Aviso, MetaComDica } from "./comum"
 import { fmt, type Motivo } from "./dados"
 import { useConfig } from "./estado"
 import { COL, ListaMotivos } from "./ListaMotivos"
@@ -34,18 +27,10 @@ import { COL, ListaMotivos } from "./ListaMotivos"
 const NOME_DA_TELA = { rec: "Recomendadas", and: "Em andamento" } as const
 
 export function PaginaMotivos() {
-  const { setMotivos, exigirMotivo, setExigirMotivo, auditar, confirmar } = useConfig()
-  // comparação temporária entre as pílulas de hoje e a proposta de switches em colunas
-  const [versao, setVersao] = useState<"hoje" | "proposta">("hoje")
-  const emColunas = versao === "proposta"
+  const { setMotivos, exigirMotivo, setExigirMotivo, outrosExigeDesc, setOutrosExigeDesc, auditar, confirmar } =
+    useConfig()
 
   function alternarEscopo(x: Motivo, k: "rec" | "and") {
-    // na proposta a trava sai: desativar as duas telas é um estado válido (o motivo fica
-    // pausado, à vista na configuração, sem aparecer para quem descarta)
-    if (!emColunas && x[k] && !(k === "rec" ? x.and : x.rec)) {
-      toast("O motivo precisa aparecer em pelo menos uma tela")
-      return
-    }
     const tela = NOME_DA_TELA[k]
     const aplicar = () => {
       setMotivos((l) => l.map((m) => (m.id === x.id ? { ...m, [k]: !m[k] } : m)))
@@ -93,30 +78,9 @@ export function PaginaMotivos() {
 
   return (
     <SettingsPage width="full">
-      {/* TEMPORÁRIO: comparação das duas formas de mostrar as chaves de cada motivo. Quando a
-          decisão sair, fica só uma e este seletor some. */}
-      <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
-        <span className="text-[13px] font-semibold">Comparar:</span>
-        <Tabs value={versao} onValueChange={(v) => setVersao(v as "hoje" | "proposta")}>
-          <TabsList aria-label="Como mostrar as chaves de cada motivo">
-            <TabsTrigger value="hoje" className="px-3">
-              Como está hoje
-            </TabsTrigger>
-            <TabsTrigger value="proposta" className="px-3">
-              Proposta: switches em colunas
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <span className="text-[13px] text-muted-foreground">
-          {emColunas
-            ? "Três chaves independentes. Dá para desativar as duas telas: o motivo fica pausado, à vista aqui, sem aparecer para quem descarta."
-            : "Duas pílulas para onde o motivo aparece, com a trava de pelo menos uma, e uma terceira para a descrição."}
-        </span>
-      </div>
-
       <Aviso tom="marca" fechavel>
         Aqui você gerencia a lista de motivos que aparece quando alguém descarta uma licitação. Em cada motivo, as
-        pílulas dizem em quais telas ele aparece: Recomendadas, Em andamento ou nas duas. O motivo escolhido fica na
+        chaves dizem em quais telas ele aparece: Recomendadas, Em andamento ou nas duas. O motivo escolhido fica na
         licitação, aparece no filtro de Descartadas e no gráfico "Motivos de descarte", em Dashboards, e é por isso que
         um motivo já usado é arquivado, nunca apagado.
       </Aviso>
@@ -153,7 +117,7 @@ export function PaginaMotivos() {
 
       {/* o detalhe de que o campo existe em todos e é opcional fica no tooltip da própria pílula */}
       <SettingsPageDescription className="mb-2.5">
-        Em cada motivo, selecione as telas em que ele aparece. Marque a opção{" "}
+        Em cada motivo, selecione as telas em que ele aparece. Ative a opção{" "}
         <b className="font-semibold text-foreground">Descrição obrigatória</b> nos casos em que a escolha não é
         suficiente e a pessoa precisa explicar o porquê, como em “Outros”.
       </SettingsPageDescription>
@@ -176,62 +140,97 @@ export function PaginaMotivos() {
         usoPassado="descartadas por este motivo"
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte”, em Dashboards"
         reservados={["Outros"]}
-        variante={emColunas ? "colunas" : "pilulas"}
         cabecalho={
-          emColunas ? (
-            <div className="flex items-center gap-2.5 border-b bg-muted/40 py-2 pr-2.5 pl-3 text-[12px] font-semibold text-muted-foreground">
-              <span aria-hidden className="w-4 flex-none" />
-              <span className="min-w-0 flex-1">Motivo</span>
-              <span className={cn("flex-none", COL.tela)}>Recomendadas</span>
-              <span className={cn("flex-none", COL.tela)}>Em andamento</span>
-              <span className={cn("flex-none", COL.desc)}>Descrição obrigatória</span>
-              <span className={cn("flex-none text-right", COL.uso)}>Licitações</span>
-              <span aria-hidden className={cn("flex-none", COL.acao)} />
-            </div>
-          ) : undefined
+          <div className="flex items-center gap-2.5 border-b bg-muted/40 py-2 pr-2.5 pl-3 text-[12px] font-semibold text-muted-foreground">
+            <span aria-hidden className="w-4 flex-none" />
+            <span className="min-w-0 flex-1">Motivo</span>
+            <span className={cn("flex-none", COL.tela)}>Recomendadas</span>
+            <span className={cn("flex-none", COL.tela)}>Em andamento</span>
+            <span className={cn("flex-none", COL.desc)}>Descrição obrigatória</span>
+            <span className={cn("flex-none text-right", COL.uso)}>Licitações</span>
+            <span aria-hidden className={cn("flex-none", COL.acao)} />
+          </div>
         }
-        extras={(x) =>
-          emColunas ? (
-            // uma chave por tela, cada uma na sua coluna: o rótulo está no cabeçalho
-            <>
-              <span className={cn("flex flex-none", COL.tela)}>
-                <Switch
-                  checked={x.rec}
-                  aria-label={`Mostrar "${x.nome}" em Recomendadas`}
-                  onCheckedChange={() => alternarEscopo(x, "rec")}
-                  data-settings-list-no-drag
-                />
-              </span>
-              <span className={cn("flex flex-none", COL.tela)}>
-                <Switch
-                  checked={x.and}
-                  aria-label={`Mostrar "${x.nome}" em Em andamento`}
-                  onCheckedChange={() => alternarEscopo(x, "and")}
-                  data-settings-list-no-drag
-                />
-              </span>
-            </>
-          ) : (
-            // sem chave de "mesma lista": cada motivo sempre diz em quais telas aparece
-            <div role="group" aria-label={`Onde "${x.nome}" aparece`} className="flex flex-none gap-1">
-              <Pilula pressed={x.rec} onPressedChange={() => alternarEscopo(x, "rec")}>
-                Recomendadas
-              </Pilula>
-              <Pilula pressed={x.and} onPressedChange={() => alternarEscopo(x, "and")}>
-                Em andamento
-              </Pilula>
-            </div>
-          )
-        }
+        extras={(x) => (
+          // uma chave por tela, cada uma na sua coluna: o rótulo está no cabeçalho
+          <>
+            <span className={cn("flex flex-none", COL.tela)}>
+              <Switch
+                checked={x.rec}
+                aria-label={`Mostrar "${x.nome}" em Recomendadas`}
+                onCheckedChange={() => alternarEscopo(x, "rec")}
+                data-settings-list-no-drag
+              />
+            </span>
+            <span className={cn("flex flex-none", COL.tela)}>
+              <Switch
+                checked={x.and}
+                aria-label={`Mostrar "${x.nome}" em Em andamento`}
+                onCheckedChange={() => alternarEscopo(x, "and")}
+                data-settings-list-no-drag
+              />
+            </span>
+          </>
+        )}
         fixo={
-          <SettingsListItem id="outros" group="fixa" locked>
-            <SettingsListName className="flex-none">Outros</SettingsListName>
-            <SettingsListItemDescription>
-              Sempre disponível e com descrição obrigatória.
-            </SettingsListItemDescription>
-            <SettingsListLockBadge tooltip="Motivo padrão da plataforma. Não pode ser renomeado, arquivado nem excluído.">
-              Não editável
-            </SettingsListLockBadge>
+          /*
+            "Outros" deixou de ser imutável (Willian, #product-tech, 01/10). Em produção o
+            comentário é opcional em todos os motivos, inclusive neste, então obrigar sempre era
+            uma regra que só existia no desenho. Agora a chave de descrição é da organização. As
+            duas travas que ficam: o nome não muda e ele não sai da lista, porque é a saída de
+            quem não achou motivo e sem ela a pessoa ficaria presa.
+          */
+          <SettingsListItem id="outros" group="fixa" movable={false}>
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <SettingsListName className="flex-none">Outros</SettingsListName>
+              <SettingsListLockBadge tooltip="Motivo padrão da plataforma: aparece em todas as telas e não pode ser renomeado nem arquivado. A descrição obrigatória você escolhe.">
+                Motivo padrão
+              </SettingsListLockBadge>
+            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex flex-none gap-2.5">
+                  <span className={cn("flex flex-none", COL.tela)}>
+                    <Switch checked disabled aria-label="Outros aparece em Recomendadas" />
+                  </span>
+                  <span className={cn("flex flex-none", COL.tela)}>
+                    <Switch checked disabled aria-label="Outros aparece em Em andamento" />
+                  </span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                “Outros” aparece nas duas telas, sempre: é a saída de quem não encontrou motivo na lista.
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className={cn("flex flex-none", COL.desc)}>
+                  <Switch
+                    checked={outrosExigeDesc}
+                    aria-label="Descrição obrigatória em Outros"
+                    onCheckedChange={(v) => {
+                      setOutrosExigeDesc(v)
+                      auditar("Motivos", `${v ? "Passou a exigir" : "Deixou de exigir"} descrição em "Outros"`)
+                      toast(
+                        v
+                          ? "Quem escolher “Outros” precisa escrever o porquê"
+                          : "Descrição voltou a ser opcional em “Outros”"
+                      )
+                    }}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                Era fixo e virou escolha sua. Ativado, quem escolher “Outros” não conclui sem escrever o porquê.
+              </TooltipContent>
+            </Tooltip>
+            <MetaComDica
+              dica="Quantas licitações já foram descartadas por este motivo. São 806 em Recomendadas e 398 em Em andamento."
+              className={cn(COL.uso, "justify-end")}
+            >
+              1.204 licitações
+            </MetaComDica>
+            <span aria-hidden className={cn("flex-none", COL.acao)} />
           </SettingsListItem>
         }
       />

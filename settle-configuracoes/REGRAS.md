@@ -133,6 +133,30 @@ caminho, cada uma com a sua permissão (ou uma `org.settings.manage` geral).
 que 200 delas foram descartadas em Em andamento e 212 em Recomendadas. Duas consequências:
 
 - O "i" do contador **abre a conta por tela** sempre que o motivo tem licitação nas duas.
+- **Cada chave de um motivo é um switch, numa coluna com o rótulo no cabeçalho** (decidido na
+  reunião de 01/10). A lista virou Motivo · Recomendadas · Em andamento · Descrição obrigatória ·
+  Licitações. As pílulas saíram: com três chaves por linha, repetir o rótulo em cada uma das
+  quinze linhas era ruído, e o switch diz melhor que aquilo liga e desliga. A mesma forma vale
+  para a lista de motivos de perda, em Etapas do funil.
+- **As três chaves são independentes, e a trava de "pelo menos uma tela" saiu.** Desativar as
+  duas telas é um estado válido: o motivo fica pausado, à vista na configuração, sem aparecer
+  para quem descarta. Isso é diferente de arquivar: **desativado é pausa** (continua na lista,
+  fácil de reativar) e **arquivado é saída** (sai da lista e vai para Arquivados, com o
+  histórico preservado). Enquanto nenhuma tela está ativa, a chave de descrição fica
+  **desabilitada, não escondida**, com o tooltip explicando o porquê: sumir faria parecer que a
+  configuração se perdeu.
+- **"Outros" deixou de ser imutável na obrigatoriedade** (Willian, #product-tech, 01/10).
+  Conferido em produção no mesmo dia: o campo lá se chama **Comentário**, o placeholder diz
+  "Adicione um comentário opcional" e o textarea não é `required`, nem no descarte individual
+  nem no em lote, inclusive com "Outros" escolhido. Ou seja, a obrigatoriedade só existia no
+  desenho, e os registros de "Outros" sem descrição que apareceram na base são o comportamento
+  normal da plataforma, não furo de validação. Agora a chave é da organização, ativada por
+  padrão. **As duas travas que ficam:** o nome não muda e ele não sai da lista, porque é a saída
+  de quem não achou motivo. Na linha, os dois switches de tela aparecem ligados e desabilitados,
+  com tooltip, e o selo passou de "Não editável" para "Motivo padrão".
+- **Em aberto:** a plataforma chama o campo de "Comentário" e a configuração chama a chave de
+  "Descrição obrigatória". São a mesma coisa com dois nomes, e foi o que gerou o mal-entendido
+  da thread. Alinhar os dois.
 - **Desativar uma tela sempre pede confirmação**, com o número daquela tela e a regra de
   sempre: o que já aconteceu não muda. As licitações seguem com o motivo registrado, no filtro
   de Descartadas e no gráfico do dashboard, e ativar de novo traz tudo. Ativar não pede nada.
