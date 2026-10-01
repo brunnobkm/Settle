@@ -42,8 +42,7 @@ Administrador). **Configuração da organização é só Administrador.**
 Notificações segue a mesma regra: **é configuração da organização, só Administrador**, e fica no
 grupo Licitações, depois de Modelo de e-mail. A primeira versão desta seção foi feita como
 configuração do usuário, com um grupo "Você" na navegação; **em 02/10 isso foi revertido**, porque
-a seção tem o mesmo objetivo das outras e quem gerencia é o administrador. O que continua sendo da
-pessoa é o **sino da licitação**, que já existe no produto.
+a seção tem o mesmo objetivo das outras e quem gerencia é o administrador.
 
 - Negado por padrão. Quem não é admin não vê a seção de organização nem os atalhos.
 - Link direto sem permissão abre a tela "Só administradores alteram" com o nome dos admins.
@@ -725,14 +724,37 @@ diálogo de descarte. O README de lá já listava "preferências gerais (engrena
 não prototipada)" como pendência: é esta seção.
 
 **É configuração da organização** (decidido em 02/10), como todas as outras seções: o
-administrador define e vale para o time inteiro. **O sino da licitação continua sendo a exceção
-individual**: quem usa liga ou desliga uma licitação específica, por cima deste padrão. O card do
-topo diz as duas coisas, porque é a primeira dúvida de quem chega aqui.
+administrador define e vale para o time inteiro.
 
-**Tensão conhecida:** e-mail chega na caixa de entrada de uma pessoa, e a frequência ser decidida
-pelo time é o ponto mais discutível desta seção. Ficou assim por coerência com o resto de
-Configurações. Se aparecer reclamação, o caminho é a frequência virar a única coisa individual,
-não a seção inteira.
+### Em aberto: como esta tela e o sino da licitação convivem
+
+**Esta é a decisão que falta, e a tela não afirma nada sobre ela de propósito.** Chegamos a
+escrever no card do topo que "o sino é a exceção que quem usa liga ou desliga, por cima deste
+padrão"; isso saiu em 02/10, porque a regra ainda não foi decidida e o protótipo não pode
+apresentar como resolvido o que está em discussão. A Settle AI da seção responde que a regra está
+sendo definida, em vez de inventar uma.
+
+Os caminhos possíveis, do mais individual para o mais centralizado:
+
+1. **O sino é exceção completa.** Quem usa liga, desliga e escolhe os tipos de uma licitação
+   específica, por cima do padrão. É o que o sino já faz hoje, e o padrão vira só o ponto de
+   partida. Mais liberdade, e o admin perde a garantia de que o time está sendo avisado do que
+   importa.
+2. **O sino escolhe só se acompanha ou não.** Os tipos e os canais vêm sempre desta tela; o sino
+   responde apenas "esta licitação me interessa". Resolve a sobreposição sem tirar o controle
+   individual, e é o caminho que eu recomendaria começar discutindo.
+3. **O padrão é o único.** O sino some ou vira um atalho para esta tela. Mais simples de explicar,
+   e o mais provável de gerar reclamação de quem acompanha poucas licitações.
+4. **O admin decide se o sino pode personalizar.** Uma chave a mais nesta seção. Resolve no papel e
+   acrescenta uma configuração sobre configuração, que é o tipo de coisa que ninguém acha depois.
+
+Decidir isso muda o texto do card do topo, a seção "Quais licitações notificam" e o diálogo do
+sino no protótipo `settle-salvos-e-notificacoes`.
+
+**Tensão conhecida, à parte dessa decisão:** e-mail chega na caixa de entrada de uma pessoa, e a
+frequência ser decidida pelo time é o ponto mais discutível desta seção. Ficou assim por coerência
+com o resto de Configurações. Se aparecer reclamação, o caminho é a frequência virar a única coisa
+individual, não a seção inteira.
 
 ### Eventos × canais
 
@@ -765,9 +787,8 @@ Três escolhas excludentes, da mais silenciosa para a mais barulhenta:
 3. **Em toda licitação que chega em Recomendadas.** A exceção é essa: inclui o que ninguém olhou
    ainda, e é a opção que mais gera notificação. A tela diz isso na própria opção.
 
-- **O sino da licitação continua valendo e vence esta escolha.** Aqui é o padrão, o sino é a
-  exceção caso a caso. Sem essa regra a pessoa mexeria aqui e não entenderia por que uma licitação
-  específica continua (ou deixou de) avisar.
+- **O que acontece quando uma licitação tem o sino configurado diferente disto ainda não está
+  decidido**: é a pergunta em aberto do começo desta seção. A tela não promete nada sobre isso.
 - A mudança vale para as próximas licitações; as de agora ficam como estão. **Em aberto:** oferecer
   aplicar às que já existem, que é uma ação em lote e precisa de confirmação com número.
 
@@ -798,10 +819,10 @@ Descartadas e o edital continua mudando lá.
 
 ### O que ficou em aberto
 
-- **Quanto cada pessoa pode mudar por cima do padrão.** Hoje a única exceção individual é o sino
-  da licitação, que já existe. Se no futuro alguém precisar de mais (por exemplo, desligar o
-  e-mail só para si), o padrão da casa é a seção continuar da organização e a parte individual
-  aparecer em outro lugar, nas preferências da conta, e não misturada aqui.
+- **Quanto cada pessoa pode mudar por cima do padrão** depende da decisão sobre o sino, acima. Se
+  no futuro alguém precisar de mais do que o sino (por exemplo, desligar o e-mail só para si), o
+  padrão da casa é a seção continuar da organização e a parte individual aparecer nas preferências
+  da conta, não misturada aqui.
 - **Aprovações de agentes não entram aqui.** Esta seção é sobre o que muda na licitação. A fila de
   Aprovações tem contador próprio na navegação, e se ela também precisar notificar, entra como um
   grupo novo na tabela, não como tipo solto.

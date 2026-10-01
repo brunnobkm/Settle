@@ -3,8 +3,10 @@
 //
 // O que existe hoje está em settle-salvos-e-notificacoes: o sino por licitação, a central
 // (sino da navbar) e "Continuar recebendo atualizações" no descarte. Lá a escolha é licitação
-// por licitação, feita por quem usa; aqui é o padrão da organização, que vale para todas as
-// licitações e todas as pessoas. Regras em ../REGRAS.md.
+// por licitação, feita por quem usa; aqui é o padrão da organização.
+//
+// EM ABERTO: como os dois convivem. A tela não afirma nada sobre isso, de propósito, enquanto a
+// regra não for decidida. As opções estão no REGRAS.md, seção 8. Regras em ../REGRAS.md.
 
 import { toast } from "sonner"
 
@@ -111,8 +113,7 @@ export function PaginaNotificacoes() {
     <SettingsPage width="full">
       <Aviso tom="marca" fechavel>
         Aqui você define de que a Settle avisa e por onde. Como nas outras seções, vale para todas
-        as pessoas da organização. O sino de cada licitação continua existindo: ele é a exceção que
-        quem usa liga ou desliga num caso específico, por cima do que estiver definido aqui.
+        as pessoas da organização.
       </Aviso>
 
       <SettingsSection>
