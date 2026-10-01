@@ -141,7 +141,7 @@ export function PaginaMotivos() {
         onde="no filtro de Descartadas e no gráfico “Motivos de descarte”, em Dashboards"
         reservados={["Outros"]}
         cabecalho={
-          <div className="flex items-center gap-2.5 border-b bg-muted/40 py-2 pr-2.5 pl-3 text-[12px] font-semibold text-muted-foreground">
+          <div className="flex items-center gap-2.5 sticky top-16 z-5 rounded-t-lg border-b bg-muted py-2 pr-2.5 pl-3 text-[12px] font-semibold text-muted-foreground">
             <span aria-hidden className="w-4 flex-none" />
             <span className="min-w-0 flex-1">Motivo</span>
             <span className={cn("flex-none", COL.tela)}>Recomendadas</span>
