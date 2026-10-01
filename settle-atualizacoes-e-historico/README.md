@@ -24,27 +24,6 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + recorte de
   se ninguém abrir (`DIAS_DO_SELO`). Vale por usuário.
 - Avisos de pregoeiro não acendem selo (mesma decisão da aba Manifestações: geram ruído).
 
-### Mostrar a atualização no próprio card (pedido da Alice, 01/10)
-"Uma coisa é notificar que atualizou, outra é exibir a atualização." Em Recomendadas, o card
-de produção mostra o que mudou sem precisar abrir a licitação, em três camadas, enquanto a
-atualização for nova (mesma regra do selo):
-1. **Selo "Atualizada"** no topo, ao lado do edital (âmbar quando pede ação). O clique abre
-   **"O que mudou"**: cada mudança com antes/agora, quando foi e o que pode impactar, e o botão
-   "Ver atualizações e histórico", que abre o detalhe.
-2. **Faixa de novidades** logo abaixo do topo, uma linha por mudança:
-   "Novo documento: Anexo II", "Envio da proposta: 27/05 → 10/06", "Status: Abertas → Suspensa".
-3. **O campo que mudou fica marcado**: data nova com a antiga riscada e o selo "Alterada";
-   status novo com um ponto e o anterior no tooltip; ícone de arquivos com "+1".
-
-A tela Recomendadas segue o modelo de produção: "Encontramos N licitações ativas",
-"Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e o grupo
-Filtrar · Ordenar · Exportar · Buscar (só as abas funcionam no protótipo).
-O documento novo (na faixa de novidades e no ícone de arquivos) abre o sheet "Arquivos da
-licitação", o mesmo visualizador de settle-salvos-e-notificacoes.
-
-Cenários no protótipo (um por card de Recomendadas): PE 33/2026 documento novo,
-PE 091/2026 data alterada, PE 014/2026 status alterado.
-
 ### 3 e 4. Dentro da licitação: painel "Atualizações" (formato do Updates do Notion)
 Um painel só, em vez de duas abas (Atualizações e Histórico), no formato do
 Updates & Analytics do Notion: quem, o quê, quando, com a mudança visível no próprio item.

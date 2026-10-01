@@ -211,9 +211,20 @@ export function resumoDoSelo(novas: Atualizacao[]) {
 ATUALIZACOES.push(
   {
     id: "r1a", licitacaoId: "1432210", tipo: "arquivo", quando: "2026-05-21T08:30",
-    titulo: "Novo documento: Anexo II · Planilha de quantitativos",
-    depois: "Anexo_II_Planilha_quantitativos.xlsx",
-    impacta: ["Itens com match", "Proposta"],
+    titulo: "Edital retificado",
+    impacta: ["Requisitos de produto", "Score"],
+    arquivo: {
+      nome: "Edital",
+      versaoAnterior: "Edital_PE_33-2026.pdf · 14/05",
+      versaoNova: "Edital_PE_33-2026_retificado.pdf · 21/05",
+      trechos: [
+        {
+          secao: "Anexo I · Item 3",
+          antes: "Notebook com processador de 8 núcleos, 16 GB de RAM e SSD de 256 GB.",
+          depois: "Notebook com processador de 10 núcleos, 16 GB de RAM e SSD de 512 GB.",
+        },
+      ],
+    },
   },
   {
     id: "r2a", licitacaoId: "1432177", tipo: "data", quando: "2026-05-19T15:00",
@@ -222,13 +233,7 @@ ATUALIZACOES.push(
     impacta: ["Envio da proposta"],
   },
 )
-ATUALIZACOES.push({
-  id: "r3a", licitacaoId: "1432102", tipo: "status", quando: "2026-05-20T17:10",
-  titulo: "Licitação suspensa pelo órgão",
-  antes: "Abertas para participação", depois: "Suspensa",
-  impacta: ["Envio da proposta"],
-})
 HISTORICO.push(
-  { id: "rh2", licitacaoId: "1432210", origem: "agente", quando: "2026-05-21T08:41", autor: "Agente de Match",
-    texto: "Refez o match de itens: 4 → 6 itens", versao: { agente: "Match de itens", atual: 2, motivo: "Novo documento: Anexo II" } },
+  { id: "rh2", licitacaoId: "1432210", origem: "agente", quando: "2026-05-21T08:41", autor: "Agente de Score",
+    texto: "Recalculou o score: 74 → 61", versao: { agente: "Score", atual: 2, motivo: "Edital retificado (v2)" } },
 )

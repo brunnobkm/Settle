@@ -23,6 +23,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -36,7 +44,7 @@ import {
 import { Kanban } from "@/components/ui/kanban"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
-import { menuLicitacoes, USUARIO, WORKSPACE, type TelaLicitacoes, SAUDACAO } from "@/settle/navegacao"
+import { menuLicitacoes, USUARIO, WORKSPACE, type TelaLicitacoes } from "@/settle/navegacao"
 import type { AppShellGroup } from "@/components/ui/app-shell"
 
 import { CardKanban } from "./CardKanban"
@@ -45,7 +53,6 @@ import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type Even
 import { Detalhe } from "./Detalhe"
 import { NovasContext } from "./Selo"
 import { VistaRecomendadas } from "./VistaRecomendadas"
-import { VERSAO } from "./versao"
 import { VistaCalendario } from "./VistaCalendario"
 import { VistaTabela } from "./VistaTabela"
 
@@ -186,12 +193,19 @@ export default function App() {
       groups={menuDaTela(tela, setTela)}
       user={USUARIO}
       header={
-        <div className="flex items-center gap-2">
-          <span className="text-[15px] font-semibold">{SAUDACAO}</span>
-          <span className="rounded-md bg-foreground/10 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground" title="Atualização do protótipo">
-            V{VERSAO}
-          </span>
-        </div>
+        <Breadcrumb>
+          <BreadcrumbList className="text-[13px]">
+            <BreadcrumbItem>
+              <BreadcrumbLink href="#" data-nao-prototipado>
+                Licitações
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-medium">{tela === "recomendadas" ? "Recomendadas" : "Em andamento"}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       }
     >
       {tela === "recomendadas" ? (
