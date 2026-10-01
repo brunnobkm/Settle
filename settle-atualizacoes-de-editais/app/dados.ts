@@ -507,46 +507,6 @@ export const NOTIFICACOES: Notificacao[] = [
     lida: false,
   },
   {
-    id: "n4",
-    edital: "112/2026",
-    categoria: "esclarecimento",
-    tipo: "manifestacao",
-    quando: "19/06/2026 às 11:42",
-    titulo: "Pedido de esclarecimento sobre a garantia on-site",
-    mensagem:
-      "Prezados, em relação ao item 9.2 do termo de referência, solicitamos esclarecer se a garantia on-site de 60 meses pode ser prestada por assistência técnica credenciada pelo fabricante nas comarcas onde a licitante não possui filial, ou se é exigido atendimento com equipe própria.",
-    resposta:
-      "A garantia poderá ser prestada por assistência técnica credenciada pelo fabricante, desde que comprovado o credenciamento no momento da assinatura da ata e mantidos os prazos de atendimento do item 9.4.",
-    novaResposta: true,
-    lida: false,
-  },
-  {
-    id: "n6",
-    edital: "112/2026",
-    categoria: "aviso",
-    tipo: "manifestacao",
-    quando: "19/06/2026 às 09:30",
-    titulo: "Aviso do pregoeiro: sessão pública mantida",
-    mensagem:
-      "Comunicamos que, em razão da retificação publicada em 18/06/2026, a sessão pública fica mantida para 03/07/2026 às 09h30, no portal compras.mg.gov.br. As propostas já cadastradas deverão ser revisadas pelas licitantes à luz do novo item 7.3.",
-    lida: false,
-  },
-  {
-    id: "n7",
-    edital: "45/2026",
-    categoria: "impugnacao",
-    tipo: "manifestacao",
-    quando: "16/06/2026 às 15:05",
-    titulo: "Pedido de impugnação ao instrumento editalício",
-    mensagem:
-      "A empresa impugnante requer a exclusão da exigência de appliance de um único fabricante (item 4.1), por restringir a competitividade, e a aceitação de soluções equivalentes que atendam às especificações de desempenho descritas no Anexo I.",
-    resposta:
-      "Impugnação acolhida parcialmente. O certame será suspenso para revisão do item 4.1 e posterior republicação do edital.",
-    novaResposta: true,
-    anexos: ["Impugnacao_Empresa_X.pdf", "Decisao_Pregoeiro_45-2026.pdf"],
-    lida: true,
-  },
-  {
     id: "n5",
     edital: "45/2026",
     categoria: "atualizacao",
