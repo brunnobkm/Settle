@@ -24,6 +24,21 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + recorte de
   se ninguém abrir (`DIAS_DO_SELO`). Vale por usuário.
 - Avisos de pregoeiro não acendem selo (mesma decisão da aba Manifestações: geram ruído).
 
+### Mostrar a atualização no próprio card (pedido da Alice, 01/10)
+"Uma coisa é notificar que atualizou, outra é exibir a atualização." Em Recomendadas, o card
+de produção mostra o que mudou sem precisar abrir a licitação, em três camadas, enquanto a
+atualização for nova (mesma regra do selo):
+1. **Selo "Atualizada"** no topo, ao lado do edital (âmbar quando pede ação). O clique abre
+   **"O que mudou"**: cada mudança com antes/agora, quando foi e o que pode impactar, e o botão
+   "Ver atualizações e histórico", que abre o detalhe.
+2. **Faixa de novidades** logo abaixo do topo, uma linha por mudança:
+   "Novo documento: Anexo II", "Envio da proposta: 27/05 → 10/06", "Status: Abertas → Suspensa".
+3. **O campo que mudou fica marcado**: data nova com a antiga riscada e o selo "Alterada";
+   status novo com um ponto e o anterior no tooltip; ícone de arquivos com "+1".
+
+Cenários no protótipo (um por card de Recomendadas): PE 33/2026 documento novo,
+PE 091/2026 data alterada, PE 014/2026 status alterado.
+
 ### 3. Dentro da licitação: aba "Atualizações"
 - Lista do portal, mais recente primeiro, com "Nova" nas que o usuário não tinha visto.
 - Cada item mostra **antes → depois** e **Pode impactar** (seções: Habilitação, Análise
