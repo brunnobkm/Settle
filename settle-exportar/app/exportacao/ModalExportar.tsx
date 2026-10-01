@@ -270,6 +270,8 @@ export function ModalExportar({
     ...(opcao === "etapa" ? [["Etapas", nomesDasEtapas.join(", ") || "Nenhuma"] as [string, string]] : []),
   ]
 
+  const semRecorte = contexto.aba === "Todas" && !contexto.busca && !contexto.filtros.length
+
   function motivoDoBloqueio() {
     if (periodoInvalido) return "A data final precisa ser igual ou posterior à data inicial."
     if (opcao === "etapa" && !etapas.length) return "Escolha pelo menos uma etapa para exportar."
@@ -353,8 +355,17 @@ export function ModalExportar({
             {quantidade(total)}
           </p>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13px]">
+            {!lote && semRecorte && (
+              <>
+                <dt className="text-muted-foreground">Recorte</dt>
+                <dd>Todas as licitações, sem filtros nem busca</dd>
+              </>
+            )}
             {!lote &&
-              resumo.map(([k, v]) => (
+              resumo
+                // sem filtro, sem busca e na aba Todas, uma linha só diz tudo
+                .filter(([k]) => !(semRecorte && (k === "Aba" || k === "Filtros")))
+                .map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>
                   <dd className="min-w-0 break-words">{v}</dd>
@@ -399,11 +410,11 @@ export function ModalExportar({
           <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
             <ClockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
             Por ser uma exportação grande, o arquivo será preparado em segundo plano. Você continua usando a Settle e é
-            avisado quando estiver pronto. Sempre em 1 arquivo único.
+            avisado quando estiver pronto.
           </p>
         ) : (
           <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
-            <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />O arquivo é baixado em seguida, em 1 arquivo único.
+            <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />O arquivo é baixado em seguida.
           </p>
         )}
 
