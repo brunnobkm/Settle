@@ -200,10 +200,10 @@ export type AberturaDoModal = {
 
 const ROTULO_DA_OPCAO: Record<OpcaoExport, string> = {
   hoje: "Adicionadas hoje",
-  periodo: "Período",
-  filtrado: "Tudo filtrado",
-  etapa: "Etapas do fluxo",
-  lote: "Selecionadas manualmente",
+  periodo: "Adicionadas em um período",
+  filtrado: "Todas da lista",
+  etapa: "Por etapa do fluxo",
+  lote: "Marcadas por você",
 }
 
 export function ModalExportar({
@@ -263,23 +263,23 @@ export function ModalExportar({
     ...(contexto.busca ? [["Busca", `“${contexto.busca}”`] as [string, string]] : []),
     [
       "Filtros",
-      contexto.filtros.length ? contexto.filtros.map((f) => `${f.rotulo}: ${f.valor}`).join(" · ") : "Nenhum filtro aplicado",
+      contexto.filtros.length ? contexto.filtros.map((f) => `${f.rotulo}: ${f.valor}`).join(" · ") : "Nenhum",
     ],
     ["Seleção", ROTULO_DA_OPCAO[opcao]],
-    ...(opcao === "periodo" ? [["Período (adicionadas)", `${br(de)} a ${br(ate)}`] as [string, string]] : []),
+    ...(opcao === "periodo" ? [["Período", `${br(de)} a ${br(ate)}`] as [string, string]] : []),
     ...(opcao === "etapa" ? [["Etapas", nomesDasEtapas.join(", ") || "Nenhuma"] as [string, string]] : []),
   ]
 
   const semRecorte = contexto.aba === "Todas" && !contexto.busca && !contexto.filtros.length
 
   function motivoDoBloqueio() {
-    if (periodoInvalido) return "A data final precisa ser igual ou posterior à data inicial."
-    if (opcao === "etapa" && !etapas.length) return "Escolha pelo menos uma etapa para exportar."
+    if (periodoInvalido) return "A data final não pode ser anterior à inicial."
+    if (opcao === "etapa" && !etapas.length) return "Escolha pelo menos uma etapa."
     if (total === 0) {
-      if (opcao === "hoje") return "Nenhuma licitação deste resultado foi adicionada hoje."
-      if (opcao === "periodo") return "Nenhuma licitação deste resultado foi adicionada no período escolhido."
-      if (opcao === "etapa") return "As etapas escolhidas não têm licitações com os filtros atuais."
-      return "Não há licitações no resultado atual. Ajuste a aba, a busca ou os filtros para exportar."
+      if (opcao === "hoje") return "Nenhuma licitação desta lista entrou hoje."
+      if (opcao === "periodo") return "Nenhuma licitação desta lista entrou nesse período."
+      if (opcao === "etapa") return "As etapas escolhidas estão vazias com os filtros aplicados."
+      return "Esta lista está vazia. Mude a aba, a busca ou os filtros para exportar."
     }
     return null
   }
@@ -310,8 +310,8 @@ export function ModalExportar({
           <DialogTitle>{lote ? "Exportar licitações selecionadas" : "Exportar licitações"}</DialogTitle>
           <DialogDescription>
             {lote
-              ? "Serão exportadas só as licitações que você selecionou."
-              : "Será exportado o resultado atual desta tela, com todas as páginas. Não é a base inteira da Settle."}
+              ? "O arquivo traz só as licitações que você marcou."
+              : "O arquivo traz as licitações desta lista, com a aba, a busca e os filtros que estão aplicados agora."}
           </DialogDescription>
         </DialogHeader>
 
@@ -319,11 +319,11 @@ export function ModalExportar({
           <RadioGroup value={opcao} onValueChange={escolher} className="gap-2" aria-label="O que exportar">
             <Opcao
               valor="filtrado"
-              titulo="Exportar tudo filtrado"
-              descricao="Aba atual, busca e todos os filtros ativos, incluindo todas as páginas."
+              titulo="Todas da lista"
+              descricao="Inclui as que ainda não apareceram na rolagem."
             />
             {mostrarOpcaoEtapa && contexto.etapas && (
-              <Opcao valor="etapa" titulo="Exportar por etapa do fluxo" descricao="Uma ou várias colunas do Kanban, com os filtros atuais.">
+              <Opcao valor="etapa" titulo="Por etapa do fluxo" descricao="Escolha uma ou mais colunas do Kanban.">
                 {opcao === "etapa" && (
                   <fieldset className="mt-2.5 ml-6.5 grid gap-1.5 sm:grid-cols-2">
                     <legend className="sr-only">Etapas</legend>
@@ -341,8 +341,8 @@ export function ModalExportar({
                 )}
               </Opcao>
             )}
-            <Opcao valor="hoje" titulo="Adicionadas hoje" descricao="Do resultado atual, só as que chegaram hoje." />
-            <Opcao valor="periodo" titulo="Escolher período" descricao="Do resultado atual, as adicionadas entre duas datas.">
+            <Opcao valor="hoje" titulo="Adicionadas hoje" descricao="Só as que entraram na lista hoje." />
+            <Opcao valor="periodo" titulo="Adicionadas em um período" descricao="Só as que entraram na lista entre duas datas.">
               {opcao === "periodo" && <CampoPeriodo de={de} ate={ate} onDe={setDe} onAte={setAte} />}
             </Opcao>
           </RadioGroup>
@@ -350,21 +350,21 @@ export function ModalExportar({
 
         {/* Resumo do que será exportado */}
         <section aria-label="Resumo da exportação" className="rounded-lg bg-muted px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">O que será exportado</p>
+          <p className="text-xs font-medium text-muted-foreground">Você vai exportar</p>
           <p className="mt-0.5 text-xl font-semibold tabular-nums" aria-live="polite">
             {quantidade(total)}
           </p>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13px]">
             {!lote && semRecorte && (
               <>
-                <dt className="text-muted-foreground">Recorte</dt>
-                <dd>Todas as licitações, sem filtros nem busca</dd>
+                <dt className="sr-only">Filtros</dt>
+                <dd className="col-span-2 text-muted-foreground">Todas as recomendadas, sem busca e sem filtros.</dd>
               </>
             )}
             {!lote &&
               resumo
                 // sem filtro, sem busca e na aba Todas, uma linha só diz tudo
-                .filter(([k]) => !(semRecorte && (k === "Aba" || k === "Filtros")))
+                .filter(([k]) => k !== "Seleção" && !(semRecorte && (k === "Aba" || k === "Filtros")))
                 .map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>
@@ -373,8 +373,8 @@ export function ModalExportar({
               ))}
             {lote && (
               <>
-                <dt className="text-muted-foreground">Seleção</dt>
-                <dd>Selecionadas manualmente{contexto.aba ? ` na aba ${contexto.aba}` : ""}</dd>
+                <dt className="text-muted-foreground">Origem</dt>
+                <dd>Marcadas por você{contexto.aba ? ` na aba ${contexto.aba}` : ""}</dd>
               </>
             )}
           </dl>
@@ -382,7 +382,7 @@ export function ModalExportar({
 
         <div className="flex flex-col gap-1.5">
           <span id="rotulo-formato" className="text-sm font-medium">
-            Formato do arquivo
+            Formato
           </span>
           <ToggleGroup
             type="single"
@@ -409,12 +409,12 @@ export function ModalExportar({
         ) : total > LIMITE_SEGUNDO_PLANO ? (
           <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
             <ClockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-            Por ser uma exportação grande, o arquivo será preparado em segundo plano. Você continua usando a Settle e é
-            avisado quando estiver pronto.
+            Arquivos grandes levam alguns minutos. Pode continuar usando a Settle: avisamos quando estiver pronto para
+            baixar.
           </p>
         ) : (
           <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
-            <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />O arquivo é baixado em seguida.
+            <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />O download começa assim que você clicar em Exportar.
           </p>
         )}
 
