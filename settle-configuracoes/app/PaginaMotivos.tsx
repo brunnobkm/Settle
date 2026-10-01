@@ -184,7 +184,7 @@ export function PaginaMotivos() {
             <span className={cn("flex-none", COL.desc)}>
               Descrição obrigatória
             </span>
-            <span className={cn("flex-none text-right", COL.uso)}>
+            <span className={cn("flex-none", COL.uso)}>
               Licitações
             </span>
             <span aria-hidden className={cn("flex-none", COL.acao)} />
@@ -279,7 +279,7 @@ export function PaginaMotivos() {
             </span>
             <MetaComDica
               dica="Quantas licitações já foram descartadas por este motivo. São 806 em Recomendadas e 398 em Em andamento."
-              className={cn(COL.uso, "justify-end")}
+              className={COL.uso}
             >
               1.204 licitações
             </MetaComDica>
