@@ -99,3 +99,6 @@ para a apresentação. Para mostrar de novo: `MOSTRAR_CONTROLES_DE_PROTOTIPO = t
 
 ## Abrir documento
 O nome do documento novo (no sino, na central e nos anexos da mensagem completa) abre o arquivo num **sheet lateral** "Arquivos da licitação", o mesmo visualizador de `settle-central-de-notificacoes`: seletor de arquivo no topo (o novo marcado "Novo"), Baixar e Fechar. Em produção o arquivo abre num modal com a mesma estrutura.
+
+## Tela inicial = Recomendadas
+A tela inicial segue Recomendadas de produção: item Recomendadas ativo na sidebar, "Encontramos N licitações ativas" / "Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e Filtrar · Ordenar · Exportar · Buscar. As abas filtram por editais definidos em `EDITAIS_DA_ABA` (dados.ts). Explorar licitações passou a ser não prototipada.
