@@ -96,3 +96,6 @@ Lida é uma só: ler em um lugar marca como lida no outro.
 ## Controles de protótipo
 "Estado das notificações" (Normal, Vazio, Erro) e "Simular atualização do portal" estão escondidos
 para a apresentação. Para mostrar de novo: `MOSTRAR_CONTROLES_DE_PROTOTIPO = true` em `app/App.tsx`.
+
+## Abrir documento
+O nome do documento novo (no sino, na central e nos anexos da mensagem completa) abre o arquivo num **sheet lateral** "Arquivos da licitação", o mesmo visualizador de `settle-central-de-notificacoes`: seletor de arquivo no topo (o novo marcado "Novo"), Baixar e Fechar. Em produção o arquivo abre num modal com a mesma estrutura.
