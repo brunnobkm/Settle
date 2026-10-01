@@ -33,11 +33,8 @@ export const NOMES: Record<Rota, string> = {
   artefato: "Artefato",
 }
 
-/*
-  Agentes fica de fora: quem não é administrador entra para responder Aprovações.
-  Notificações também: é configuração da pessoa, então todo mundo tem a sua.
-*/
-export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria", "variaveis", "artefato"]
+/* Agentes fica de fora: quem não é administrador entra para responder Aprovações. */
+export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "notificacoes", "equipe", "permissoes", "auditoria", "variaveis", "artefato"]
 
 /* ======================= ETAPAS ======================= */
 
@@ -824,10 +821,10 @@ function reais(v: number) {
 /* ======================= NOTIFICAÇÕES ======================= */
 
 /*
-  Configuração pessoal de notificações. O que existe hoje está prototipado em
-  settle-salvos-e-notificacoes: o sino por licitação (a pessoa liga e escolhe os tipos), a central
-  (sino da navbar) e "Continuar recebendo atualizações" no diálogo de descarte. Esta seção é o
-  lugar onde se decide de uma vez, em vez de licitação por licitação.
+  Notificações da organização. O que existe hoje está prototipado em settle-salvos-e-notificacoes:
+  o sino por licitação (quem usa liga e escolhe os tipos), a central (sino da navbar) e "Continuar
+  recebendo atualizações" no diálogo de descarte. Lá a escolha é caso a caso; aqui é o padrão do
+  time, definido pelo administrador. O sino continua sendo a exceção, por cima deste padrão.
 */
 
 export type CanalNotif = "card" | "central" | "email"
@@ -885,12 +882,12 @@ export const MATRIZ_NOTIF: MatrizNotif = Object.fromEntries(
 export type PadraoNovas = "sino" | "acompanhadas" | "todas"
 
 export const PADRAO_NOVAS: [PadraoNovas, string, string][] = [
-  ["sino", "Só quando eu ativar o sino",
-    "Como é hoje. Nenhuma licitação notifica até você ligar o sino nela."],
-  ["acompanhadas", "Quando eu salvar ou enviar para análise",
-    "A licitação que você demonstrou interesse passa a notificar sozinha. Recomendadas fica de fora."],
+  ["sino", "Só com o sino ligado na licitação",
+    "Como é hoje. Nenhuma licitação notifica até alguém ligar o sino nela."],
+  ["acompanhadas", "Ao salvar ou enviar para análise",
+    "A licitação em que o time demonstrou interesse passa a notificar sozinha. Recomendadas fica de fora."],
   ["todas", "Em toda licitação que chega em Recomendadas",
-    "Você fica sabendo de tudo, inclusive do que ainda não olhou. É o que mais gera notificação."],
+    "O time fica sabendo de tudo, inclusive do que ninguém olhou ainda. É o que mais gera notificação."],
 ]
 
 /** O que acontece com as notificações quando a licitação é descartada. */
@@ -898,9 +895,9 @@ export type AoDescartar = "desligar" | "perguntar" | "manter"
 
 export const AO_DESCARTAR: [AoDescartar, string, string][] = [
   ["desligar", "Desligar as notificações",
-    "Descartou, não quer mais saber. É o caminho mais silencioso."],
+    "Descartou, acabou. É o caminho mais silencioso."],
   ["perguntar", "Perguntar no diálogo de descarte",
-    "O diálogo mostra “Continuar recebendo atualizações”, desmarcado, e sugere marcar quando o motivo é daqueles que uma atualização pode desfazer."],
+    "Quem descarta decide na hora: o diálogo mostra “Continuar recebendo atualizações”, desmarcado, e sugere marcar quando o motivo é daqueles que uma atualização pode desfazer."],
   ["manter", "Manter as notificações",
     "Continua avisando. Serve para reavaliar o descarte quando o edital muda."],
 ]

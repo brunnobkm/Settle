@@ -182,16 +182,15 @@ const POR_ROTA: Record<Rota, { resumo: string; sugestoes: Sugestao[] }> = {
     ],
   },
   notificacoes: {
-    resumo:
-      "Aqui você decide de que quer ser avisado e por onde. É a única seção que é sua, não da organização.",
+    resumo: "Aqui você define de que a Settle avisa o time e por onde: no card, na central ou por e-mail.",
     sugestoes: [
       {
-        p: "Isso muda a configuração do meu time?",
-        r: "Não. Notificações é por pessoa: o que você escolhe aqui vale só para você, e ninguém sobrescreve ninguém.",
+        p: "E o sino de cada licitação, continua valendo?",
+        r: "Continua. O que está aqui é o padrão da organização; o sino liga ou desliga uma licitação específica, por cima dele.",
       },
       {
-        p: "E o sino de cada licitação, continua valendo?",
-        r: "Continua. O sino liga e desliga o caso específico, por cima do que está aqui. Esta tela é o padrão, o sino é a exceção.",
+        p: "Por que o e-mail não está ligado em tudo?",
+        r: "Porque e-mail demais vira ruído e a pessoa desliga o conjunto, inclusive o que importava. O padrão deixa ligado só retificação e mudança de prazo, que mudam a decisão de participar.",
       },
       SOBRE_AGENTE,
     ],
