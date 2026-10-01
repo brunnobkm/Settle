@@ -92,7 +92,8 @@ export function ListaDeNotificacoes({
     <div className="flex min-h-0 flex-1 flex-col">
       <Tabs value={aba} onValueChange={(v) => setAba(v as Categoria | "todos")} className={cn("gap-0", compacta ? "px-2 pt-2" : "px-3 pt-3")}>
         <TabsList aria-label="Categorias" className={cn(notificationsCenterTabsListClassName, "w-full")}>
-          {CATEGORIAS.map((c) => (
+          {/* só as categorias que têm notificação (Todos sempre aparece) */}
+          {CATEGORIAS.filter((c) => c.chave === "todos" || notificacoes.some((n) => n.categoria === c.chave)).map((c) => (
             <TabsTrigger key={c.chave} value={c.chave} className={cn(notificationsCenterTabClassName, "px-2.5 text-[13px]")}>
               {c.rotulo}
               <NotificationsCenterCount>{carregando || estado === "erro" ? "–" : contagem(c.chave)}</NotificationsCenterCount>
