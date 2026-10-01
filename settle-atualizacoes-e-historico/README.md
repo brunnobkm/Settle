@@ -39,20 +39,25 @@ atualização for nova (mesma regra do selo):
 Cenários no protótipo (um por card de Recomendadas): PE 33/2026 documento novo,
 PE 091/2026 data alterada, PE 014/2026 status alterado.
 
-### 3. Dentro da licitação: aba "Atualizações"
-- Lista do portal, mais recente primeiro, com "Nova" nas que o usuário não tinha visto.
-- Cada item mostra **antes → depois** e **Pode impactar** (seções: Habilitação, Análise
-  técnica, Requisitos...).
-- **Arquivo**: "Comparar versões" abre só os trechos que mudaram, lado a lado (saiu/entrou).
-- **Manifestação**: pergunta e resposta resumidas + seções impactadas.
-- **Agentes**: arquivo novo faz os agentes rodarem de novo e gerar nova versão; a anterior
-  continua acessível pelo histórico ("Ver versão 1").
-
-### 4. Aba "Histórico"
-- Linha do tempo com filtro Todos / Portal / Agentes / Pessoas (com contadores).
-- Entra: mudanças do portal, versões de agente (com motivo), e ações de pessoas sobre a
-  licitação: etapa, status, datas, responsáveis, resultado, descarte, decisão de divergência.
-- Não entra: comentários e visualizações.
+### 3 e 4. Dentro da licitação: painel "Atualizações" (formato do Updates do Notion)
+Um painel só, em vez de duas abas (Atualizações e Histórico), no formato do
+Updates & Analytics do Notion: quem, o quê, quando, com a mudança visível no próprio item.
+- **Topo: novidades desde a última visita.** O que veio do portal e o usuário ainda não viu,
+  com "Nova", sempre aberto (nada novo fica atrás do "Ver mais").
+- **Abaixo: histórico inteiro**, filtrável por Todos / Portal / Agentes / Pessoas (com contadores).
+  O portal não é duplicado: cada atualização do portal é um item só (fonte única: `ATUALIZACOES`).
+- **Mudança no próprio item:**
+  - propriedade: valor antigo riscado → novo (como "Prioridade P2 › P1" no Notion);
+  - arquivo: o trecho que saiu riscado e o que entrou marcado, direto no item (2 trechos e
+    "Ver mais N trechos"); "Comparar documento inteiro" fica só para o documento completo;
+  - manifestação: pergunta e resposta; conflito de data: decisão no próprio item.
+- **Agrupamento:** itens seguidos do mesmo autor e da mesma origem viram um bloco
+  ("Maria da Silva adicionou… · Ver mais 2").
+- **Versão anterior:** cada item tem o relógio "Ver versão anterior", que abre a licitação como
+  estava antes daquela mudança, somente leitura. Versões de agente mostram v1, v2 e o motivo.
+- Entra: mudanças do portal, versões de agente e ações de pessoas sobre a licitação (etapa,
+  status, datas, responsáveis, resultado, descarte, decisão de divergência). Não entra:
+  comentários e visualizações.
 
 ### Corner cases (data da sessão)
 - **Portal muda uma data que ninguém editou**: aplica direto e registra no histórico.

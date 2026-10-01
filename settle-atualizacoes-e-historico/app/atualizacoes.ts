@@ -147,30 +147,26 @@ export const HISTORICO: EventoHistorico[] = [
   { id: "h2", licitacaoId: "1431011", origem: "agente", quando: "2026-05-20T16:50", autor: "Agente de Habilitação",
     texto: "Gerou a versão 2 do checklist de Habilitação", detalhe: "1 requisito mudou: atestado de 8.000 m² em área aeroportuária.",
     versao: { agente: "Checklist de Habilitação", atual: 2, motivo: "Termo de Referência retificado (v2)" } },
-  { id: "h3", licitacaoId: "1431011", origem: "portal", quando: "2026-05-20T16:40", autor: "Portal Licitanet",
-    texto: "Data da sessão mudou de 26/05 para 23/05" },
-  { id: "h4", licitacaoId: "1431011", origem: "portal", quando: "2026-05-20T16:38", autor: "Portal Licitanet",
-    texto: "Termo de Referência retificado (v2)" },
+
   { id: "h5", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-15T10:03", autor: "Maria da Silva",
     texto: "Adicionou Fabio Almeida Lopes Pereira como responsável" },
+  { id: "h5b", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-15T10:01", autor: "Maria da Silva",
+    texto: "Adicionou o segmento Infraestrutura" },
+  { id: "h5c", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-15T09:58", autor: "Maria da Silva",
+    texto: "Definiu o envio da proposta para 26/05" },
   { id: "h6", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-14T17:30", autor: "Brunno Krier Martins",
     texto: "Moveu de Recomendadas para Análise de Oportunidades" },
   { id: "h7", licitacaoId: "1431011", origem: "agente", quando: "2026-05-12T08:10", autor: "Agente de Análise técnica",
     texto: "Gerou a versão 1 da Análise técnica", versao: { agente: "Análise técnica", atual: 1, motivo: "Edital publicado" } },
 
   // 089/2026
-  { id: "h8", licitacaoId: "1430715", origem: "portal", quando: "2026-05-21T09:12", autor: "Portal Compras.gov",
-    texto: "Esclarecimento respondido sobre entrega em SaaS" },
-  { id: "h9", licitacaoId: "1430715", origem: "portal", quando: "2026-05-19T11:05", autor: "Portal Compras.gov",
-    texto: "Data da sessão mudou de 26/05 para 02/06", detalhe: "Não aplicada: a data tinha sido editada à mão." },
+
   { id: "h10", licitacaoId: "1430715", origem: "pessoa", quando: "2026-05-16T15:44", autor: "Gustavo Néri",
     texto: "Alterou o envio da proposta de 26/05 para 29/05" },
   { id: "h11", licitacaoId: "1430715", origem: "pessoa", quando: "2026-05-13T09:20", autor: "Brunno Krier Martins",
     texto: "Moveu de Análise de Oportunidades para Preparação de Proposta" },
 
   // 156/2026
-  { id: "h12", licitacaoId: "1430660", origem: "portal", quando: "2026-05-18T14:20", autor: "Portal Compras.gov",
-    texto: "Status mudou de Abertas para participação para Suspensa" },
   { id: "h13", licitacaoId: "1430660", origem: "pessoa", quando: "2026-05-11T11:00", autor: "Helena Costa",
     texto: "Moveu de Análise de Oportunidades para Preparação de Proposta" },
 ]
@@ -233,9 +229,6 @@ ATUALIZACOES.push({
   impacta: ["Envio da proposta"],
 })
 HISTORICO.push(
-  { id: "rh1", licitacaoId: "1432210", origem: "portal", quando: "2026-05-21T08:30", autor: "Portal Compras.gov", texto: "Novo documento: Anexo II · Planilha de quantitativos" },
   { id: "rh2", licitacaoId: "1432210", origem: "agente", quando: "2026-05-21T08:41", autor: "Agente de Match",
     texto: "Refez o match de itens: 4 → 6 itens", versao: { agente: "Match de itens", atual: 2, motivo: "Novo documento: Anexo II" } },
-  { id: "rh4", licitacaoId: "1432102", origem: "portal", quando: "2026-05-20T17:10", autor: "Portal Compras.gov", texto: "Status mudou de Abertas para participação para Suspensa" },
-  { id: "rh3", licitacaoId: "1432177", origem: "portal", quando: "2026-05-19T15:00", autor: "Portal BLL", texto: "Data da sessão mudou de 27/05 para 10/06" },
 )

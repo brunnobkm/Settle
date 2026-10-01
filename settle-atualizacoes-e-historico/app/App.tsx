@@ -1,6 +1,6 @@
 // Atualizações e histórico de uma licitação, sobre Recomendadas e Em andamento.
 // Selo "Atualizada" nos cards (Board, Tabela, Calendário, Recomendadas) para mudanças do
-// portal ainda não vistas; abrir a licitação mostra as abas Atualizações e Histórico.
+// portal ainda não vistas; abrir a licitação mostra o painel de Atualizações (portal, agentes e pessoas, no formato do Updates do Notion).
 // Base: settle-licitacoes-em-andamento. Licitações em andamento em três
 // visualizações. Board (kanban por etapa do nosso processo, arrastar entre colunas),
 // Tabela (todas as propriedades em colunas) e Calendário (pelo envio da proposta).
@@ -50,7 +50,7 @@ import type { AppShellGroup } from "@/components/ui/app-shell"
 import { CardKanban } from "./CardKanban"
 import { ETAPAS, LICITACOES, RECOMENDADAS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
 import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
-import { Detalhe, type Aba } from "./Detalhe"
+import { Detalhe } from "./Detalhe"
 import { NovasContext } from "./Selo"
 import { VistaRecomendadas } from "./VistaRecomendadas"
 import { VistaCalendario } from "./VistaCalendario"
@@ -81,7 +81,6 @@ export default function App() {
   /** Última vez que o usuário abriu cada licitação (o selo some a partir daí). */
   const [vistaEm, setVistaEm] = useState<Record<string, string>>({})
   const [aberta, setAberta] = useState<{ id: string; novas: string[] } | null>(null)
-  const [aba, setAba] = useState<Aba>("atualizacoes")
 
   const novasDe = useCallback(
     (id: string) => atualizacoesNovas(atualizacoes, id, vistaEm[id]),
@@ -94,7 +93,6 @@ export default function App() {
   function abrirLicitacao(l: Licitacao) {
     const novas = novasDe(l.id).map((a) => a.id)
     setAberta({ id: l.id, novas })
-    setAba(novas.length || !historico.some((h) => h.licitacaoId === l.id) ? "atualizacoes" : "historico")
     const ultima = atualizacoes.filter((a) => a.licitacaoId === l.id).reduce((m, a) => (a.quando > m ? a.quando : m), "")
     setVistaEm((v) => ({ ...v, [l.id]: ultima }))
   }
@@ -123,10 +121,6 @@ export default function App() {
       impacta: ["Análise técnica"],
     }
     setAtualizacoes((xs) => [nova, ...xs])
-    setHistorico((h) => [
-      { id: `hs-${Date.now()}`, licitacaoId: alvo.id, origem: "portal", quando, autor: "Portal Compras.gov", texto: "Novo anexo: Estudo Técnico Preliminar" },
-      ...h,
-    ])
     toast("Portal publicou uma atualização", { description: `Edital ${alvo.codigoEdital}` })
   }
 
@@ -320,8 +314,6 @@ export default function App() {
         atualizacoes={licitacaoAberta ? atualizacoes.filter((a) => a.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
         historico={licitacaoAberta ? historico.filter((h) => h.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
         novasIds={aberta?.novas ?? []}
-        aba={aba}
-        onAba={setAba}
         onFechar={() => setAberta(null)}
         onResolverConflito={resolverConflito}
       />
