@@ -186,7 +186,7 @@ const POR_ROTA: Record<Rota, { resumo: string; sugestoes: Sugestao[] }> = {
     sugestoes: [
       {
         p: "E o sino de cada licitação, continua valendo?",
-        r: "Continua. O que está aqui é o padrão da organização; o sino liga ou desliga uma licitação específica, por cima dele.",
+        r: "Essa regra ainda está sendo definida. O que está decidido é que esta tela é o padrão da organização. Como o sino de uma licitação específica conversa com ele é a próxima decisão.",
       },
       {
         p: "Por que o e-mail não está ligado em tudo?",

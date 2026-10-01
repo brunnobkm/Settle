@@ -824,7 +824,7 @@ function reais(v: number) {
   Notificações da organização. O que existe hoje está prototipado em settle-salvos-e-notificacoes:
   o sino por licitação (quem usa liga e escolhe os tipos), a central (sino da navbar) e "Continuar
   recebendo atualizações" no diálogo de descarte. Lá a escolha é caso a caso; aqui é o padrão do
-  time, definido pelo administrador. O sino continua sendo a exceção, por cima deste padrão.
+  time, definido pelo administrador. Como os dois convivem ainda está em aberto (REGRAS.md, 8).
 */
 
 export type CanalNotif = "card" | "central" | "email"
