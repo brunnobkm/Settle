@@ -13,7 +13,6 @@ import {
   BookmarkXIcon,
   RadioTowerIcon,
   CheckIcon,
-  CircleHelpIcon,
   ClockIcon,
   CopyIcon,
   FolderIcon,
@@ -23,7 +22,6 @@ import {
   SearchIcon,
   Share2Icon,
   Trash2Icon,
-  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -60,7 +58,6 @@ import {
   TIPOS_DE_ATUALIZACAO,
   TODOS_OS_TIPOS,
   RESPONSAVEIS,
-  ROTULO_ADERENCIA,
   SEGMENTOS_DO_CARD,
   VISUALIZACAO_INICIAL,
   VISUALIZACAO_OBRIGATORIA,
@@ -70,7 +67,6 @@ import {
   lerData,
   normalizar,
   textoPadraoDeBusca,
-  type Aderencia,
   type Filtro,
   type Licitacao,
   type Notificacao,
@@ -746,27 +742,6 @@ export default function App() {
 /* Card                                                                */
 /* ------------------------------------------------------------------ */
 
-const ADERENCIA_VISUAL: Record<Aderencia, { variante: "success" | "warning" | "destructive"; Icone: typeof CheckIcon }> = {
-  aderente: { variante: "success", Icone: CheckIcon },
-  duvida: { variante: "warning", Icone: CircleHelpIcon },
-  nao_aderente: { variante: "destructive", Icone: XIcon },
-}
-
-function LinhaDeAderencia({ aderencia, motivo }: { aderencia: Aderencia; motivo: string }) {
-  const { variante, Icone } = ADERENCIA_VISUAL[aderencia]
-  return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <Badge variant={variante} className="h-6 rounded-md border-current/20 px-2 font-semibold">
-        <Icone data-icon="inline-start" />
-        {ROTULO_ADERENCIA[aderencia]}
-      </Badge>
-      <p className="min-w-0 text-[13px] text-muted-foreground">
-        <span className="font-semibold text-foreground">Motivo:</span> {motivo}
-      </p>
-    </div>
-  )
-}
-
 function CardDaLicitacao({
   licitacao: l,
   salvo,
@@ -863,12 +838,9 @@ function CardDaLicitacao({
       addAvatarProps={{ "data-nao-prototipado": true }}
       iconActions={acoesDeIcone}
       highlight={
-        <div className="flex flex-col gap-2.5">
-          {naTelaDeSalvos && (
-            <LinhaDeAcompanhamento licitacao={l} naoLidas={naoLidas} onVerNovidades={onVerNovidades} />
-          )}
-          <LinhaDeAderencia aderencia={l.aderencia} motivo={l.motivo} />
-        </div>
+        naTelaDeSalvos ? (
+          <LinhaDeAcompanhamento licitacao={l} naoLidas={naoLidas} onVerNovidades={onVerNovidades} />
+        ) : undefined
       }
       segments={SEGMENTOS_DO_CARD}
       orgao={l.orgao}
