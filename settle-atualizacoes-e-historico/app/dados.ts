@@ -423,7 +423,7 @@ export const RECOMENDADAS: Licitacao[] = [
     titulo: "Tablets para agentes comunitários de saúde de Recife",
     segmentos: ["Tecnologia", "Saúde"], orgao: "Prefeitura do Recife / Secretaria de Saúde",
     objeto: "AQUISIÇÃO DE TABLETS COM CAPA E PELÍCULA PARA USO DOS AGENTES COMUNITÁRIOS DE SAÚDE NO APLICATIVO E-SUS TERRITÓRIO.",
-    etapa: "analise", status: "abertas", responsaveis: [], dataEnvio: "2026-06-05",
+    etapa: "analise", status: "suspensa", responsaveis: [], dataEnvio: "2026-06-05",
     cidade: "Recife", estado: "PE", valorGlobal: 1290000, itensMatch: 2,
   },
 ]
