@@ -46,6 +46,7 @@ import { BarraDeVisualizacoes } from "./BarraDeVisualizacoes"
 import { CentralDeNotificacoes } from "./CentralDeNotificacoes"
 import type { EstadoDaLista } from "./ListaDeNotificacoes"
 import { DialogoDeDescarte } from "./DialogoDeDescarte"
+import { VERSAO } from "./versao"
 import { SinoDaLicitacao } from "./SinoDaLicitacao"
 import { AbrirArquivoContext, VisualizadorDeArquivo, type ArquivoAberto } from "./VisualizadorDeArquivo"
 import {
@@ -493,6 +494,9 @@ export default function App() {
       header={
         <div className="flex flex-1 items-center gap-3">
           <span className="text-[15px] font-semibold">{SAUDACAO}</span>
+          <span className="rounded-md bg-foreground/10 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground" title="Atualização do protótipo">
+            V{VERSAO}
+          </span>
           <Button
             variant="ghost"
             size="icon-sm"
