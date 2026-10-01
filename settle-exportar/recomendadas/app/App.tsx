@@ -8,8 +8,6 @@ import { useEffect, useRef, useState } from "react"
 import {
   BellIcon,
   BookmarkIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   ClockIcon,
   FileTextIcon,
   FolderIcon,
@@ -71,7 +69,7 @@ import {
   type Licitacao,
 } from "./dados"
 
-const POR_PAGINA = 20
+const POR_LOTE = 20 // produção: rolagem infinita, carrega de 20 em 20
 const POR_ARQUIVO_HOJE = 200 // produção divide o lote em arquivos de ~200
 const ATRASO_BUSCA = 450
 
@@ -100,7 +98,9 @@ function Recomendadas() {
 
   const [aba, setAba] = useState(ABA_TODAS)
   const [filtros, setFiltros] = useState(FILTROS_INICIAIS)
-  const [pagina, setPagina] = useState(1)
+  const [carregadas, setCarregadas] = useState(POR_LOTE)
+  const [carregandoMais, setCarregandoMais] = useState(false)
+  const sentinela = useRef<HTMLDivElement>(null)
 
   const [buscaAberta, setBuscaAberta] = useState(false)
   const [consulta, setConsulta] = useState("")
@@ -120,6 +120,7 @@ function Recomendadas() {
 
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
 
+
   /* ---------------- resultado atual ---------------- */
 
   const dadosDaAba = ABAS.find((a) => a.chave === aba) ?? ABAS[0]
@@ -128,15 +129,29 @@ function Recomendadas() {
   // busca simulada: o total cai na proporção dos cards de exemplo que casam
   const total = q ? Math.round((dadosDaAba.contagem * bases.length) / LICITACOES.length / 3) : dadosDaAba.contagem
   const totalHoje = q ? Math.min(total, Math.round(dadosDaAba.hoje / 3)) : dadosDaAba.hoje
-  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA))
-  const inicio = (pagina - 1) * POR_PAGINA
   const cards: Card[] = bases.length
-    ? Array.from({ length: Math.max(0, Math.min(POR_PAGINA, total - inicio)) }, (_, i) => {
-        const n = inicio + i
+    ? Array.from({ length: Math.max(0, Math.min(carregadas, total)) }, (_, n) => {
         const base = bases[n % bases.length]
         return { ...base, edital: `${String(77 + n).padStart(3, "0")}/2026`, chave: `${aba}-${n}` }
       })
     : []
+
+  // rolagem infinita: ao chegar no fim, carrega mais 20 (como em produção)
+  const temMais = cards.length < total
+  useEffect(() => {
+    const el = sentinela.current
+    if (!el || !temMais || carregandoMais) return
+    const obs = new IntersectionObserver((entradas) => {
+      if (!entradas[0].isIntersecting) return
+      setCarregandoMais(true)
+      window.setTimeout(() => {
+        setCarregadas((c) => c + POR_LOTE)
+        setCarregandoMais(false)
+      }, 900)
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [temMais, carregandoMais, carregadas])
 
   const filtrosDaAba = filtros[aba] ?? []
   const filtrosParaResumo = filtrosDaAba.map((f) => ({ rotulo: f.rotulo, valor: textoDoFiltro(f) }))
@@ -161,14 +176,14 @@ function Recomendadas() {
 
   function trocarAba(nova: string) {
     setAba(nova)
-    setPagina(1)
+    setCarregadas(POR_LOTE)
     limparSelecao()
   }
 
   function agendarBusca(texto: string) {
     window.clearTimeout(timerBusca.current)
     limparSelecao()
-    setPagina(1)
+    setCarregadas(POR_LOTE)
     if (!texto.trim()) {
       setCarregando(false)
       setAplicada("")
@@ -369,7 +384,8 @@ function Recomendadas() {
               ) : (
                 <>
                   <span>
-                    Todas as <strong className="font-semibold tabular-nums">{cards.length}</strong> desta página estão selecionadas.
+                    As <strong className="font-semibold tabular-nums">{cards.length}</strong> licitações carregadas na tela estão
+                    selecionadas.
                   </span>
                   <Button variant="link" size="sm" className="h-auto p-0 text-[13px]" onClick={() => setTodasDoFiltro(true)}>
                     Selecionar todas as {total.toLocaleString("pt-BR")} do filtro
@@ -397,29 +413,19 @@ function Recomendadas() {
                         if (!marcada) setTodasDoFiltro(false)
                         setSelecionadas((s) => (marcada ? [...s, l.chave] : s.filter((e) => e !== l.chave)))
                       }}
-                      itensAbertos={itensAbertos[l.chave] ?? (i === 0 && pagina === 1)}
+                      itensAbertos={itensAbertos[l.chave] ?? i === 0}
                       onItensAbertos={(aberto) => setItensAbertos((a) => ({ ...a, [l.chave]: aberto }))}
                     />
                   </li>
                 ))}
               </ul>
-              <nav aria-label="Paginação" className="mt-6 flex items-center justify-between gap-4 text-sm">
-                <span className="text-muted-foreground tabular-nums">
-                  Mostrando {(inicio + 1).toLocaleString("pt-BR")}–{(inicio + cards.length).toLocaleString("pt-BR")} de{" "}
-                  {total.toLocaleString("pt-BR")}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={pagina === 1} onClick={() => setPagina((p) => p - 1)}>
-                    <ChevronLeftIcon data-icon="inline-start" /> Anterior
-                  </Button>
-                  <span className="tabular-nums">
-                    Página {pagina} de {paginas}
+              <div ref={sentinela} className="flex h-16 items-center justify-center text-sm text-muted-foreground" aria-live="polite">
+                {carregandoMais && (
+                  <span className="flex items-center gap-2">
+                    <Spinner className="size-4" /> Carregando mais licitações…
                   </span>
-                  <Button variant="outline" size="sm" disabled={pagina >= paginas} onClick={() => setPagina((p) => p + 1)}>
-                    Próxima <ChevronRightIcon data-icon="inline-end" />
-                  </Button>
-                </div>
-              </nav>
+                )}
+              </div>
             </>
           ) : (
             <Empty className="border border-dashed bg-card px-4 py-14">
@@ -476,7 +482,7 @@ function Recomendadas() {
             tela: "recomendadas",
             comEtapaAtual: decisoes.etapaNoArquivoRecomendadas,
             fixos: { estado: unico("Estado"), responsavel: unico("Responsável") },
-            semente: pagina,
+            
           })
         }
       />

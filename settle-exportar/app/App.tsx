@@ -24,7 +24,7 @@ const ROTEIRO: { problema: string; hoje: string; proposta: string; tela: string 
   {
     problema: "Para exportar um resultado filtrado, é preciso usar Selecionar tudo, que é lento.",
     hoje: "Marque um card › Selecionar tudo: “Carregando licitações do filtro atual...” por ~40 s.",
-    proposta: "Não precisa mais: “Exportar tudo filtrado” resolve direto. E Selecionar tudo marca a página na hora, com o aviso “Selecionar todas as 1.108 do filtro?”.",
+    proposta: "Não precisa mais: “Exportar tudo filtrado” resolve direto. E Selecionar tudo marca na hora as licitações já carregadas na tela, com o aviso “Selecionar todas as 1.108 do filtro?”.",
     tela: "recomendadas",
   },
   {
