@@ -20,6 +20,7 @@ import {
   FolderIcon,
   LinkIcon,
   RefreshCwIcon,
+  SearchIcon,
   Share2Icon,
 } from "lucide-react"
 
@@ -28,19 +29,84 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LicitacaoCard, LicitacaoCardStatusButton } from "@/components/ui/licitacao-card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { ATUALIZACOES, dataCurta, quandoRelativo, type Atualizacao } from "./atualizacoes"
 import { categoriaDoSegmento, formatarData, formatarMoeda, statusPorId, type Licitacao } from "./dados"
 import { useNovas } from "./Selo"
+import { AbrirArquivoContext, VisualizadorDeArquivo, arquivosDaLicitacao, useAbrirArquivo, type ArquivoAberto } from "./VisualizadorDeArquivo"
+
+/** Abas de produção. Contagem: o total da base (como em produção) na aba ativa vem da lista do protótipo. */
+const ABAS: { chave: string; filtro: (l: Licitacao) => boolean }[] = [
+  { chave: "Todas", filtro: () => true },
+  { chave: "Ativas", filtro: (l) => l.status === "abertas" || l.status === "em-disputa" },
+  { chave: "Chegou hoje", filtro: (l) => l.id === "1432210" },
+  { chave: "Vencendo em breve", filtro: (l) => !!l.dataEnvio && l.dataEnvio <= "2026-06-05" },
+]
 
 export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitacao[]; onAbrir: (l: Licitacao) => void }) {
+  const [aba, setAba] = useState("Todas")
+  const [arquivo, setArquivo] = useState<ArquivoAberto | null>(null)
+  const filtro = ABAS.find((a) => a.chave === aba)!.filtro
+  const lista = licitacoes.filter(filtro)
+  const qtd = (n: number) => `${n.toLocaleString("pt-BR")} ${n === 1 ? "licitação ativa" : "licitações ativas"}`
+
   return (
-    <div className="mx-auto grid w-full max-w-347 gap-4 px-6 pt-4 pb-16">
-      <h1 className="text-lg font-semibold">Recomendadas</h1>
-      {licitacoes.map((l) => (
-        <CardRecomendada key={l.id} l={l} onAbrir={() => onAbrir(l)} />
-      ))}
-    </div>
+    <AbrirArquivoContext.Provider value={setArquivo}>
+      <div className="mx-auto w-full max-w-347 px-6 pt-6 pb-16">
+        <header className="mb-5.5">
+          <p className="text-3xl font-normal" aria-live="polite">
+            Encontramos {qtd(licitacoes.filter(ABAS[1].filtro).length)}
+          </p>
+          <h1 className="mt-1.5 text-5xl leading-[1.04] font-bold tracking-[-0.5px]">Selecione quais deseja analisar</h1>
+        </header>
+
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-4 py-3.5">
+          <Tabs value={aba} onValueChange={setAba} className="min-w-0">
+            <TabsList aria-label="Abas de licitações" className="h-auto max-w-full overflow-x-auto">
+              {ABAS.map((a) => (
+                <TabsTrigger
+                  key={a.chave}
+                  value={a.chave}
+                  className="h-7.5 flex-none gap-1.5 rounded-lg px-3 hover:bg-background/60 hover:text-foreground"
+                >
+                  <span>{a.chave}</span>
+                  <span className="rounded-md bg-foreground/10 px-1.5 py-px text-xs leading-4 font-medium text-foreground tabular-nums">
+                    {licitacoes.filter(a.filtro).length}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <div className="flex items-center overflow-hidden rounded-lg bg-foreground/10">
+            {["Filtrar", "Ordenar", "Exportar"].map((r) => (
+              <Button key={r} variant="ghost" size="sm" data-nao-prototipado className="h-8 rounded-none px-3 text-foreground hover:bg-foreground/5">
+                {r}
+              </Button>
+            ))}
+            <Button variant="ghost" size="sm" data-nao-prototipado className="h-8 rounded-none px-3 text-foreground hover:bg-foreground/5">
+              <SearchIcon data-icon="inline-start" />
+              Buscar
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {lista.length ? (
+            lista.map((l) => <CardRecomendada key={l.id} l={l} onAbrir={() => onAbrir(l)} />)
+          ) : (
+            <p className="rounded-lg border border-dashed px-4 py-12 text-center text-[13px] text-muted-foreground">
+              Nenhuma licitação nesta aba.
+            </p>
+          )}
+        </div>
+      </div>
+      <VisualizadorDeArquivo
+        visualizacao={arquivo}
+        onIndice={(indice) => setArquivo((v) => (v ? { ...v, indice } : v))}
+        onFechar={() => setArquivo(null)}
+      />
+    </AbrirArquivoContext.Provider>
   )
 }
 
@@ -52,7 +118,8 @@ const ICONE_DO_TIPO = {
 } as const
 
 /** Uma linha curta por mudança: "Envio da proposta: 27/05 → 10/06". */
-function LinhaDaMudanca({ a }: { a: Atualizacao }) {
+function LinhaDaMudanca({ a, codigo }: { a: Atualizacao; codigo: string }) {
+  const abrirArquivo = useAbrirArquivo()
   const Icone = ICONE_DO_TIPO[a.tipo]
   return (
     <span className="flex min-w-0 items-center gap-1.5">
@@ -72,9 +139,13 @@ function LinhaDaMudanca({ a }: { a: Atualizacao }) {
       ) : (
         <span className="min-w-0 truncate">
           {a.titulo.replace(/:.*/, "")}:{" "}
-          <a href="#" data-nao-prototipado className="font-semibold underline-offset-2 hover:underline">
+          <button
+            type="button"
+            className="rounded-sm text-left font-semibold underline-offset-2 hover:underline"
+            onClick={() => abrirArquivo(arquivosDaLicitacao(codigo, a.depois ?? a.titulo))}
+          >
             {a.titulo.split(": ")[1] ?? a.titulo}
-          </a>
+          </button>
         </span>
       )}
     </span>
@@ -83,6 +154,7 @@ function LinhaDaMudanca({ a }: { a: Atualizacao }) {
 
 function CardRecomendada({ l, onAbrir }: { l: Licitacao; onAbrir: () => void }) {
   const novas = useNovas(l.id)
+  const abrirArquivo = useAbrirArquivo()
   const [aberto, setAberto] = useState(false)
   const temNovas = novas.length > 0
   const urgente = novas.some((a) => a.tipo === "status" || a.antecipou)
@@ -186,7 +258,10 @@ function CardRecomendada({ l, onAbrir }: { l: Licitacao; onAbrir: () => void }) 
           icon: <FolderIcon />,
           count: docsNovos || undefined,
           tone: docsNovos ? "warning" : "default",
-          "data-nao-prototipado": true,
+          onClick: () => {
+            const novo = novas.find((a) => a.tipo === "arquivo")
+            abrirArquivo(arquivosDaLicitacao(l.codigoEdital, novo?.depois ?? `Edital_${l.codigoEdital.replace(/\W+/g, "_")}.pdf`))
+          },
         },
       ]}
       highlight={
@@ -199,7 +274,7 @@ function CardRecomendada({ l, onAbrir }: { l: Licitacao; onAbrir: () => void }) 
           >
             <span className="sr-only">Novidades desde a sua última visita:</span>
             {novas.map((a) => (
-              <LinhaDaMudanca key={a.id} a={a} />
+              <LinhaDaMudanca key={a.id} a={a} codigo={l.codigoEdital} />
             ))}
           </div>
         ) : undefined

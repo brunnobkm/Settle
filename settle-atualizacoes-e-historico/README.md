@@ -36,6 +36,12 @@ atualização for nova (mesma regra do selo):
 3. **O campo que mudou fica marcado**: data nova com a antiga riscada e o selo "Alterada";
    status novo com um ponto e o anterior no tooltip; ícone de arquivos com "+1".
 
+A tela Recomendadas segue o modelo de produção: "Encontramos N licitações ativas",
+"Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e o grupo
+Filtrar · Ordenar · Exportar · Buscar (só as abas funcionam no protótipo).
+O documento novo (na faixa de novidades e no ícone de arquivos) abre o sheet "Arquivos da
+licitação", o mesmo visualizador de settle-salvos-e-notificacoes.
+
 Cenários no protótipo (um por card de Recomendadas): PE 33/2026 documento novo,
 PE 091/2026 data alterada, PE 014/2026 status alterado.
 
