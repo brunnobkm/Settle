@@ -409,7 +409,9 @@ export default function App() {
           <h1 className="sr-only">Salvos para depois</h1>
         ) : (
           <header className="mb-2">
-            <p className="text-3xl font-normal">Encontramos {quantidade(contagens["Ativas"] ?? 0).replace("licitação", "licitação ativa").replace("licitações", "licitações ativas")}</p>
+            <p className="text-3xl font-normal" aria-live="polite">
+              Encontramos {fraseDaAba(ativa, contagens[ativa] ?? 0)}
+            </p>
             <h1 className="mt-1.5 text-5xl leading-[1.04] font-bold tracking-[-0.5px]">Selecione quais deseja analisar</h1>
           </header>
         )}
@@ -819,6 +821,18 @@ function LinhaDeAcompanhamento({
 }
 
 const MOSTRAR_CONTROLES_DE_PROTOTIPO = false
+
+/** Frase do topo de Recomendadas, como em produção: muda com a aba. */
+const FRASE_DA_ABA: Record<string, [string, string]> = {
+  Todas: ["licitação ativa", "licitações ativas"],
+  Ativas: ["licitação ativa", "licitações ativas"],
+  "Chegou hoje": ["licitação que chegou hoje", "licitações que chegaram hoje"],
+  "Vencendo em breve": ["licitação vencendo em breve", "licitações vencendo em breve"],
+}
+function fraseDaAba(aba: string, n: number) {
+  const [um, varios] = FRASE_DA_ABA[aba] ?? FRASE_DA_ABA.Todas
+  return `${n.toLocaleString("pt-BR")} ${n === 1 ? um : varios}`
+}
 
 /** Abas da tela Salvos para depois. */
 function BarraDeSalvos({
