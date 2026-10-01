@@ -1,5 +1,5 @@
 // Lista de notificações no padrão do Figma "Central de notificações" (Platform, 923-13801):
-// abas por categoria com contagem, itens com selo do tipo, "Nova resposta", título
+// itens com selo do tipo, "Nova resposta", título
 // "PE 12/2026 · Órgão", mensagem truncada, "Visualizar mensagem completa" e tempo relativo.
 // Estados: carregando (esqueleto), vazio e erro com "Tentar novamente".
 // Usada no dropdown do sino da licitação (compacta) e na central (sheet).
@@ -11,23 +11,15 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import {
-  NotificationsCenterCount,
-  notificationsCenterTabClassName,
-  notificationsCenterTabsListClassName,
-} from "@/components/ui/notifications-center"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import {
-  CATEGORIAS,
   ROTULO_CATEGORIA,
   ROTULO_CURTO,
   lerQuando,
   tempoRelativo,
   tituloDoEdital,
-  type Categoria,
   type Licitacao,
   type Notificacao,
 } from "./dados"
@@ -80,27 +72,14 @@ export function ListaDeNotificacoes({
   onLida: (id: string, lida: boolean) => void
   onVerLicitacao?: (n: Notificacao) => void
 }) {
-  const [aba, setAba] = useState<Categoria | "todos">("todos")
   const [aberta, setAberta] = useState<Notificacao | null>(null)
 
   // mais recentes primeiro
   const itens = estado === "vazio" ? [] : [...notificacoes].map((n) => (placeholder ? comoPlaceholder(n) : n)).sort((a, b) => lerQuando(b.quando).getTime() - lerQuando(a.quando).getTime())
-  const contagem = (c: Categoria | "todos") => (c === "todos" ? itens.length : itens.filter((n) => n.categoria === c).length)
-  const lista = aba === "todos" ? itens : itens.filter((n) => n.categoria === aba)
+  const lista = itens
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <Tabs value={aba} onValueChange={(v) => setAba(v as Categoria | "todos")} className={cn("gap-0", compacta ? "px-2 pt-2" : "px-3 pt-3")}>
-        <TabsList aria-label="Categorias" className={cn(notificationsCenterTabsListClassName, "w-full")}>
-          {/* só as categorias que têm notificação (Todos sempre aparece) */}
-          {CATEGORIAS.filter((c) => c.chave === "todos" || notificacoes.some((n) => n.categoria === c.chave)).map((c) => (
-            <TabsTrigger key={c.chave} value={c.chave} className={cn(notificationsCenterTabClassName, "px-2.5 text-[13px]")}>
-              {c.rotulo}
-              <NotificationsCenterCount>{carregando || estado === "erro" ? "–" : contagem(c.chave)}</NotificationsCenterCount>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
 
       <div className={cn("min-h-0 flex-1 overflow-y-auto", compacta ? "max-h-100" : "")} aria-busy={carregando}>
         {carregando ? (
@@ -141,7 +120,7 @@ export function ListaDeNotificacoes({
           </ul>
         ) : (
           <p className="px-4 py-12 text-center text-[13px] text-muted-foreground">
-            {aba === "todos" && vazio ? vazio : "Nenhuma notificação encontrada"}
+            {vazio ?? "Nenhuma notificação encontrada"}
           </p>
         )}
       </div>
