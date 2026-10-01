@@ -258,14 +258,22 @@ export function ListaDeVariaveis({
  * Número de uma lista (quantas licitações, quantos descartes) com um "i" que explica
  * o que aquele número conta. Fica no lugar de `SettingsListItemMeta`.
  */
-export function MetaComDica({ children, dica }: { children: ReactNode; dica: ReactNode }) {
+export function MetaComDica({
+  children,
+  dica,
+  className,
+}: {
+  children: ReactNode
+  dica: ReactNode
+  className?: string
+}) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
           aria-label={`O que significa "${typeof children === "string" ? children : ""}"`}
-          className="flex flex-none cursor-help items-center gap-1 text-[12.5px] text-muted-foreground"
+          className={cn("flex flex-none cursor-help items-center gap-1 text-[12.5px] text-muted-foreground", className)}
         >
           {children}
           <InfoIcon aria-hidden className="size-3.5" />
