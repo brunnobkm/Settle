@@ -268,7 +268,7 @@ export function PaginaEtapas() {
               <span aria-hidden className="w-4 flex-none" />
               <span className="min-w-0 flex-1">Motivo</span>
               <span className={cn("flex-none", COL.desc)}>Descrição obrigatória</span>
-              <span className={cn("flex-none text-right", COL.uso)}>Licitações</span>
+              <span className={cn("flex-none", COL.uso)}>Licitações</span>
               <span aria-hidden className={cn("flex-none", COL.acao)} />
             </div>
           }

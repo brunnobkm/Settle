@@ -268,7 +268,7 @@ export function ListaMotivos({
               {/* o contador fala de licitações nas duas listas: é a unidade que a pessoa conhece */}
               <MetaComDica
                 dica={typeof dicaUso === "function" ? dicaUso(x) : dicaUso}
-                className={cn(COL.uso, "justify-end")}
+                className={COL.uso}
               >
                 {x.uso ? emLicitacoes(x.uso) : "nunca usado"}
               </MetaComDica>
