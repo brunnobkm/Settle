@@ -349,7 +349,6 @@ function EmAndamento() {
         mostrarOpcaoEtapa={decisoes.etapaVia !== "coluna" || abertura?.origem === "menu_coluna"}
         contexto={{
           tela: "kanban",
-          aba: VISTAS.find((v) => v.id === vista)?.rotulo,
           filtros: [
             ...(filtroResponsavel.length ? [{ rotulo: "Responsável", valor: filtroResponsavel.join(", ") }] : []),
             ...(filtroEstado.length ? [{ rotulo: "Estado", valor: filtroEstado.join(", ") }] : []),
