@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   ShieldIcon,
   SparkleIcon,
+  BellIcon,
   SquareMenuIcon,
   TextAlignStartIcon,
   UsersIcon,
@@ -41,6 +42,7 @@ import { PaginaEmail } from "./PaginaEmail";
 import { PaginaEtapas } from "./PaginaEtapas";
 import { PaginaInicio, SemPermissao } from "./PaginaInicio";
 import { PaginaMotivos } from "./PaginaMotivos";
+import { PaginaNotificacoes } from "./PaginaNotificacoes";
 import {
   PaginaAuditoria,
   PaginaEquipe,
@@ -60,6 +62,7 @@ const PAGINAS: Record<Rota, ComponentType> = {
   motivos: PaginaMotivos,
   card: PaginaCard,
   email: PaginaEmail,
+  notificacoes: PaginaNotificacoes,
   equipe: PaginaEquipe,
   permissoes: PaginaPermissoes,
   auditoria: PaginaAuditoria,
@@ -128,6 +131,8 @@ function Configuracoes() {
       ],
     },
     { items: [{ ...item("inicio", SettingsIcon), label: "Visão geral" }] },
+    /* Notificações é do usuário, não da organização: grupo próprio, e todo papel tem o seu */
+    { label: "Você", items: [item("notificacoes", BellIcon)] },
     ...(isAdmin
       ? [
           {

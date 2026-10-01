@@ -15,7 +15,7 @@ export const ADMINS = ["Brunno Krier", "Larissa Almeida", "Bruno Ortiz", "Andre 
 
 /* ======================= ROTAS ======================= */
 
-export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "equipe" | "permissoes" | "auditoria" | "agentes" | "variaveis" | "artefato"
+export type Rota = "inicio" | "etapas" | "abas" | "motivos" | "card" | "email" | "notificacoes" | "equipe" | "permissoes" | "auditoria" | "agentes" | "variaveis" | "artefato"
 
 export const NOMES: Record<Rota, string> = {
   inicio: "Configurações",
@@ -24,6 +24,7 @@ export const NOMES: Record<Rota, string> = {
   motivos: "Motivos de descarte",
   card: "Campos da licitação",
   email: "Modelo de e-mail",
+  notificacoes: "Notificações",
   equipe: "Equipe",
   permissoes: "Permissões",
   auditoria: "Auditoria",
@@ -32,7 +33,10 @@ export const NOMES: Record<Rota, string> = {
   artefato: "Artefato",
 }
 
-/* Agentes fica de fora: quem não é administrador entra para responder Aprovações. */
+/*
+  Agentes fica de fora: quem não é administrador entra para responder Aprovações.
+  Notificações também: é configuração da pessoa, então todo mundo tem a sua.
+*/
 export const SO_ADMIN: Rota[] = ["etapas", "abas", "motivos", "card", "email", "equipe", "permissoes", "auditoria", "variaveis", "artefato"]
 
 /* ======================= ETAPAS ======================= */
@@ -816,3 +820,94 @@ function itensDeTI(): ItemLic[] {
 function reais(v: number) {
   return `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
+
+/* ======================= NOTIFICAÇÕES ======================= */
+
+/*
+  Configuração pessoal de notificações. O que existe hoje está prototipado em
+  settle-salvos-e-notificacoes: o sino por licitação (a pessoa liga e escolhe os tipos), a central
+  (sino da navbar) e "Continuar recebendo atualizações" no diálogo de descarte. Esta seção é o
+  lugar onde se decide de uma vez, em vez de licitação por licitação.
+*/
+
+export type CanalNotif = "card" | "central" | "email"
+
+/** Onde a notificação chega. A ordem é a das colunas da tabela. */
+export const CANAIS_NOTIF: [CanalNotif, string, string][] = [
+  ["card", "Card da licitação", "No sino do card e no cabeçalho da licitação aberta, com o contador de não lidas."],
+  ["central", "Central de notificações", "No sino da barra do topo, que junta as notificações de todas as licitações."],
+  ["email", "E-mail", "Na sua caixa de entrada, com o que mudou e o link para a licitação."],
+]
+
+export type GrupoEvento = "edital" | "manifestacoes"
+
+export const GRUPOS_EVENTO: Record<GrupoEvento, string> = {
+  edital: "Atualizações do edital",
+  manifestacoes: "Manifestações",
+}
+
+export type EventoNotif = {
+  id: string
+  nome: string
+  /** O que dispara o evento, no "i" ao lado do nome. */
+  dica: string
+  grupo: GrupoEvento
+}
+
+export const EVENTOS_NOTIF: EventoNotif[] = [
+  { id: "retificacao", nome: "Retificação do edital", grupo: "edital",
+    dica: "O órgão publicou uma retificação ou uma nova versão do edital." },
+  { id: "documento", nome: "Novo documento", grupo: "edital",
+    dica: "Entrou um anexo novo na licitação, como termo de referência ou planilha." },
+  { id: "prazo", nome: "Mudança de prazo", grupo: "edital",
+    dica: "Mudou a data de envio da proposta, da sessão pública ou de impugnação." },
+  { id: "status", nome: "Mudança de status", grupo: "edital",
+    dica: "A licitação mudou de situação no portal: suspensa, revogada, fracassada, homologada." },
+  { id: "avisos", nome: "Avisos", grupo: "manifestacoes",
+    dica: "Comunicados publicados pelo órgão na própria licitação." },
+  { id: "impugnacoes", nome: "Impugnações", grupo: "manifestacoes",
+    dica: "Impugnações protocoladas e as respostas do pregoeiro." },
+  { id: "esclarecimentos", nome: "Esclarecimentos", grupo: "manifestacoes",
+    dica: "Pedidos de esclarecimento e as respostas do pregoeiro." },
+]
+
+export type MatrizNotif = Record<string, Record<CanalNotif, boolean>>
+
+/**
+ * Padrão da Settle: tudo chega no produto, e o e-mail fica só no que muda a decisão de
+ * participar (retificação e prazo). E-mail em tudo vira ruído e a pessoa desliga o conjunto.
+ */
+export const MATRIZ_NOTIF: MatrizNotif = Object.fromEntries(
+  EVENTOS_NOTIF.map((e) => [e.id, { card: true, central: true, email: e.id === "retificacao" || e.id === "prazo" }])
+)
+
+/** Quando as notificações de uma licitação nascem ligadas. */
+export type PadraoNovas = "sino" | "acompanhadas" | "todas"
+
+export const PADRAO_NOVAS: [PadraoNovas, string, string][] = [
+  ["sino", "Só quando eu ativar o sino",
+    "Como é hoje. Nenhuma licitação notifica até você ligar o sino nela."],
+  ["acompanhadas", "Quando eu salvar ou enviar para análise",
+    "A licitação que você demonstrou interesse passa a notificar sozinha. Recomendadas fica de fora."],
+  ["todas", "Em toda licitação que chega em Recomendadas",
+    "Você fica sabendo de tudo, inclusive do que ainda não olhou. É o que mais gera notificação."],
+]
+
+/** O que acontece com as notificações quando a licitação é descartada. */
+export type AoDescartar = "desligar" | "perguntar" | "manter"
+
+export const AO_DESCARTAR: [AoDescartar, string, string][] = [
+  ["desligar", "Desligar as notificações",
+    "Descartou, não quer mais saber. É o caminho mais silencioso."],
+  ["perguntar", "Perguntar no diálogo de descarte",
+    "O diálogo mostra “Continuar recebendo atualizações”, desmarcado, e sugere marcar quando o motivo é daqueles que uma atualização pode desfazer."],
+  ["manter", "Manter as notificações",
+    "Continua avisando. Serve para reavaliar o descarte quando o edital muda."],
+]
+
+export type FreqEmail = "hora" | "diario"
+
+export const FREQ_EMAIL: [FreqEmail, string, string][] = [
+  ["hora", "Na hora", "Um e-mail por atualização, assim que ela chega."],
+  ["diario", "No resumo diário", "Tudo junto no e-mail que a Settle já manda de manhã, às 7h."],
+]
