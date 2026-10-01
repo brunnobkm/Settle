@@ -47,6 +47,7 @@ import { CentralDeNotificacoes } from "./CentralDeNotificacoes"
 import type { EstadoDaLista } from "./ListaDeNotificacoes"
 import { DialogoDeDescarte } from "./DialogoDeDescarte"
 import { SinoDaLicitacao } from "./SinoDaLicitacao"
+import { AbrirArquivoContext, VisualizadorDeArquivo, type ArquivoAberto } from "./VisualizadorDeArquivo"
 import {
   ESCOPOS,
   HOJE,
@@ -104,6 +105,7 @@ export default function App() {
   // sino da licitação (popover ancorado no botão clicado) e diálogo de descarte
   const [editando, setEditando] = useState<{ edital: string; ancora: HTMLElement } | null>(null)
   const [sinoAberto, setSinoAberto] = useState(false)
+  const [arquivo, setArquivo] = useState<ArquivoAberto | null>(null)
   const [descartando, setDescartando] = useState<string | null>(null)
 
   // central de notificações
@@ -479,6 +481,7 @@ export default function App() {
   const filtrosAtivos = visualizacaoAtiva?.filtros ?? []
 
   return (
+    <AbrirArquivoContext.Provider value={setArquivo}>
     <AppShell
       workspace={WORKSPACE}
       groups={menuDaTela(tela, totalSalvos, (t) => {
@@ -726,6 +729,12 @@ export default function App() {
         onVerLicitacao={verLicitacao}
       />
     </AppShell>
+    <VisualizadorDeArquivo
+      visualizacao={arquivo}
+      onIndice={(indice) => setArquivo((v) => (v ? { ...v, indice } : v))}
+      onFechar={() => setArquivo(null)}
+    />
+    </AbrirArquivoContext.Provider>
   )
 }
 

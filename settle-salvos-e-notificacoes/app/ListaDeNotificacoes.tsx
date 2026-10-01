@@ -31,6 +31,7 @@ import {
   type Licitacao,
   type Notificacao,
 } from "./dados"
+import { arquivosDaLicitacao, useAbrirArquivo } from "./VisualizadorDeArquivo"
 
 export type EstadoDaLista = "normal" | "vazio" | "erro"
 
@@ -171,6 +172,7 @@ function ItemDeNotificacao({
   onAbrir: () => void
   onVerLicitacao?: () => void
 }) {
+  const abrirArquivo = useAbrirArquivo()
   const atualizacao = n.categoria === "atualizacao"
   const destaque = n.tipo === "retificacao" || n.tipo === "status"
   return (
@@ -235,9 +237,13 @@ function ItemDeNotificacao({
       {n.documento && (
         <p className="mt-1.5 flex items-center gap-1.5 text-xs">
           <FileTextIcon aria-hidden className="size-3.5 text-muted-foreground" />
-          <a href="#" data-nao-prototipado className="truncate font-medium text-primary hover:underline">
+          <button
+            type="button"
+            className="truncate rounded-sm text-left font-medium text-primary hover:underline"
+            onClick={() => abrirArquivo(arquivosDaLicitacao(n.edital, n.documento!))}
+          >
             {n.documento}
-          </a>
+          </button>
         </p>
       )}
 
@@ -273,6 +279,7 @@ function MensagemCompleta({
   placeholder: boolean
   onFechar: () => void
 }) {
+  const abrirArquivo = useAbrirArquivo()
   return (
     <Dialog open={!!n} onOpenChange={(aberto) => !aberto && onFechar()}>
       <DialogContent className="sm:max-w-lg">
@@ -303,9 +310,13 @@ function MensagemCompleta({
                     {n.anexos.map((a) => (
                       <li key={a} className="flex items-center gap-1.5 text-[13px]">
                         <FileTextIcon aria-hidden className="size-3.5 text-muted-foreground" />
-                        <a href="#" data-nao-prototipado className="font-medium text-primary hover:underline">
+                        <button
+                          type="button"
+                          className="rounded-sm text-left font-medium text-primary hover:underline"
+                          onClick={() => abrirArquivo({ arquivos: n.anexos!, indice: n.anexos!.indexOf(a) })}
+                        >
                           {a}
-                        </a>
+                        </button>
                       </li>
                     ))}
                   </ul>
