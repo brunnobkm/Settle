@@ -6,4 +6,4 @@
 //   git rev-list --count origin/main -- settle-atualizacoes-e-historico
 //
 // some 1 ao resultado e troque aqui.
-export const VERSAO = 5
+export const VERSAO = 6

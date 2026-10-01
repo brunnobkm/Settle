@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button"
 import { LicitacaoCard, LicitacaoCardStatusButton } from "@/components/ui/licitacao-card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FilterChip, FilterChipGroup } from "@/components/ui/filter-chip"
 
 import { ATUALIZACOES, dataCurta, quandoRelativo, type Atualizacao } from "./atualizacoes"
 import { categoriaDoSegmento, formatarData, formatarMoeda, statusPorId, type Licitacao } from "./dados"
@@ -44,24 +45,83 @@ const ABAS: { chave: string; filtro: (l: Licitacao) => boolean }[] = [
   { chave: "Vencendo em breve", filtro: (l) => !!l.dataEnvio && l.dataEnvio <= "2026-06-05" },
 ]
 
+const FRASE_DA_ABA: Record<string, [string, string]> = {
+  Todas: ["licitação ativa", "licitações ativas"],
+  Ativas: ["licitação ativa", "licitações ativas"],
+  "Chegou hoje": ["licitação que chegou hoje", "licitações que chegaram hoje"],
+  "Vencendo em breve": ["licitação vencendo em breve", "licitações vencendo em breve"],
+}
+
+/* Filtros padrão de cada aba (selos abaixo da barra), como em settle-melhoria-deixar-os-filtros-aplicados-mais-visivel */
+type Filtro =
+  | { rotulo: string; tipo: "lista"; opcoes: string[]; valor: string[] }
+  | { rotulo: string; tipo: "data"; modo: "passado" | "futuro"; valor: { preset?: string; data?: string } }
+
+const HOJE_REC = new Date(2026, 4, 21)
+const dataBr = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`
+const lerBr = (s: string) => {
+  const [d, m, a] = s.split("/").map(Number)
+  return new Date(a, m - 1, d)
+}
+const PRESETS = {
+  passado: [{ value: "todos", label: "Todos" }, { value: "24h", label: "Últimas 24h" }, { value: "7d", label: "Últimos 7 dias" }],
+  futuro: [{ value: "7d", label: "Próximos 7 dias" }, { value: "15d", label: "Próximos 15 dias" }, { value: "30d", label: "Próximos 30 dias" }],
+}
+const FILTROS_DA_ABA: Record<string, Filtro[]> = {
+  Todas: [],
+  Ativas: [{ rotulo: "Situação", tipo: "lista", opcoes: ["Ativas", "Em disputa", "Homologação", "Encerradas", "Descartadas"], valor: ["Ativas"] }],
+  "Chegou hoje": [{ rotulo: "Data de adição", tipo: "data", modo: "passado", valor: { data: dataBr(HOJE_REC) } }],
+  "Vencendo em breve": [{ rotulo: "Envio da proposta", tipo: "data", modo: "futuro", valor: { preset: "7d" } }],
+}
+
+function SelosDaAba({ filtros, onAlterar }: { filtros: Filtro[]; onAlterar: (i: number, f: Filtro) => void }) {
+  if (!filtros.length) return null
+  return (
+    <FilterChipGroup aria-label="Filtros da aba" className="mt-3">
+      {filtros.map((f, i) =>
+        f.tipo === "data" ? (
+          <FilterChip
+            key={f.rotulo}
+            type="date"
+            label={f.rotulo}
+            presets={PRESETS[f.modo]}
+            today={HOJE_REC}
+            disabled={f.modo === "passado" ? { after: HOJE_REC } : { before: HOJE_REC }}
+            formatDate={dataBr}
+            value={{ preset: f.valor.preset, date: f.valor.data ? lerBr(f.valor.data) : undefined }}
+            onValueChange={(v) => onAlterar(i, { ...f, valor: v.preset ? { preset: v.preset } : { data: v.date && dataBr(v.date) } })}
+          />
+        ) : (
+          <FilterChip key={f.rotulo} label={f.rotulo} options={f.opcoes} value={f.valor} onValueChange={(valor) => onAlterar(i, { ...f, valor })} />
+        )
+      )}
+    </FilterChipGroup>
+  )
+}
+
 export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitacao[]; onAbrir: (l: Licitacao) => void }) {
   const [aba, setAba] = useState("Todas")
   const [arquivo, setArquivo] = useState<ArquivoAberto | null>(null)
   const filtro = ABAS.find((a) => a.chave === aba)!.filtro
   const lista = licitacoes.filter(filtro)
-  const qtd = (n: number) => `${n.toLocaleString("pt-BR")} ${n === 1 ? "licitação ativa" : "licitações ativas"}`
+  const qtd = (n: number) => {
+    const [um, varios] = FRASE_DA_ABA[aba]
+    return `${n.toLocaleString("pt-BR")} ${n === 1 ? um : varios}`
+  }
+  const [filtros, setFiltros] = useState(FILTROS_DA_ABA)
 
   return (
     <AbrirArquivoContext.Provider value={setArquivo}>
       <div className="mx-auto w-full max-w-347 px-6 pt-6 pb-16">
         <header className="mb-5.5">
           <p className="text-3xl font-normal" aria-live="polite">
-            Encontramos {qtd(licitacoes.filter(ABAS[1].filtro).length)}
+            Encontramos {qtd(lista.length)}
           </p>
           <h1 className="mt-1.5 text-5xl leading-[1.04] font-bold tracking-[-0.5px]">Selecione quais deseja analisar</h1>
         </header>
 
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-4 py-3.5">
+        <div className="mb-2 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <Tabs value={aba} onValueChange={setAba} className="min-w-0">
             <TabsList aria-label="Abas de licitações" className="h-auto max-w-full overflow-x-auto">
               {ABAS.map((a) => (
@@ -82,6 +142,9 @@ export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitac
             {["Filtrar", "Ordenar", "Exportar"].map((r) => (
               <Button key={r} variant="ghost" size="sm" data-nao-prototipado className="h-8 rounded-none px-3 text-foreground hover:bg-foreground/5">
                 {r}
+                {r === "Filtrar" && filtros[aba].length > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-xs leading-4.5 font-normal tabular-nums">{filtros[aba].length}</span>
+                )}
               </Button>
             ))}
             <Button variant="ghost" size="sm" data-nao-prototipado className="h-8 rounded-none px-3 text-foreground hover:bg-foreground/5">
@@ -89,6 +152,12 @@ export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitac
               Buscar
             </Button>
           </div>
+        </div>
+        <SelosDaAba
+          key={aba}
+          filtros={filtros[aba]}
+          onAlterar={(i, f) => setFiltros((t) => ({ ...t, [aba]: t[aba].map((x, j) => (j === i ? f : x)) }))}
+        />
         </div>
 
         <div className="grid gap-4">
