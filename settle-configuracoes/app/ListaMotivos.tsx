@@ -186,7 +186,9 @@ export function ListaMotivos({
 
   return (
     <>
-      <SettingsBox>
+      {/* overflow-visible: com o overflow-hidden da caixa, o cabeçalho sticky não gruda,
+          porque a caixa vira o contêiner de rolagem dele e ela não rola */}
+      <SettingsBox className={cabecalho ? "overflow-visible" : undefined}>
         {cabecalho}
         <SettingsList
           labels={{ moveHandle: (n) => `Mover o motivo ${n ?? ""}. Use as setas para cima e para baixo.` }}
