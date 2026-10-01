@@ -21,6 +21,7 @@ import {
   SearchIcon,
   Share2Icon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -44,10 +45,11 @@ import type { EstadoDaLista } from "./ListaDeNotificacoes"
 import { DialogoDeDescarte } from "./DialogoDeDescarte"
 import { VERSAO } from "./versao"
 import { SinoDaLicitacao } from "./SinoDaLicitacao"
-import { AbrirArquivoContext, VisualizadorDeArquivo, type ArquivoAberto } from "./VisualizadorDeArquivo"
+import { AbrirArquivoContext, VisualizadorDeArquivo, arquivosDaLicitacao, type ArquivoAberto } from "./VisualizadorDeArquivo"
 import {
   ESCOPOS,
   HOJE,
+  lerQuando,
   LICITACOES,
   NOTIFICACOES,
   PRESETS_DATA,
@@ -90,6 +92,8 @@ export default function App() {
   const [licitacoes, setLicitacoes] = useState(LICITACOES)
   const [abaSalvos, setAbaSalvos] = useState<AbaDeSalvos>("todas")
   const [destaque, setDestaque] = useState<string | null>(null)
+  /** Notificação aberta pelo "Ver no card": o campo que mudou fica destacado no card. */
+  const [realce, setRealce] = useState<Notificacao | null>(null)
 
   // sino da licitação (popover ancorado no botão clicado) e diálogo de descarte
   const [editando, setEditando] = useState<{ edital: string; ancora: HTMLElement } | null>(null)
@@ -303,8 +307,20 @@ export default function App() {
     setNotificacoes((ns) => ns.map((n) => (!filtroEdital || n.edital === filtroEdital ? { ...n, lida: true } : n)))
   }
 
+  // Status do card: o último que veio do portal nas notificações, senão o padrão
+  const statusAtualDe = (edital: string) =>
+    notificacoes
+      .filter((n) => n.edital === edital && n.tipo === "status" && n.mudanca)
+      .sort((a, b) => lerQuando(b.quando).getTime() - lerQuando(a.quando).getTime())[0]?.mudanca?.para ?? "Em disputa ou Homologação"
+
+  // Leva ao lugar da mudança: documento abre no sheet; data e status destacam o campo no card.
   function verLicitacao(n: Notificacao) {
     marcarLida(n.id, true)
+    setSinoAberto(false)
+    if (n.documento) {
+      setArquivo(arquivosDaLicitacao(n.edital, n.documento))
+      return
+    }
     const l = licitacoes.find((x) => x.edital === n.edital)
     if (l?.descartada) {
       toast("Esta página ainda não foi prototipada.", { description: "A licitação está em Descartadas." })
@@ -319,8 +335,10 @@ export default function App() {
     }
     setAbaSalvos("todas")
     setDestaque(n.edital)
+    setRealce(n.mudanca ? n : null)
     window.setTimeout(() => {
-      document.getElementById(`licitacao-${n.edital}`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+      const alvo = document.querySelector(`[data-campo-alterado="${n.edital}"]`) ?? document.getElementById(`licitacao-${n.edital}`)
+      alvo?.scrollIntoView({ behavior: "smooth", block: "center" })
     }, 250)
     window.setTimeout(() => setDestaque(null), 2600)
   }
@@ -559,6 +577,9 @@ export default function App() {
                         onAbrirSino={(ancora) => abrirSino(l, ancora)}
                         onDescartar={() => setDescartando(l.edital)}
                         onVerNovidades={() => abrirCentral(l.edital)}
+                        realce={realce?.edital === l.edital ? realce : null}
+                        onFecharRealce={() => setRealce(null)}
+                        statusAtual={statusAtualDe(l.edital)}
                       />
                     </div>
                   </li>
@@ -609,6 +630,7 @@ export default function App() {
         onDesativar={() => editandoLicitacao && desativarNotificacoes(editandoLicitacao)}
         estado={estadoProto}
         onLida={marcarLida}
+        onVerNoCard={verLicitacao}
       />
 
       <DialogoDeDescarte
@@ -656,6 +678,9 @@ function CardDaLicitacao({
   onAbrirSino,
   onDescartar,
   onVerNovidades,
+  realce,
+  onFecharRealce,
+  statusAtual,
 }: {
   licitacao: Licitacao
   salvo: boolean
@@ -667,8 +692,14 @@ function CardDaLicitacao({
   onAbrirSino: (ancora: HTMLElement) => void
   onDescartar: () => void
   onVerNovidades: () => void
+  realce: Notificacao | null
+  onFecharRealce: () => void
+  statusAtual: string
 }) {
   const arquivos = l.arquivos ?? 0
+  const realceStatus = realce?.tipo === "status" ? realce.mudanca : undefined
+  const realcePrazo = realce?.tipo === "prazo" ? realce.mudanca : undefined
+  const marcaRealce = "rounded-md bg-warning/15 px-1 ring-2 ring-warning ring-offset-1 ring-offset-card"
   const notificando = l.alertas.length > 0
   const acoesDeIcone: (LicitacaoCardIconActionProps & { id: string })[] = [
     {
@@ -732,17 +763,36 @@ function CardDaLicitacao({
         </>
       }
       status={
-        <LicitacaoCardStatusButton data-nao-prototipado>
+        <LicitacaoCardStatusButton
+          data-nao-prototipado
+          data-campo-alterado={realceStatus ? l.edital : undefined}
+          className={cn(realceStatus && "ring-2 ring-warning ring-offset-2 ring-offset-card")}
+          title={realceStatus ? `Antes: ${realceStatus.de}` : undefined}
+        >
           <PencilIcon data-icon="inline-start" />
-          Em disputa ou Homologação
+          {statusAtual}
         </LicitacaoCardStatusButton>
       }
       avatars={RESPONSAVEIS}
       addAvatarProps={{ "data-nao-prototipado": true }}
       iconActions={acoesDeIcone}
       highlight={
-        naTelaDeSalvos ? (
-          <LinhaDeAcompanhamento licitacao={l} naoLidas={naoLidas} onVerNovidades={onVerNovidades} />
+        realce?.mudanca || naTelaDeSalvos ? (
+          <div className="flex flex-col gap-2.5">
+            {realce?.mudanca && (
+              <div role="status" className="flex items-center gap-2 rounded-md border border-warning/30 bg-warning/10 px-2.5 py-1.5 text-[13px] text-warning-strong">
+                <BellRingIcon aria-hidden className="size-3.5 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="font-semibold">{realce.titulo}:</span> {realce.mudanca.campo}{" "}
+                  <span className="line-through opacity-70">{realce.mudanca.de}</span> → <span className="font-semibold">{realce.mudanca.para}</span>
+                </span>
+                <button type="button" aria-label="Fechar destaque" className="rounded-sm p-0.5 hover:bg-warning/20" onClick={onFecharRealce}>
+                  <XIcon className="size-3.5" />
+                </button>
+              </div>
+            )}
+            {naTelaDeSalvos && <LinhaDeAcompanhamento licitacao={l} naoLidas={naoLidas} onVerNovidades={onVerNovidades} />}
+          </div>
         ) : undefined
       }
       segments={SEGMENTOS_DO_CARD}
@@ -758,7 +808,14 @@ function CardDaLicitacao({
         [
           {
             label: "Envio da proposta",
-            value: l.envio,
+            value: realcePrazo ? (
+              <span data-campo-alterado={l.edital} className={cn("inline-flex flex-wrap items-baseline gap-1.5", marcaRealce)}>
+                {l.envio}
+                <span className="text-xs font-normal text-muted-foreground line-through">{realcePrazo.de}</span>
+              </span>
+            ) : (
+              l.envio
+            ),
             tone: "warning",
             icon: <ClockIcon aria-hidden />,
             title: `Prazo de envio da proposta: ${l.envio}`,

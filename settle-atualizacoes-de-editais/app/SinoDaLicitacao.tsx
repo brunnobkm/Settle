@@ -32,6 +32,7 @@ export function SinoDaLicitacao({
   onDesativar,
   estado,
   onLida,
+  onVerNoCard,
 }: {
   aberto: boolean
   /** Continua preenchida depois de fechar, para a animação de saída. */
@@ -45,6 +46,8 @@ export function SinoDaLicitacao({
   onDesativar: () => void
   estado: EstadoDaLista
   onLida: (id: string, lida: boolean) => void
+  /** Leva ao lugar da mudança: campo do card ou sheet do documento. */
+  onVerNoCard: (n: Notificacao) => void
 }) {
   const ancoraRef = useRef<HTMLElement | null>(null)
   ancoraRef.current = ancora
@@ -96,6 +99,7 @@ export function SinoDaLicitacao({
               estado={estado}
               onTentarNovamente={carregar}
               onLida={onLida}
+              onVerNoCard={onVerNoCard}
             />
           ))}
       </PopoverContent>
@@ -201,6 +205,7 @@ function ListaDaLicitacao({
   estado,
   onTentarNovamente,
   onLida,
+  onVerNoCard,
 }: {
   licitacao: Licitacao
   notificacoes: Notificacao[]
@@ -210,6 +215,7 @@ function ListaDaLicitacao({
   estado: EstadoDaLista
   onTentarNovamente: () => void
   onLida: (id: string, lida: boolean) => void
+  onVerNoCard: (n: Notificacao) => void
 }) {
   return (
     <div className="flex flex-col">
@@ -231,6 +237,7 @@ function ListaDaLicitacao({
         vazio="Nenhuma notificação ainda. Você será avisado quando o portal publicar mudanças."
         onTentarNovamente={onTentarNovamente}
         onLida={onLida}
+        onVerLicitacao={onVerNoCard}
       />
     </div>
   )

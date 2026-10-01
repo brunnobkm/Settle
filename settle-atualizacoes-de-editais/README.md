@@ -1,7 +1,10 @@
-# Salvos para depois e notificações
+# Atualizações de editais
+
+Task no Notion: "Acompanhar atualizações de editais descartados". Antes se chamava
+`settle-atualizacoes-de-editais` (renomeado em 01/10/2026).
 
 > **Tela em React.** O código fica em `app/`; o `index.html` é gerado pelo build
-> (`cd react && npm run build -- settle-salvos-e-notificacoes`). Veja a seção "Stack" do `AGENTS.md` da raiz.
+> (`cd react && npm run build -- settle-atualizacoes-de-editais`). Veja a seção "Stack" do `AGENTS.md` da raiz.
 
 Duplicado de [Explorar licitações](../settle-explorar-licitacoes/). Notificações de atualização por
 licitação, ligadas pelo **sino**, e a **central de notificações**. Task no Notion: "Notificar
@@ -103,3 +106,13 @@ O nome do documento novo (no sino, na central e nos anexos da mensagem completa)
 ## Tela inicial = Recomendadas
 A tela inicial segue Recomendadas de produção: item Recomendadas ativo na sidebar, "Encontramos N licitações ativas" / "Selecione quais deseja analisar", abas Todas · Ativas · Chegou hoje · Vencendo em breve e Filtrar · Ordenar · Exportar · Buscar. As abas filtram por editais definidos em `EDITAIS_DA_ABA` (dados.ts). Explorar licitações passou a ser não prototipada.
 Cada aba mostra seus filtros padrão como selos abaixo da barra (e o número no Filtrar), iguais a settle-melhoria-deixar-os-filtros-aplicados-mais-visivel: Ativas (Situação: Ativas), Chegou hoje (Data de adição: 19/06/2026), Vencendo em breve (Envio da proposta: Próximos 7 dias).
+
+## Levar ao lugar da mudança (pedido da Alice, 01/10)
+"Uma coisa é avisar, outra é mostrar onde mudou." Cada notificação (no sino do card e na central)
+tem uma ação que leva ao lugar da atualização:
+- **Documento novo ou retificado** → "Abrir documento": sheet "Arquivos da licitação" com o arquivo.
+- **Prazo** → "Ver no card" / "Ver na licitação": rola até o card, mostra o aviso da mudança no topo
+  do card e destaca o campo "Envio da proposta" (nova data, antiga riscada).
+- **Status** → idem, destacando o botão de status do card (o anterior no tooltip).
+- **Aviso, impugnação, esclarecimento** → "Visualizar mensagem completa".
+O destaque fica até o usuário fechar o aviso (X).
