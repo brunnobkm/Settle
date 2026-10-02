@@ -4,7 +4,7 @@
 // Neste projeto: o card mostra o selo "Atualização" (abre o sheet) e o clique no card abre a
 // página "Detalhes da licitação". A casca (AppShell) é a do App deste projeto.
 
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import {
   BellIcon,
   BookmarkIcon,
@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   FolderIcon,
   FolderXIcon,
+  HistoryIcon,
   LinkIcon,
   PencilIcon,
   SearchIcon,
@@ -56,7 +57,7 @@ import {
   type Filtro,
   type Licitacao,
 } from "./recomendadasDados"
-import { SeloAtualizacao } from "./Selo"
+import { NovasContext, SeloAtualizacao } from "./Selo"
 
 const DURACAO_SAIDA = 330 // ms: animação do card saindo da lista
 const ATRASO_BUSCA = 450 // ms: simula a busca no servidor (mostra o esqueleto)
@@ -424,6 +425,7 @@ function CardDaLicitacao({
   onItensAbertos: (aberto: boolean) => void
   onAlternarSalvo: () => void
 }) {
+  const { abrirHistorico } = useContext(NovasContext)
   const arquivos = l.arquivos ?? 0
   const acoesDeIcone: (LicitacaoCardIconActionProps & { id: string })[] = [
     {
@@ -437,6 +439,7 @@ function CardDaLicitacao({
     { id: "link", label: "Copiar link", icon: <LinkIcon />, "data-nao-prototipado": true },
     { id: "compartilhar", label: "Compartilhar", icon: <Share2Icon />, "data-nao-prototipado": true },
     { id: "documentos", label: "Documentos", icon: <FileTextIcon />, "data-nao-prototipado": true },
+    { id: "historico", label: "Histórico", icon: <HistoryIcon />, onClick: () => abrirHistorico(l.id) },
     l.semAnexo
       ? {
           id: "arquivos",

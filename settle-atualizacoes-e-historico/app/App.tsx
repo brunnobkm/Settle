@@ -8,7 +8,7 @@
 // O card do Board é a fonte da verdade visual; Tabela e Calendário o espelham.
 
 import { useCallback, useMemo, useState, type ComponentProps } from "react"
-import { LinkIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { HistoryIcon, LinkIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -222,6 +222,7 @@ export default function App() {
       })}
       user={USUARIO}
       header={
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
         <Breadcrumb>
           <BreadcrumbList className="text-[13px]">
             <BreadcrumbItem>
@@ -251,6 +252,19 @@ export default function App() {
             )}
           </BreadcrumbList>
         </Breadcrumb>
+        {/* histórico no header da licitação, como o relógio do Updates no topo de uma página do Notion */}
+        {licitacaoDaPagina && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Histórico da licitação"
+            title="Histórico da licitação"
+            onClick={() => abrirHistorico(licitacaoDaPagina.id)}
+          >
+            <HistoryIcon />
+          </Button>
+        )}
+        </div>
       }
     >
       {licitacaoDaPagina ? (
