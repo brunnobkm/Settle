@@ -1,13 +1,14 @@
 // Atualizações e histórico de uma licitação, sobre Recomendadas e Em andamento.
 // Selo "Atualizada" nos cards (Board, Tabela, Calendário, Recomendadas) para mudanças do
-// portal ainda não vistas; abrir a licitação mostra o painel de Atualizações (portal, agentes e pessoas, no formato do Updates do Notion).
+// portal ainda não vistas. Clicar no selo abre o sheet de Atualizações; clicar no card abre a
+// página "Detalhes da licitação" (modelo de produção), que também tem o selo.
 // Base: settle-licitacoes-em-andamento. Licitações em andamento em três
 // visualizações. Board (kanban por etapa do nosso processo, arrastar entre colunas),
 // Tabela (todas as propriedades em colunas) e Calendário (pelo envio da proposta).
 // O card do Board é a fonte da verdade visual; Tabela e Calendário o espelham.
 
 import { useCallback, useMemo, useState, type ComponentProps } from "react"
-import { LinkIcon, RadioTowerIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { LinkIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -51,6 +52,7 @@ import { CardKanban } from "./CardKanban"
 import { ETAPAS, LICITACOES, RECOMENDADAS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
 import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
 import { Detalhe } from "./Detalhe"
+import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
 import { NovasContext } from "./Selo"
 import { VistaRecomendadas } from "./VistaRecomendadas"
 import { VistaCalendario } from "./VistaCalendario"
@@ -89,12 +91,25 @@ export default function App() {
   const todas = useMemo(() => [...licitacoes, ...RECOMENDADAS], [licitacoes])
   const licitacaoAberta = aberta ? todas.find((l) => l.id === aberta.id) ?? null : null
 
-  /** Abrir = ver: marca como vista; as que eram novas ficam com "Nova" enquanto o detalhe está aberto. */
+  /** Página "Detalhes da licitação" aberta (null = lista). */
+  const [pagina, setPagina] = useState<string | null>(null)
+  const licitacaoDaPagina = pagina ? todas.find((l) => l.id === pagina) ?? null : null
+
+  /** Abrir o sheet = ver: o selo some; as que eram novas ficam em "Novas" enquanto o sheet está aberto. */
+  const abrirAtualizacoes = useCallback(
+    (id: string) => {
+      const novas = atualizacoesNovas(atualizacoes, id, vistaEm[id]).map((a) => a.id)
+      setAberta({ id, novas })
+      const ultima = atualizacoes.filter((a) => a.licitacaoId === id).reduce((m, a) => (a.quando > m ? a.quando : m), "")
+      setVistaEm((v) => ({ ...v, [id]: ultima }))
+    },
+    [atualizacoes, vistaEm]
+  )
+  const contexto = useMemo(() => ({ novasDe, abrirAtualizacoes }), [novasDe, abrirAtualizacoes])
+
   function abrirLicitacao(l: Licitacao) {
-    const novas = novasDe(l.id).map((a) => a.id)
-    setAberta({ id: l.id, novas })
-    const ultima = atualizacoes.filter((a) => a.licitacaoId === l.id).reduce((m, a) => (a.quando > m ? a.quando : m), "")
-    setVistaEm((v) => ({ ...v, [l.id]: ultima }))
+    setPagina(l.id)
+    window.scrollTo(0, 0)
   }
 
   function resolverConflito(a: Atualizacao, escolha: "manual" | "portal") {
@@ -108,20 +123,6 @@ export default function App() {
     }
     setHistorico((h) => [evento, ...h])
     toast(escolha === "portal" ? "Data do portal aplicada" : "Data editada mantida")
-  }
-
-  // Protótipo: o portal publica uma retificação numa licitação do board
-  function simularAtualizacao() {
-    const alvo = licitacoes.find((l) => !novasDe(l.id).length) ?? licitacoes[0]
-    // depois de tudo que já existe: só o que é novo acende o selo
-    const quando = `2026-05-21T19:${String(atualizacoes.length).padStart(2, "0")}`
-    const nova: Atualizacao = {
-      id: `sim-${Date.now()}`, licitacaoId: alvo.id, tipo: "arquivo", quando,
-      titulo: "Novo anexo: Estudo Técnico Preliminar",
-      impacta: ["Análise técnica"],
-    }
-    setAtualizacoes((xs) => [nova, ...xs])
-    toast("Portal publicou uma atualização", { description: `Edital ${alvo.codigoEdital}` })
   }
 
   const atualizar = useCallback((id: string, patch: Partial<Licitacao>) => {
@@ -187,10 +188,13 @@ export default function App() {
   }
 
   return (
-    <NovasContext.Provider value={novasDe}>
+    <NovasContext.Provider value={contexto}>
     <AppShell
       workspace={WORKSPACE}
-      groups={menuDaTela(tela, setTela)}
+      groups={menuDaTela(tela, (t) => {
+        setTela(t)
+        setPagina(null)
+      })}
       user={USUARIO}
       header={
         <Breadcrumb>
@@ -201,14 +205,32 @@ export default function App() {
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="font-medium">{tela === "recomendadas" ? "Recomendadas" : "Em andamento"}</BreadcrumbPage>
-            </BreadcrumbItem>
+            {licitacaoDaPagina ? (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <button type="button" onClick={() => setPagina(null)}>
+                      {tela === "recomendadas" ? "Recomendadas" : "Em andamento"}
+                    </button>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-medium">Detalhes da licitação - {licitacaoDaPagina.id}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            ) : (
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-medium">{tela === "recomendadas" ? "Recomendadas" : "Em andamento"}</BreadcrumbPage>
+              </BreadcrumbItem>
+            )}
           </BreadcrumbList>
         </Breadcrumb>
       }
     >
-      {tela === "recomendadas" ? (
+      {licitacaoDaPagina ? (
+        <PaginaDaLicitacao licitacao={licitacaoDaPagina} />
+      ) : tela === "recomendadas" ? (
         <VistaRecomendadas licitacoes={RECOMENDADAS} onAbrir={abrir} />
       ) : (
       <>
@@ -231,13 +253,6 @@ export default function App() {
           </TabsList>
 
           <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-[13px] shadow-none" onClick={simularAtualizacao}>
-            <RadioTowerIcon data-icon="inline-start" />
-            Simular atualização do portal
-            <Badge variant="secondary" className="ml-1 h-4.5 px-1.5 text-[10px]">
-              Protótipo
-            </Badge>
-          </Button>
           <div role="toolbar" aria-label="Ações da visualização" className="flex items-center gap-0.5 rounded-lg bg-muted p-[3px]">
             <BotaoDaBarra data-nao-prototipado>
               Filtrar

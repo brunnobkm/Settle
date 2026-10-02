@@ -14,35 +14,32 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + recorte de
 
 ## Regras
 
-### 1 e 2. Indicador em Recomendadas e Em andamento
-- Selo "Atualizada" no topo do card com a mudança principal ("Sessão pública adiantada +1").
-  Na Tabela e no Calendário vira um ponto ao lado do edital (com texto no `aria-label`/`title`).
-- Prioridade do texto: status > data > arquivo > manifestação.
-- Cor: âmbar quando pede ação (sessão adiantada, suspensão, conflito com valor editado);
-  teal nos outros casos.
-- **Duração**: some quando o usuário abre a licitação, ou 7 dias depois da atualização
-  se ninguém abrir (`DIAS_DO_SELO`). Vale por usuário.
+### 1 e 2. Selo "Atualização" (Recomendadas e Em andamento)
+- Selo único, "Atualização" (mesmo tom laranja do "Atualizado" de produção), no topo do card do
+  Board e de Recomendadas e no cabeçalho da página da licitação. Na Tabela e no Calendário vira
+  um ponto laranja ao lado do edital (com texto no `aria-label`).
+- **O clique no selo abre o sheet de Atualizações**, sem abrir a licitação. O resto do card abre
+  a página "Detalhes da licitação".
+- **Duração**: some quando a pessoa abre o sheet (viu as mudanças), ou 7 dias depois da
+  atualização se ninguém abrir (`DIAS_DO_SELO`). Vale por usuário.
 - Avisos de pregoeiro não acendem selo (mesma decisão da aba Manifestações: geram ruído).
 
-### 3 e 4. Dentro da licitação: painel "Atualizações" (formato do Updates do Notion)
-Um painel só, em vez de duas abas (Atualizações e Histórico), no formato do
-Updates & Analytics do Notion: quem, o quê, quando, com a mudança visível no próprio item.
-- **Topo: novidades desde a última visita.** O que veio do portal e o usuário ainda não viu,
-  com "Nova", sempre aberto (nada novo fica atrás do "Ver mais").
-- **Abaixo: histórico inteiro**, filtrável por Todos / Portal / Agentes / Pessoas (com contadores).
-  O portal não é duplicado: cada atualização do portal é um item só (fonte única: `ATUALIZACOES`).
-- **Mudança no próprio item:**
-  - propriedade: valor antigo riscado → novo (como "Prioridade P2 › P1" no Notion);
-  - arquivo: o trecho que saiu riscado e o que entrou marcado, direto no item (2 trechos e
-    "Ver mais N trechos"); "Comparar documento inteiro" fica só para o documento completo;
-  - manifestação: pergunta e resposta; conflito de data: decisão no próprio item.
-- **Agrupamento:** itens seguidos do mesmo autor e da mesma origem viram um bloco
-  ("Maria da Silva adicionou… · Ver mais 2").
-- **Versão anterior:** cada item tem o relógio "Ver versão anterior", que abre a licitação como
-  estava antes daquela mudança, somente leitura. Versões de agente mostram v1, v2 e o motivo.
-- Entra: mudanças do portal, versões de agente e ações de pessoas sobre a licitação (etapa,
-  status, datas, responsáveis, resultado, descarte, decisão de divergência). Não entra:
-  comentários e visualizações.
+### Página "Detalhes da licitação"
+- Clicar no card de Em andamento abre a página no modelo de produção
+  (app.settlegov.com/biddings/<id>): caminho "Em andamento › Detalhes da licitação - <id>",
+  cabeçalho com edital, selo e ações, bloco do card, metadados, itens com correspondência e notas.
+  Montada com o `LicitacaoCard` do design system.
+
+### 3 e 4. Sheet "Atualizações"
+Versão simplificada (pedido do Brunno, 02/10): uma lista só, sem filtros, agrupamentos ou selos
+de impacto. Cada item em até três linhas:
+1. o que aconteceu ("Sessão pública adiantada");
+2. o que mudou: antes riscado → agora (data, status), resposta da manifestação, ou
+   "Ver o que mudou (N)" no arquivo, que abre os trechos antes/agora;
+3. quem e quando ("Portal Licitanet · ontem, 16:40").
+- "Novas" no topo (ponto laranja), "Anteriores" abaixo. Portal, agentes e pessoas na mesma lista.
+- Versão de agente: "Ver versão anterior". Conflito de data: escolha no próprio item.
+- Não entra: comentários e visualizações.
 
 ### Corner cases (data da sessão)
 - **Portal muda uma data que ninguém editou**: aplica direto e registra no histórico.
@@ -52,7 +49,6 @@ Updates & Analytics do Notion: quem, o quê, quando, com a mudança visível no 
 - **Data adiantada**: selo âmbar no card, data nova em vermelho e "Prazo encurtou".
 
 ## Protótipo
-- "Simular atualização do portal" (selo Protótipo) publica um anexo numa licitação do board.
 - Sidebar: Recomendadas e Em andamento trocam de tela; o resto é não prototipado.
 
 ## Em aberto (levar ao time)
