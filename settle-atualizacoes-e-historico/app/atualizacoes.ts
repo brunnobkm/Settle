@@ -207,33 +207,54 @@ export function resumoDoSelo(novas: Atualizacao[]) {
   return { texto: principal.titulo, extras: novas.length - 1, urgente }
 }
 
-/* Recomendadas (ainda fora do pipeline): o selo vale igual, 7 dias ou até abrir */
+/* Recomendadas (ainda fora do pipeline): o selo vale igual, 7 dias ou até abrir o sheet.
+   Um exemplo do card do Notion em cada card de Recomendadas. */
 ATUALIZACOES.push(
+  // "chegou um novo TR, como ele pode comparar o antigo com o novo"
   {
-    id: "r1a", licitacaoId: "1432210", tipo: "arquivo", quando: "2026-05-21T08:30",
-    titulo: "Edital retificado",
-    impacta: ["Requisitos de produto", "Score"],
+    id: "r1a", licitacaoId: "1078513", tipo: "arquivo", quando: "2026-05-21T08:30",
+    titulo: "Termo de Referência retificado",
+    impacta: ["Itens com correspondência", "Habilitação"],
     arquivo: {
-      nome: "Edital",
-      versaoAnterior: "Edital_PE_33-2026.pdf · 14/05",
-      versaoNova: "Edital_PE_33-2026_retificado.pdf · 21/05",
+      nome: "Termo de Referência",
+      versaoAnterior: "TR_90001-2026_v1.pdf · 12/05",
+      versaoNova: "TR_90001-2026_v2_retificado.pdf · 21/05",
       trechos: [
         {
-          secao: "Anexo I · Item 3",
-          antes: "Notebook com processador de 8 núcleos, 16 GB de RAM e SSD de 256 GB.",
-          depois: "Notebook com processador de 10 núcleos, 16 GB de RAM e SSD de 512 GB.",
+          secao: "Lote 2 · Notebook 14\"",
+          antes: "Processador i5, 8 GB de RAM e SSD de 256 GB.",
+          depois: "Processador i5, 16 GB de RAM e SSD de 512 GB.",
+        },
+        {
+          secao: "8.1 Garantia",
+          antes: "Garantia de 36 meses com suporte on-site.",
+          depois: "Garantia de 48 meses com suporte on-site em até 24 horas.",
         },
       ],
     },
   },
+  // "data de pregão: ela adiantou ao invés de postergar"
   {
-    id: "r2a", licitacaoId: "1432177", tipo: "data", quando: "2026-05-19T15:00",
-    titulo: "Sessão pública adiada",
-    antes: "2026-05-27", depois: "2026-06-10",
+    id: "r2a", licitacaoId: "1099842", tipo: "data", quando: "2026-05-20T15:00",
+    titulo: "Sessão pública adiantada",
+    antes: "2026-06-03", depois: "2026-05-27", antecipou: true,
     impacta: ["Envio da proposta"],
+  },
+  // "chegou a resposta de um questionamento sobre habilitação"
+  {
+    id: "r3a", licitacaoId: "1065217", tipo: "manifestacao", quando: "2026-05-21T10:05",
+    titulo: "Questionamento sobre habilitação respondido",
+    impacta: ["Habilitação"],
+    manifestacao: {
+      pergunta: "O atestado de capacidade técnica pode ser de fornecimento a hospital privado?",
+      resposta: "Sim. Serão aceitos atestados emitidos por pessoa jurídica de direito público ou privado.",
+    },
   },
 )
 HISTORICO.push(
-  { id: "rh2", licitacaoId: "1432210", origem: "agente", quando: "2026-05-21T08:41", autor: "Agente de Score",
-    texto: "Recalculou o score: 74 → 61", versao: { agente: "Score", atual: 2, motivo: "Edital retificado (v2)" } },
+  { id: "rh1", licitacaoId: "1078513", origem: "agente", quando: "2026-05-21T08:41", autor: "Agente de Match",
+    texto: "Refez o match de itens: 29 → 31 itens", versao: { agente: "Match de itens", atual: 2, motivo: "Termo de Referência retificado (v2)" } },
+  { id: "rh2", licitacaoId: "1065217", origem: "agente", quando: "2026-05-21T10:12", autor: "Agente de Habilitação",
+    texto: "Gerou a versão 2 do checklist de Habilitação", detalhe: "Atestado de capacidade técnica: agora aceita emissor privado.",
+    versao: { agente: "Checklist de Habilitação", atual: 2, motivo: "Questionamento sobre habilitação respondido" } },
 )

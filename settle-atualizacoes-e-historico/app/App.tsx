@@ -54,7 +54,7 @@ import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type Even
 import { Detalhe } from "./Detalhe"
 import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
 import { NovasContext } from "./Selo"
-import { VistaRecomendadas } from "./VistaRecomendadas"
+import { TelaRecomendadas } from "./Recomendadas"
 import { VistaCalendario } from "./VistaCalendario"
 import { VistaTabela } from "./VistaTabela"
 
@@ -98,12 +98,16 @@ export default function App() {
   /** Abrir o sheet = ver: o selo some; as que eram novas ficam em "Novas" enquanto o sheet está aberto. */
   const abrirAtualizacoes = useCallback(
     (id: string) => {
-      const novas = atualizacoesNovas(atualizacoes, id, vistaEm[id]).map((a) => a.id)
+      const doPortal = atualizacoesNovas(atualizacoes, id, vistaEm[id])
+      // o que os agentes refizeram por causa delas também é novo
+      const desde = doPortal.reduce((m, a) => (a.quando < m ? a.quando : m), "9999")
+      const dosAgentes = historico.filter((h) => h.licitacaoId === id && h.origem === "agente" && h.quando >= desde)
+      const novas = [...doPortal, ...dosAgentes].map((x) => x.id)
       setAberta({ id, novas })
       const ultima = atualizacoes.filter((a) => a.licitacaoId === id).reduce((m, a) => (a.quando > m ? a.quando : m), "")
       setVistaEm((v) => ({ ...v, [id]: ultima }))
     },
-    [atualizacoes, vistaEm]
+    [atualizacoes, historico, vistaEm]
   )
   const contexto = useMemo(() => ({ novasDe, abrirAtualizacoes }), [novasDe, abrirAtualizacoes])
 
@@ -231,7 +235,7 @@ export default function App() {
       {licitacaoDaPagina ? (
         <PaginaDaLicitacao licitacao={licitacaoDaPagina} />
       ) : tela === "recomendadas" ? (
-        <VistaRecomendadas licitacoes={RECOMENDADAS} onAbrir={abrir} />
+        <TelaRecomendadas onAbrir={(id) => setPagina(id)} />
       ) : (
       <>
       <h1 className="sr-only">Licitações em andamento</h1>

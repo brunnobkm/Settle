@@ -23,7 +23,7 @@ import {
   valorParaInput,
   type Licitacao,
 } from "./dados"
-import { PontoAtualizacao } from "./Selo"
+import { SeloAtualizacao } from "./Selo"
 import {
   CalendarioEnvio,
   ChipSegmento,
@@ -439,7 +439,7 @@ function CelulaEdital({ l }: { l: Licitacao }) {
   return (
     <span className="flex items-center gap-2">
       <span className="font-mono">{l.codigoEdital}</span>
-      <PontoAtualizacao licitacaoId={l.id} />
+      <SeloAtualizacao licitacaoId={l.id} pequeno />
     </span>
   )
 }
