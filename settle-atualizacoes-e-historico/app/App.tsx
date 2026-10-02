@@ -52,6 +52,7 @@ import { CardKanban } from "./CardKanban"
 import { ETAPAS, LICITACOES, RECOMENDADAS, STATUS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
 import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
 import { Detalhe, type ModoDoSheet } from "./Detalhe"
+import { VERSAO } from "./versao"
 import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
 import { NovasContext } from "./Selo"
 import { TelaRecomendadas } from "./Recomendadas"
@@ -214,7 +215,7 @@ export default function App() {
   return (
     <NovasContext.Provider value={contexto}>
     <AppShell
-      workspace={WORKSPACE}
+      workspace={{ ...WORKSPACE, description: `Versão ${VERSAO}` }}
       groups={menuDaTela(tela, (t) => {
         setTela(t)
         setPagina(null)
