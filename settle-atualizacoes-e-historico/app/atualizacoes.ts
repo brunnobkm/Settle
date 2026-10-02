@@ -13,13 +13,14 @@ import { HOJE } from "./dados"
 /** Por quanto tempo o selo fica no card se ninguém abrir a licitação. */
 export const DIAS_DO_SELO = 7
 
-export type TipoAtualizacao = "data" | "arquivo" | "manifestacao" | "status"
+export type TipoAtualizacao = "data" | "arquivo" | "manifestacao" | "status" | "orgao"
 
 export const ROTULO_DO_TIPO: Record<TipoAtualizacao, string> = {
   data: "Data da sessão",
   arquivo: "Arquivo",
   manifestacao: "Manifestação",
   status: "Status do edital",
+  orgao: "Órgão",
 }
 
 /** Trecho do arquivo que mudou entre uma versão e outra. */
@@ -40,7 +41,9 @@ export type Atualizacao = {
   arquivo?: { nome: string; versaoAnterior: string; versaoNova: string; trechos: TrechoAlterado[] }
   /** Data da sessão adiantada: prazo encurtou. */
   antecipou?: boolean
-  /** Alguém da empresa tinha editado o valor à mão: o portal não sobrescreve, pede decisão. */
+  /** Ninguém tinha editado o dado: o sistema aplicou sozinho (data, status, órgão). */
+  automatica?: boolean
+  /** Alguém da empresa tinha editado o valor à mão (data, status): o portal não sobrescreve, pede decisão. */
   conflito?: { valorManual: string; autor: string }
   /** Manifestação: pergunta e resposta resumidas. */
   manifestacao?: { pergunta: string; resposta: string }
@@ -62,6 +65,8 @@ export type EventoHistorico = {
   autor: string
   texto: string
   detalhe?: string
+  /** Comentário: fica fora do histórico por padrão ("Mostrar comentários"). */
+  comentario?: boolean
   /** Agente que gerou uma nova versão; a anterior continua acessível. */
   versao?: { agente: string; atual: number; motivo: string }
 }
@@ -75,7 +80,7 @@ export const ATUALIZACOES: Atualizacao[] = [
   {
     id: "a1", licitacaoId: "1431011", tipo: "data", quando: "2026-05-20T16:40",
     titulo: "Sessão pública adiantada",
-    antes: "2026-05-26", depois: "2026-05-23", antecipou: true,
+    antes: "2026-05-26", depois: "2026-05-23", antecipou: true, automatica: true,
     impacta: ["Cronograma", "Envio da proposta"],
   },
   {
@@ -128,7 +133,7 @@ export const ATUALIZACOES: Atualizacao[] = [
   {
     id: "a5", licitacaoId: "1430660", tipo: "status", quando: "2026-05-18T14:20",
     titulo: "Licitação suspensa pelo órgão",
-    antes: "Abertas para participação", depois: "Suspensa",
+    antes: "Abertas para participação", depois: "Suspensa", automatica: true,
     impacta: ["Etapa no board"],
   },
 
@@ -237,7 +242,7 @@ ATUALIZACOES.push(
   {
     id: "r2a", licitacaoId: "1099842", tipo: "data", quando: "2026-05-20T15:00",
     titulo: "Sessão pública adiantada",
-    antes: "2026-06-03", depois: "2026-05-27", antecipou: true,
+    antes: "2026-06-03", depois: "2026-05-27", antecipou: true, automatica: true,
     impacta: ["Envio da proposta"],
   },
   // "chegou a resposta de um questionamento sobre habilitação"
@@ -257,4 +262,48 @@ HISTORICO.push(
   { id: "rh2", licitacaoId: "1065217", origem: "agente", quando: "2026-05-21T10:12", autor: "Agente de Habilitação",
     texto: "Gerou a versão 2 do checklist de Habilitação", detalhe: "Atestado de capacidade técnica: agora aceita emissor privado.",
     versao: { agente: "Checklist de Habilitação", atual: 2, motivo: "Questionamento sobre habilitação respondido" } },
+)
+
+/* Tipos de atualização levantados na reunião de 02/10 (documento de resultado/adjudicação,
+   nome do órgão, status com conflito) e ações que o histórico registra. */
+ATUALIZACOES.push(
+  // documento de resultado: qualquer arquivo novo é atualização
+  {
+    id: "a7", licitacaoId: "1429401", tipo: "arquivo", quando: "2026-05-20T11:20",
+    titulo: "Novo documento: Termo de adjudicação",
+    depois: "Termo_de_Adjudicacao_045-2026.pdf",
+    impacta: ["Resultado"],
+  },
+  // o órgão chega como unidade (UASG) e depois o portal traz o nome
+  {
+    id: "a8", licitacaoId: "1430340", tipo: "orgao", quando: "2026-05-19T09:30",
+    titulo: "Nome do órgão atualizado",
+    antes: "UASG 200366", depois: "Ministério da Justiça / Polícia Federal, Superintendência DF", automatica: true,
+  },
+  // status editado à mão + portal traz outro: decisão do cliente
+  {
+    id: "a9", licitacaoId: "1430210", tipo: "status", quando: "2026-05-21T07:50",
+    titulo: "Licitação suspensa pelo órgão",
+    antes: "Em disputa ou Homologação", depois: "Suspensa",
+    conflito: { valorManual: "Homologada", autor: "Ana Lima" },
+    impacta: ["Etapa no board"],
+  },
+)
+HISTORICO.push(
+  { id: "h20", licitacaoId: "1429401", origem: "pessoa", quando: "2026-05-12T16:00", autor: "Brunno Krier Martins",
+    texto: "Definiu o resultado: Ganhou e foi habilitado" },
+  { id: "h21", licitacaoId: "1430210", origem: "pessoa", quando: "2026-05-18T10:15", autor: "Ana Lima",
+    texto: "Alterou o status de Em disputa ou Homologação para Homologada" },
+  // 112/2026: descarte, recuperação, salvar para depois e notificações
+  { id: "h22", licitacaoId: "1430952", origem: "pessoa", quando: "2026-05-16T14:30", autor: "Carla Souza",
+    texto: "Recuperou a licitação das Descartadas" },
+  { id: "h23", licitacaoId: "1430952", origem: "pessoa", quando: "2026-05-15T09:10", autor: "Diego Pires",
+    texto: "Descartou a licitação", detalhe: "Motivo: fora do segmento de atuação." },
+  { id: "h24", licitacaoId: "1430952", origem: "pessoa", quando: "2026-05-14T17:40", autor: "Carla Souza",
+    texto: "Ativou as notificações da licitação" },
+  { id: "h25", licitacaoId: "1430952", origem: "pessoa", quando: "2026-05-14T17:38", autor: "Carla Souza",
+    texto: "Salvou para depois" },
+  // 048/2026: quem adicionou o responsável e um comentário (fora do padrão)
+  { id: "h26", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-20T17:05", autor: "Fabio Almeida Lopes Pereira",
+    texto: "Comentou: \"Com 8.000 m² nosso atestado não atende. Vale questionar?\"", comentario: true },
 )
