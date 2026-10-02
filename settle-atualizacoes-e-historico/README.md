@@ -55,7 +55,12 @@ aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com con
 - Sistema: as atualizações do portal. Agentes: execuções e novas versões ("Ver versão anterior").
   Usuários: responsável (quem adicionou), etapa do kanban, status, datas, resultado, descarte,
   recuperação, salvar para depois, ativar notificações, decisões de conflito.
-- "Mostrar comentários" começa desligado. Bloco de notas nunca entra. Todos da empresa veem.
+- "Mostrar comentários" começa desligado. Os comentários são os da funcionalidade Comentários
+  da licitação (balão na página, painel "Comentários (N)" à direita, como em produção); um
+  comentário novo feito ali aparece no Histórico quando a opção está ligada. Bloco de notas
+  nunca entra. Todos da empresa veem.
+- O ícone de Histórico tem contador (como o de arquivos anexados): quantos itens o histórico
+  mostra por padrão, sem comentários.
 - Abrir o histórico não conta como ver as atualizações (o selo continua).
 
 ### Corner cases (data da sessão)

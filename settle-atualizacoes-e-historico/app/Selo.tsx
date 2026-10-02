@@ -8,16 +8,27 @@ import { RefreshCwIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-import type { Atualizacao } from "./atualizacoes"
+import type { Atualizacao, Comentario } from "./atualizacoes"
 
 type Contexto = {
   novasDe: (licitacaoId: string) => Atualizacao[]
   abrirAtualizacoes: (licitacaoId: string) => void
   abrirHistorico: (licitacaoId: string) => void
+  /** Itens do histórico (sem comentários): contador do ícone de Histórico. */
+  totalHistorico: (licitacaoId: string) => number
+  comentariosDe: (licitacaoId: string) => Comentario[]
+  comentar: (licitacaoId: string, texto: string) => void
 }
 
 /** O App fornece; Board, Tabela, Calendário, Recomendadas e a página da licitação leem. */
-export const NovasContext = createContext<Contexto>({ novasDe: () => [], abrirAtualizacoes: () => {}, abrirHistorico: () => {} })
+export const NovasContext = createContext<Contexto>({
+  novasDe: () => [],
+  abrirAtualizacoes: () => {},
+  abrirHistorico: () => {},
+  totalHistorico: () => 0,
+  comentariosDe: () => [],
+  comentar: () => {},
+})
 export const useNovas = (licitacaoId: string) => useContext(NovasContext).novasDe(licitacaoId)
 
 export function SeloAtualizacao({

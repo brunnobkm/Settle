@@ -43,6 +43,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Kanban } from "@/components/ui/kanban"
+import { LicitacaoCardIconAction } from "@/components/ui/licitacao-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useNaoPrototipado } from "@/settle/nao-prototipado"
 import { menuLicitacoes, USUARIO, WORKSPACE, type TelaLicitacoes } from "@/settle/navegacao"
@@ -50,7 +51,7 @@ import type { AppShellGroup } from "@/components/ui/app-shell"
 
 import { CardKanban } from "./CardKanban"
 import { ETAPAS, LICITACOES, RECOMENDADAS, STATUS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
-import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
+import { ATUALIZACOES, COMENTARIOS, HISTORICO, comentarioNoHistorico, type Comentario, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
 import { Detalhe, type ModoDoSheet } from "./Detalhe"
 import { VERSAO } from "./versao"
 import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
@@ -81,6 +82,7 @@ export default function App() {
   const [tela, setTela] = useState<"recomendadas" | "em-andamento">("em-andamento")
   const [atualizacoes, setAtualizacoes] = useState(ATUALIZACOES)
   const [historico, setHistorico] = useState(HISTORICO)
+  const [comentarios, setComentarios] = useState(COMENTARIOS)
   /** Última vez que o usuário abriu cada licitação (o selo some a partir daí). */
   const [vistaEm, setVistaEm] = useState<Record<string, string>>({})
   const [aberta, setAberta] = useState<{ id: string; novas: string[] } | null>(null)
@@ -124,8 +126,17 @@ export default function App() {
         setModo("atualizacoes")
       },
       abrirHistorico,
+      // contador do ícone de Histórico: tudo o que o histórico mostra por padrão (sem comentários)
+      totalHistorico: (id: string) =>
+        atualizacoes.filter((a) => a.licitacaoId === id).length + historico.filter((h) => h.licitacaoId === id).length,
+      comentariosDe: (id: string) =>
+        comentarios.filter((c) => c.licitacaoId === id).sort((a, b) => b.quando.localeCompare(a.quando)),
+      comentar: (id: string, texto: string) => {
+        const novo: Comentario = { id: `c-${Date.now()}`, licitacaoId: id, autor: USUARIO.name, quando: "2026-05-21T18:30", texto }
+        setComentarios((cs) => [novo, ...cs])
+      },
     }),
-    [novasDe, abrirAtualizacoes, abrirHistorico]
+    [novasDe, abrirAtualizacoes, abrirHistorico, atualizacoes, historico, comentarios]
   )
 
   function abrirLicitacao(l: Licitacao) {
@@ -254,15 +265,13 @@ export default function App() {
         </Breadcrumb>
         {/* histórico no header da licitação, como o relógio do Updates no topo de uma página do Notion */}
         {licitacaoDaPagina && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Histórico da licitação"
-            title="Histórico da licitação"
+          <LicitacaoCardIconAction
+            variant="soft"
+            label="Histórico da licitação"
+            icon={<HistoryIcon />}
+            count={contexto.totalHistorico(licitacaoDaPagina.id)}
             onClick={() => abrirHistorico(licitacaoDaPagina.id)}
-          >
-            <HistoryIcon />
-          </Button>
+          />
         )}
         </div>
       }
@@ -366,7 +375,14 @@ export default function App() {
       <Detalhe
         licitacao={licitacaoAberta}
         atualizacoes={licitacaoAberta ? atualizacoes.filter((a) => a.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
-        historico={licitacaoAberta ? historico.filter((h) => h.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
+        historico={
+          licitacaoAberta
+            ? [
+                ...historico.filter((h) => h.licitacaoId === licitacaoAberta.id),
+                ...comentarios.filter((c) => c.licitacaoId === licitacaoAberta.id).map(comentarioNoHistorico),
+              ].sort((a, b) => b.quando.localeCompare(a.quando))
+            : []
+        }
         novasIds={aberta?.novas ?? []}
         modo={modo}
         onModo={setModo}

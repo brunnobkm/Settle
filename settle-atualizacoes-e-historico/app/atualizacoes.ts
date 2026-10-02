@@ -303,7 +303,33 @@ HISTORICO.push(
     texto: "Ativou as notificações da licitação" },
   { id: "h25", licitacaoId: "1430952", origem: "pessoa", quando: "2026-05-14T17:38", autor: "Carla Souza",
     texto: "Salvou para depois" },
-  // 048/2026: quem adicionou o responsável e um comentário (fora do padrão)
-  { id: "h26", licitacaoId: "1431011", origem: "pessoa", quando: "2026-05-20T17:05", autor: "Fabio Almeida Lopes Pereira",
-    texto: "Comentou: \"Com 8.000 m² nosso atestado não atende. Vale questionar?\"", comentario: true },
 )
+
+/* ------------------------------------------------------------------ */
+/* Comentários (a funcionalidade "Comentários" da licitação, como em    */
+/* produção). O Histórico só mostra quando "Mostrar comentários" está   */
+/* ligado.                                                              */
+/* ------------------------------------------------------------------ */
+
+export type Comentario = { id: string; licitacaoId: string; autor: string; quando: string; texto: string }
+
+export const COMENTARIOS: Comentario[] = [
+  { id: "c1", licitacaoId: "1431011", autor: "Fabio Almeida Lopes Pereira", quando: "2026-05-20T17:05",
+    texto: "Com 8.000 m² nosso atestado não atende. Vale questionar?" },
+  { id: "c2", licitacaoId: "1431011", autor: "Maria da Silva", quando: "2026-05-15T10:20",
+    texto: "Fabio, valida o ponto 7.1 do TR (qualificação técnica)." },
+  { id: "c3", licitacaoId: "1430715", autor: "Gustavo Néri", quando: "2026-05-16T15:50",
+    texto: "Mudei o envio para 29/05 porque o portal ainda mostrava a data antiga." },
+  { id: "c4", licitacaoId: "1078513", autor: "Juliana Santos", quando: "2026-05-21T09:00",
+    texto: "Marcos, confere se o notebook de 16 GB entra no nosso catálogo." },
+]
+
+/** Comentário como item do Histórico. */
+export const comentarioNoHistorico = (c: Comentario): EventoHistorico => ({
+  id: c.id, licitacaoId: c.licitacaoId, origem: "pessoa", quando: c.quando, autor: c.autor,
+  texto: "Comentou", detalhe: c.texto, comentario: true,
+})
+
+/** Formato de produção: "14/09/2026 às 14:44". */
+export const dataDoComentario = (quando: string) =>
+  `${quando.slice(8, 10)}/${quando.slice(5, 7)}/${quando.slice(0, 4)} às ${quando.slice(11, 16)}`
