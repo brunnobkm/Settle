@@ -174,7 +174,7 @@ function Historico({
         <div className="flex items-center gap-2">
           <Switch id="mostrar-comentarios" checked={comentarios} onCheckedChange={setComentarios} />
           <Label htmlFor="mostrar-comentarios" className="text-xs font-normal text-muted-foreground">
-            Mostrar comentários
+            Mostrar comentários (os da área Comentários da licitação)
           </Label>
         </div>
       </div>

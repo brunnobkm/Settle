@@ -93,7 +93,7 @@ export function CardKanban({
   // o card some da tela (ex.: descartado) com um editor aberto: libera o arraste
   useEffect(() => () => onEdicao?.(id, false), [onEdicao, id])
 
-  const { abrirHistorico } = useContext(NovasContext)
+  const { abrirHistorico, totalHistorico } = useContext(NovasContext)
   const status = statusPorId(l.status)
   const resultado = resultadoPorId(l.resultado)
   const pessoas = l.responsaveis.map(pessoaPorId).filter((p) => !!p)
@@ -419,7 +419,13 @@ export function CardKanban({
 
       {/* Ações flutuantes: aparecem no hover do card. Depois das linhas para ficar por cima delas */}
       <LicitacaoCardHoverActions data-sem-abrir className={cn(arrastando && "hidden")}>
-        <LicitacaoCardIconAction label="Histórico" icon={<HistoryIcon />} variant="ghost" onClick={() => abrirHistorico(l.id)} />
+        <LicitacaoCardIconAction
+          label="Histórico"
+          icon={<HistoryIcon />}
+          variant="ghost"
+          count={totalHistorico(l.id)}
+          onClick={() => abrirHistorico(l.id)}
+        />
         <LicitacaoCardIconAction label="Copiar link" icon={<LinkIcon />} variant="ghost" onClick={onCopiarLink} />
         <LicitacaoCardIconAction label="Descartar" icon={<Trash2Icon />} variant="ghost" onClick={onDescartar} />
       </LicitacaoCardHoverActions>

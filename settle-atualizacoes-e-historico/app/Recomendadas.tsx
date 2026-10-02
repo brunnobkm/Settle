@@ -425,7 +425,7 @@ function CardDaLicitacao({
   onItensAbertos: (aberto: boolean) => void
   onAlternarSalvo: () => void
 }) {
-  const { abrirHistorico } = useContext(NovasContext)
+  const { abrirHistorico, totalHistorico } = useContext(NovasContext)
   const arquivos = l.arquivos ?? 0
   const acoesDeIcone: (LicitacaoCardIconActionProps & { id: string })[] = [
     {
@@ -439,7 +439,7 @@ function CardDaLicitacao({
     { id: "link", label: "Copiar link", icon: <LinkIcon />, "data-nao-prototipado": true },
     { id: "compartilhar", label: "Compartilhar", icon: <Share2Icon />, "data-nao-prototipado": true },
     { id: "documentos", label: "Documentos", icon: <FileTextIcon />, "data-nao-prototipado": true },
-    { id: "historico", label: "Histórico", icon: <HistoryIcon />, onClick: () => abrirHistorico(l.id) },
+    { id: "historico", label: "Histórico", icon: <HistoryIcon />, count: totalHistorico(l.id), onClick: () => abrirHistorico(l.id) },
     l.semAnexo
       ? {
           id: "arquivos",
