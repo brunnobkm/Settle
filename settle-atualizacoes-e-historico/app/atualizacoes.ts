@@ -65,8 +65,6 @@ export type EventoHistorico = {
   autor: string
   texto: string
   detalhe?: string
-  /** Comentário: fica fora do histórico por padrão ("Mostrar comentários"). */
-  comentario?: boolean
   /** Agente que gerou uma nova versão; a anterior continua acessível. */
   versao?: { agente: string; atual: number; motivo: string }
 }
@@ -306,9 +304,8 @@ HISTORICO.push(
 )
 
 /* ------------------------------------------------------------------ */
-/* Comentários (a funcionalidade "Comentários" da licitação, como em    */
-/* produção). O Histórico só mostra quando "Mostrar comentários" está   */
-/* ligado.                                                              */
+/* Comentários: o recurso Comentários da licitação (conversa do time no */
+/* card, como em produção). Não entram no Histórico.                    */
 /* ------------------------------------------------------------------ */
 
 export type Comentario = { id: string; licitacaoId: string; autor: string; quando: string; texto: string }
@@ -324,11 +321,6 @@ export const COMENTARIOS: Comentario[] = [
     texto: "Marcos, confere se o notebook de 16 GB entra no nosso catálogo." },
 ]
 
-/** Comentário como item do Histórico. */
-export const comentarioNoHistorico = (c: Comentario): EventoHistorico => ({
-  id: c.id, licitacaoId: c.licitacaoId, origem: "pessoa", quando: c.quando, autor: c.autor,
-  texto: "Comentou", detalhe: c.texto, comentario: true,
-})
 
 /** Formato de produção: "14/09/2026 às 14:44". */
 export const dataDoComentario = (quando: string) =>

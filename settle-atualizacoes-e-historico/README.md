@@ -57,12 +57,10 @@ aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com con
 - Sistema: as atualizações do portal. Agentes: execuções e novas versões ("Ver versão anterior").
   Usuários: responsável (quem adicionou), etapa do kanban, status, datas, resultado, descarte,
   recuperação, salvar para depois, ativar notificações, decisões de conflito.
-- "Mostrar comentários" começa desligado. Os comentários são os da funcionalidade Comentários
-  da licitação (balão na página, painel "Comentários (N)" à direita, como em produção); um
-  comentário novo feito ali aparece no Histórico quando a opção está ligada. Bloco de notas
-  nunca entra. Todos da empresa veem.
-- O ícone de Histórico tem contador (como o de arquivos anexados): quantos itens o histórico
-  mostra por padrão, sem comentários.
+- Comentários não entram: são o recurso Comentários da licitação (a conversa do time no card,
+  como numa tarefa do Notion), no balão da página, com painel próprio "Comentários (N)" como em
+  produção. Bloco de notas também não entra. Todos da empresa veem o histórico.
+- O ícone de Histórico tem contador (como o de arquivos anexados): quantos itens o histórico tem.
 - Abrir o histórico não conta como ver as atualizações (o selo continua).
 
 ### Corner cases (data da sessão)
@@ -86,7 +84,7 @@ aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com con
 | Status mudou | Em andamento 156/2026: Abertas → Suspensa |
 | Agentes versionam (TR1 → TR2, nova versão, acesso à anterior) | 048/2026 (Análise técnica v2, Habilitação v2), 90001/2026 (Match v2), 90455/2025 (Habilitação v2): "Ver versão anterior" |
 | Histórico por pessoas da empresa | 048/2026 e 089/2026: responsável, segmento, data, mudança de etapa |
-| Comentário fora do histórico por padrão | 048/2026, Histórico: ligar "Mostrar comentários" |
+| Comentário não entra no histórico | 048/2026: comentários no balão da página (painel próprio), fora do Histórico |
 | Dado não editado atualiza sozinho | 048/2026 (data), 156/2026 (status), 201/2026 (órgão), 88234/2026: "Aplicada automaticamente" |
 | Status editado à mão + portal traz outro | 067/2026: Ana Lima tinha posto Homologada, portal trouxe Suspensa |
 | Documento de resultado/adjudicação | 045/2026: "Novo documento: Termo de adjudicação" |

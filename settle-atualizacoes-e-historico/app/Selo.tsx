@@ -14,7 +14,7 @@ type Contexto = {
   novasDe: (licitacaoId: string) => Atualizacao[]
   abrirAtualizacoes: (licitacaoId: string) => void
   abrirHistorico: (licitacaoId: string) => void
-  /** Itens do histórico (sem comentários): contador do ícone de Histórico. */
+  /** Itens do histórico: contador do ícone de Histórico. */
   totalHistorico: (licitacaoId: string) => number
   comentariosDe: (licitacaoId: string) => Comentario[]
   comentar: (licitacaoId: string, texto: string) => void
