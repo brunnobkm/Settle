@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/compone
 
 import { CardKanban, type PropsCard } from "./CardKanban"
 import { HOJE, avisoDePrazo, urgenciaDaData, type Licitacao } from "./dados"
-import { SeloAtualizacao, useNovas } from "./Selo"
+import { SeloAtualizacao } from "./Selo"
 
 type PropsDoCard = Omit<PropsCard, "licitacao" | "onChange" | "onAbrir" | "onCopiarLink" | "onDescartar" | "onEdicao">
 
@@ -85,7 +85,6 @@ function ChipDoCalendario({
 }: Omit<Props, "licitacoes"> & { licitacao: Licitacao; naLista: boolean }) {
   const [aberta, setAberta] = useState(false)
   const [editando, setEditando] = useState(false)
-  const novas = useNovas(l.id)
   const u = urgenciaDaData(l.dataEnvio)
   const aviso = avisoDePrazo(u)
   const onEdicao = useCallback((_: string, ativa: boolean) => setEditando(ativa), [])
@@ -102,7 +101,7 @@ function ChipDoCalendario({
             naLista ? "px-2 py-1 text-xs leading-[1.3]" : "px-1.5 py-0.5 text-[11px] leading-[1.3]"
           )}
         >
-          <SeloAtualizacao novas={novas} compacto />
+          <SeloAtualizacao licitacaoId={l.id} compacto />
           {u.tom === "hoje" && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-destructive" />}
           {u.tom === "semana" && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-warning" />}
           <span className="min-w-0 flex-1 truncate">

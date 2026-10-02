@@ -5,7 +5,7 @@ import { LicitacaoCardRoot, LicitacaoCardSegments } from "@/components/ui/licita
 import { Button } from "@/components/ui/button"
 
 import { categoriaDoSegmento, formatarData, formatarMoeda, type Licitacao } from "./dados"
-import { SeloAtualizacao, useNovas } from "./Selo"
+import { SeloAtualizacao } from "./Selo"
 
 export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitacao[]; onAbrir: (l: Licitacao) => void }) {
   return (
@@ -19,12 +19,11 @@ export function VistaRecomendadas({ licitacoes, onAbrir }: { licitacoes: Licitac
 }
 
 function CardRecomendada({ l, onAbrir }: { l: Licitacao; onAbrir: () => void }) {
-  const novas = useNovas(l.id)
   return (
     <LicitacaoCardRoot className="gap-2.5 rounded-xl p-4 shadow-none">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-xs font-semibold">Edital {l.codigoEdital}</span>
-        <SeloAtualizacao novas={novas} />
+        <SeloAtualizacao licitacaoId={l.id} />
       </div>
       <button type="button" onClick={onAbrir} className="text-left text-[15px] leading-snug font-semibold hover:underline">
         {l.titulo}

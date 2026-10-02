@@ -23,7 +23,7 @@ import {
   valorParaInput,
   type Licitacao,
 } from "./dados"
-import { SeloAtualizacao, useNovas } from "./Selo"
+import { PontoAtualizacao } from "./Selo"
 import {
   CalendarioEnvio,
   ChipSegmento,
@@ -436,11 +436,10 @@ function AcaoDaLinha({ rotulo, onClick, children }: { rotulo: string; onClick: (
 
 /** Edital + ponto de atualização não vista. */
 function CelulaEdital({ l }: { l: Licitacao }) {
-  const novas = useNovas(l.id)
   return (
     <span className="flex items-center gap-2">
       <span className="font-mono">{l.codigoEdital}</span>
-      <SeloAtualizacao novas={novas} compacto />
+      <PontoAtualizacao licitacaoId={l.id} />
     </span>
   )
 }

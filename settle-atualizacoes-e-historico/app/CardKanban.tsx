@@ -49,7 +49,7 @@ import {
   OpcoesStatus,
   PopoverEditor,
 } from "./editores"
-import { SeloAtualizacao, useNovas } from "./Selo"
+import { SeloAtualizacao } from "./Selo"
 
 const ehInterativo = (alvo: EventTarget | null) =>
   alvo instanceof Element && !!alvo.closest("button, a, input, textarea, select, [role=checkbox], [data-sem-abrir]")
@@ -93,7 +93,6 @@ export function CardKanban({
   // o card some da tela (ex.: descartado) com um editor aberto: libera o arraste
   useEffect(() => () => onEdicao?.(id, false), [onEdicao, id])
 
-  const novas = useNovas(l.id)
   const status = statusPorId(l.status)
   const resultado = resultadoPorId(l.resultado)
   const pessoas = l.responsaveis.map(pessoaPorId).filter((p) => !!p)
@@ -142,7 +141,7 @@ export function CardKanban({
       )}
     >
       {/* Selo de atualização do portal: some ao abrir a licitação ou após 7 dias */}
-      {novas.length > 0 && <SeloAtualizacao novas={novas} className="mb-2 self-start" />}
+      <SeloAtualizacao licitacaoId={l.id} className="mb-2 self-start" />
       <PropertyList>
         {/* Edital: identifica o card; clicar abre a licitação */}
         <PropertyRow {...linha("codigoEdital", "Edital")} className="font-bold">
