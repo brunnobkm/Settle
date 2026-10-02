@@ -4,7 +4,8 @@ Card do Notion: "Definir atualizações e histórico de uma licitação" (Alice 
 Não é a central de notificações: tudo aqui mora na própria licitação.
 
 Publicado: https://brunnobkm.github.io/Settle/settle-atualizacoes-e-historico/
-Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + recorte de Recomendadas.
+Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + Recomendadas copiada de
+`settle-melhoria-deixar-os-filtros-aplicados-mais-visivel` (a tela mais fiel à produção).
 
 ## Conceitos
 
@@ -16,8 +17,11 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + recorte de
 
 ### 1 e 2. Selo "Atualização" (Recomendadas e Em andamento)
 - Selo único, "Atualização" (mesmo tom laranja do "Atualizado" de produção), no topo do card do
-  Board e de Recomendadas e no cabeçalho da página da licitação. Na Tabela e no Calendário vira
-  um ponto laranja ao lado do edital (com texto no `aria-label`).
+  Board e de Recomendadas, no cabeçalho da página da licitação, na coluna Edital da Tabela e no
+  chip do Calendário (versão menor; o edital quebra para a linha de baixo).
+- Em produção o selo "Atualizado" já existe no cabeçalho do card (`HeaderActionsV2`, usado na
+  lista de Recomendadas e na página da licitação) quando a licitação tem `dataUpdated`; hoje ele
+  só avisa, não abre nada.
 - **O clique no selo abre o sheet de Atualizações**, sem abrir a licitação. O resto do card abre
   a página "Detalhes da licitação".
 - **Duração**: some quando a pessoa abre o sheet (viu as mudanças), ou 7 dias depois da
@@ -47,6 +51,22 @@ de impacto. Cada item em até três linhas:
   29/05 à mão. O portal agora informa 02/06. Qual vale?" com "Usar a do portal" / "Manter".
   A decisão vai para o histórico.
 - **Data adiantada**: selo âmbar no card, data nova em vermelho e "Prazo encurtou".
+
+## Exemplos do card (onde ver no protótipo)
+
+| Exemplo citado no card | Onde ver |
+|---|---|
+| Indicar atualização em Recomendadas | Recomendadas: os 3 cards têm o selo "Atualização" |
+| Indicar atualização em Em andamento (todas as views) | Board, Tabela e Calendário: 048/2026, 089/2026, 156/2026 |
+| Data de pregão mudou | Em andamento 048/2026 (adiantou 26/05 → 23/05); Recomendadas 88234/2026 (adiantou 03/06 → 27/05) |
+| "O cara mudou a data e o sistema trouxe uma nova" | Em andamento 089/2026: Gustavo tinha posto 29/05, portal trouxe 02/06; escolha no sheet |
+| "A data adiantou ao invés de postergar" | 048/2026 e 88234/2026: data nova em vermelho, "(prazo encurtou)" |
+| Chegou um novo TR: comparar antigo com novo | 048/2026 e Recomendadas 90001/2026: "Ver o que mudou" mostra os trechos |
+| Novas manifestações / resposta de questionamento | 089/2026 (esclarecimento sobre SaaS, afeta Análise técnica); Recomendadas 90455/2025 (questionamento sobre habilitação) |
+| Status mudou | Em andamento 156/2026: Abertas → Suspensa |
+| Agentes versionam (TR1 → TR2, nova versão, acesso à anterior) | 048/2026 (Análise técnica v2, Habilitação v2), 90001/2026 (Match v2), 90455/2025 (Habilitação v2): "Ver versão anterior" |
+| Histórico por pessoas da empresa | 048/2026 e 089/2026: responsável, segmento, data, mudança de etapa |
+| Comentário não entra no histórico | Nenhum comentário aparece no sheet |
 
 ## Protótipo
 - Sidebar: Recomendadas e Em andamento trocam de tela; o resto é não prototipado.

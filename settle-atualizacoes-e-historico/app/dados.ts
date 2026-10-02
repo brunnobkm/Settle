@@ -2,6 +2,8 @@
 // `etapa` define a coluna do kanban (estágio do nosso processo); `status` é a situação
 // do edital e aparece como selo colorido dentro do card.
 
+import { LICITACOES as LICITACOES_RECOMENDADAS } from "./recomendadasDados"
+
 /* ------------------------------------------------------------------ */
 /* Etapas (colunas do kanban)                                          */
 /* ------------------------------------------------------------------ */
@@ -400,30 +402,27 @@ export function avisoDePrazo(u: Urgencia) {
 /** Link único do card. */
 export const linkDaLicitacao = (id: string) => `https://app.settle.com/licitacao/${id}`
 
-/** Licitações recomendadas (ainda não entraram no board). */
-export const RECOMENDADAS: Licitacao[] = [
-  {
-    id: "1432210", codigoEdital: "PE 33/2026",
-    titulo: "Notebooks para a rede estadual de ensino de Goiás",
-    segmentos: ["Tecnologia"], orgao: "Secretaria de Estado da Educação de Goiás",
-    objeto: "REGISTRO DE PREÇOS PARA AQUISIÇÃO DE NOTEBOOKS EDUCACIONAIS PARA AS UNIDADES ESCOLARES DA REDE ESTADUAL DE ENSINO.",
-    etapa: "analise", status: "abertas", responsaveis: [], dataEnvio: "2026-06-03",
-    cidade: "Goiânia", estado: "GO", valorGlobal: 12480000, itensMatch: 4,
-  },
-  {
-    id: "1432177", codigoEdital: "PE 091/2026",
-    titulo: "Switches e access points para o campus da UFSC",
-    segmentos: ["TI"], orgao: "Universidade Federal de Santa Catarina",
-    objeto: "AQUISIÇÃO DE EQUIPAMENTOS DE REDE (SWITCHES GERENCIÁVEIS E ACCESS POINTS WI-FI 6) PARA MODERNIZAÇÃO DA INFRAESTRUTURA DO CAMPUS TRINDADE.",
-    etapa: "analise", status: "abertas", responsaveis: [], dataEnvio: "2026-06-10",
-    cidade: "Florianópolis", estado: "SC", valorGlobal: 3870500, itensMatch: 7,
-  },
-  {
-    id: "1432102", codigoEdital: "PE 014/2026",
-    titulo: "Tablets para agentes comunitários de saúde de Recife",
-    segmentos: ["Tecnologia", "Saúde"], orgao: "Prefeitura do Recife / Secretaria de Saúde",
-    objeto: "AQUISIÇÃO DE TABLETS COM CAPA E PELÍCULA PARA USO DOS AGENTES COMUNITÁRIOS DE SAÚDE NO APLICATIVO E-SUS TERRITÓRIO.",
-    etapa: "analise", status: "abertas", responsaveis: [], dataEnvio: "2026-06-05",
-    cidade: "Recife", estado: "PE", valorGlobal: 1290000, itensMatch: 2,
-  },
-]
+/** Recomendadas no formato das licitações deste protótipo (sheet e página da licitação). */
+const TITULOS_RECOMENDADAS: Record<string, string> = {
+  "1078513": "Computadores e notebooks para a rede de ensino do Pará",
+  "1099842": "Equipamentos de rede para o data center de Campinas",
+  "1065217": "Mobiliário hospitalar para as UPAs do Ceará",
+}
+const isoDe = (br: string) => `${br.slice(6)}-${br.slice(3, 5)}-${br.slice(0, 2)}`
+
+export const RECOMENDADAS: Licitacao[] = LICITACOES_RECOMENDADAS.map((r) => ({
+  id: r.id,
+  codigoEdital: r.edital,
+  titulo: TITULOS_RECOMENDADAS[r.id] ?? r.objeto,
+  segmentos: ["Tecnologia"],
+  orgao: r.orgao,
+  objeto: r.objeto,
+  etapa: "analise",
+  status: "abertas",
+  responsaveis: [],
+  dataEnvio: isoDe(r.envio),
+  cidade: r.cidade,
+  estado: r.estado,
+  valorGlobal: Number(r.valor.replace(/\./g, "").replace(",", ".")),
+  itensMatch: r.itens,
+}))

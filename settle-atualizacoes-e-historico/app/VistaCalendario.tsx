@@ -97,14 +97,15 @@ function ChipDoCalendario({
           type="button"
           onClick={() => onAbrir(l)}
           className={cn(
-            "flex w-full min-w-0 shrink-0 items-center gap-1.5 rounded-[5px] border bg-card text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            "flex w-full min-w-0 shrink-0 flex-wrap items-center gap-x-1.5 gap-y-1 rounded-[5px] border bg-card text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             naLista ? "px-2 py-1 text-xs leading-[1.3]" : "px-1.5 py-0.5 text-[11px] leading-[1.3]"
           )}
         >
-          <SeloAtualizacao licitacaoId={l.id} compacto />
+          {/* selo na primeira linha; o edital quebra para a de baixo quando não cabe */}
+          <SeloAtualizacao licitacaoId={l.id} pequeno dentroDeBotao />
           {u.tom === "hoje" && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-destructive" />}
           {u.tom === "semana" && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-warning" />}
-          <span className="min-w-0 flex-1 truncate">
+          <span className="min-w-20 flex-1 truncate">
             Edital {l.codigoEdital} · {cortarOrgao(l.orgao)}
           </span>
           {aviso && <span className="sr-only">, {aviso}</span>}
