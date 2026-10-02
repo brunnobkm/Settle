@@ -1,87 +1,73 @@
-// Sheet "Atualizações" da licitação: abre pelo selo "Atualização" (card, tabela, página da
-// licitação). Uma lista só, da mais recente para a mais antiga, cada item em até três linhas:
-//   o que aconteceu  ·  o que mudou (antes → agora)  ·  quem e quando
-// As novas (ainda não vistas) ficam no topo. Mudanças do portal, de agentes e de pessoas entram
-// na mesma lista; comentários e visualizações não entram.
+// Sheet da licitação em dois modos, separados como pedido na reunião de 02/10:
+// - "Atualizações": só o que veio do portal (atualização do sistema). Abre pelo selo.
+//   Novas no topo; cada item em até três linhas: o que aconteceu · o que mudou · fonte e quando.
+//   Dado que ninguém tinha editado mostra "Aplicada automaticamente"; dado crítico editado à mão
+//   (data, status) pede a decisão do cliente.
+// - "Histórico": tudo o que aconteceu no card (sistema, agentes, usuários), com filtros.
+//   Comentários ficam fora por padrão; bloco de notas nunca entra. Abre pelo botão Histórico da
+//   página da licitação ou pelo link no fim das Atualizações.
 
 import { useState } from "react"
-import { ArrowRightIcon, BotIcon, GlobeIcon, TriangleAlertIcon, UserIcon } from "lucide-react"
+import { ArrowRightIcon, BotIcon, CheckIcon, GlobeIcon, MessageSquareIcon, TriangleAlertIcon, UserIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Switch } from "@/components/ui/switch"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-import { dataCurta, quandoRelativo, type Atualizacao, type EventoHistorico } from "./atualizacoes"
+import { ROTULO_DO_TIPO, dataCurta, quandoRelativo, type Atualizacao, type EventoHistorico } from "./atualizacoes"
 import type { Licitacao } from "./dados"
+
+export type ModoDoSheet = "atualizacoes" | "historico"
+type Filtro = "todos" | "sistema" | "agente" | "pessoa"
+
+const FILTROS: { id: Filtro; rotulo: string }[] = [
+  { id: "todos", rotulo: "Todos" },
+  { id: "sistema", rotulo: "Sistema" },
+  { id: "agente", rotulo: "Agentes" },
+  { id: "pessoa", rotulo: "Usuários" },
+]
 
 type Item =
   | { tipo: "portal"; id: string; quando: string; a: Atualizacao }
   | { tipo: "evento"; id: string; quando: string; e: EventoHistorico }
 
+const origemDo = (i: Item): Exclude<Filtro, "todos"> => (i.tipo === "portal" ? "sistema" : i.e.origem === "agente" ? "agente" : "pessoa")
 const portalDe = (l: Licitacao) => (l.objeto.startsWith("[LICITANET]") ? "Portal Licitanet" : "Portal Compras.gov")
 
-export function Detalhe({
-  licitacao: l,
-  atualizacoes,
-  historico,
-  novasIds,
-  onFechar,
-  onResolverConflito,
-}: {
+type PropsDoSheet = {
   licitacao: Licitacao | null
+  modo: ModoDoSheet
+  onModo: (m: ModoDoSheet) => void
   atualizacoes: Atualizacao[]
   historico: EventoHistorico[]
   /** Atualizações que o usuário ainda não tinha visto ao abrir. */
   novasIds: string[]
   onFechar: () => void
   onResolverConflito: (a: Atualizacao, escolha: "manual" | "portal") => void
-}) {
-  const itens: Item[] = [
-    ...atualizacoes.map((a): Item => ({ tipo: "portal", id: a.id, quando: a.quando, a })),
-    ...historico.map((e): Item => ({ tipo: "evento", id: e.id, quando: e.quando, e })),
-  ].sort((x, y) => y.quando.localeCompare(x.quando))
-  const novas = itens.filter((i) => novasIds.includes(i.id))
-  const anteriores = itens.filter((i) => !novasIds.includes(i.id))
+}
 
+export function Detalhe({ licitacao: l, modo, onModo, onFechar, ...props }: PropsDoSheet) {
   return (
     <Sheet open={!!l} onOpenChange={(o) => !o && onFechar()}>
       <SheetContent side="right" className="gap-0 p-0 data-[side=right]:w-[min(480px,100vw)] data-[side=right]:sm:max-w-none">
         {l && (
           <>
             <SheetHeader className="gap-1 border-b px-5 pt-5 pb-4">
-              <SheetTitle className="text-base">Atualizações</SheetTitle>
+              <SheetTitle className="text-base">{modo === "atualizacoes" ? "Atualizações" : "Histórico"}</SheetTitle>
               <SheetDescription className="text-xs">
                 Edital {l.codigoEdital} · {l.orgao}
               </SheetDescription>
             </SheetHeader>
-
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {itens.length === 0 ? (
-                <Empty className="py-12">
-                  <EmptyHeader>
-                    <EmptyTitle>Nenhuma atualização</EmptyTitle>
-                    <EmptyDescription>Quando algo mudar nesta licitação, aparece aqui.</EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+              {modo === "atualizacoes" ? (
+                <Atualizacoes licitacao={l} {...props} onVerHistorico={() => onModo("historico")} />
               ) : (
-                <>
-                  {novas.length > 0 && (
-                    <Secao titulo={novas.length === 1 ? "Nova" : `Novas (${novas.length})`}>
-                      {novas.map((i) => (
-                        <Linha key={i.id} item={i} nova portal={portalDe(l)} onResolverConflito={onResolverConflito} />
-                      ))}
-                    </Secao>
-                  )}
-                  {anteriores.length > 0 && (
-                    <Secao titulo="Anteriores">
-                      {anteriores.map((i) => (
-                        <Linha key={i.id} item={i} portal={portalDe(l)} onResolverConflito={onResolverConflito} />
-                      ))}
-                    </Secao>
-                  )}
-                </>
+                <Historico licitacao={l} {...props} onVerAtualizacoes={() => onModo("atualizacoes")} />
               )}
             </div>
           </>
@@ -90,6 +76,133 @@ export function Detalhe({
     </Sheet>
   )
 }
+
+/* ------------------------------------------------------------------ */
+/* Atualizações (só portal)                                            */
+/* ------------------------------------------------------------------ */
+
+function Atualizacoes({
+  licitacao: l,
+  atualizacoes,
+  novasIds,
+  onResolverConflito,
+  onVerHistorico,
+}: Omit<PropsDoSheet, "licitacao" | "modo" | "onModo" | "onFechar" | "historico"> & { licitacao: Licitacao; onVerHistorico: () => void }) {
+  const itens: Item[] = atualizacoes.map((a) => ({ tipo: "portal", id: a.id, quando: a.quando, a }))
+  const novas = itens.filter((i) => novasIds.includes(i.id))
+  const anteriores = itens.filter((i) => !novasIds.includes(i.id))
+  const props = { portal: portalDe(l), onResolverConflito }
+
+  return (
+    <>
+      {itens.length === 0 ? (
+        <Empty className="py-12">
+          <EmptyHeader>
+            <EmptyTitle>Nenhuma atualização do portal</EmptyTitle>
+            <EmptyDescription>Quando o órgão publicar arquivo, data, status ou manifestação nova, aparece aqui.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <>
+          {novas.length > 0 && (
+            <Secao titulo={novas.length === 1 ? "Nova" : `Novas (${novas.length})`}>
+              {novas.map((i) => (
+                <Linha key={i.id} item={i} nova {...props} />
+              ))}
+            </Secao>
+          )}
+          {anteriores.length > 0 && (
+            <Secao titulo="Anteriores">
+              {anteriores.map((i) => (
+                <Linha key={i.id} item={i} {...props} />
+              ))}
+            </Secao>
+          )}
+        </>
+      )}
+      <div className="border-t px-5 py-3">
+        <button type="button" onClick={onVerHistorico} className="text-[13px] font-medium text-primary hover:underline">
+          Ver histórico completo da licitação
+        </button>
+      </div>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Histórico (sistema + agentes + usuários)                            */
+/* ------------------------------------------------------------------ */
+
+function Historico({
+  licitacao: l,
+  atualizacoes,
+  historico,
+  onResolverConflito,
+  onVerAtualizacoes,
+}: Omit<PropsDoSheet, "licitacao" | "modo" | "onModo" | "onFechar" | "novasIds"> & { licitacao: Licitacao; onVerAtualizacoes: () => void }) {
+  const [filtro, setFiltro] = useState<Filtro>("todos")
+  const [comentarios, setComentarios] = useState(false)
+
+  const todos: Item[] = [
+    ...atualizacoes.map((a): Item => ({ tipo: "portal", id: a.id, quando: a.quando, a })),
+    ...historico.map((e): Item => ({ tipo: "evento", id: e.id, quando: e.quando, e })),
+  ].sort((x, y) => y.quando.localeCompare(x.quando))
+  const semComentarios = todos.filter((i) => comentarios || i.tipo === "portal" || !i.e.comentario)
+  const visiveis = semComentarios.filter((i) => filtro === "todos" || origemDo(i) === filtro)
+  const contagem = (f: Filtro) => (f === "todos" ? semComentarios.length : semComentarios.filter((i) => origemDo(i) === f).length)
+  const props = { portal: portalDe(l), onResolverConflito }
+
+  return (
+    <>
+      <div className="grid gap-3 border-b px-5 py-3">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          value={filtro}
+          onValueChange={(v) => v && setFiltro(v as Filtro)}
+          aria-label="Filtrar histórico por origem"
+          className="justify-start"
+        >
+          {FILTROS.map((f) => (
+            <ToggleGroupItem key={f.id} value={f.id} className="h-7 px-2.5 text-xs">
+              {f.rotulo}
+              <span className="text-muted-foreground tabular-nums">{contagem(f.id)}</span>
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        <div className="flex items-center gap-2">
+          <Switch id="mostrar-comentarios" checked={comentarios} onCheckedChange={setComentarios} />
+          <Label htmlFor="mostrar-comentarios" className="text-xs font-normal text-muted-foreground">
+            Mostrar comentários
+          </Label>
+        </div>
+      </div>
+
+      {visiveis.length === 0 ? (
+        <p className="px-5 py-8 text-[13px] text-muted-foreground">Nada registrado com este filtro.</p>
+      ) : (
+        <ul className="pt-2">
+          {visiveis.map((i) => (
+            <Linha key={i.id} item={i} {...props} />
+          ))}
+        </ul>
+      )}
+      <div className="grid gap-2 border-t px-5 py-3">
+        <p className="text-xs text-muted-foreground">
+          Todos da empresa veem o histórico. O bloco de notas não entra.
+        </p>
+        <button type="button" onClick={onVerAtualizacoes} className="justify-self-start text-[13px] font-medium text-primary hover:underline">
+          Ver só as atualizações do portal
+        </button>
+      </div>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Linha (comum aos dois modos)                                        */
+/* ------------------------------------------------------------------ */
 
 function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
@@ -111,8 +224,9 @@ function Linha({
   portal: string
   onResolverConflito: (a: Atualizacao, escolha: "manual" | "portal") => void
 }) {
-  const origem = i.tipo === "portal" ? "portal" : i.e.origem
-  const Icone = origem === "portal" ? GlobeIcon : origem === "agente" ? BotIcon : UserIcon
+  const origem = origemDo(i)
+  const comentario = i.tipo === "evento" && i.e.comentario
+  const Icone = comentario ? MessageSquareIcon : origem === "sistema" ? GlobeIcon : origem === "agente" ? BotIcon : UserIcon
   const titulo = i.tipo === "portal" ? i.a.titulo : i.e.texto
   const autor = i.tipo === "portal" ? portal : i.e.autor
 
@@ -150,6 +264,13 @@ function OQueMudou({ a, onResolverConflito }: { a: Atualizacao; onResolverConfli
       )}
       {!a.antes && a.depois && <p>{a.depois}</p>}
 
+      {a.automatica && (
+        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <CheckIcon aria-hidden className="size-3.5 text-success" />
+          Aplicada automaticamente: ninguém tinha editado {ROTULO_DO_TIPO[a.tipo].toLowerCase()}.
+        </p>
+      )}
+
       {a.manifestacao && <p className="leading-snug text-foreground/80">{a.manifestacao.resposta}</p>}
 
       {a.arquivo && (
@@ -173,20 +294,21 @@ function OQueMudou({ a, onResolverConflito }: { a: Atualizacao; onResolverConfli
         </div>
       )}
 
+      {/* dado crítico editado à mão: o portal não sobrescreve, o cliente decide */}
       {a.conflito && a.depois && (
         <div className="grid gap-2 rounded-lg border border-warning/40 bg-warning/5 p-2.5">
           <p className="flex gap-2 leading-snug">
             <TriangleAlertIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-warning-strong" />
             <span>
-              {a.conflito.autor} tinha definido {dataCurta(a.conflito.valorManual)}. Qual data vale?
+              {a.conflito.autor} tinha definido {fmt(a.conflito.valorManual)}. Qual vale?
             </span>
           </p>
           <div className="flex flex-wrap gap-2 pl-6">
             <Button size="xs" onClick={() => onResolverConflito(a, "portal")}>
-              {dataCurta(a.depois)} (portal)
+              {fmt(a.depois)} (portal)
             </Button>
             <Button size="xs" variant="outline" className="bg-background shadow-none" onClick={() => onResolverConflito(a, "manual")}>
-              {dataCurta(a.conflito.valorManual)} (manter)
+              {fmt(a.conflito.valorManual)} (manter)
             </Button>
           </div>
         </div>

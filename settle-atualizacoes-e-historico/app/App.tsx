@@ -49,9 +49,9 @@ import { menuLicitacoes, USUARIO, WORKSPACE, type TelaLicitacoes } from "@/settl
 import type { AppShellGroup } from "@/components/ui/app-shell"
 
 import { CardKanban } from "./CardKanban"
-import { ETAPAS, LICITACOES, RECOMENDADAS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
+import { ETAPAS, LICITACOES, RECOMENDADAS, STATUS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
 import { ATUALIZACOES, HISTORICO, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
-import { Detalhe } from "./Detalhe"
+import { Detalhe, type ModoDoSheet } from "./Detalhe"
 import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
 import { NovasContext } from "./Selo"
 import { TelaRecomendadas } from "./Recomendadas"
@@ -83,6 +83,7 @@ export default function App() {
   /** Última vez que o usuário abriu cada licitação (o selo some a partir daí). */
   const [vistaEm, setVistaEm] = useState<Record<string, string>>({})
   const [aberta, setAberta] = useState<{ id: string; novas: string[] } | null>(null)
+  const [modo, setModo] = useState<ModoDoSheet>("atualizacoes")
 
   const novasDe = useCallback(
     (id: string) => atualizacoesNovas(atualizacoes, id, vistaEm[id]),
@@ -109,7 +110,22 @@ export default function App() {
     },
     [atualizacoes, historico, vistaEm]
   )
-  const contexto = useMemo(() => ({ novasDe, abrirAtualizacoes }), [novasDe, abrirAtualizacoes])
+  /** Histórico: não mexe no "visto" das atualizações. */
+  const abrirHistorico = useCallback((id: string) => {
+    setAberta({ id, novas: [] })
+    setModo("historico")
+  }, [])
+  const contexto = useMemo(
+    () => ({
+      novasDe,
+      abrirAtualizacoes: (id: string) => {
+        abrirAtualizacoes(id)
+        setModo("atualizacoes")
+      },
+      abrirHistorico,
+    }),
+    [novasDe, abrirAtualizacoes, abrirHistorico]
+  )
 
   function abrirLicitacao(l: Licitacao) {
     setPagina(l.id)
@@ -117,16 +133,20 @@ export default function App() {
   }
 
   function resolverConflito(a: Atualizacao, escolha: "manual" | "portal") {
-    const data = escolha === "portal" ? a.depois! : a.conflito!.valorManual
-    atualizar(a.licitacaoId, { dataEnvio: data })
+    const valor = escolha === "portal" ? a.depois! : a.conflito!.valorManual
+    const [campo, editado] = a.tipo === "status" ? ["o status", "editado"] : ["a data", "editada"]
+    if (a.tipo === "status") {
+      const status = STATUS.find((st) => st.rotulo === valor)
+      if (status) atualizar(a.licitacaoId, { status: status.id })
+    } else atualizar(a.licitacaoId, { dataEnvio: valor })
     setAtualizacoes((xs) => xs.map((x) => (x.id === a.id ? { ...x, conflito: undefined } : x)))
     const evento: EventoHistorico = {
       id: `h-${Date.now()}`, licitacaoId: a.licitacaoId, origem: "pessoa", quando: "2026-05-21T18:00",
       autor: USUARIO.name,
-      texto: escolha === "portal" ? "Aceitou a data do portal para o envio da proposta" : "Manteve a data editada à mão para o envio da proposta",
+      texto: escolha === "portal" ? `Aceitou ${campo} do portal` : `Manteve ${campo} ${editado} à mão`,
     }
     setHistorico((h) => [evento, ...h])
-    toast(escolha === "portal" ? "Data do portal aplicada" : "Data editada mantida")
+    toast(escolha === "portal" ? `Atualização do portal aplicada` : `Valor editado mantido`)
   }
 
   const atualizar = useCallback((id: string, patch: Partial<Licitacao>) => {
@@ -333,6 +353,8 @@ export default function App() {
         atualizacoes={licitacaoAberta ? atualizacoes.filter((a) => a.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
         historico={licitacaoAberta ? historico.filter((h) => h.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
         novasIds={aberta?.novas ?? []}
+        modo={modo}
+        onModo={setModo}
         onFechar={() => setAberta(null)}
         onResolverConflito={resolverConflito}
       />

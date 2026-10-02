@@ -13,10 +13,11 @@ import type { Atualizacao } from "./atualizacoes"
 type Contexto = {
   novasDe: (licitacaoId: string) => Atualizacao[]
   abrirAtualizacoes: (licitacaoId: string) => void
+  abrirHistorico: (licitacaoId: string) => void
 }
 
 /** O App fornece; Board, Tabela, Calendário, Recomendadas e a página da licitação leem. */
-export const NovasContext = createContext<Contexto>({ novasDe: () => [], abrirAtualizacoes: () => {} })
+export const NovasContext = createContext<Contexto>({ novasDe: () => [], abrirAtualizacoes: () => {}, abrirHistorico: () => {} })
 export const useNovas = (licitacaoId: string) => useContext(NovasContext).novasDe(licitacaoId)
 
 export function SeloAtualizacao({

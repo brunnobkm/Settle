@@ -34,16 +34,29 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + Recomendad
   cabeçalho com edital, selo e ações, bloco do card, metadados, itens com correspondência e notas.
   Montada com o `LicitacaoCard` do design system.
 
-### 3 e 4. Sheet "Atualizações"
-Versão simplificada (pedido do Brunno, 02/10): uma lista só, sem filtros, agrupamentos ou selos
-de impacto. Cada item em até três linhas:
-1. o que aconteceu ("Sessão pública adiantada");
-2. o que mudou: antes riscado → agora (data, status), resposta da manifestação, ou
-   "Ver o que mudou (N)" no arquivo, que abre os trechos antes/agora;
-3. quem e quando ("Portal Licitanet · ontem, 16:40").
-- "Novas" no topo (ponto laranja), "Anteriores" abaixo. Portal, agentes e pessoas na mesma lista.
-- Versão de agente: "Ver versão anterior". Conflito de data: escolha no próprio item.
-- Não entra: comentários e visualizações.
+### 3 e 4. Atualizações e Histórico, separados (reunião de 02/10)
+Conceitos da reunião: **atualização do sistema** (mudança vinda do portal), **notificação**
+(aviso direcionado à pessoa, outra task), **histórico** (tudo o que aconteceu no card) e
+**reprocessamento** (agente roda de novo só quando muda um dado dele).
+
+**Sheet "Atualizações"** (abre pelo selo): só o que veio do portal. "Novas" no topo,
+"Anteriores" abaixo; cada item em até três linhas (o que aconteceu, antes → agora, fonte e quando).
+- Conta como atualização: qualquer arquivo novo (edital, TR, manifestação, resultado, documento
+  de fornecedor, adjudicação; arquivo repetido não conta), data, status, nome do órgão.
+  Lista de itens fica para depois.
+- Dado que ninguém tinha editado: aplica sozinho e mostra "Aplicada automaticamente".
+- Dado crítico editado à mão (data, status): não sobrescreve; o cliente escolhe o valor do portal
+  ou mantém o dele. A escolha entra no histórico.
+- Arquivo: "Ver o que mudou (N)" abre os trechos antes/agora.
+- Link "Ver histórico completo da licitação".
+
+**Sheet "Histórico"** (botão Histórico da página da licitação, ou pelo link acima): tudo o que
+aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com contadores).
+- Sistema: as atualizações do portal. Agentes: execuções e novas versões ("Ver versão anterior").
+  Usuários: responsável (quem adicionou), etapa do kanban, status, datas, resultado, descarte,
+  recuperação, salvar para depois, ativar notificações, decisões de conflito.
+- "Mostrar comentários" começa desligado. Bloco de notas nunca entra. Todos da empresa veem.
+- Abrir o histórico não conta como ver as atualizações (o selo continua).
 
 ### Corner cases (data da sessão)
 - **Portal muda uma data que ninguém editou**: aplica direto e registra no histórico.
@@ -66,7 +79,13 @@ de impacto. Cada item em até três linhas:
 | Status mudou | Em andamento 156/2026: Abertas → Suspensa |
 | Agentes versionam (TR1 → TR2, nova versão, acesso à anterior) | 048/2026 (Análise técnica v2, Habilitação v2), 90001/2026 (Match v2), 90455/2025 (Habilitação v2): "Ver versão anterior" |
 | Histórico por pessoas da empresa | 048/2026 e 089/2026: responsável, segmento, data, mudança de etapa |
-| Comentário não entra no histórico | Nenhum comentário aparece no sheet |
+| Comentário fora do histórico por padrão | 048/2026, Histórico: ligar "Mostrar comentários" |
+| Dado não editado atualiza sozinho | 048/2026 (data), 156/2026 (status), 201/2026 (órgão), 88234/2026: "Aplicada automaticamente" |
+| Status editado à mão + portal traz outro | 067/2026: Ana Lima tinha posto Homologada, portal trouxe Suspensa |
+| Documento de resultado/adjudicação | 045/2026: "Novo documento: Termo de adjudicação" |
+| Nome do órgão (UASG → nome) | 201/2026: "UASG 200366" → nome do órgão |
+| Descarte, recuperação, salvar para depois, notificações | 112/2026, Histórico: filtro Usuários |
+| Histórico separado das atualizações, com filtros | Página da licitação → botão Histórico; filtros Sistema / Agentes / Usuários |
 
 ## Protótipo
 - Sidebar: Recomendadas e Em andamento trocam de tela; o resto é não prototipado.
