@@ -16,6 +16,8 @@ Base: `settle-licitacoes-em-andamento` (Board, Tabela, Calendário) + Recomendad
 ## Regras
 
 ### 1 e 2. Selo "Atualização" (Recomendadas e Em andamento)
+- No card do Board só aparece o selo (sem ícone de Histórico): o card é pequeno e o histórico
+  fica na página da licitação.
 - Selo único, "Atualização" (mesmo tom laranja do "Atualizado" de produção), no topo do card do
   Board e de Recomendadas, no cabeçalho da página da licitação, na coluna Edital da Tabela e no
   chip do Calendário (versão menor; o edital quebra para a linha de baixo).
@@ -50,7 +52,7 @@ Conceitos da reunião: **atualização do sistema** (mudança vinda do portal), 
 - Arquivo: "Ver o que mudou (N)" abre os trechos antes/agora.
 - Link "Ver histórico completo da licitação".
 
-**Sheet "Histórico"**: ícone de relógio (como o Updates do Notion) no card do Board (aparece no hover), nas ações do card de Recomendadas e no header da página da licitação (canto direito, ao lado do caminho); também pelo link acima. tudo o que
+**Sheet "Histórico"**: ícone de relógio (como o Updates do Notion) nas ações do card de Recomendadas e no header da página da licitação (canto direito, ao lado do caminho); também pelo link acima. tudo o que
 aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com contadores).
 - Sistema: as atualizações do portal. Agentes: execuções e novas versões ("Ver versão anterior").
   Usuários: responsável (quem adicionou), etapa do kanban, status, datas, resultado, descarte,
