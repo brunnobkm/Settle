@@ -4,8 +4,8 @@
 // Valor editáveis. Regra mestra: clicar num valor edita; clicar no resto do card abre
 // a licitação; arrastar o card muda a etapa.
 
-import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
-import { CircleAlertIcon, ClockIcon, LinkIcon, Trash2Icon } from "lucide-react"
+import { useContext, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
+import { CircleAlertIcon, ClockIcon, HistoryIcon, LinkIcon, Trash2Icon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -49,7 +49,7 @@ import {
   OpcoesStatus,
   PopoverEditor,
 } from "./editores"
-import { SeloAtualizacao } from "./Selo"
+import { NovasContext, SeloAtualizacao } from "./Selo"
 
 const ehInterativo = (alvo: EventTarget | null) =>
   alvo instanceof Element && !!alvo.closest("button, a, input, textarea, select, [role=checkbox], [data-sem-abrir]")
@@ -93,6 +93,7 @@ export function CardKanban({
   // o card some da tela (ex.: descartado) com um editor aberto: libera o arraste
   useEffect(() => () => onEdicao?.(id, false), [onEdicao, id])
 
+  const { abrirHistorico } = useContext(NovasContext)
   const status = statusPorId(l.status)
   const resultado = resultadoPorId(l.resultado)
   const pessoas = l.responsaveis.map(pessoaPorId).filter((p) => !!p)
@@ -418,6 +419,7 @@ export function CardKanban({
 
       {/* Ações flutuantes: aparecem no hover do card. Depois das linhas para ficar por cima delas */}
       <LicitacaoCardHoverActions data-sem-abrir className={cn(arrastando && "hidden")}>
+        <LicitacaoCardIconAction label="Histórico" icon={<HistoryIcon />} variant="ghost" onClick={() => abrirHistorico(l.id)} />
         <LicitacaoCardIconAction label="Copiar link" icon={<LinkIcon />} variant="ghost" onClick={onCopiarLink} />
         <LicitacaoCardIconAction label="Descartar" icon={<Trash2Icon />} variant="ghost" onClick={onDescartar} />
       </LicitacaoCardHoverActions>

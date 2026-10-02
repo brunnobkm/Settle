@@ -1,10 +1,9 @@
 // Detalhes da licitação: a página que abre ao clicar num card de Em andamento, no modelo de
 // produção (app.settlegov.com/biddings/<id>): cabeçalho com o edital, o selo "Atualização" e
-// as ações; bloco com segmento, órgão, objeto e valor; metadados; notas; itens.
+// as ações (o Histórico fica no header da página, ao lado do caminho); bloco com segmento, órgão, objeto e valor; metadados; notas; itens.
 // Montada com o LicitacaoCard do design system (o mesmo de Explorar e Recomendadas).
 
-import { useContext } from "react"
-import { CheckIcon, FolderIcon, HistoryIcon, LinkIcon, ListChecksIcon, MessageSquareIcon, PlusIcon, Share2Icon } from "lucide-react"
+import { CheckIcon, FolderIcon, LinkIcon, ListChecksIcon, MessageSquareIcon, PlusIcon, Share2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -12,7 +11,7 @@ import { LicitacaoCard, LicitacaoCardStatusButton } from "@/components/ui/licita
 import { Textarea } from "@/components/ui/textarea"
 
 import { categoriaDoSegmento, formatarData, formatarMoeda, pessoaPorId, statusPorId, type Licitacao } from "./dados"
-import { NovasContext, SeloAtualizacao } from "./Selo"
+import { SeloAtualizacao } from "./Selo"
 
 /** Itens de exemplo: o objeto dividido em lotes, com valores que somam o valor global. */
 function itensDe(l: Licitacao) {
@@ -32,7 +31,6 @@ function itensDe(l: Licitacao) {
 }
 
 export function PaginaDaLicitacao({ licitacao: l }: { licitacao: Licitacao }) {
-  const { abrirHistorico } = useContext(NovasContext)
   const status = statusPorId(l.status)
   const itens = itensDe(l)
 
@@ -71,8 +69,6 @@ export function PaginaDaLicitacao({ licitacao: l }: { licitacao: Licitacao }) {
           { id: "arquivos", label: "3 arquivos anexados", icon: <FolderIcon />, count: 3, "data-nao-prototipado": true },
           { id: "comentarios", label: "Comentários", icon: <MessageSquareIcon />, "data-nao-prototipado": true },
           { id: "checklist", label: "Checklist", icon: <ListChecksIcon />, "data-nao-prototipado": true },
-          // histórico separado das atualizações (reunião 02/10): tudo o que aconteceu no card
-          { id: "historico", label: "Histórico da licitação", icon: <HistoryIcon />, onClick: () => abrirHistorico(l.id) },
         ]}
         segments={l.segmentos.map((s) => ({ label: s, category: categoriaDoSegmento(s) }))}
         orgao={l.orgao}

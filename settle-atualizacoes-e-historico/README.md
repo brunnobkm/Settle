@@ -50,7 +50,7 @@ Conceitos da reunião: **atualização do sistema** (mudança vinda do portal), 
 - Arquivo: "Ver o que mudou (N)" abre os trechos antes/agora.
 - Link "Ver histórico completo da licitação".
 
-**Sheet "Histórico"** (botão Histórico da página da licitação, ou pelo link acima): tudo o que
+**Sheet "Histórico"**: ícone de relógio (como o Updates do Notion) no card do Board (aparece no hover), nas ações do card de Recomendadas e no header da página da licitação (canto direito, ao lado do caminho); também pelo link acima. tudo o que
 aconteceu no card, filtrável por Todos / Sistema / Agentes / Usuários (com contadores).
 - Sistema: as atualizações do portal. Agentes: execuções e novas versões ("Ver versão anterior").
   Usuários: responsável (quem adicionou), etapa do kanban, status, datas, resultado, descarte,
