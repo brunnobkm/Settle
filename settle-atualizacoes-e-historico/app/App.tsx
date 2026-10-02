@@ -51,7 +51,7 @@ import type { AppShellGroup } from "@/components/ui/app-shell"
 
 import { CardKanban } from "./CardKanban"
 import { ETAPAS, LICITACOES, RECOMENDADAS, STATUS, SEGMENTOS_INICIAIS, linkDaLicitacao, type EtapaId, type Licitacao } from "./dados"
-import { ATUALIZACOES, COMENTARIOS, HISTORICO, comentarioNoHistorico, type Comentario, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
+import { ATUALIZACOES, COMENTARIOS, HISTORICO, type Comentario, atualizacoesNovas, type Atualizacao, type EventoHistorico } from "./atualizacoes"
 import { Detalhe, type ModoDoSheet } from "./Detalhe"
 import { VERSAO } from "./versao"
 import { PaginaDaLicitacao } from "./PaginaDaLicitacao"
@@ -126,7 +126,7 @@ export default function App() {
         setModo("atualizacoes")
       },
       abrirHistorico,
-      // contador do ícone de Histórico: tudo o que o histórico mostra por padrão (sem comentários)
+      // contador do ícone de Histórico: quantos itens o histórico tem
       totalHistorico: (id: string) =>
         atualizacoes.filter((a) => a.licitacaoId === id).length + historico.filter((h) => h.licitacaoId === id).length,
       comentariosDe: (id: string) =>
@@ -375,14 +375,7 @@ export default function App() {
       <Detalhe
         licitacao={licitacaoAberta}
         atualizacoes={licitacaoAberta ? atualizacoes.filter((a) => a.licitacaoId === licitacaoAberta.id).sort((a, b) => b.quando.localeCompare(a.quando)) : []}
-        historico={
-          licitacaoAberta
-            ? [
-                ...historico.filter((h) => h.licitacaoId === licitacaoAberta.id),
-                ...comentarios.filter((c) => c.licitacaoId === licitacaoAberta.id).map(comentarioNoHistorico),
-              ].sort((a, b) => b.quando.localeCompare(a.quando))
-            : []
-        }
+        historico={licitacaoAberta ? historico.filter((h) => h.licitacaoId === licitacaoAberta.id) : []}
         novasIds={aberta?.novas ?? []}
         modo={modo}
         onModo={setModo}

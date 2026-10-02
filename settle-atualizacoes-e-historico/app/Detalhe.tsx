@@ -4,19 +4,18 @@
 //   Dado que ninguém tinha editado mostra "Aplicada automaticamente"; dado crítico editado à mão
 //   (data, status) pede a decisão do cliente.
 // - "Histórico": tudo o que aconteceu no card (sistema, agentes, usuários), com filtros.
-//   Comentários ficam fora por padrão; bloco de notas nunca entra. Abre pelo botão Histórico da
-//   página da licitação ou pelo link no fim das Atualizações.
+//   Comentários não entram: são o recurso Comentários da licitação (conversa do time no card,
+//   como numa tarefa do Notion), com painel próprio. Bloco de notas também não entra.
+//   Abre pelo ícone de Histórico ou pelo link no fim das Atualizações.
 
 import { useState } from "react"
-import { ArrowRightIcon, BotIcon, CheckIcon, GlobeIcon, MessageSquareIcon, TriangleAlertIcon, UserIcon } from "lucide-react"
+import { ArrowRightIcon, BotIcon, CheckIcon, GlobeIcon, TriangleAlertIcon, UserIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { ROTULO_DO_TIPO, dataCurta, quandoRelativo, type Atualizacao, type EventoHistorico } from "./atualizacoes"
@@ -141,15 +140,13 @@ function Historico({
   onVerAtualizacoes,
 }: Omit<PropsDoSheet, "licitacao" | "modo" | "onModo" | "onFechar" | "novasIds"> & { licitacao: Licitacao; onVerAtualizacoes: () => void }) {
   const [filtro, setFiltro] = useState<Filtro>("todos")
-  const [comentarios, setComentarios] = useState(false)
 
   const todos: Item[] = [
     ...atualizacoes.map((a): Item => ({ tipo: "portal", id: a.id, quando: a.quando, a })),
     ...historico.map((e): Item => ({ tipo: "evento", id: e.id, quando: e.quando, e })),
   ].sort((x, y) => y.quando.localeCompare(x.quando))
-  const semComentarios = todos.filter((i) => comentarios || i.tipo === "portal" || !i.e.comentario)
-  const visiveis = semComentarios.filter((i) => filtro === "todos" || origemDo(i) === filtro)
-  const contagem = (f: Filtro) => (f === "todos" ? semComentarios.length : semComentarios.filter((i) => origemDo(i) === f).length)
+  const visiveis = todos.filter((i) => filtro === "todos" || origemDo(i) === filtro)
+  const contagem = (f: Filtro) => (f === "todos" ? todos.length : todos.filter((i) => origemDo(i) === f).length)
   const props = { portal: portalDe(l), onResolverConflito }
 
   return (
@@ -171,12 +168,6 @@ function Historico({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <div className="flex items-center gap-2">
-          <Switch id="mostrar-comentarios" checked={comentarios} onCheckedChange={setComentarios} />
-          <Label htmlFor="mostrar-comentarios" className="text-xs font-normal text-muted-foreground">
-            Mostrar comentários (os da área Comentários da licitação)
-          </Label>
-        </div>
       </div>
 
       {visiveis.length === 0 ? (
@@ -190,7 +181,7 @@ function Historico({
       )}
       <div className="grid gap-2 border-t px-5 py-3">
         <p className="text-xs text-muted-foreground">
-          Todos da empresa veem o histórico. O bloco de notas não entra.
+          Todos da empresa veem o histórico. Comentários e bloco de notas não entram.
         </p>
         <button type="button" onClick={onVerAtualizacoes} className="justify-self-start text-[13px] font-medium text-primary hover:underline">
           Ver só as atualizações do portal
@@ -225,8 +216,7 @@ function Linha({
   onResolverConflito: (a: Atualizacao, escolha: "manual" | "portal") => void
 }) {
   const origem = origemDo(i)
-  const comentario = i.tipo === "evento" && i.e.comentario
-  const Icone = comentario ? MessageSquareIcon : origem === "sistema" ? GlobeIcon : origem === "agente" ? BotIcon : UserIcon
+  const Icone = origem === "sistema" ? GlobeIcon : origem === "agente" ? BotIcon : UserIcon
   const titulo = i.tipo === "portal" ? i.a.titulo : i.e.texto
   const autor = i.tipo === "portal" ? portal : i.e.autor
 

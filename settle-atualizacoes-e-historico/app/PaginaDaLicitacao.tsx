@@ -3,8 +3,8 @@
 // as ações (o Histórico fica no header da página, ao lado do caminho); bloco com segmento, órgão, objeto e valor; metadados; notas; itens.
 // Montada com o LicitacaoCard do design system (o mesmo de Explorar e Recomendadas).
 // O balão abre o painel "Comentários (N)" à direita, como em produção: campo "Escreva um
-// comentário…", botão Comentar e a lista (autor, "14/09/2026 às 14:44", texto). São esses
-// comentários que o Histórico mostra quando "Mostrar comentários" está ligado.
+// comentário…", botão Comentar e a lista (autor, "14/09/2026 às 14:44", texto). É a conversa
+// do time no card, separada do Histórico.
 
 import { useContext, useState } from "react"
 import { CheckIcon, ChevronsRightIcon, FolderIcon, LinkIcon, ListChecksIcon, MessageSquareIcon, PlusIcon, Share2Icon } from "lucide-react"
